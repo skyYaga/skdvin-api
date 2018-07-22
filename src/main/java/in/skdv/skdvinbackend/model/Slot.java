@@ -8,11 +8,11 @@ import java.util.List;
 public class Slot {
 
     @Id
-    public LocalTime time;
-    public boolean operating;
-    public int tandemTotal;
-    public int videoTotal;
-    public List<Appointment> appointments;
+    private LocalTime time;
+    private boolean operating;
+    private int tandemTotal;
+    private int videoTotal;
+    private List<Appointment> appointments;
 
     public LocalTime getTime() {
         return time;

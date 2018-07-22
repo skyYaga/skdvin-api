@@ -2,18 +2,21 @@ package in.skdv.skdvinbackend.model;
 
 import org.springframework.data.annotation.Id;
 
+import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.util.List;
 
 public class Jumpday {
 
     @Id
-    public LocalDate date;
-    public boolean jumping;
-    public boolean freeTimes;
-    public List<Slot> slots;
-    public List<String> tandemmaster;
-    public List<String> videoflyer;
+    private LocalDate date;
+    private boolean jumping;
+    private boolean freeTimes;
+    private List<Slot> slots;
+    private List<String> tandemmaster;
+    private List<String> videoflyer;
+    @NotNull
+    public String clientId;
 
     public LocalDate getDate() {
         return date;

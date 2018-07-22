@@ -2,13 +2,13 @@ package in.skdv.skdvinbackend.model;
 
 public class Customer {
 
-    public String firstName;
-    public String lastName;
-    public String tel;
-    public String mobile;
-    public String email;
-    public String plz;
-    public String city;
+    private String firstName;
+    private String lastName;
+    private String tel;
+    private String mobile;
+    private String email;
+    private String plz;
+    private String city;
 
     public String getFirstName() {
         return firstName;

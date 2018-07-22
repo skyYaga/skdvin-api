@@ -2,19 +2,38 @@ package in.skdv.skdvinbackend.model;
 
 import org.springframework.data.annotation.Id;
 
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 
 public class Appointment {
 
     @Id
-    public int Id;
-    public Customer customer;
-    public LocalDateTime date;
-    public int tandem;
-    public int video;
-    public AppointmentState state;
-    public LocalDateTime createdOn;
-    public String createdBy;
+    private int Id;
+
+    @NotNull
+    private Customer customer;
+
+    @NotNull
+    private LocalDateTime date;
+
+    @NotNull
+    @Min(1)
+    private int tandem;
+
+    @NotNull
+    private int video;
+
+    private AppointmentState state;
+
+    @NotNull
+    private LocalDateTime createdOn;
+
+    @NotNull
+    private String createdBy;
+
+    @NotNull
+    private String clientId;
 
     public int getId() {
         return Id;

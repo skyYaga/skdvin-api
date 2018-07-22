@@ -5,11 +5,11 @@ import java.time.LocalTime;
 
 public class Settings {
 
-    public LocalTime tandemsFrom;
-    public LocalTime tandemsTo;
-    public Duration interval;
-    public int tandemCount;
-    public int videoCount;
+    private LocalTime tandemsFrom;
+    private LocalTime tandemsTo;
+    private Duration interval;
+    private int tandemCount;
+    private int videoCount;
 
     public LocalTime getTandemsFrom() {
         return tandemsFrom;
