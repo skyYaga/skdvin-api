@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 public class MongoAppointmentService implements IAppointmentService {
 
@@ -23,10 +24,22 @@ public class MongoAppointmentService implements IAppointmentService {
     }
 
     @Override
-    public void saveAppointment(Appointment appointment) {
-        appointment.setId(sequenceService.getNextSequence(APPOINTMENT_SEQUENCE));
+    public Appointment saveAppointment(Appointment appointment) {
+        appointment.setAppointmentId(sequenceService.getNextSequence(APPOINTMENT_SEQUENCE));
         appointment.setCreatedOn(LocalDateTime.now());
-        appointmentRepository.save(appointment);
+        return appointmentRepository.save(appointment);
+    }
+
+    @Override
+    public Appointment updateAppointment(Appointment appointment) {
+        appointment.setCreatedOn(LocalDateTime.now());
+        return appointmentRepository.save(appointment);
+    }
+
+    @Override
+    public Appointment findAppointment(int id) {
+        Optional<Appointment> appointmentOptional = appointmentRepository.findById(id);
+        return appointmentOptional.orElse(null);
     }
 
     @Override

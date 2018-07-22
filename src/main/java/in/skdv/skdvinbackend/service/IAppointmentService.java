@@ -6,7 +6,11 @@ import java.util.List;
 
 public interface IAppointmentService {
 
-    void saveAppointment(Appointment appointment);
+    Appointment saveAppointment(Appointment appointment);
+
+    Appointment updateAppointment(Appointment appointment);
+
+    Appointment findAppointment(int id);
 
     List<Appointment> findAppointments();
 }

@@ -2,6 +2,7 @@ package in.skdv.skdvinbackend.model;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
@@ -11,7 +12,8 @@ import java.time.LocalDateTime;
 public class Appointment {
 
     @Id
-    private int Id;
+    @Field("id")
+    private int appointmentId;
 
     @NotNull
     private Customer customer;
@@ -37,12 +39,12 @@ public class Appointment {
     @NotNull
     private String clientId;
 
-    public int getId() {
-        return Id;
+    public int getAppointmentId() {
+        return appointmentId;
     }
 
-    public void setId(int id) {
-        Id = id;
+    public void setAppointmentId(int appointmentId) {
+        this.appointmentId = appointmentId;
     }
 
     public Customer getCustomer() {
@@ -104,7 +106,7 @@ public class Appointment {
     @Override
     public String toString() {
         return "Appointment{" +
-                "Id=" + Id +
+                "appointmentId=" + appointmentId +
                 ", customer=" + customer +
                 ", date=" + date +
                 ", tandem=" + tandem +
