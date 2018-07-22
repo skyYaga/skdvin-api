@@ -1,6 +1,6 @@
 package in.skdv.skdvinbackend.service.impl;
 
-import in.skdv.skdvinbackend.model.Appointment;
+import in.skdv.skdvinbackend.model.entity.Appointment;
 import in.skdv.skdvinbackend.repository.AppointmentRepository;
 import in.skdv.skdvinbackend.service.IAppointmentService;
 import in.skdv.skdvinbackend.service.ISequenceService;

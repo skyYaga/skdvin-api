@@ -1,6 +1,6 @@
 package in.skdv.skdvinbackend.service;
 
-import in.skdv.skdvinbackend.model.Appointment;
+import in.skdv.skdvinbackend.model.entity.Appointment;
 
 import java.util.List;
 

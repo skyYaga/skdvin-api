@@ -1,42 +1,28 @@
-package in.skdv.skdvinbackend.model;
+package in.skdv.skdvinbackend.model.dto;
 
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.data.mongodb.core.mapping.Field;
+import in.skdv.skdvinbackend.model.entity.AppointmentState;
+import in.skdv.skdvinbackend.model.entity.Customer;
 
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 
-@Document
-public class Appointment {
+public class AppointmentDTO {
 
-    @Id
-    @Field("id")
     private int appointmentId;
 
-    @NotNull
     private Customer customer;
 
-    @NotNull
     private LocalDateTime date;
 
-    @NotNull
-    @Min(1)
     private int tandem;
 
-    @NotNull
     private int video;
 
     private AppointmentState state;
 
-    @NotNull
     private LocalDateTime createdOn;
 
-    @NotNull
     private String createdBy;
 
-    @NotNull
     private String clientId;
 
     public int getAppointmentId() {
@@ -103,17 +89,12 @@ public class Appointment {
         this.createdBy = createdBy;
     }
 
-    @Override
-    public String toString() {
-        return "Appointment{" +
-                "appointmentId=" + appointmentId +
-                ", customer=" + customer +
-                ", date=" + date +
-                ", tandem=" + tandem +
-                ", video=" + video +
-                ", state=" + state +
-                ", createdOn=" + createdOn +
-                ", createdBy='" + createdBy + '\'' +
-                '}';
+    public String getClientId() {
+        return clientId;
     }
+
+    public void setClientId(String clientId) {
+        this.clientId = clientId;
+    }
+
 }

@@ -1,6 +1,6 @@
 package in.skdv.skdvinbackend.service.impl;
 
-import in.skdv.skdvinbackend.model.Sequence;
+import in.skdv.skdvinbackend.model.entity.Sequence;
 import in.skdv.skdvinbackend.service.ISequenceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.FindAndModifyOptions;

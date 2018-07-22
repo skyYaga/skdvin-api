@@ -1,8 +1,8 @@
 package in.skdv.skdvinbackend;
 
-import in.skdv.skdvinbackend.model.Appointment;
-import in.skdv.skdvinbackend.model.AppointmentState;
-import in.skdv.skdvinbackend.model.Customer;
+import in.skdv.skdvinbackend.model.entity.Appointment;
+import in.skdv.skdvinbackend.model.entity.AppointmentState;
+import in.skdv.skdvinbackend.model.entity.Customer;
 
 import java.time.LocalDateTime;
 
