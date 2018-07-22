@@ -1,11 +1,13 @@
 package in.skdv.skdvinbackend.model;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 
+@Document
 public class Appointment {
 
     @Id
