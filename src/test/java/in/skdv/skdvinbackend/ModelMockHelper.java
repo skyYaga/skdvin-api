@@ -1,10 +1,9 @@
 package in.skdv.skdvinbackend;
 
-import in.skdv.skdvinbackend.model.entity.Appointment;
-import in.skdv.skdvinbackend.model.entity.AppointmentState;
-import in.skdv.skdvinbackend.model.entity.Customer;
+import in.skdv.skdvinbackend.model.entity.*;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 
 public class ModelMockHelper {
 
@@ -46,5 +45,9 @@ public class ModelMockHelper {
         appointment.setVideo(0);
 
         return appointment;
+    }
+
+    public static User createUser() {
+        return new User("max", "s3cr3t", "max@example.com", Collections.singletonList(Role.ROLE_USER));
     }
 }

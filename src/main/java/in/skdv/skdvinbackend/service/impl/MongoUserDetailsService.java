@@ -3,6 +3,7 @@ package in.skdv.skdvinbackend.service.impl;
 import in.skdv.skdvinbackend.model.entity.User;
 import in.skdv.skdvinbackend.repository.UserRepository;
 import in.skdv.skdvinbackend.service.IUserService;
+import in.skdv.skdvinbackend.util.EmailExistsException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -52,8 +53,18 @@ public class MongoUserDetailsService implements UserDetailsService, IUserService
 
 
     @Override
-    public User registerNewUser(User user) {
+    public User registerNewUser(User user) throws EmailExistsException {
+        if (emaiExist(user.getEmail())) {
+            throw new EmailExistsException("There is already an account with email: " + user.getEmail());
+        }
+
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         return userRepository.save(user);
     }
+
+    private boolean emaiExist(String email) {
+        User user = userRepository.findByEmail(email);
+        return user != null;
+    }
+
 }

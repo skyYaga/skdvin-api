@@ -3,6 +3,8 @@ package in.skdv.skdvinbackend.service.impl;
 import in.skdv.skdvinbackend.model.entity.Role;
 import in.skdv.skdvinbackend.model.entity.User;
 import in.skdv.skdvinbackend.repository.UserRepository;
+import in.skdv.skdvinbackend.util.EmailExistsException;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -37,7 +39,7 @@ public class MongoUserDetailsServiceTest {
     }
 
     @Test
-    public void testCreateUser() {
+    public void testCreateUser() throws EmailExistsException {
         User user = new User("user","password",
                 "user@example.com", Collections.singletonList(Role.ROLE_USER));
         User savedUser = userDetailsService.registerNewUser(user);
@@ -51,7 +53,22 @@ public class MongoUserDetailsServiceTest {
     }
 
     @Test
-    public void testLoadUser() {
+    public void testCreateUser_UserExists() throws EmailExistsException {
+        User user = new User("user","password",
+                "user@example.com", Collections.singletonList(Role.ROLE_USER));
+        User savedUser = userDetailsService.registerNewUser(user);
+
+        assertNotNull(savedUser);
+
+        try {
+            userDetailsService.registerNewUser(user);
+        } catch (EmailExistsException e) {
+            Assert.assertEquals(e.getLocalizedMessage(), "There is already an account with email: user@example.com");
+        }
+    }
+
+    @Test
+    public void testLoadUser() throws EmailExistsException {
         User user = new User("user","password",
                 "user@example.com", Collections.singletonList(Role.ROLE_USER));
         User savedUser = userDetailsService.registerNewUser(user);
