@@ -1,5 +1,6 @@
 package in.skdv.skdvinbackend.model.entity;
 
+import in.skdv.skdvinbackend.util.ValidEmail;
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -22,9 +23,11 @@ public class User {
     @NotEmpty
     private String password;
 
+    @ValidEmail
     @NotNull
     @NotEmpty
     private String email;
+    
     private List<Role> roles;
 
     public User() {}

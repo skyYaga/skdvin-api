@@ -63,7 +63,7 @@ public class MongoUserDetailsServiceTest {
         try {
             userDetailsService.registerNewUser(user);
         } catch (EmailExistsException e) {
-            Assert.assertEquals(e.getLocalizedMessage(), "There is already an account with email: user@example.com");
+            Assert.assertEquals("There is already an account with email: user@example.com", e.getLocalizedMessage());
         }
     }
 

@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @RestController
@@ -57,7 +58,7 @@ public class AppointmentController {
 
     private List<AppointmentDTO> convertToDto(List<Appointment> appointments) {
         if (appointments == null) {
-            return null;
+            return Collections.emptyList();
         }
         List<AppointmentDTO> appointmentDTOList = new ArrayList<>();
         appointments.forEach(a -> appointmentDTOList.add(this.convertToDto(a)));
