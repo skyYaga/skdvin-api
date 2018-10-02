@@ -1,7 +1,7 @@
 package in.skdv.skdvinbackend.controller.api;
 
-import in.skdv.skdvinbackend.model.entity.Appointment;
 import in.skdv.skdvinbackend.model.dto.AppointmentDTO;
+import in.skdv.skdvinbackend.model.entity.Appointment;
 import in.skdv.skdvinbackend.service.IAppointmentService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @RestController
@@ -48,18 +49,26 @@ public class AppointmentController {
     }
 
     private AppointmentDTO convertToDto(Appointment appointment) {
+        if (appointment == null) {
+            return null;
+        }
         return modelMapper.map(appointment, AppointmentDTO.class);
     }
 
 
     private List<AppointmentDTO> convertToDto(List<Appointment> appointments) {
+        if (appointments == null) {
+            return Collections.emptyList();
+        }
         List<AppointmentDTO> appointmentDTOList = new ArrayList<>();
         appointments.forEach(a -> appointmentDTOList.add(this.convertToDto(a)));
         return appointmentDTOList;
     }
 
     private Appointment convertToEntity(AppointmentDTO appointmentDto) {
+        if (appointmentDto == null) {
+            return null;
+        }
         return modelMapper.map(appointmentDto, Appointment.class);
     }
-
 }

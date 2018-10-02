@@ -1,10 +1,11 @@
 package in.skdv.skdvinbackend;
 
-import in.skdv.skdvinbackend.model.entity.Appointment;
-import in.skdv.skdvinbackend.model.entity.AppointmentState;
-import in.skdv.skdvinbackend.model.entity.Customer;
+import in.skdv.skdvinbackend.model.entity.*;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.Collections;
+import java.util.UUID;
 
 public class ModelMockHelper {
 
@@ -46,5 +47,18 @@ public class ModelMockHelper {
         appointment.setVideo(0);
 
         return appointment;
+    }
+
+    public static User createUser() {
+        return new User("max", "s3cr3t", "max@example.com", Collections.singletonList(Role.ROLE_USER));
+    }
+
+    public static User createUserWithVerificationToken() {
+        User user = createUser();
+        VerificationToken verificationToken = new VerificationToken();
+        verificationToken.setToken(UUID.randomUUID().toString());
+        verificationToken.setExpiryDate(LocalDateTime.now().plus(24, ChronoUnit.HOURS));
+        user.setVerificationToken(verificationToken);
+        return user;
     }
 }

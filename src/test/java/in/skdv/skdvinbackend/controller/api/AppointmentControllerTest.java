@@ -13,6 +13,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.mock.http.MockHttpOutputMessage;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
@@ -25,9 +26,8 @@ import java.util.Arrays;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertNotNull;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppContextSetup;
@@ -67,7 +67,8 @@ public class AppointmentControllerTest {
 
     @Before
     public void setup() {
-        this.mockMvc = webAppContextSetup(webApplicationContext).build();
+        this.mockMvc = webAppContextSetup(webApplicationContext)
+                        .apply(springSecurity()).build();
 
         appointmentRepository.deleteAll();
 
@@ -76,6 +77,7 @@ public class AppointmentControllerTest {
     }
 
     @Test
+    @WithMockUser
     public void testGetAll() throws Exception {
         mockMvc.perform(get("/api/appointments/"))
 //                .andDo(MockMvcResultHandlers.print())
@@ -86,6 +88,13 @@ public class AppointmentControllerTest {
     }
 
     @Test
+    public void testGetAllUnauthorized() throws Exception {
+        mockMvc.perform(get("/api/appointments/"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @WithMockUser
     public void testGetOne() throws Exception {
         Appointment appointment = appointmentService.saveAppointment(ModelMockHelper.createSingleAppointment());
 
@@ -97,6 +106,15 @@ public class AppointmentControllerTest {
     }
 
     @Test
+    public void testGetOneUnauthorized() throws Exception {
+        Appointment appointment = appointmentService.saveAppointment(ModelMockHelper.createSingleAppointment());
+
+        mockMvc.perform(get("/api/appointments/" + appointment.getAppointmentId()))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @WithMockUser
     public void testCreateNewAppointment() throws Exception {
         String appointmentJson = json(ModelMockHelper.createSingleAppointment());
 
@@ -109,6 +127,17 @@ public class AppointmentControllerTest {
     }
 
     @Test
+    public void testCreateNewAppointmentUnauthorized() throws Exception {
+        String appointmentJson = json(ModelMockHelper.createSingleAppointment());
+
+        mockMvc.perform(post("/api/appointments/")
+                .contentType(contentType)
+                .content(appointmentJson))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @WithMockUser
     public void testUpdateAppointment() throws Exception {
         Appointment appointment = appointmentService.findAppointments().get(0);
 
@@ -124,6 +153,21 @@ public class AppointmentControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.tandem", is(10)))
                 .andExpect(jsonPath("$.customer.firstName", is("Unitjane")));
+    }
+
+    @Test
+    public void testUpdateAppointmentUnauthorized() throws Exception {
+        Appointment appointment = appointmentService.findAppointments().get(0);
+
+        appointment.setTandem(10);
+        appointment.getCustomer().setFirstName("Unitjane");
+
+        String appointmentJson = json(appointment);
+
+        mockMvc.perform(put("/api/appointments/")
+                .contentType(contentType)
+                .content(appointmentJson))
+                .andExpect(status().isUnauthorized());
     }
 
     private String json(Object o) throws IOException {
