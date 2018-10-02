@@ -1,7 +1,9 @@
 package in.skdv.skdvinbackend.service.impl;
 
 import in.skdv.skdvinbackend.model.entity.User;
+import in.skdv.skdvinbackend.model.entity.VerificationToken;
 import in.skdv.skdvinbackend.repository.UserRepository;
+import in.skdv.skdvinbackend.service.IEmailService;
 import in.skdv.skdvinbackend.service.IUserService;
 import in.skdv.skdvinbackend.util.EmailExistsException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,17 +14,25 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class MongoUserDetailsService implements UserDetailsService, IUserService {
+
+    private static final int EXPIRATION_HOURS = 24;
 
     @Autowired
     private UserRepository userRepository;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private IEmailService emailService;
 
     /**
      * Locates the user based on the username. In the actual implementation, the search
@@ -58,8 +68,20 @@ public class MongoUserDetailsService implements UserDetailsService, IUserService
             throw new EmailExistsException("There is already an account with email: " + user.getEmail());
         }
 
+        user.setVerificationToken(generateVerificationToken());
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-        return userRepository.save(user);
+        User savedUser = userRepository.save(user);
+
+        emailService.sendUserRegistrationToken(savedUser);
+
+        return savedUser;
+    }
+
+    private VerificationToken generateVerificationToken() {
+        VerificationToken verificationToken = new VerificationToken();
+        verificationToken.setToken(UUID.randomUUID().toString());
+        verificationToken.setExpiryDate(LocalDateTime.now().plus(EXPIRATION_HOURS, ChronoUnit.HOURS));
+        return verificationToken;
     }
 
     private boolean emaiExist(String email) {

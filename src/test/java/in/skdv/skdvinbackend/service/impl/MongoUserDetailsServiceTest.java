@@ -15,6 +15,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import java.time.LocalDateTime;
 import java.util.Collections;
 
 import static org.junit.Assert.*;
@@ -41,7 +42,7 @@ public class MongoUserDetailsServiceTest {
     @Test
     public void testCreateUser() throws EmailExistsException {
         User user = new User("user","password",
-                "user@example.com", Collections.singletonList(Role.ROLE_USER));
+                "andy.skydiver@gmail.com", Collections.singletonList(Role.ROLE_USER));
         User savedUser = userDetailsService.registerNewUser(user);
 
         assertNotNull(savedUser);
@@ -49,6 +50,10 @@ public class MongoUserDetailsServiceTest {
         assertEquals(user.getUsername(), savedUser.getUsername());
         assertEquals(user.getEmail(), savedUser.getEmail());
         assertEquals(user.getRoles(), savedUser.getRoles());
+        assertFalse(savedUser.isEnabled());
+        assertNotNull("VerificationToken should not be null", savedUser.getVerificationToken());
+        assertNotNull("Token should not be null", savedUser.getVerificationToken().getToken());
+        assertTrue("Token expiration date should be in the future", savedUser.getVerificationToken().getExpiryDate().isAfter(LocalDateTime.now()));
         assertTrue(passwordEncoder.matches("password", savedUser.getPassword()));
     }
 

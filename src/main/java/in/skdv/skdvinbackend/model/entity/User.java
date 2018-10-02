@@ -30,6 +30,11 @@ public class User {
     
     private List<Role> roles;
 
+    private boolean enabled = false;
+    private VerificationToken verificationToken;
+
+
+
     public User() {}
 
     public User(String username, String password, String email, List<Role> roles) {
@@ -73,6 +78,22 @@ public class User {
 
     public void setRoles(List<Role> roles) {
         this.roles = roles;
+    }
+
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
+
+    public VerificationToken getVerificationToken() {
+        return verificationToken;
+    }
+
+    public void setVerificationToken(VerificationToken verificationToken) {
+        this.verificationToken = verificationToken;
     }
 
     @Override
