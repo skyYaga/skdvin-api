@@ -11,8 +11,6 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
-import java.util.Arrays;
-
 @Service
 public class EmailService implements IEmailService {
 
@@ -35,18 +33,20 @@ public class EmailService implements IEmailService {
     @Override
     public void sendUserRegistrationToken(User user) {
         SimpleMailMessage message = new SimpleMailMessage();
-        message.setTo(user.getEmail());
+        String toEmail = user.getEmail();
+
+        message.setTo(toEmail);
         message.setFrom(fromEmail);
         message.setSubject("Please confirm Registration");
         message.setText("Hi " + user.getUsername() + "!\n"
         + "Go to " + baseurl + USER_REGISTRATION_ENDPOINT + user.getVerificationToken().getToken() +
                 " to confirm registration.");
 
-        LOG.info("Sending user registration mail to " + Arrays.toString(message.getTo()));
+        LOG.info("Sending user registration mail to {0}", toEmail);
         try {
             mailSender.send(message);
         } catch (MailException e) {
-            LOG.error("Error sending mail: " + e);
+            LOG.error("Error sending mail: {0}", e);
         }
     }
 }

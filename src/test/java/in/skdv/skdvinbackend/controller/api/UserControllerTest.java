@@ -110,7 +110,7 @@ public class UserControllerTest {
     @Test
     @WithMockUser
     public void testCreateNewUser_InvalidEmail() throws Exception {
-        String userJson = json(new UserDTO("foo", "bar", "baz", Collections.singletonList(Role.ROLE_USER)));
+        String userJson = json(new UserDTO("foo", "baz", Collections.singletonList(Role.ROLE_USER)));
 
         mockMvc.perform(post("/api/user/")
                 .contentType(contentType)
