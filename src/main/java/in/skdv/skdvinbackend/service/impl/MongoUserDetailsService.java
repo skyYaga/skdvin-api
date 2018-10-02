@@ -59,7 +59,7 @@ public class MongoUserDetailsService implements UserDetailsService, IUserService
         user.getRoles().forEach(r -> authorities.add(new SimpleGrantedAuthority(String.valueOf(r))));
 
         return new org.springframework.security.core.userdetails.User(
-                user.getUsername(), user.getPassword(), authorities);
+                user.getUsername(), user.getPassword(), user.isEnabled(), true, true, true, authorities);
     }
 
 

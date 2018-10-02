@@ -56,6 +56,8 @@ public class MongoUserDetailsServiceTest {
         assertNotNull("Token should not be null", savedUser.getVerificationToken().getToken());
         assertTrue("Token expiration date should be in the future", savedUser.getVerificationToken().getExpiryDate().isAfter(LocalDateTime.now()));
         assertTrue(passwordEncoder.matches("password", savedUser.getPassword()));
+
+        assertFalse(userDetailsService.loadUserByUsername(user.getUsername()).isEnabled());
     }
 
     @Test
