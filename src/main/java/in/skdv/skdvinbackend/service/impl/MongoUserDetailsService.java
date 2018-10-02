@@ -1,11 +1,12 @@
 package in.skdv.skdvinbackend.service.impl;
 
+import in.skdv.skdvinbackend.exception.EmailExistsException;
+import in.skdv.skdvinbackend.exception.TokenExpiredException;
 import in.skdv.skdvinbackend.model.entity.User;
 import in.skdv.skdvinbackend.model.entity.VerificationToken;
 import in.skdv.skdvinbackend.repository.UserRepository;
 import in.skdv.skdvinbackend.service.IEmailService;
 import in.skdv.skdvinbackend.service.IUserService;
-import in.skdv.skdvinbackend.util.EmailExistsException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -75,6 +76,24 @@ public class MongoUserDetailsService implements UserDetailsService, IUserService
         emailService.sendUserRegistrationToken(savedUser);
 
         return savedUser;
+    }
+
+    @Override
+    public boolean hasVerificationToken(String token) {
+        User user = userRepository.findByVerificationTokenToken(token);
+        return user != null;
+    }
+
+    @Override
+    public User confirmRegistration(String token) throws TokenExpiredException {
+        User user = userRepository.findByVerificationTokenToken(token);
+        if (user != null && user.getVerificationToken().getExpiryDate().isAfter(LocalDateTime.now())) {
+            user.setEnabled(true);
+            user.setVerificationToken(null);
+            return userRepository.save(user);
+        } else {
+            throw new TokenExpiredException("This token is expired or invalid: " + token);
+        }
     }
 
     private VerificationToken generateVerificationToken() {

@@ -3,6 +3,7 @@ package in.skdv.skdvinbackend.controller.api;
 import in.skdv.skdvinbackend.ModelMockHelper;
 import in.skdv.skdvinbackend.model.dto.UserDTO;
 import in.skdv.skdvinbackend.model.entity.Role;
+import in.skdv.skdvinbackend.model.entity.User;
 import in.skdv.skdvinbackend.repository.UserRepository;
 import in.skdv.skdvinbackend.service.IUserService;
 import org.junit.Before;
@@ -17,6 +18,7 @@ import org.springframework.mock.http.MockHttpOutputMessage;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.web.context.WebApplicationContext;
 
@@ -28,6 +30,7 @@ import java.util.Collections;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertNotNull;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -124,6 +127,31 @@ public class UserControllerTest {
                 .contentType(contentType)
                 .content(userJson))
                 .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @WithMockUser
+    public void testConfirmation() throws Exception {
+        User user = ModelMockHelper.createUser();
+        String userJson = json(user);
+
+        ResultActions resultActions = mockMvc.perform(post("/api/user/")
+                .contentType(contentType)
+                .content(userJson))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isCreated());
+
+        User savedUser = userRepository.findByUsername(user.getUsername());
+
+        mockMvc.perform(get("/api/user/confirm/" + savedUser.getVerificationToken().getToken()))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @WithMockUser
+    public void testConfirmation_TokenNotFound() throws Exception {
+        mockMvc.perform(get("/api/user/confirm/foo"))
+                .andExpect(status().isNotFound());
     }
 
     private String json(Object o) throws IOException {

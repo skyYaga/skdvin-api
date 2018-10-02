@@ -1,15 +1,14 @@
 package in.skdv.skdvinbackend.controller.api;
 
+import in.skdv.skdvinbackend.exception.EmailExistsException;
+import in.skdv.skdvinbackend.exception.TokenExpiredException;
 import in.skdv.skdvinbackend.model.dto.UserDTO;
+import in.skdv.skdvinbackend.model.dto.UserDtoIncoming;
 import in.skdv.skdvinbackend.model.entity.User;
 import in.skdv.skdvinbackend.service.IUserService;
-import in.skdv.skdvinbackend.util.EmailExistsException;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
@@ -27,7 +26,7 @@ public class UserController {
     }
 
     @PostMapping
-    UserDTO addUser(@RequestBody @Valid UserDTO input, HttpServletResponse response) {
+    UserDTO addUser(@RequestBody @Valid UserDtoIncoming input, HttpServletResponse response) {
 
         User user = null;
         response.setStatus(HttpServletResponse.SC_CREATED);
@@ -42,6 +41,30 @@ public class UserController {
         return convertToDto(user);
     }
 
+    @GetMapping("/confirm/{token}")
+    UserDTO confirmToken(@PathVariable String token, HttpServletResponse response) {
+        boolean hasToken = userService.hasVerificationToken(token);
+
+        if (!hasToken) {
+            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            return null;
+        }
+
+        User user = null;
+        try {
+            user = userService.confirmRegistration(token);
+            if (user == null) {
+                response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            } else {
+                response.setStatus(HttpServletResponse.SC_OK);
+            }
+        } catch (TokenExpiredException e) {
+            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+        }
+
+        return convertToDto(user);
+    }
+
     private UserDTO convertToDto(User user) {
         if (user == null) {
             return null;
@@ -49,7 +72,7 @@ public class UserController {
         return modelMapper.map(user, UserDTO.class);
     }
 
-    private User convertToEntity(UserDTO userDto) {
+    private User convertToEntity(UserDtoIncoming userDto) {
         if (userDto == null) {
             return null;
         }

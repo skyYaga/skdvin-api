@@ -1,10 +1,11 @@
 package in.skdv.skdvinbackend.service.impl;
 
+import in.skdv.skdvinbackend.ModelMockHelper;
+import in.skdv.skdvinbackend.exception.EmailExistsException;
+import in.skdv.skdvinbackend.exception.TokenExpiredException;
 import in.skdv.skdvinbackend.model.entity.Role;
 import in.skdv.skdvinbackend.model.entity.User;
 import in.skdv.skdvinbackend.repository.UserRepository;
-import in.skdv.skdvinbackend.util.EmailExistsException;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -68,7 +69,7 @@ public class MongoUserDetailsServiceTest {
         try {
             userDetailsService.registerNewUser(user);
         } catch (EmailExistsException e) {
-            Assert.assertEquals("There is already an account with email: user@example.com", e.getLocalizedMessage());
+            assertEquals("There is already an account with email: user@example.com", e.getLocalizedMessage());
         }
     }
 
@@ -80,6 +81,45 @@ public class MongoUserDetailsServiceTest {
 
         UserDetails loadedUser = userDetailsService.loadUserByUsername("user");
         assertNotNull(loadedUser);
+    }
+
+    @Test
+    public void testHasVerificationToken() throws EmailExistsException {
+        User user = ModelMockHelper.createUser();
+        User savedUser = userDetailsService.registerNewUser(user);
+
+        assertTrue(userDetailsService.hasVerificationToken(savedUser.getVerificationToken().getToken()));
+    }
+
+    @Test
+    public void testHasVerificationToken_NotFound() {
+        assertFalse(userDetailsService.hasVerificationToken("footoken"));
+    }
+
+    @Test
+    public void testConfirmRegistration() throws EmailExistsException, TokenExpiredException {
+        User user = ModelMockHelper.createUser();
+        User savedUser = userDetailsService.registerNewUser(user);
+        assertFalse(savedUser.isEnabled());
+
+        User verifiedUser = userDetailsService.confirmRegistration(savedUser.getVerificationToken().getToken());
+        assertNull(verifiedUser.getVerificationToken());
+        assertTrue(verifiedUser.isEnabled());
+    }
+
+    @Test
+    public void testConfirmRegistration_TokenExpired() throws EmailExistsException {
+        User user = ModelMockHelper.createUser();
+        User savedUser = userDetailsService.registerNewUser(user);
+        savedUser.getVerificationToken().setExpiryDate(LocalDateTime.now().minusHours(1));
+        userRepository.save(savedUser);
+
+        try {
+            userDetailsService.confirmRegistration(savedUser.getVerificationToken().getToken());
+        } catch (TokenExpiredException e) {
+            assertEquals("This token is expired or invalid: " + savedUser.getVerificationToken().getToken(),
+                    e.getLocalizedMessage());
+        }
     }
 
     @Test(expected = UsernameNotFoundException.class)

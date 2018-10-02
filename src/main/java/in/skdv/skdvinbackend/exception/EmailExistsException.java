@@ -1,4 +1,4 @@
-package in.skdv.skdvinbackend.util;
+package in.skdv.skdvinbackend.exception;
 
 public class EmailExistsException extends Exception {
 

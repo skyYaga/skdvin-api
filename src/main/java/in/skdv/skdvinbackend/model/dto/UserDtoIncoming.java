@@ -7,11 +7,15 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.util.List;
 
-public class UserDTO {
+public class UserDtoIncoming {
 
     @NotNull
     @NotEmpty
     private String username;
+
+    @NotNull
+    @NotEmpty
+    private String password;
 
     @ValidEmail
     @NotNull
@@ -20,10 +24,11 @@ public class UserDTO {
 
     private List<Role> roles;
 
-    public UserDTO() {}
+    public UserDtoIncoming() {}
 
-    public UserDTO(String username, String password, String email, List<Role> roles) {
+    public UserDtoIncoming(String username, String password, String email, List<Role> roles) {
         this.username = username;
+        this.password = password;
         this.email = email;
         this.roles = roles;
     }
@@ -35,6 +40,14 @@ public class UserDTO {
 
     public void setUsername(String username) {
         this.username = username;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     public String getEmail() {
