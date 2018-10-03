@@ -31,7 +31,8 @@ public class EmailConfig {
     @Bean
     private ResourceBundleMessageSource emailMessageSource() {
         ResourceBundleMessageSource messageSource = new ResourceBundleMessageSource();
-        messageSource.setBasename("mail/MailMessages");
+        messageSource.setDefaultEncoding(EMAIL_TEMPLATE_ENCODING);
+        messageSource.setBasename("mail/mail-messages");
         return messageSource;
     }
 

@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
@@ -41,7 +42,7 @@ public class EmailService implements IEmailService {
     public void sendUserRegistrationToken(User user) throws MessagingException {
         String toEmail = user.getEmail();
 
-        Context ctx = new Context();
+        Context ctx = new Context(LocaleContextHolder.getLocale());
         ctx.setVariable("username", user.getUsername());
         ctx.setVariable("tokenurl", baseurl + USER_REGISTRATION_ENDPOINT + user.getVerificationToken().getToken());
 

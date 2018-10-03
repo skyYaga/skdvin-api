@@ -8,6 +8,8 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
+import java.util.Locale;
+
 import static org.junit.Assert.assertEquals;
 
 @RunWith(SpringRunner.class)
@@ -20,8 +22,8 @@ public class EmailTemplateTest {
     private TemplateEngine emailTemplateEngine;
 
     @Test
-    public void testUserRegistrationMail() {
-        Context ctx = new Context();
+    public void testUserRegistrationMail_US() {
+        Context ctx = new Context(Locale.US);
         ctx.setVariable("username", "horst");
         ctx.setVariable("tokenurl", BASE_URL);
         String htmlMail = emailTemplateEngine.process("html/user-registration", ctx);
@@ -36,6 +38,27 @@ public class EmailTemplateTest {
                 "<p>Please click on the Link below to confirm your registration.</p>\n" +
                 "<a href=\"https://example.com\">https://example.com</a>\n" +
                 "<p>Regards</p>\n" +
+                "</body>\n" +
+                "</html>", htmlMail);
+    }
+
+    @Test
+    public void testUserRegistrationMail_DE() {
+        Context ctx = new Context(Locale.GERMANY);
+        ctx.setVariable("username", "horst");
+        ctx.setVariable("tokenurl", BASE_URL);
+        String htmlMail = emailTemplateEngine.process("html/user-registration", ctx);
+        assertEquals("<!DOCTYPE html>\n" +
+                "<html>\n" +
+                "<head>\n" +
+                "    \n" +
+                "    <meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\" />\n" +
+                "</head>\n" +
+                "<body>\n" +
+                "<p>Hallo horst!</p>\n" +
+                "<p>Bitte klicke auf den Link unten, um deine Registrierung abzuschließen.</p>\n" +
+                "<a href=\"https://example.com\">https://example.com</a>\n" +
+                "<p>Viele Grüße</p>\n" +
                 "</body>\n" +
                 "</html>", htmlMail);
     }

@@ -10,20 +10,25 @@ import in.skdv.skdvinbackend.service.IUserService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.mock.http.MockHttpOutputMessage;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.web.context.WebApplicationContext;
 
+import javax.mail.internet.MimeMessage;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.Arrays;
@@ -31,6 +36,9 @@ import java.util.Collections;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.verify;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -42,6 +50,9 @@ import static org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppC
 @SpringBootTest
 public class UserControllerTest {
 
+    private static final String FROM_EMAIL = "skdvin@example.com";
+    private static final String BASE_URL = "https://example.com";
+
     private MediaType contentType = new MediaType(MediaType.APPLICATION_JSON.getType(),
             MediaType.APPLICATION_JSON.getSubtype(),
             Charset.forName("utf8"));
@@ -51,6 +62,9 @@ public class UserControllerTest {
     private MockMvc mockMvc;
 
     @MockBean
+    private JavaMailSender mailSender;
+
+    @Autowired
     private IEmailService emailService;
 
     @Autowired
@@ -80,6 +94,10 @@ public class UserControllerTest {
                         .apply(springSecurity()).build();
 
         userRepository.deleteAll();
+
+        ReflectionTestUtils.setField(emailService, "fromEmail", FROM_EMAIL);
+        ReflectionTestUtils.setField(emailService, "baseurl", BASE_URL);
+        doReturn(new JavaMailSenderImpl().createMimeMessage()).when(mailSender).createMimeMessage();
     }
 
     @Test
@@ -164,6 +182,59 @@ public class UserControllerTest {
         this.mappingJackson2HttpMessageConverter.write(
                 o, MediaType.APPLICATION_JSON, mockHttpOutputMessage);
         return mockHttpOutputMessage.getBodyAsString();
+    }
+
+    @Test
+    @WithMockUser
+    public void testInternationalization_Default() throws Exception {
+        // By default the Locale should be GERMANY
+
+        String userJson = json(ModelMockHelper.createUser());
+
+        mockMvc.perform(post("/api/user/")
+                .contentType(contentType)
+                .content(userJson))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.username", is("max")));
+
+        ArgumentCaptor<MimeMessage> argument = ArgumentCaptor.forClass(MimeMessage.class);
+        verify(mailSender).send(argument.capture());
+        assertTrue("Mail contains German 'Hallo'", argument.getValue().getContent().toString().contains("Hallo"));
+    }
+
+    @Test
+    @WithMockUser
+    public void testInternationalization_UrlParamDE() throws Exception {
+        String userJson = json(ModelMockHelper.createUser());
+
+        mockMvc.perform(post("/api/user?lang=de")
+                .contentType(contentType)
+                .content(userJson))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.username", is("max")));
+
+        ArgumentCaptor<MimeMessage> argument = ArgumentCaptor.forClass(MimeMessage.class);
+        verify(mailSender).send(argument.capture());
+        assertTrue("Mail contains German 'Hallo'", argument.getValue().getContent().toString().contains("Hallo"));
+    }
+
+    @Test
+    @WithMockUser
+    public void testInternationalization_UrlParamEN() throws Exception {
+        String userJson = json(ModelMockHelper.createUser());
+
+        mockMvc.perform(post("/api/user?lang=en")
+                .contentType(contentType)
+                .content(userJson))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.username", is("max")));
+
+        ArgumentCaptor<MimeMessage> argument = ArgumentCaptor.forClass(MimeMessage.class);
+        verify(mailSender).send(argument.capture());
+        assertTrue("Mail contains English 'Hello'", argument.getValue().getContent().toString().contains("Hello"));
     }
 
 }
