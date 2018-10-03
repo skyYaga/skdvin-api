@@ -26,7 +26,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         http
             // Disable CSRF as it's a REST API
             .csrf().disable()
-            .authorizeRequests().anyRequest().authenticated()
+            .authorizeRequests()
+                .antMatchers("/api/user/resetpassword").permitAll()
+                .anyRequest().authenticated()
             .and().httpBasic()
             // Disable Session Management as it's a REST API
             .and().sessionManagement().disable();

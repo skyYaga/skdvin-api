@@ -35,8 +35,7 @@ import java.util.Arrays;
 import java.util.Collections;
 
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
@@ -177,13 +176,6 @@ public class UserControllerTest {
                 .andExpect(status().isNotFound());
     }
 
-    private String json(Object o) throws IOException {
-        MockHttpOutputMessage mockHttpOutputMessage = new MockHttpOutputMessage();
-        this.mappingJackson2HttpMessageConverter.write(
-                o, MediaType.APPLICATION_JSON, mockHttpOutputMessage);
-        return mockHttpOutputMessage.getBodyAsString();
-    }
-
     @Test
     @WithMockUser
     public void testInternationalization_Default() throws Exception {
@@ -235,6 +227,56 @@ public class UserControllerTest {
         ArgumentCaptor<MimeMessage> argument = ArgumentCaptor.forClass(MimeMessage.class);
         verify(mailSender).send(argument.capture());
         assertTrue("Mail contains English 'Hello'", argument.getValue().getContent().toString().contains("Hello"));
+    }
+
+    @Test
+    public void testResetPassword_DE() throws Exception {
+        User user = ModelMockHelper.createUser();
+        User savedUser = userRepository.save(user);
+
+        mockMvc.perform(post("/api/user/resetpassword?lang=de&email=" + savedUser.getEmail())
+                .contentType(contentType))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", is("Wir haben dir eine E-Mail mit einem Link zur Passwortwiederherstellung gesendet.")));
+
+        ArgumentCaptor<MimeMessage> argument = ArgumentCaptor.forClass(MimeMessage.class);
+        verify(mailSender).send(argument.capture());
+        assertEquals("Information zum Passwort Reset", argument.getValue().getSubject());
+        assertTrue("Mail contains German 'Hallo'", argument.getValue().getContent().toString().contains("Hallo"));
+    }
+
+    @Test
+    public void testResetPassword_EN() throws Exception {
+        User user = ModelMockHelper.createUser();
+        User savedUser = userRepository.save(user);
+
+        mockMvc.perform(post("/api/user/resetpassword?lang=en&email=" + savedUser.getEmail())
+                .contentType(contentType))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", is("We've sent you an email containing a link for password recovery.")));
+
+        ArgumentCaptor<MimeMessage> argument = ArgumentCaptor.forClass(MimeMessage.class);
+        verify(mailSender).send(argument.capture());
+        assertEquals("Password reset information", argument.getValue().getSubject());
+        assertTrue("Mail contains English 'Hello'", argument.getValue().getContent().toString().contains("Hello"));
+    }
+
+    @Test
+    public void testResetPassword_EmailNotFound() throws Exception {
+        mockMvc.perform(post("/api/user/resetpassword?lang=en&email=notexisting@example.com")
+                .contentType(contentType))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isNotFound());
+    }
+
+
+    private String json(Object o) throws IOException {
+        MockHttpOutputMessage mockHttpOutputMessage = new MockHttpOutputMessage();
+        this.mappingJackson2HttpMessageConverter.write(
+                o, MediaType.APPLICATION_JSON, mockHttpOutputMessage);
+        return mockHttpOutputMessage.getBodyAsString();
     }
 
 }

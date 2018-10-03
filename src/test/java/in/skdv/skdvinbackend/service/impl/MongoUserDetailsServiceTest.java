@@ -134,4 +134,30 @@ public class MongoUserDetailsServiceTest {
     public void testLoadNotExistingUser() {
         userDetailsService.loadUserByUsername("notExisting");
     }
+
+    @Test
+    public void testFindByEmail() throws EmailExistsException, MessagingException {
+        User user = ModelMockHelper.createUser();
+        User savedUser = userDetailsService.registerNewUser(user);
+
+        User foundUser = userDetailsService.findUserByEmail(savedUser.getEmail());
+        assertNotNull(foundUser);
+    }
+
+    @Test
+    public void testFindByEmail_NotExisting() {
+        User foundUser = userDetailsService.findUserByEmail("foo@example.com");
+        assertNull(foundUser);
+    }
+
+    @Test
+    public void testSendPasswordResetToken() throws EmailExistsException, MessagingException {
+        User user = ModelMockHelper.createUser();
+        User savedUser = userDetailsService.registerNewUser(user);
+
+        User resetUser = userDetailsService.sendPasswordResetToken(user);
+        assertNotNull("PasswordResetToken should not be null", resetUser.getPasswordResetToken());
+        assertNotNull("Token should not be null", resetUser.getPasswordResetToken().getToken());
+        assertTrue("Token expiration date should be in the future", savedUser.getPasswordResetToken().getExpiryDate().isAfter(LocalDateTime.now()));
+    }
 }

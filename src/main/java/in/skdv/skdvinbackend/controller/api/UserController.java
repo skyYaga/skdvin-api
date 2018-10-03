@@ -7,7 +7,12 @@ import in.skdv.skdvinbackend.model.dto.UserDtoIncoming;
 import in.skdv.skdvinbackend.model.entity.User;
 import in.skdv.skdvinbackend.service.IUserService;
 import org.modelmapper.ModelMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.mail.MessagingException;
@@ -18,8 +23,13 @@ import javax.validation.Valid;
 @RequestMapping("/api/user")
 public class UserController {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(UserController.class);
+
     private IUserService userService;
     private ModelMapper modelMapper = new ModelMapper();
+
+    @Autowired
+    private MessageSource messageSource;
 
     @Autowired
     public UserController(IUserService userService) {
@@ -35,13 +45,33 @@ public class UserController {
         try {
             user = userService.registerNewUser(convertToEntity(input));
         } catch (EmailExistsException e) {
+            LOGGER.warn("E-Mail already exists", e);
             response.setStatus(HttpServletResponse.SC_CONFLICT);
         } catch (MessagingException e) {
+            LOGGER.error("Error sending registration mail", e);
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         }
 
         // do not return pw
         return convertToDto(user);
+    }
+
+    @PostMapping("/resetpassword")
+    ResponseEntity<?> resetPassword(@RequestParam("email") String email) {
+
+        User user = userService.findUserByEmail(email);
+        if (user == null) {
+            LOGGER.warn("E-Mail address {0} not found", email);
+            return ResponseEntity.notFound().build();
+        }
+
+        try {
+            userService.sendPasswordResetToken(user);
+            return ResponseEntity.ok(messageSource.getMessage("user.resetPassword", null, LocaleContextHolder.getLocale()));
+        } catch (MessagingException e) {
+            LOGGER.error("Error sending password reset mail", e);
+            return ResponseEntity.status(HttpServletResponse.SC_INTERNAL_SERVER_ERROR).build();
+        }
     }
 
     @GetMapping("/confirm/{token}")

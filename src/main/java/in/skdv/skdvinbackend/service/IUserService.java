@@ -13,4 +13,7 @@ public interface IUserService {
 
     User confirmRegistration(String token) throws TokenExpiredException;
 
+    User findUserByEmail(String email);
+
+    User sendPasswordResetToken(User user) throws MessagingException;
 }

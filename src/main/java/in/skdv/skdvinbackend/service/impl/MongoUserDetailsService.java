@@ -97,6 +97,21 @@ public class MongoUserDetailsService implements UserDetailsService, IUserService
         }
     }
 
+    @Override
+    public User findUserByEmail(String email) {
+        return userRepository.findByEmail(email);
+    }
+
+    @Override
+    public User sendPasswordResetToken(User user) throws MessagingException {
+        user.setPasswordResetToken(generateVerificationToken());
+        User savedUser = userRepository.save(user);
+
+        emailService.sendPasswordResetToken(savedUser);
+
+        return savedUser;
+    }
+
     private VerificationToken generateVerificationToken() {
         VerificationToken verificationToken = new VerificationToken();
         verificationToken.setToken(UUID.randomUUID().toString());

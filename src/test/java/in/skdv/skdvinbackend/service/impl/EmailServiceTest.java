@@ -10,6 +10,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.MessageSource;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -38,16 +39,19 @@ public class EmailServiceTest {
     @Autowired
     private TemplateEngine emailTemplateEngine;
 
+    @Autowired
+    private MessageSource emailMessageSource;
+
     @Before
     public void setup() {
         mailSender = spy(new JavaMailSenderImpl());
-        emailService = new EmailService(mailSender, emailTemplateEngine);
+        emailService = new EmailService(mailSender, emailTemplateEngine, emailMessageSource);
         ReflectionTestUtils.setField(emailService, "fromEmail", FROM_EMAIL);
         ReflectionTestUtils.setField(emailService, "baseurl", BASE_URL);
     }
 
     @Test
-    public void test() throws MessagingException, IOException {
+    public void testRegistrationMail() throws MessagingException, IOException {
         doNothing().when(mailSender).send(Mockito.any(MimeMessage.class));
 
         User user = ModelMockHelper.createUserWithVerificationToken();
@@ -61,6 +65,24 @@ public class EmailServiceTest {
 
         Pattern pattern = Pattern.compile(".*" + user.getUsername() +
                 ".*" + BASE_URL + "/api/user/confirm/[A-Za-z0-9-]{36}.*", Pattern.DOTALL);
+        assertTrue(pattern.matcher(argument.getValue().getContent().toString()).matches());
+    }
+
+    @Test
+    public void testPasswordResetMail() throws MessagingException, IOException {
+        doNothing().when(mailSender).send(Mockito.any(MimeMessage.class));
+
+        User user = ModelMockHelper.createUserWithPasswordResetToken();
+        emailService.sendPasswordResetToken(user);
+
+        ArgumentCaptor<MimeMessage> argument = ArgumentCaptor.forClass(MimeMessage.class);
+        verify(mailSender).send(argument.capture());
+
+        assertEquals(FROM_EMAIL, argument.getValue().getFrom()[0].toString());
+        assertEquals(user.getEmail(), argument.getValue().getAllRecipients()[0].toString());
+
+        Pattern pattern = Pattern.compile(".*" + user.getUsername() +
+                ".*" + BASE_URL + "/api/user/resetpassword/[A-Za-z0-9-]{36}.*", Pattern.DOTALL);
         assertTrue(pattern.matcher(argument.getValue().getContent().toString()).matches());
     }
 }
