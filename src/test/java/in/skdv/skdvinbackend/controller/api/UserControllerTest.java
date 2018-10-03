@@ -5,12 +5,14 @@ import in.skdv.skdvinbackend.model.dto.UserDTO;
 import in.skdv.skdvinbackend.model.entity.Role;
 import in.skdv.skdvinbackend.model.entity.User;
 import in.skdv.skdvinbackend.repository.UserRepository;
+import in.skdv.skdvinbackend.service.IEmailService;
 import in.skdv.skdvinbackend.service.IUserService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
@@ -47,6 +49,9 @@ public class UserControllerTest {
     private HttpMessageConverter mappingJackson2HttpMessageConverter;
 
     private MockMvc mockMvc;
+
+    @MockBean
+    private IEmailService emailService;
 
     @Autowired
     private UserRepository userRepository;

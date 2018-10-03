@@ -10,6 +10,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.mail.MessagingException;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
@@ -35,6 +36,8 @@ public class UserController {
             user = userService.registerNewUser(convertToEntity(input));
         } catch (EmailExistsException e) {
             response.setStatus(HttpServletResponse.SC_CONFLICT);
+        } catch (MessagingException e) {
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         }
 
         // do not return pw

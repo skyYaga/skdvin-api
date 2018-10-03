@@ -6,16 +6,19 @@ import in.skdv.skdvinbackend.exception.TokenExpiredException;
 import in.skdv.skdvinbackend.model.entity.Role;
 import in.skdv.skdvinbackend.model.entity.User;
 import in.skdv.skdvinbackend.repository.UserRepository;
+import in.skdv.skdvinbackend.service.IEmailService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import javax.mail.MessagingException;
 import java.time.LocalDateTime;
 import java.util.Collections;
 
@@ -24,6 +27,9 @@ import static org.junit.Assert.*;
 @RunWith(SpringRunner.class)
 @SpringBootTest
 public class MongoUserDetailsServiceTest {
+
+    @MockBean
+    private IEmailService emailService;
 
     @Autowired
     private MongoUserDetailsService userDetailsService;
@@ -41,7 +47,7 @@ public class MongoUserDetailsServiceTest {
     }
 
     @Test
-    public void testCreateUser() throws EmailExistsException {
+    public void testCreateUser() throws EmailExistsException, MessagingException {
         User user = new User("user","password",
                 "andy.skydiver@gmail.com", Collections.singletonList(Role.ROLE_USER));
         User savedUser = userDetailsService.registerNewUser(user);
@@ -61,7 +67,7 @@ public class MongoUserDetailsServiceTest {
     }
 
     @Test
-    public void testCreateUser_UserExists() throws EmailExistsException {
+    public void testCreateUser_UserExists() throws EmailExistsException, MessagingException {
         User user = new User("user","password",
                 "user@example.com", Collections.singletonList(Role.ROLE_USER));
         User savedUser = userDetailsService.registerNewUser(user);
@@ -76,7 +82,7 @@ public class MongoUserDetailsServiceTest {
     }
 
     @Test
-    public void testLoadUser() throws EmailExistsException {
+    public void testLoadUser() throws EmailExistsException, MessagingException {
         User user = new User("user","password",
                 "user@example.com", Collections.singletonList(Role.ROLE_USER));
         User savedUser = userDetailsService.registerNewUser(user);
@@ -86,7 +92,7 @@ public class MongoUserDetailsServiceTest {
     }
 
     @Test
-    public void testHasVerificationToken() throws EmailExistsException {
+    public void testHasVerificationToken() throws EmailExistsException, MessagingException {
         User user = ModelMockHelper.createUser();
         User savedUser = userDetailsService.registerNewUser(user);
 
@@ -99,7 +105,7 @@ public class MongoUserDetailsServiceTest {
     }
 
     @Test
-    public void testConfirmRegistration() throws EmailExistsException, TokenExpiredException {
+    public void testConfirmRegistration() throws EmailExistsException, TokenExpiredException, MessagingException {
         User user = ModelMockHelper.createUser();
         User savedUser = userDetailsService.registerNewUser(user);
         assertFalse(savedUser.isEnabled());
@@ -110,7 +116,7 @@ public class MongoUserDetailsServiceTest {
     }
 
     @Test
-    public void testConfirmRegistration_TokenExpired() throws EmailExistsException {
+    public void testConfirmRegistration_TokenExpired() throws EmailExistsException, MessagingException {
         User user = ModelMockHelper.createUser();
         User savedUser = userDetailsService.registerNewUser(user);
         savedUser.getVerificationToken().setExpiryDate(LocalDateTime.now().minusHours(1));

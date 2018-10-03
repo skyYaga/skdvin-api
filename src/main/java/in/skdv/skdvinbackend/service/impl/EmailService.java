@@ -6,10 +6,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.MailException;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
+import org.thymeleaf.TemplateEngine;
+import org.thymeleaf.context.Context;
+
+import javax.mail.MessagingException;
+import javax.mail.internet.MimeMessage;
 
 @Service
 public class EmailService implements IEmailService {
@@ -18,6 +22,7 @@ public class EmailService implements IEmailService {
     private static final String USER_REGISTRATION_ENDPOINT = "/api/user/confirm/";
 
     private JavaMailSender mailSender;
+    private TemplateEngine emailTemplateEngine;
 
     @Value("${skdvin.from}")
     private String fromEmail;
@@ -25,28 +30,33 @@ public class EmailService implements IEmailService {
     @Value("${skdvin.baseurl}")
     private String baseurl;
 
+
     @Autowired
-    EmailService(JavaMailSender mailSender) {
+    public EmailService(JavaMailSender mailSender, TemplateEngine emailTemplateEngine) {
         this.mailSender = mailSender;
+        this.emailTemplateEngine = emailTemplateEngine;
     }
 
     @Override
-    public void sendUserRegistrationToken(User user) {
-        SimpleMailMessage message = new SimpleMailMessage();
+    public void sendUserRegistrationToken(User user) throws MessagingException {
         String toEmail = user.getEmail();
 
-        message.setTo(toEmail);
-        message.setFrom(fromEmail);
+        Context ctx = new Context();
+        ctx.setVariable("username", user.getUsername());
+        ctx.setVariable("tokenurl", baseurl + USER_REGISTRATION_ENDPOINT + user.getVerificationToken().getToken());
+
+        MimeMessage mimeMessage = mailSender.createMimeMessage();
+        MimeMessageHelper message = new MimeMessageHelper(mimeMessage, "UTF-8");
+
         message.setSubject("Please confirm Registration");
-        message.setText("Hi " + user.getUsername() + "!\n"
-        + "Go to " + baseurl + USER_REGISTRATION_ENDPOINT + user.getVerificationToken().getToken() +
-                " to confirm registration.");
+        message.setFrom(fromEmail);
+        message.setTo(toEmail);
+
+        String htmlContent = emailTemplateEngine.process("html/user-registration", ctx);
+        message.setText(htmlContent, true);
 
         LOG.info("Sending user registration mail to {0}", toEmail);
-        try {
-            mailSender.send(message);
-        } catch (MailException e) {
-            LOG.error("Error sending mail: {0}", e);
-        }
+
+        mailSender.send(mimeMessage);
     }
 }
