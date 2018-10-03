@@ -15,6 +15,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import javax.mail.MessagingException;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -64,7 +65,7 @@ public class MongoUserDetailsService implements UserDetailsService, IUserService
 
 
     @Override
-    public User registerNewUser(User user) throws EmailExistsException {
+    public User registerNewUser(User user) throws EmailExistsException, MessagingException {
         if (emaiExist(user.getEmail())) {
             throw new EmailExistsException("There is already an account with email: " + user.getEmail());
         }

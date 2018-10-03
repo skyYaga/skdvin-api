@@ -10,9 +10,7 @@ import in.skdv.skdvinbackend.service.impl.MongoJumpdayService;
 import in.skdv.skdvinbackend.service.impl.SequenceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 
-@Configuration
 public class ApplicationConfig {
 
     @Autowired
