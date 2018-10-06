@@ -61,4 +61,13 @@ public class ModelMockHelper {
         user.setVerificationToken(verificationToken);
         return user;
     }
+
+    public static User createUserWithPasswordResetToken() {
+        User user = createUser();
+        VerificationToken verificationToken = new VerificationToken();
+        verificationToken.setToken(UUID.randomUUID().toString());
+        verificationToken.setExpiryDate(LocalDateTime.now().plus(24, ChronoUnit.HOURS));
+        user.setPasswordResetToken(verificationToken);
+        return user;
+    }
 }

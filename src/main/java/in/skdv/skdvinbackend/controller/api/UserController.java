@@ -2,12 +2,19 @@ package in.skdv.skdvinbackend.controller.api;
 
 import in.skdv.skdvinbackend.exception.EmailExistsException;
 import in.skdv.skdvinbackend.exception.TokenExpiredException;
+import in.skdv.skdvinbackend.model.dto.PasswordDto;
 import in.skdv.skdvinbackend.model.dto.UserDTO;
 import in.skdv.skdvinbackend.model.dto.UserDtoIncoming;
 import in.skdv.skdvinbackend.model.entity.User;
 import in.skdv.skdvinbackend.service.IUserService;
+import in.skdv.skdvinbackend.util.GenericResult;
 import org.modelmapper.ModelMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.mail.MessagingException;
@@ -18,8 +25,13 @@ import javax.validation.Valid;
 @RequestMapping("/api/user")
 public class UserController {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(UserController.class);
+
     private IUserService userService;
     private ModelMapper modelMapper = new ModelMapper();
+
+    @Autowired
+    private MessageSource messageSource;
 
     @Autowired
     public UserController(IUserService userService) {
@@ -35,8 +47,10 @@ public class UserController {
         try {
             user = userService.registerNewUser(convertToEntity(input));
         } catch (EmailExistsException e) {
+            LOGGER.warn("E-Mail already exists", e);
             response.setStatus(HttpServletResponse.SC_CONFLICT);
         } catch (MessagingException e) {
+            LOGGER.error("Error sending registration mail", e);
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         }
 
@@ -44,8 +58,45 @@ public class UserController {
         return convertToDto(user);
     }
 
+    @PostMapping("/resetpassword")
+    ResponseEntity resetPassword(@RequestParam("email") String email) {
+
+        User user = userService.findUserByEmail(email);
+        if (user == null) {
+            LOGGER.warn("E-Mail address {} not found", email);
+            return ResponseEntity.notFound().build();
+        }
+
+        GenericResult result = userService.sendPasswordResetToken(user);
+        if (result.isSuccess()) {
+            return ResponseEntity.ok(messageSource.getMessage(result.getMessage(), null, LocaleContextHolder.getLocale()));
+        } else {
+            LOGGER.error("Error sending password reset mail", result.getException());
+            return ResponseEntity.status(HttpServletResponse.SC_INTERNAL_SERVER_ERROR)
+                    .body(messageSource.getMessage(result.getMessage(), null, LocaleContextHolder.getLocale()));
+        }
+    }
+
+    @PostMapping("/changepassword/{token}")
+    ResponseEntity changePassword(@PathVariable String token, @RequestBody @Valid PasswordDto passwordDto) {
+
+        GenericResult<User> validationResult = userService.validatePasswordResetToken(token);
+        if (!validationResult.isSuccess()) {
+            LOGGER.error("Password reset token validation failed: {}", validationResult.getMessage());
+            return ResponseEntity.notFound().build();
+        }
+
+        GenericResult changePasswordResult = userService.changePassword(validationResult.getPayload(), passwordDto);
+        if (!changePasswordResult.isSuccess()) {
+            LOGGER.error("Password reset failed: {}", changePasswordResult.getMessage());
+            return ResponseEntity.status(HttpServletResponse.SC_INTERNAL_SERVER_ERROR).build();
+        }
+
+        return ResponseEntity.ok(messageSource.getMessage("user.changePassword.successful", null, LocaleContextHolder.getLocale()));
+    }
+
     @GetMapping("/confirm/{token}")
-    UserDTO confirmToken(@PathVariable String token, HttpServletResponse response) {
+    UserDTO confirmRegistrationToken(@PathVariable String token, HttpServletResponse response) {
         boolean hasToken = userService.hasVerificationToken(token);
 
         if (!hasToken) {

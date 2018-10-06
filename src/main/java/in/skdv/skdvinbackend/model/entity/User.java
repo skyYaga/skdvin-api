@@ -32,8 +32,7 @@ public class User {
 
     private boolean enabled = false;
     private VerificationToken verificationToken;
-
-
+    private VerificationToken passwordResetToken;
 
     public User() {}
 
@@ -94,6 +93,14 @@ public class User {
 
     public void setVerificationToken(VerificationToken verificationToken) {
         this.verificationToken = verificationToken;
+    }
+
+    public VerificationToken getPasswordResetToken() {
+        return passwordResetToken;
+    }
+
+    public void setPasswordResetToken(VerificationToken passwordResetToken) {
+        this.passwordResetToken = passwordResetToken;
     }
 
     @Override

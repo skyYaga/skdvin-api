@@ -3,6 +3,8 @@ package in.skdv.skdvinbackend.config;
 import in.skdv.skdvinbackend.service.IEmailService;
 import in.skdv.skdvinbackend.service.impl.EmailService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -24,12 +26,12 @@ public class EmailConfig {
 
     @Bean
     @Autowired
-    public IEmailService emailService(JavaMailSender mailSender, TemplateEngine emailTemplateEngine) {
-        return new EmailService(mailSender, emailTemplateEngine);
+    public IEmailService emailService(JavaMailSender mailSender, TemplateEngine emailTemplateEngine, @Qualifier("emailMessageSource") MessageSource emailMessageSource) {
+        return new EmailService(mailSender, emailTemplateEngine, emailMessageSource);
     }
 
-    @Bean
-    private ResourceBundleMessageSource emailMessageSource() {
+    @Bean(name = "emailMessageSource")
+    ResourceBundleMessageSource emailMessageSource() {
         ResourceBundleMessageSource messageSource = new ResourceBundleMessageSource();
         messageSource.setDefaultEncoding(EMAIL_TEMPLATE_ENCODING);
         messageSource.setBasename("mail/mail-messages");

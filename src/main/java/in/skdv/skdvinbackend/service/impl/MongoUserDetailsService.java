@@ -2,11 +2,15 @@ package in.skdv.skdvinbackend.service.impl;
 
 import in.skdv.skdvinbackend.exception.EmailExistsException;
 import in.skdv.skdvinbackend.exception.TokenExpiredException;
+import in.skdv.skdvinbackend.model.dto.PasswordDto;
 import in.skdv.skdvinbackend.model.entity.User;
 import in.skdv.skdvinbackend.model.entity.VerificationToken;
 import in.skdv.skdvinbackend.repository.UserRepository;
 import in.skdv.skdvinbackend.service.IEmailService;
 import in.skdv.skdvinbackend.service.IUserService;
+import in.skdv.skdvinbackend.util.GenericResult;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -24,6 +28,8 @@ import java.util.UUID;
 
 @Service
 public class MongoUserDetailsService implements UserDetailsService, IUserService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(MongoUserDetailsService.class);
 
     private static final int EXPIRATION_HOURS = 24;
 
@@ -95,6 +101,49 @@ public class MongoUserDetailsService implements UserDetailsService, IUserService
         } else {
             throw new TokenExpiredException("This token is expired or invalid: " + token);
         }
+    }
+
+    @Override
+    public User findUserByEmail(String email) {
+        return userRepository.findByEmail(email);
+    }
+
+    @Override
+    public GenericResult<User> sendPasswordResetToken(User user) {
+        user.setPasswordResetToken(generateVerificationToken());
+        User savedUser = userRepository.save(user);
+
+        try {
+            emailService.sendPasswordResetToken(savedUser);
+            GenericResult<User> result = new GenericResult<>(true, "user.resetPassword");
+            result.setPayload(savedUser);
+            return result;
+        } catch (MessagingException e) {
+            LOGGER.error("Error sending Password Reset Token: ", e);
+            return new GenericResult<>(false, "user.resetPassword.failed", e);
+        }
+    }
+
+    @Override
+    public GenericResult<User> validatePasswordResetToken(String token) {
+        User user = userRepository.findByPasswordResetTokenToken(token);
+
+        if (user != null) {
+
+            if (user.getPasswordResetToken().getExpiryDate().isAfter(LocalDateTime.now())) {
+                return new GenericResult<>(true, user);
+            }
+
+            return new GenericResult<>(false, "user.token.expired");
+        }
+        return new GenericResult<>(false, "user.token.notfound");
+    }
+
+    @Override
+    public GenericResult changePassword(User user, PasswordDto passwordDto) {
+        user.setPassword(passwordEncoder.encode(passwordDto.getNewPassword()));
+        userRepository.save(user);
+        return new GenericResult(true, "user.changepassword.successful");
     }
 
     private VerificationToken generateVerificationToken() {

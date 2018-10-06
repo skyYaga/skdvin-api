@@ -63,4 +63,46 @@ public class EmailTemplateTest {
                 "</html>", htmlMail);
     }
 
+    @Test
+    public void testPasswordResetMail_US() {
+        Context ctx = new Context(Locale.US);
+        ctx.setVariable("username", "horst");
+        ctx.setVariable("tokenurl", BASE_URL);
+        String htmlMail = emailTemplateEngine.process("html/user-password-reset", ctx);
+        assertEquals("<!DOCTYPE html>\n" +
+                "<html>\n" +
+                "<head>\n" +
+                "    \n" +
+                "    <meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\" />\n" +
+                "</head>\n" +
+                "<body>\n" +
+                "<p>Hello horst!</p>\n" +
+                "<p>Please click on the Link below to reset your password.</p>\n" +
+                "<a href=\"https://example.com\">https://example.com</a>\n" +
+                "<p>Regards</p>\n" +
+                "</body>\n" +
+                "</html>", htmlMail);
+    }
+
+    @Test
+    public void testPasswordResetMail_DE() {
+        Context ctx = new Context(Locale.GERMANY);
+        ctx.setVariable("username", "horst");
+        ctx.setVariable("tokenurl", BASE_URL);
+        String htmlMail = emailTemplateEngine.process("html/user-password-reset", ctx);
+        assertEquals("<!DOCTYPE html>\n" +
+                "<html>\n" +
+                "<head>\n" +
+                "    \n" +
+                "    <meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\" />\n" +
+                "</head>\n" +
+                "<body>\n" +
+                "<p>Hallo horst!</p>\n" +
+                "<p>Bitte klicke auf den Link unten, um dein Passwort zurückzusetzen.</p>\n" +
+                "<a href=\"https://example.com\">https://example.com</a>\n" +
+                "<p>Viele Grüße</p>\n" +
+                "</body>\n" +
+                "</html>", htmlMail);
+    }
+
 }

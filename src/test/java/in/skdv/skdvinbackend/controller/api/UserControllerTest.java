@@ -1,12 +1,14 @@
 package in.skdv.skdvinbackend.controller.api;
 
 import in.skdv.skdvinbackend.ModelMockHelper;
+import in.skdv.skdvinbackend.model.dto.PasswordDto;
 import in.skdv.skdvinbackend.model.dto.UserDTO;
 import in.skdv.skdvinbackend.model.entity.Role;
 import in.skdv.skdvinbackend.model.entity.User;
 import in.skdv.skdvinbackend.repository.UserRepository;
 import in.skdv.skdvinbackend.service.IEmailService;
 import in.skdv.skdvinbackend.service.IUserService;
+import in.skdv.skdvinbackend.util.GenericResult;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -35,8 +37,7 @@ import java.util.Arrays;
 import java.util.Collections;
 
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
@@ -177,13 +178,6 @@ public class UserControllerTest {
                 .andExpect(status().isNotFound());
     }
 
-    private String json(Object o) throws IOException {
-        MockHttpOutputMessage mockHttpOutputMessage = new MockHttpOutputMessage();
-        this.mappingJackson2HttpMessageConverter.write(
-                o, MediaType.APPLICATION_JSON, mockHttpOutputMessage);
-        return mockHttpOutputMessage.getBodyAsString();
-    }
-
     @Test
     @WithMockUser
     public void testInternationalization_Default() throws Exception {
@@ -235,6 +229,115 @@ public class UserControllerTest {
         ArgumentCaptor<MimeMessage> argument = ArgumentCaptor.forClass(MimeMessage.class);
         verify(mailSender).send(argument.capture());
         assertTrue("Mail contains English 'Hello'", argument.getValue().getContent().toString().contains("Hello"));
+    }
+
+    @Test
+    public void testResetPassword_DE() throws Exception {
+        User user = ModelMockHelper.createUser();
+        User savedUser = userRepository.save(user);
+
+        mockMvc.perform(post("/api/user/resetpassword?lang=de&email=" + savedUser.getEmail())
+                .contentType(contentType))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", is("Wir haben dir eine E-Mail mit einem Link zur Passwortwiederherstellung gesendet.")));
+
+        ArgumentCaptor<MimeMessage> argument = ArgumentCaptor.forClass(MimeMessage.class);
+        verify(mailSender).send(argument.capture());
+        assertEquals("Information zum Passwort Reset", argument.getValue().getSubject());
+        assertTrue("Mail contains German 'Hallo'", argument.getValue().getContent().toString().contains("Hallo"));
+    }
+
+    @Test
+    public void testResetPassword_EN() throws Exception {
+        User user = ModelMockHelper.createUser();
+        User savedUser = userRepository.save(user);
+
+        mockMvc.perform(post("/api/user/resetpassword?lang=en&email=" + savedUser.getEmail())
+                .contentType(contentType))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", is("We've sent you an email containing a link for password recovery.")));
+
+        ArgumentCaptor<MimeMessage> argument = ArgumentCaptor.forClass(MimeMessage.class);
+        verify(mailSender).send(argument.capture());
+        assertEquals("Password reset information", argument.getValue().getSubject());
+        assertTrue("Mail contains English 'Hello'", argument.getValue().getContent().toString().contains("Hello"));
+    }
+
+    @Test
+    public void testResetPassword_EmailNotFound() throws Exception {
+        mockMvc.perform(post("/api/user/resetpassword?lang=en&email=notexisting@example.com")
+                .contentType(contentType))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void testChangePassword() throws Exception {
+        User user = ModelMockHelper.createUser();
+        User savedUser = userRepository.save(user);
+        GenericResult<User> userWithToken = userService.sendPasswordResetToken(savedUser);
+
+        PasswordDto passwordDto = new PasswordDto();
+        passwordDto.setNewPassword("foo");
+        String passwordJson = json(passwordDto);
+
+        mockMvc.perform(post("/api/user/changepassword/" + userWithToken.getPayload().getPasswordResetToken().getToken() + "?lang=en")
+                .content(passwordJson)
+                .contentType(contentType))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", is("Password changed successfully.")));
+    }
+
+    @Test
+    public void testChangePassword_InvalidToken() throws Exception {
+        PasswordDto passwordDto = new PasswordDto();
+        passwordDto.setNewPassword("foo");
+        String passwordJson = json(passwordDto);
+
+        mockMvc.perform(post("/api/user/changepassword/footoken")
+                .content(passwordJson)
+                .contentType(contentType))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void testChangePassword_NoPasswordSet1() throws Exception {
+        User user = ModelMockHelper.createUser();
+        User savedUser = userRepository.save(user);
+        GenericResult<User> userWithToken = userService.sendPasswordResetToken(savedUser);
+
+        mockMvc.perform(post("/api/user/changepassword/" + userWithToken.getPayload().getPasswordResetToken().getToken())
+                .contentType(contentType))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void testChangePassword_NoPasswordSet2() throws Exception {
+        User user = ModelMockHelper.createUser();
+        User savedUser = userRepository.save(user);
+        GenericResult<User> userWithToken = userService.sendPasswordResetToken(savedUser);
+
+        PasswordDto passwordDto = new PasswordDto();
+        String passwordJson = json(passwordDto);
+
+        mockMvc.perform(post("/api/user/changepassword/" + userWithToken.getPayload().getPasswordResetToken().getToken())
+                .content(passwordJson)
+                .contentType(contentType))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isBadRequest());
+    }
+
+
+    private String json(Object o) throws IOException {
+        MockHttpOutputMessage mockHttpOutputMessage = new MockHttpOutputMessage();
+        this.mappingJackson2HttpMessageConverter.write(
+                o, MediaType.APPLICATION_JSON, mockHttpOutputMessage);
+        return mockHttpOutputMessage.getBodyAsString();
     }
 
 }
