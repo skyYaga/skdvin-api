@@ -9,6 +9,8 @@ import in.skdv.skdvinbackend.repository.UserRepository;
 import in.skdv.skdvinbackend.service.IEmailService;
 import in.skdv.skdvinbackend.service.IUserService;
 import in.skdv.skdvinbackend.util.GenericResult;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -26,6 +28,8 @@ import java.util.UUID;
 
 @Service
 public class MongoUserDetailsService implements UserDetailsService, IUserService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(MongoUserDetailsService.class);
 
     private static final int EXPIRATION_HOURS = 24;
 
@@ -105,13 +109,19 @@ public class MongoUserDetailsService implements UserDetailsService, IUserService
     }
 
     @Override
-    public User sendPasswordResetToken(User user) throws MessagingException {
+    public GenericResult<User> sendPasswordResetToken(User user) {
         user.setPasswordResetToken(generateVerificationToken());
         User savedUser = userRepository.save(user);
 
-        emailService.sendPasswordResetToken(savedUser);
-
-        return savedUser;
+        try {
+            emailService.sendPasswordResetToken(savedUser);
+            GenericResult<User> result = new GenericResult<>(true, "user.resetPassword");
+            result.setPayload(savedUser);
+            return result;
+        } catch (MessagingException e) {
+            LOGGER.error("Error sending Password Reset Token: ", e);
+            return new GenericResult<>(false, "user.resetPassword.failed", e);
+        }
     }
 
     @Override

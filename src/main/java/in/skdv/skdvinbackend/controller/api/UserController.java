@@ -59,35 +59,36 @@ public class UserController {
     }
 
     @PostMapping("/resetpassword")
-    ResponseEntity<?> resetPassword(@RequestParam("email") String email) {
+    ResponseEntity resetPassword(@RequestParam("email") String email) {
 
         User user = userService.findUserByEmail(email);
         if (user == null) {
-            LOGGER.warn("E-Mail address {0} not found", email);
+            LOGGER.warn("E-Mail address {} not found", email);
             return ResponseEntity.notFound().build();
         }
 
-        try {
-            userService.sendPasswordResetToken(user);
-            return ResponseEntity.ok(messageSource.getMessage("user.resetPassword", null, LocaleContextHolder.getLocale()));
-        } catch (MessagingException e) {
-            LOGGER.error("Error sending password reset mail", e);
-            return ResponseEntity.status(HttpServletResponse.SC_INTERNAL_SERVER_ERROR).build();
+        GenericResult result = userService.sendPasswordResetToken(user);
+        if (result.isSuccess()) {
+            return ResponseEntity.ok(messageSource.getMessage(result.getMessage(), null, LocaleContextHolder.getLocale()));
+        } else {
+            LOGGER.error("Error sending password reset mail", result.getException());
+            return ResponseEntity.status(HttpServletResponse.SC_INTERNAL_SERVER_ERROR)
+                    .body(messageSource.getMessage(result.getMessage(), null, LocaleContextHolder.getLocale()));
         }
     }
 
     @PostMapping("/changepassword/{token}")
-    ResponseEntity<?> changePassword(@PathVariable String token, @RequestBody @Valid PasswordDto passwordDto) {
+    ResponseEntity changePassword(@PathVariable String token, @RequestBody @Valid PasswordDto passwordDto) {
 
         GenericResult<User> validationResult = userService.validatePasswordResetToken(token);
         if (!validationResult.isSuccess()) {
-            LOGGER.error("Password reset token validation failed: {0}", validationResult.getMessage());
+            LOGGER.error("Password reset token validation failed: {}", validationResult.getMessage());
             return ResponseEntity.notFound().build();
         }
 
         GenericResult changePasswordResult = userService.changePassword(validationResult.getPayload(), passwordDto);
         if (!changePasswordResult.isSuccess()) {
-            LOGGER.error("Password reset failed: {0}", changePasswordResult.getMessage());
+            LOGGER.error("Password reset failed: {}", changePasswordResult.getMessage());
             return ResponseEntity.status(HttpServletResponse.SC_INTERNAL_SERVER_ERROR).build();
         }
 

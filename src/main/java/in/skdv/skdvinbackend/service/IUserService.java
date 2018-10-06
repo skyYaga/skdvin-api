@@ -17,7 +17,7 @@ public interface IUserService {
 
     User findUserByEmail(String email);
 
-    User sendPasswordResetToken(User user) throws MessagingException;
+    GenericResult<User> sendPasswordResetToken(User user);
 
     GenericResult<User> validatePasswordResetToken(String token);
 

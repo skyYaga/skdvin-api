@@ -5,6 +5,7 @@ import in.skdv.skdvinbackend.service.IEmailService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
@@ -37,7 +38,7 @@ public class EmailService implements IEmailService {
 
 
     @Autowired
-    public EmailService(JavaMailSender mailSender, TemplateEngine emailTemplateEngine, MessageSource emailMessageSource) {
+    public EmailService(JavaMailSender mailSender, TemplateEngine emailTemplateEngine, @Qualifier("emailMessageSource") MessageSource emailMessageSource) {
         this.mailSender = mailSender;
         this.emailTemplateEngine = emailTemplateEngine;
         this.emailMessageSource = emailMessageSource;
@@ -86,7 +87,7 @@ public class EmailService implements IEmailService {
         String htmlContent = emailTemplateEngine.process("html/user-password-reset", ctx);
         message.setText(htmlContent, true);
 
-        LOG.info("Sending password reset mail to {0}", toEmail);
+        LOG.info("Sending password reset mail to {}", toEmail);
 
         mailSender.send(mimeMessage);
     }

@@ -157,18 +157,18 @@ public class MongoUserDetailsServiceTest {
         User user = ModelMockHelper.createUser();
         User savedUser = userDetailsService.registerNewUser(user);
 
-        User resetUser = userDetailsService.sendPasswordResetToken(user);
-        assertNotNull("PasswordResetToken should not be null", resetUser.getPasswordResetToken());
-        assertNotNull("Token should not be null", resetUser.getPasswordResetToken().getToken());
+        GenericResult<User> resetUser = userDetailsService.sendPasswordResetToken(user);
+        assertNotNull("PasswordResetToken should not be null", resetUser.getPayload().getPasswordResetToken());
+        assertNotNull("Token should not be null", resetUser.getPayload().getPasswordResetToken().getToken());
         assertTrue("Token expiration date should be in the future", savedUser.getPasswordResetToken().getExpiryDate().isAfter(LocalDateTime.now()));
     }
 
     @Test
-    public void testValidatePasswordResetToken() throws MessagingException {
+    public void testValidatePasswordResetToken() {
         User user = ModelMockHelper.createUser();
-        User userWithPwToken = userDetailsService.sendPasswordResetToken(user);
+        GenericResult<User> userWithPwToken = userDetailsService.sendPasswordResetToken(user);
 
-        GenericResult<User> result = userDetailsService.validatePasswordResetToken(userWithPwToken.getPasswordResetToken().getToken());
+        GenericResult<User> result = userDetailsService.validatePasswordResetToken(userWithPwToken.getPayload().getPasswordResetToken().getToken());
 
         assertTrue(result.isSuccess());
         assertNotNull(result.getPayload());
@@ -183,13 +183,14 @@ public class MongoUserDetailsServiceTest {
     }
 
     @Test
-    public void testValidatePasswordResetToken_TokenExpired() throws MessagingException {
+    public void testValidatePasswordResetToken_TokenExpired() {
         User user = ModelMockHelper.createUser();
-        User userWithPwToken = userDetailsService.sendPasswordResetToken(user);
+        GenericResult<User> result = userDetailsService.sendPasswordResetToken(user);
+        User userWithPwToken = result.getPayload();
         userWithPwToken.getPasswordResetToken().setExpiryDate(LocalDateTime.now().minusHours(1));
         userRepository.save(userWithPwToken);
 
-        GenericResult<User> result = userDetailsService.validatePasswordResetToken(userWithPwToken.getPasswordResetToken().getToken());
+        result = userDetailsService.validatePasswordResetToken(userWithPwToken.getPasswordResetToken().getToken());
 
         assertFalse(result.isSuccess());
         assertEquals("user.token.expired", result.getMessage());
