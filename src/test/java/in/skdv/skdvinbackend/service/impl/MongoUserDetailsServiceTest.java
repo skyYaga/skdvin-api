@@ -3,10 +3,12 @@ package in.skdv.skdvinbackend.service.impl;
 import in.skdv.skdvinbackend.ModelMockHelper;
 import in.skdv.skdvinbackend.exception.EmailExistsException;
 import in.skdv.skdvinbackend.exception.TokenExpiredException;
+import in.skdv.skdvinbackend.model.dto.PasswordDto;
 import in.skdv.skdvinbackend.model.entity.Role;
 import in.skdv.skdvinbackend.model.entity.User;
 import in.skdv.skdvinbackend.repository.UserRepository;
 import in.skdv.skdvinbackend.service.IEmailService;
+import in.skdv.skdvinbackend.util.GenericResult;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -159,5 +161,59 @@ public class MongoUserDetailsServiceTest {
         assertNotNull("PasswordResetToken should not be null", resetUser.getPasswordResetToken());
         assertNotNull("Token should not be null", resetUser.getPasswordResetToken().getToken());
         assertTrue("Token expiration date should be in the future", savedUser.getPasswordResetToken().getExpiryDate().isAfter(LocalDateTime.now()));
+    }
+
+    @Test
+    public void testValidatePasswordResetToken() throws MessagingException {
+        User user = ModelMockHelper.createUser();
+        User userWithPwToken = userDetailsService.sendPasswordResetToken(user);
+
+        GenericResult<User> result = userDetailsService.validatePasswordResetToken(userWithPwToken.getPasswordResetToken().getToken());
+
+        assertTrue(result.isSuccess());
+        assertNotNull(result.getPayload());
+    }
+
+    @Test
+    public void testValidatePasswordResetToken_NotFound() {
+        GenericResult<User> result = userDetailsService.validatePasswordResetToken("footoken");
+
+        assertFalse(result.isSuccess());
+        assertEquals("user.token.notfound", result.getMessage());
+    }
+
+    @Test
+    public void testValidatePasswordResetToken_TokenExpired() throws MessagingException {
+        User user = ModelMockHelper.createUser();
+        User userWithPwToken = userDetailsService.sendPasswordResetToken(user);
+        userWithPwToken.getPasswordResetToken().setExpiryDate(LocalDateTime.now().minusHours(1));
+        userRepository.save(userWithPwToken);
+
+        GenericResult<User> result = userDetailsService.validatePasswordResetToken(userWithPwToken.getPasswordResetToken().getToken());
+
+        assertFalse(result.isSuccess());
+        assertEquals("user.token.expired", result.getMessage());
+    }
+
+    @Test
+    public void testChangePassword() {
+        String newPassword = "foo";
+        PasswordDto passwordDto = new PasswordDto();
+        passwordDto.setNewPassword(newPassword);
+
+        User user = ModelMockHelper.createUser();
+
+        String oldPassword = user.getPassword();
+
+        GenericResult result = userDetailsService.changePassword(user, passwordDto);
+        assertTrue(result.isSuccess());
+        assertEquals("user.changepassword.successful", result.getMessage());
+
+        User updatedUser = userRepository.findByUsername(user.getUsername());
+
+        // The new password should be encoded
+        assertNotEquals(newPassword, updatedUser.getPassword());
+        // The hash of the new password shouldn't match the old one
+        assertNotEquals(oldPassword, updatedUser.getPassword());
     }
 }

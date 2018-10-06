@@ -1,6 +1,7 @@
 package in.skdv.skdvinbackend.controller.api;
 
 import in.skdv.skdvinbackend.ModelMockHelper;
+import in.skdv.skdvinbackend.model.dto.PasswordDto;
 import in.skdv.skdvinbackend.model.dto.UserDTO;
 import in.skdv.skdvinbackend.model.entity.Role;
 import in.skdv.skdvinbackend.model.entity.User;
@@ -269,6 +270,65 @@ public class UserControllerTest {
                 .contentType(contentType))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void testChangePassword() throws Exception {
+        User user = ModelMockHelper.createUser();
+        User savedUser = userRepository.save(user);
+        User userWithToken = userService.sendPasswordResetToken(savedUser);
+
+        PasswordDto passwordDto = new PasswordDto();
+        passwordDto.setNewPassword("foo");
+        String passwordJson = json(passwordDto);
+
+        mockMvc.perform(post("/api/user/changepassword/" + userWithToken.getPasswordResetToken().getToken() + "?lang=en")
+                .content(passwordJson)
+                .contentType(contentType))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", is("Password changed successfully.")));
+    }
+
+    @Test
+    public void testChangePassword_InvalidToken() throws Exception {
+        PasswordDto passwordDto = new PasswordDto();
+        passwordDto.setNewPassword("foo");
+        String passwordJson = json(passwordDto);
+
+        mockMvc.perform(post("/api/user/changepassword/footoken")
+                .content(passwordJson)
+                .contentType(contentType))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void testChangePassword_NoPasswordSet1() throws Exception {
+        User user = ModelMockHelper.createUser();
+        User savedUser = userRepository.save(user);
+        User userWithToken = userService.sendPasswordResetToken(savedUser);
+
+        mockMvc.perform(post("/api/user/changepassword/" + userWithToken.getPasswordResetToken().getToken())
+                .contentType(contentType))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void testChangePassword_NoPasswordSet2() throws Exception {
+        User user = ModelMockHelper.createUser();
+        User savedUser = userRepository.save(user);
+        User userWithToken = userService.sendPasswordResetToken(savedUser);
+
+        PasswordDto passwordDto = new PasswordDto();
+        String passwordJson = json(passwordDto);
+
+        mockMvc.perform(post("/api/user/changepassword/" + userWithToken.getPasswordResetToken().getToken())
+                .content(passwordJson)
+                .contentType(contentType))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isBadRequest());
     }
 
 

@@ -2,10 +2,12 @@ package in.skdv.skdvinbackend.controller.api;
 
 import in.skdv.skdvinbackend.exception.EmailExistsException;
 import in.skdv.skdvinbackend.exception.TokenExpiredException;
+import in.skdv.skdvinbackend.model.dto.PasswordDto;
 import in.skdv.skdvinbackend.model.dto.UserDTO;
 import in.skdv.skdvinbackend.model.dto.UserDtoIncoming;
 import in.skdv.skdvinbackend.model.entity.User;
 import in.skdv.skdvinbackend.service.IUserService;
+import in.skdv.skdvinbackend.util.GenericResult;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -74,8 +76,26 @@ public class UserController {
         }
     }
 
+    @PostMapping("/changepassword/{token}")
+    ResponseEntity<?> changePassword(@PathVariable String token, @RequestBody @Valid PasswordDto passwordDto) {
+
+        GenericResult<User> validationResult = userService.validatePasswordResetToken(token);
+        if (!validationResult.isSuccess()) {
+            LOGGER.error("Password reset token validation failed: {0}", validationResult.getMessage());
+            return ResponseEntity.notFound().build();
+        }
+
+        GenericResult changePasswordResult = userService.changePassword(validationResult.getPayload(), passwordDto);
+        if (!changePasswordResult.isSuccess()) {
+            LOGGER.error("Password reset failed: {0}", changePasswordResult.getMessage());
+            return ResponseEntity.status(HttpServletResponse.SC_INTERNAL_SERVER_ERROR).build();
+        }
+
+        return ResponseEntity.ok(messageSource.getMessage("user.changePassword.successful", null, LocaleContextHolder.getLocale()));
+    }
+
     @GetMapping("/confirm/{token}")
-    UserDTO confirmToken(@PathVariable String token, HttpServletResponse response) {
+    UserDTO confirmRegistrationToken(@PathVariable String token, HttpServletResponse response) {
         boolean hasToken = userService.hasVerificationToken(token);
 
         if (!hasToken) {

@@ -2,11 +2,13 @@ package in.skdv.skdvinbackend.service.impl;
 
 import in.skdv.skdvinbackend.exception.EmailExistsException;
 import in.skdv.skdvinbackend.exception.TokenExpiredException;
+import in.skdv.skdvinbackend.model.dto.PasswordDto;
 import in.skdv.skdvinbackend.model.entity.User;
 import in.skdv.skdvinbackend.model.entity.VerificationToken;
 import in.skdv.skdvinbackend.repository.UserRepository;
 import in.skdv.skdvinbackend.service.IEmailService;
 import in.skdv.skdvinbackend.service.IUserService;
+import in.skdv.skdvinbackend.util.GenericResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -110,6 +112,28 @@ public class MongoUserDetailsService implements UserDetailsService, IUserService
         emailService.sendPasswordResetToken(savedUser);
 
         return savedUser;
+    }
+
+    @Override
+    public GenericResult<User> validatePasswordResetToken(String token) {
+        User user = userRepository.findByPasswordResetTokenToken(token);
+
+        if (user != null) {
+
+            if (user.getPasswordResetToken().getExpiryDate().isAfter(LocalDateTime.now())) {
+                return new GenericResult<>(true, user);
+            }
+
+            return new GenericResult<>(false, "user.token.expired");
+        }
+        return new GenericResult<>(false, "user.token.notfound");
+    }
+
+    @Override
+    public GenericResult changePassword(User user, PasswordDto passwordDto) {
+        user.setPassword(passwordEncoder.encode(passwordDto.getNewPassword()));
+        userRepository.save(user);
+        return new GenericResult(true, "user.changepassword.successful");
     }
 
     private VerificationToken generateVerificationToken() {

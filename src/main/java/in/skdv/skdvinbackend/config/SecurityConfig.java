@@ -27,12 +27,14 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             // Disable CSRF as it's a REST API
             .csrf().disable()
             .authorizeRequests()
-                .antMatchers("/api/user/resetpassword").permitAll()
+                .antMatchers("/api/user/resetpassword",
+                        "/api/user/changepassword/**").permitAll()
                 .anyRequest().authenticated()
             .and().httpBasic()
             // Disable Session Management as it's a REST API
             .and().sessionManagement().disable();
     }
+
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
         auth.userDetailsService(userDetailsService);
