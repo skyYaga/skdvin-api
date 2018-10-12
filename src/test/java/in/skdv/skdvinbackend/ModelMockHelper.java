@@ -50,7 +50,7 @@ public class ModelMockHelper {
     }
 
     public static User createUser() {
-        return new User("max", "s3cr3t", "max@example.com", Collections.singletonList(Role.ROLE_USER));
+        return new User("max", "s3cr3t$!", "max@example.com", Collections.singletonList(Role.ROLE_USER));
     }
 
     public static User createUserWithVerificationToken() {

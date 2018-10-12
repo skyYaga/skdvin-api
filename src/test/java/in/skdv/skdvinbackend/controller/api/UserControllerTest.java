@@ -309,7 +309,7 @@ public class UserControllerTest {
         GenericResult<User> userWithToken = userService.sendPasswordResetToken(savedUser);
 
         PasswordDto passwordDto = new PasswordDto();
-        passwordDto.setNewPassword("foo");
+        passwordDto.setNewPassword("foo253$)");
         String passwordJson = json(passwordDto);
 
         mockMvc.perform(post("/api/user/changepassword/" + userWithToken.getPayload().getPasswordResetToken().getToken() + "?lang=en")
@@ -323,7 +323,7 @@ public class UserControllerTest {
     @Test
     public void testChangePassword_InvalidToken() throws Exception {
         PasswordDto passwordDto = new PasswordDto();
-        passwordDto.setNewPassword("foo");
+        passwordDto.setNewPassword("foo253$)");
         String passwordJson = json(passwordDto);
 
         mockMvc.perform(post("/api/user/changepassword/footoken")

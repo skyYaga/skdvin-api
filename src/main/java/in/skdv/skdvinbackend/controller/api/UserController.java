@@ -94,7 +94,11 @@ public class UserController {
     }
 
     @PostMapping("/changepassword/{token}")
-    ResponseEntity changePassword(@PathVariable String token, @RequestBody @Valid PasswordDto passwordDto) {
+    ResponseEntity changePassword(@PathVariable String token, @RequestBody @Valid PasswordDto passwordDto, BindingResult result) {
+
+        if (result.hasErrors()) {
+            return ResponseEntity.badRequest().body(result.getAllErrors());
+        }
 
         GenericResult<User> validationResult = userService.validatePasswordResetToken(token);
         if (!validationResult.isSuccess()) {
