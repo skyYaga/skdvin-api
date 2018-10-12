@@ -2,6 +2,7 @@ package in.skdv.skdvinbackend.model.dto;
 
 import in.skdv.skdvinbackend.model.entity.Role;
 import in.skdv.skdvinbackend.util.ValidEmail;
+import in.skdv.skdvinbackend.util.ValidPassword;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
@@ -15,6 +16,7 @@ public class UserDtoIncoming {
 
     @NotNull
     @NotEmpty
+    @ValidPassword
     private String password;
 
     @ValidEmail

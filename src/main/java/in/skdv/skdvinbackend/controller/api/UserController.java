@@ -15,11 +15,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import javax.mail.MessagingException;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/user")
@@ -58,6 +60,20 @@ public class UserController {
         return convertToDto(user);
     }
 
+    @PostMapping("/setup")
+    UserDTO setupUser(@RequestBody @Valid UserDtoIncoming input, HttpServletResponse response) {
+
+        List<User> userList = userService.findAll();
+
+        if (!userList.isEmpty()) {
+            LOGGER.error("There are already existing users. No setup available");
+            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            return null;
+        }
+
+        return addUser(input, response);
+    }
+
     @PostMapping("/resetpassword")
     ResponseEntity resetPassword(@RequestParam("email") String email) {
 
@@ -78,7 +94,11 @@ public class UserController {
     }
 
     @PostMapping("/changepassword/{token}")
-    ResponseEntity changePassword(@PathVariable String token, @RequestBody @Valid PasswordDto passwordDto) {
+    ResponseEntity changePassword(@PathVariable String token, @RequestBody @Valid PasswordDto passwordDto, BindingResult result) {
+
+        if (result.hasErrors()) {
+            return ResponseEntity.badRequest().body(result.getAllErrors());
+        }
 
         GenericResult<User> validationResult = userService.validatePasswordResetToken(token);
         if (!validationResult.isSuccess()) {

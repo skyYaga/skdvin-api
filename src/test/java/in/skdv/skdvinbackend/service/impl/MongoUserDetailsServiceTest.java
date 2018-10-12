@@ -23,6 +23,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import javax.mail.MessagingException;
 import java.time.LocalDateTime;
 import java.util.Collections;
+import java.util.List;
 
 import static org.junit.Assert.*;
 
@@ -216,5 +217,18 @@ public class MongoUserDetailsServiceTest {
         assertNotEquals(newPassword, updatedUser.getPassword());
         // The hash of the new password shouldn't match the old one
         assertNotEquals(oldPassword, updatedUser.getPassword());
+    }
+
+    @Test
+    public void testFindAll_NoUser() {
+        List<User> users = userDetailsService.findAll();
+        assertEquals(0, users.size());
+    }
+
+    @Test
+    public void testFindAll_WithUsers() {
+        userRepository.save(ModelMockHelper.createUser());
+        List<User> users = userDetailsService.findAll();
+        assertEquals(1, users.size());
     }
 }

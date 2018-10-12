@@ -71,6 +71,11 @@ public class MongoUserDetailsService implements UserDetailsService, IUserService
 
 
     @Override
+    public List<User> findAll() {
+        return userRepository.findAll();
+    }
+
+    @Override
     public User registerNewUser(User user) throws EmailExistsException, MessagingException {
         if (emaiExist(user.getEmail())) {
             throw new EmailExistsException("There is already an account with email: " + user.getEmail());
