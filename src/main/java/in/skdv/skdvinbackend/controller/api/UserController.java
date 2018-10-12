@@ -65,7 +65,7 @@ public class UserController {
 
         List<User> userList = userService.findAll();
 
-        if (userList.size() != 0) {
+        if (!userList.isEmpty()) {
             LOGGER.error("There are already existing users. No setup available");
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
             return null;
