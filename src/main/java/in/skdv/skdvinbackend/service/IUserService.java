@@ -7,8 +7,12 @@ import in.skdv.skdvinbackend.model.entity.User;
 import in.skdv.skdvinbackend.util.GenericResult;
 
 import javax.mail.MessagingException;
+import java.util.List;
 
 public interface IUserService {
+
+    List<User> findAll();
+
     User registerNewUser(User user) throws EmailExistsException, MessagingException;
 
     boolean hasVerificationToken(String token);

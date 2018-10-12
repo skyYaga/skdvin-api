@@ -154,6 +154,35 @@ public class UserControllerTest {
     }
 
     @Test
+    public void testInitialUserSetup() throws Exception {
+        String userJson = json(ModelMockHelper.createUser());
+
+        mockMvc.perform(post("/api/user/setup")
+                .contentType(contentType)
+                .content(userJson))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.username", is("max")));
+    }
+
+    @Test
+    public void testInitialUserSetup_UsersExist() throws Exception {
+        String userJson = json(ModelMockHelper.createUser());
+
+        mockMvc.perform(post("/api/user/setup")
+                .contentType(contentType)
+                .content(userJson))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isCreated());
+
+        mockMvc.perform(post("/api/user/setup")
+                .contentType(contentType)
+                .content(userJson))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
     @WithMockUser
     public void testConfirmation() throws Exception {
         User user = ModelMockHelper.createUser();
