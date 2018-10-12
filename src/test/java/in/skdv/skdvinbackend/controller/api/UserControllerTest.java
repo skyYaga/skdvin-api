@@ -26,7 +26,6 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.web.context.WebApplicationContext;
 
@@ -102,7 +101,7 @@ public class UserControllerTest {
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(roles="ADMIN")
     public void testCreateNewUser() throws Exception {
         String userJson = json(ModelMockHelper.createUser());
 
@@ -116,6 +115,18 @@ public class UserControllerTest {
 
     @Test
     @WithMockUser
+    public void testCreateNewUser_NoAdmin() throws Exception {
+        String userJson = json(ModelMockHelper.createUser());
+
+        mockMvc.perform(post("/api/user/")
+                .contentType(contentType)
+                .content(userJson))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(roles="ADMIN")
     public void testCreateNewUser_UserExists() throws Exception {
         String userJson = json(ModelMockHelper.createUser());
 
@@ -186,14 +197,7 @@ public class UserControllerTest {
     @WithMockUser
     public void testConfirmation() throws Exception {
         User user = ModelMockHelper.createUser();
-        String userJson = json(user);
-
-        ResultActions resultActions = mockMvc.perform(post("/api/user/")
-                .contentType(contentType)
-                .content(userJson))
-                .andDo(MockMvcResultHandlers.print())
-                .andExpect(status().isCreated());
-
+        userService.registerNewUser(user);
         User savedUser = userRepository.findByUsername(user.getUsername());
 
         mockMvc.perform(get("/api/user/confirm/" + savedUser.getVerificationToken().getToken()))
@@ -208,7 +212,7 @@ public class UserControllerTest {
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(roles="ADMIN")
     public void testInternationalization_Default() throws Exception {
         // By default the Locale should be GERMANY
 
@@ -227,7 +231,7 @@ public class UserControllerTest {
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(roles="ADMIN")
     public void testInternationalization_UrlParamDE() throws Exception {
         String userJson = json(ModelMockHelper.createUser());
 
@@ -244,7 +248,7 @@ public class UserControllerTest {
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(roles="ADMIN")
     public void testInternationalization_UrlParamEN() throws Exception {
         String userJson = json(ModelMockHelper.createUser());
 

@@ -5,6 +5,7 @@ import in.skdv.skdvinbackend.exception.TokenExpiredException;
 import in.skdv.skdvinbackend.model.dto.PasswordDto;
 import in.skdv.skdvinbackend.model.dto.UserDTO;
 import in.skdv.skdvinbackend.model.dto.UserDtoIncoming;
+import in.skdv.skdvinbackend.model.entity.Role;
 import in.skdv.skdvinbackend.model.entity.User;
 import in.skdv.skdvinbackend.service.IUserService;
 import in.skdv.skdvinbackend.util.GenericResult;
@@ -15,12 +16,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import javax.mail.MessagingException;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
+import java.util.Arrays;
 import java.util.List;
 
 @RestController
@@ -40,6 +43,7 @@ public class UserController {
         this.userService = userService;
     }
 
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PostMapping
     UserDTO addUser(@RequestBody @Valid UserDtoIncoming input, HttpServletResponse response) {
 
@@ -70,6 +74,8 @@ public class UserController {
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
             return null;
         }
+
+        input.setRoles(Arrays.asList(Role.ROLE_USER, Role.ROLE_ADMIN));
 
         return addUser(input, response);
     }
