@@ -1,0 +1,32 @@
+= User
+API Endpoint to create and manage users.
+
+
+== Create/Register User
+A `POST` request is used to add a new user.
+
+operation::user/create-user[snippets='http-request,request-fields,http-response,response-fields']
+
+
+== Confirm User Registration
+A `GET` request is used to confirm a new user.
+
+operation::user/confirm[snippets='http-request,path-parameters,http-response,response-fields']
+
+
+== Reset Password
+A `POST` request is used to initiate the reset password process.
+
+operation::user/reset-password[snippets='http-request,request-parameters,http-response,response-fields']
+
+
+== Change Password
+A `POST` request is used to change a password user.
+
+operation::user/change-password[snippets='http-request,path-parameters,request-fields,http-response,response-fields']
+
+
+== Internationalization
+Add a URL Parameter `lang=` for internationalization
+
+operation::user/internationalization[snippets='http-request,request-parameters,http-response']

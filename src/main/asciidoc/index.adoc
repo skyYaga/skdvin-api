@@ -1,0 +1,15 @@
+= skdv.in RESTful API Specification
+:toc: left
+
+{project-version}
+
+= Introduction
+This is the documentation of the skdv.in REST-API.
+
+You can find this project on GitHub: https://github.com/skyYaga/skdvin-backend
+
+include::user.adoc[]
+
+
+= Appointment
+API Endpoint to manage Appointments

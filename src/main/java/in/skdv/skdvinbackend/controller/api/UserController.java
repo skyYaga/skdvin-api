@@ -15,6 +15,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
@@ -80,30 +82,11 @@ public class UserController {
         return addUser(input, response);
     }
 
-    @PostMapping("/resetpassword")
-    ResponseEntity resetPassword(@RequestParam("email") String email) {
-
-        User user = userService.findUserByEmail(email);
-        if (user == null) {
-            LOGGER.warn("E-Mail address {} not found", email);
-            return ResponseEntity.notFound().build();
-        }
-
-        GenericResult result = userService.sendPasswordResetToken(user);
-        if (result.isSuccess()) {
-            return ResponseEntity.ok(messageSource.getMessage(result.getMessage(), null, LocaleContextHolder.getLocale()));
-        } else {
-            LOGGER.error("Error sending password reset mail", result.getException());
-            return ResponseEntity.status(HttpServletResponse.SC_INTERNAL_SERVER_ERROR)
-                    .body(messageSource.getMessage(result.getMessage(), null, LocaleContextHolder.getLocale()));
-        }
-    }
-
-    @PostMapping("/changepassword/{token}")
-    ResponseEntity changePassword(@PathVariable String token, @RequestBody @Valid PasswordDto passwordDto, BindingResult result) {
+    @PostMapping(path = "/changepassword/{token}")
+    ResponseEntity<GenericResult> changePassword(@PathVariable String token, @RequestBody @Valid PasswordDto passwordDto, BindingResult result) {
 
         if (result.hasErrors()) {
-            return ResponseEntity.badRequest().body(result.getAllErrors());
+            return ResponseEntity.badRequest().body(new GenericResult(false, result.getAllErrors()));
         }
 
         GenericResult<User> validationResult = userService.validatePasswordResetToken(token);
@@ -118,7 +101,29 @@ public class UserController {
             return ResponseEntity.status(HttpServletResponse.SC_INTERNAL_SERVER_ERROR).build();
         }
 
-        return ResponseEntity.ok(messageSource.getMessage("user.changePassword.successful", null, LocaleContextHolder.getLocale()));
+        return ResponseEntity.status(HttpStatus.OK).
+                contentType(MediaType.APPLICATION_JSON)
+                .body(new GenericResult(true, messageSource.getMessage("user.changePassword.successful", null, LocaleContextHolder.getLocale())));
+    }
+
+    @PostMapping(path = "/resetpassword")
+    ResponseEntity<GenericResult> resetPassword(@RequestParam("email") String email) {
+
+        User user = userService.findUserByEmail(email);
+        if (user == null) {
+            LOGGER.warn("E-Mail address {} not found", email);
+            return ResponseEntity.notFound().build();
+        }
+
+        GenericResult result = userService.sendPasswordResetToken(user);
+        if (!result.isSuccess()) {
+            LOGGER.error("Error sending password reset mail", result.getException());
+            return ResponseEntity.status(HttpServletResponse.SC_INTERNAL_SERVER_ERROR)
+                    .body(new GenericResult(false, messageSource.getMessage(result.getMessage(), null, LocaleContextHolder.getLocale())));
+        }
+
+
+        return ResponseEntity.ok(new GenericResult(true, messageSource.getMessage(result.getMessage(), null, LocaleContextHolder.getLocale())));
     }
 
     @GetMapping("/confirm/{token}")

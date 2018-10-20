@@ -10,18 +10,27 @@ import in.skdv.skdvinbackend.service.IEmailService;
 import in.skdv.skdvinbackend.service.IUserService;
 import in.skdv.skdvinbackend.util.GenericResult;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.restdocs.RestDocsMockMvcConfigurationCustomizer;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Bean;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.mock.http.MockHttpOutputMessage;
+import org.springframework.restdocs.JUnitRestDocumentation;
+import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation;
+import org.springframework.restdocs.mockmvc.MockMvcRestDocumentationConfigurer;
+import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders;
+import org.springframework.restdocs.mockmvc.RestDocumentationResultHandler;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -39,6 +48,12 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
+import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
+import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
+import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
+import static org.springframework.restdocs.payload.PayloadDocumentation.*;
+import static org.springframework.restdocs.request.RequestDocumentation.*;
+import static org.springframework.restdocs.snippet.Attributes.key;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -49,6 +64,9 @@ import static org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppC
 @RunWith(SpringRunner.class)
 @SpringBootTest
 public class UserControllerTest {
+
+    @Rule
+    public JUnitRestDocumentation restDocumentation = new JUnitRestDocumentation();
 
     private static final String FROM_EMAIL = "skdvin@example.com";
     private static final String BASE_URL = "https://example.com";
@@ -91,7 +109,9 @@ public class UserControllerTest {
     @Before
     public void setup() {
         this.mockMvc = webAppContextSetup(webApplicationContext)
-                        .apply(springSecurity()).build();
+                        .apply(springSecurity())
+                        .apply(documentationConfiguration(this.restDocumentation))
+                        .build();
 
         userRepository.deleteAll();
 
@@ -105,12 +125,25 @@ public class UserControllerTest {
     public void testCreateNewUser() throws Exception {
         String userJson = json(ModelMockHelper.createUser());
 
-        mockMvc.perform(post("/api/user/")
+        mockMvc.perform(RestDocumentationRequestBuilders.post("/api/user/")
                 .contentType(contentType)
                 .content(userJson))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.username", is("max")));
+                .andExpect(jsonPath("$.username", is("max")))
+                .andDo(document("user/create-user", requestFields(
+                        fieldWithPath("username").description("The users username"),
+                        fieldWithPath("password").description("The password for the new user"),
+                        fieldWithPath("email").description("The new user's email address"),
+                        fieldWithPath("roles").ignored(),
+                        fieldWithPath("enabled").ignored(),
+                        fieldWithPath("verificationToken").ignored(),
+                        fieldWithPath("passwordResetToken").ignored()
+                ), responseFields(
+                        fieldWithPath("username").description("The confirmed user's username"),
+                        fieldWithPath("email").description("The confirmed user's email address"),
+                        fieldWithPath("roles").description("The confirmed user's roles")
+                )));
     }
 
     @Test
@@ -200,8 +233,15 @@ public class UserControllerTest {
         userService.registerNewUser(user);
         User savedUser = userRepository.findByUsername(user.getUsername());
 
-        mockMvc.perform(get("/api/user/confirm/" + savedUser.getVerificationToken().getToken()))
-                .andExpect(status().isOk());
+        mockMvc.perform(RestDocumentationRequestBuilders.get("/api/user/confirm/{token}", savedUser.getVerificationToken().getToken()))
+                .andExpect(status().isOk())
+                .andDo(document("user/confirm", pathParameters(
+                        parameterWithName("token").description("The token created during user registration")
+                ), responseFields(
+                        fieldWithPath("username").description("The confirmed user's username"),
+                        fieldWithPath("email").description("The confirmed user's email address"),
+                        fieldWithPath("roles").description("The confirmed user's roles")
+                )));
     }
 
     @Test
@@ -235,12 +275,15 @@ public class UserControllerTest {
     public void testInternationalization_UrlParamDE() throws Exception {
         String userJson = json(ModelMockHelper.createUser());
 
-        mockMvc.perform(post("/api/user?lang=de")
+        mockMvc.perform(RestDocumentationRequestBuilders.post("/api/user?lang=de")
                 .contentType(contentType)
                 .content(userJson))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.username", is("max")));
+                .andExpect(jsonPath("$.username", is("max")))
+                .andDo(document("user/internationalization", requestParameters(
+                        parameterWithName("lang").description("The locale for this request").optional()
+                )));
 
         ArgumentCaptor<MimeMessage> argument = ArgumentCaptor.forClass(MimeMessage.class);
         verify(mailSender).send(argument.capture());
@@ -269,11 +312,21 @@ public class UserControllerTest {
         User user = ModelMockHelper.createUser();
         User savedUser = userRepository.save(user);
 
-        mockMvc.perform(post("/api/user/resetpassword?lang=de&email=" + savedUser.getEmail())
+        mockMvc.perform(RestDocumentationRequestBuilders.post("/api/user/resetpassword?lang=de&email=" + savedUser.getEmail())
                 .contentType(contentType))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", is("Wir haben dir eine E-Mail mit einem Link zur Passwortwiederherstellung gesendet.")));
+                .andExpect(jsonPath("$.success", is(true)))
+                .andExpect(jsonPath("$.message", is("Wir haben dir eine E-Mail mit einem Link zur Passwortwiederherstellung gesendet.")))
+                .andDo(document("user/reset-password", requestParameters(
+                        parameterWithName("email").description("The email address of the user. The password reset token will be sent there"),
+                        parameterWithName("lang").description("The locale for this request").optional()
+                ), responseFields(
+                        fieldWithPath("success").description("Was the request successful?"),
+                        fieldWithPath("message").description("The message of the response"),
+                        fieldWithPath("exception").ignored(),
+                        fieldWithPath("payload").ignored()
+                )));
 
         ArgumentCaptor<MimeMessage> argument = ArgumentCaptor.forClass(MimeMessage.class);
         verify(mailSender).send(argument.capture());
@@ -290,7 +343,8 @@ public class UserControllerTest {
                 .contentType(contentType))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", is("We've sent you an email containing a link for password recovery.")));
+                .andExpect(jsonPath("$.success", is(true)))
+                .andExpect(jsonPath("$.message", is("We've sent you an email containing a link for password recovery.")));
 
         ArgumentCaptor<MimeMessage> argument = ArgumentCaptor.forClass(MimeMessage.class);
         verify(mailSender).send(argument.capture());
@@ -316,12 +370,26 @@ public class UserControllerTest {
         passwordDto.setNewPassword("foo253$)");
         String passwordJson = json(passwordDto);
 
-        mockMvc.perform(post("/api/user/changepassword/" + userWithToken.getPayload().getPasswordResetToken().getToken() + "?lang=en")
+        mockMvc.perform(RestDocumentationRequestBuilders.post("/api/user/changepassword/{token}?lang=en", userWithToken.getPayload().getPasswordResetToken().getToken())
                 .content(passwordJson)
                 .contentType(contentType))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", is("Password changed successfully.")));
+                .andExpect(jsonPath("$.success", is(true)))
+                .andExpect(jsonPath("$.message", is("Password changed successfully.")))
+                .andDo(document("user/change-password",
+                        pathParameters(
+                                parameterWithName("token").description("The token created when invoking password reset")
+                        ),
+                        requestFields(
+                                fieldWithPath("newPassword").description("The new password")
+                                        .attributes(key("constraints").value("Must not be null or empty and valid according to password rules"))
+                        ), responseFields(
+                                fieldWithPath("success").description("Was the request successful?"),
+                                fieldWithPath("message").description("The message of the response"),
+                                fieldWithPath("exception").ignored(),
+                                fieldWithPath("payload").ignored()
+                        )));
     }
 
     @Test
@@ -373,4 +441,17 @@ public class UserControllerTest {
         return mockHttpOutputMessage.getBodyAsString();
     }
 
+    @TestConfiguration
+    static class CustomizationConfiguration implements RestDocsMockMvcConfigurationCustomizer {
+        @Override
+        public void customize(MockMvcRestDocumentationConfigurer configurer) {
+            configurer.operationPreprocessors()
+                    .withRequestDefaults(prettyPrint())
+                    .withResponseDefaults(prettyPrint());
+        }
+        @Bean
+        public RestDocumentationResultHandler restDocumentation() {
+            return MockMvcRestDocumentation.document("{method-name}");
+        }
+    }
 }
