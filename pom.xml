@@ -4,12 +4,12 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>in.skdv</groupId>
-	<artifactId>skdvin-backend</artifactId>
+	<artifactId>skdvin-api</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
-	<name>skdvin-backend</name>
-	<description>skdvin Backend</description>
+	<name>skdvin-api</name>
+	<description>skdvin REST-API</description>
 
 	<parent>
 		<groupId>org.springframework.boot</groupId>

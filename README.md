@@ -1,5 +1,5 @@
-# skdvin-backend
-Java Backend for skdvin.
+# skdvin-api
+Java based REST-API for skdvin.
 
 
 [![Build Status](https://travis-ci.org/skyYaga/skdvin-backend.svg?branch=master)](https://travis-ci.org/skyYaga/skdvin-backend)
