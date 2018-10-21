@@ -227,7 +227,6 @@ public class UserControllerTest {
     }
 
     @Test
-    @WithMockUser
     public void testConfirmation() throws Exception {
         User user = ModelMockHelper.createUser();
         userService.registerNewUser(user);
@@ -245,7 +244,6 @@ public class UserControllerTest {
     }
 
     @Test
-    @WithMockUser
     public void testConfirmation_TokenNotFound() throws Exception {
         mockMvc.perform(get("/api/user/confirm/foo"))
                 .andExpect(status().isNotFound());

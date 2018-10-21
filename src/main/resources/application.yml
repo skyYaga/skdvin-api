@@ -1,9 +1,12 @@
 spring:
+  data:
+    mongodb:
+      uri: ${MONGODB_URI:mongodb://localhost/test}
   mail:
     default-encoding: UTF-8
-    host:
-    username:
-    password:
+    host: ${MAIL_HOST:}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
     port: 587
     properties:
       mail:
@@ -14,5 +17,5 @@ spring:
     protocol: smtp
 
 skdvin:
-  baseurl:
-  from:
+  baseurl: ${SKDVIN_BASEURL:}
+  from: ${SKDVIN_FROM:}

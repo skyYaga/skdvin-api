@@ -9,3 +9,8 @@ addons:
 script:
   # the following command line builds the project, runs the tests with coverage and then execute the SonarCloud analysis
   - mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent install sonar:sonar
+deploy:
+  provider: heroku
+  api_key:
+    secure: fBxxoxcXPZjeEEyTS0MxRG6PmMuppL3wmfe2xIr7WWHBje4g2Fqze2JaiiXsNmKVi7BAITrKsGFZcjxBFswcvcs4WcrWf3/F0w4NWYG3RQ6H3tRvsSYVEp0KmusinDGU4gVnrNKqBHE8JWTstZsYPZvDfktTDZF4EATxvm4T0m0YoR+jcyDAuupUw19HsCpkAYzWjrZpgP2dQZz62m4sdMRBxePdv+ZGTWtJfQ8Ktl/pZ2o1KT+8g7aBWLo/UECPrlhWP0lsZ9S0wUIcfigy3G2B4CwWY3I5Hn6x6HwWW/JrhWbIEx7NWweyt+hTsnnE/BGHg86QkeJoUcLibEUABO/tXLg+g+jDxQ83Y03RNt8QV4wCMEIwQMe+xk/K8FRKef9plNgOSTj1uoXVtwRk3ZpVlyCayz3ZrU4RJ3BjUrmpMBrFPZzFUHVeJgOXkLjP3YoyyhQ3121sfwqKQo2kAQn07Cfco99/JVUP1NVyGq9LK5vcMiAY8iupiZRmVhbsHO/m8FILFCGOtnEhq1Y12+g7wHFjXUTzkemPVwUOHNA+/YjMIEwXe54vpIopmQsHK7yn0cZvdz5j4ONLA3gYU2k7ONZ9aLojvTcvOTcEV2udJsuVvilbuiQtiTB7FblFEQtyAdfXo1iPdAJ5KsPiz8YEezODXVJ8DRiCZOc1SG8=
+  on: develop
