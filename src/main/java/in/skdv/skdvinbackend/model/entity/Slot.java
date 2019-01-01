@@ -1,18 +1,18 @@
 package in.skdv.skdvinbackend.model.entity;
 
-import org.springframework.data.annotation.Id;
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 import java.time.LocalTime;
 import java.util.List;
 
 public class Slot {
 
-    @Id
+    @JsonFormat(pattern = "HH:mm")
     private LocalTime time;
-    private boolean operating;
     private int tandemTotal;
     private int videoTotal;
     private List<Appointment> appointments;
+
 
     public LocalTime getTime() {
         return time;
@@ -20,14 +20,6 @@ public class Slot {
 
     public void setTime(LocalTime time) {
         this.time = time;
-    }
-
-    public boolean isOperating() {
-        return operating;
-    }
-
-    public void setOperating(boolean operating) {
-        this.operating = operating;
     }
 
     public int getTandemTotal() {
@@ -58,7 +50,6 @@ public class Slot {
     public String toString() {
         return "Slot{" +
                 "time=" + time +
-                ", operating=" + operating +
                 ", tandemTotal=" + tandemTotal +
                 ", videoTotal=" + videoTotal +
                 ", appointments=" + appointments +

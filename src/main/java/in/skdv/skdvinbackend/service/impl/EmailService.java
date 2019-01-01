@@ -11,7 +11,6 @@ import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
-import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
@@ -19,7 +18,6 @@ import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 import java.util.Locale;
 
-@Service
 public class EmailService implements IEmailService {
 
     private static final Logger LOG = LoggerFactory.getLogger(EmailService.class);

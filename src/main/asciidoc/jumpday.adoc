@@ -1,0 +1,18 @@
+= Jumpday
+API Endpoint to create and manage jumpdays.
+
+
+== Create/Register Jumpday
+A `POST` request is used to add a new user.
+
+operation::jumpday/create-jumpday[snippets='http-request,request-fields,http-response,response-fields']
+
+== Get Jumpday by date
+A `GET` request is used to get a user by date.
+
+operation::jumpday/get-jumpday[snippets='http-request,path-parameters,http-response,response-fields']
+
+== Get all Jumpdays
+A `GET` request is used to get all jumpdays.
+
+operation::jumpday/get-jumpdays[snippets='http-request,http-response,response-fields']

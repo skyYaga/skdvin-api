@@ -2,7 +2,9 @@ package in.skdv.skdvinbackend;
 
 import in.skdv.skdvinbackend.model.entity.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.UUID;
@@ -69,5 +71,26 @@ public class ModelMockHelper {
         verificationToken.setExpiryDate(LocalDateTime.now().plus(24, ChronoUnit.HOURS));
         user.setPasswordResetToken(verificationToken);
         return user;
+    }
+
+    public static Jumpday createJumpday(LocalDate date) {
+        Jumpday jumpday = new Jumpday();
+        jumpday.setDate(date);
+        jumpday.setJumping(true);
+        jumpday.setTandemmaster(Collections.singletonList("Tandem Master"));
+        jumpday.setVideoflyer(Collections.singletonList("Video Flyer"));
+
+        Slot slot = new Slot();
+        slot.setTime(LocalTime.of(10, 0));
+        slot.setTandemTotal(4);
+        slot.setVideoTotal(2);
+
+        jumpday.setSlots(Collections.singletonList(slot));
+
+        return jumpday;
+    }
+
+    public static Jumpday createJumpday() {
+        return createJumpday(LocalDate.now());
     }
 }

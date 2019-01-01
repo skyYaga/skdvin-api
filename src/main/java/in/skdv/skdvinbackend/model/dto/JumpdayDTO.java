@@ -1,33 +1,30 @@
-package in.skdv.skdvinbackend.model.entity;
+package in.skdv.skdvinbackend.model.dto;
 
-import org.bson.types.ObjectId;
-import org.springframework.data.annotation.Id;
+import in.skdv.skdvinbackend.model.entity.Slot;
 
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.util.List;
 
-public class Jumpday {
+public class JumpdayDTO {
 
-    @Id
-    private ObjectId _id;
-
+    @NotNull
+    @NotEmpty
     private LocalDate date;
+
+    @NotNull
+    @NotEmpty
     private boolean jumping;
+
+    private boolean freeTimes;
+
     private List<Slot> slots;
     private List<String> tandemmaster;
     private List<String> videoflyer;
+
     @NotNull
     public String clientId;
-
-
-    public ObjectId get_id() {
-        return _id;
-    }
-
-    public void set_id(ObjectId _id) {
-        this._id = _id;
-    }
 
     public LocalDate getDate() {
         return date;
@@ -43,6 +40,14 @@ public class Jumpday {
 
     public void setJumping(boolean jumping) {
         this.jumping = jumping;
+    }
+
+    public boolean isFreeTimes() {
+        return freeTimes;
+    }
+
+    public void setFreeTimes(boolean freeTimes) {
+        this.freeTimes = freeTimes;
     }
 
     public List<Slot> getSlots() {
@@ -74,10 +79,10 @@ public class Jumpday {
         return "Jumpday{" +
                 "date=" + date +
                 ", jumping=" + jumping +
+                ", freeTimes=" + freeTimes +
                 ", slots=" + slots +
                 ", tandemmaster=" + tandemmaster +
                 ", videoflyer=" + videoflyer +
                 '}';
     }
-
 }
