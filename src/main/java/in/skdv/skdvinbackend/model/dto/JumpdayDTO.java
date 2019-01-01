@@ -24,7 +24,7 @@ public class JumpdayDTO {
     private List<String> videoflyer;
 
     @NotNull
-    public String clientId;
+    private String clientId;
 
     public LocalDate getDate() {
         return date;
@@ -76,13 +76,14 @@ public class JumpdayDTO {
 
     @Override
     public String toString() {
-        return "Jumpday{" +
+        return "JumpdayDTO{" +
                 "date=" + date +
                 ", jumping=" + jumping +
                 ", freeTimes=" + freeTimes +
                 ", slots=" + slots +
                 ", tandemmaster=" + tandemmaster +
                 ", videoflyer=" + videoflyer +
+                ", clientId='" + clientId + '\'' +
                 '}';
     }
 }

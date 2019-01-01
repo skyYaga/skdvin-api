@@ -123,8 +123,8 @@ public class JumpdayControllerTest {
                         fieldWithPath("slots[].time").description("The time of this slot"),
                         fieldWithPath("slots[].tandemTotal").description("The total capacity of tandem slots"),
                         fieldWithPath("slots[].videoTotal").description("The total capacity of video slots"),
-                        fieldWithPath("clientId").ignored(),
-                        fieldWithPath("slots[].appointments").ignored()
+                        fieldWithPath("slots[].appointments").ignored(),
+                        fieldWithPath("clientId").ignored()
                 ), responseFields(
                         fieldWithPath("date").description("The date of the jumpday"),
                         fieldWithPath("jumping").description("true when it's a jumpday"),
@@ -136,7 +136,7 @@ public class JumpdayControllerTest {
                         fieldWithPath("slots[].videoTotal").description("The total capacity of video slots"),
                         fieldWithPath("_links.self.href").description("API link to the new created jumpday"),
                         fieldWithPath("_links.jumpdays.href").description("API link to all jumpdays"),
-                        fieldWithPath("clientId").ignored(),
+                        fieldWithPath("freeTimes").ignored(),
                         fieldWithPath("slots[].appointments").ignored()
                 )));
     }
@@ -230,7 +230,6 @@ public class JumpdayControllerTest {
                         fieldWithPath("payload[].slots[].videoTotal").description("The total capacity of video slots"),
                         fieldWithPath("message").ignored(),
                         fieldWithPath("exception").ignored(),
-                        fieldWithPath("payload[].clientId").ignored(),
                         fieldWithPath("payload[].freeTimes").ignored(),
                         fieldWithPath("payload[].slots[].appointments").ignored()
                 )));
@@ -278,7 +277,6 @@ public class JumpdayControllerTest {
                         fieldWithPath("payload.slots[].videoTotal").description("The total capacity of video slots"),
                         fieldWithPath("message").ignored(),
                         fieldWithPath("exception").ignored(),
-                        fieldWithPath("payload.clientId").ignored(),
                         fieldWithPath("payload.freeTimes").ignored(),
                         fieldWithPath("payload.slots[].appointments").ignored()
                 )));

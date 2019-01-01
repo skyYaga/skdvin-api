@@ -1,6 +1,7 @@
 package in.skdv.skdvinbackend.controller.api;
 
 import in.skdv.skdvinbackend.controller.api.assembler.JumpdayResourceAssembler;
+import in.skdv.skdvinbackend.exception.JumpdayExistsException;
 import in.skdv.skdvinbackend.model.dto.JumpdayDTO;
 import in.skdv.skdvinbackend.model.entity.Jumpday;
 import in.skdv.skdvinbackend.service.IJumpdayService;
@@ -49,6 +50,7 @@ public class JumpdayController {
             return ResponseEntity.ok(new GenericResult<>(true, convertToDto(result.getPayload())));
         }
 
+        LOGGER.warn("Error reading Jumpdays: {}", result.getMessage());
         return ResponseEntity.status(HttpServletResponse.SC_INTERNAL_SERVER_ERROR)
                 .body(new GenericResult(false, messageSource.getMessage(result.getMessage(), null, LocaleContextHolder.getLocale())));
     }
@@ -60,11 +62,12 @@ public class JumpdayController {
             return ResponseEntity.ok(new GenericResult<>(true, convertToDto(result.getPayload())));
         }
 
-        if (result.getMessage().equals("jumpday.not.found")) {
+        if (result.getMessage().equals(IJumpdayService.JUMPDAY_NOT_FOUND_MSG)) {
             return ResponseEntity.status(HttpServletResponse.SC_BAD_REQUEST)
                     .body(new GenericResult(false, messageSource.getMessage(result.getMessage(), null, LocaleContextHolder.getLocale())));
         }
 
+        LOGGER.warn("Error reading Jumpday: {}", result.getMessage());
         return ResponseEntity.status(HttpServletResponse.SC_INTERNAL_SERVER_ERROR)
                 .body(new GenericResult(false, messageSource.getMessage(result.getMessage(), null, LocaleContextHolder.getLocale())));
     }
@@ -74,17 +77,18 @@ public class JumpdayController {
         GenericResult<Jumpday> result = jumpdayService.saveJumpday(convertToEntity(input));
 
         if (result.isSuccess()) {
-            Resource<Jumpday> jumpdayResource = assembler.toResource(result.getPayload());
+            Resource<JumpdayDTO> jumpdayResource = assembler.toResource(convertToDto(result.getPayload()));
             return ResponseEntity
                     .created(new URI(jumpdayResource.getId().expand().getHref()))
                     .body(jumpdayResource);
         }
 
-        if (result.getMessage().equals("jumpday.already.exists")) {
-            return ResponseEntity.status(HttpServletResponse.SC_BAD_REQUEST)
-                    .body(new GenericResult(false, messageSource.getMessage(result.getMessage(), null, LocaleContextHolder.getLocale())));
+        if (result.getMessage().equals(IJumpdayService.JUMPDAY_ALREADY_EXISTS_MSG)) {
+            LOGGER.warn("Jumpday already exists: {}", input.getDate());
+            throw new JumpdayExistsException(result.getMessage());
         }
 
+        LOGGER.warn("Error adding jumpday: {}", result.getMessage());
         return ResponseEntity.status(HttpServletResponse.SC_INTERNAL_SERVER_ERROR)
                 .body(new GenericResult(false, messageSource.getMessage(result.getMessage(), null, LocaleContextHolder.getLocale())));
     }

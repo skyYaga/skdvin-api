@@ -29,7 +29,7 @@ public class MongoJumpdayService implements IJumpdayService {
             return new GenericResult<>(true, jumpdays);
         } catch (Exception e) {
             LOGGER.error("Error finding jumpdays", e);
-            return new GenericResult<>(false, "jumpday.service.error", e);
+            return new GenericResult<>(false, JUMPDAY_SERVICE_ERROR_MSG, e);
         }
     }
 
@@ -38,12 +38,12 @@ public class MongoJumpdayService implements IJumpdayService {
         try {
             Jumpday jumpday = jumpdayRepository.findByDate(date);
             if (jumpday == null) {
-                return new GenericResult<>(false, "jumpday.not.found");
+                return new GenericResult<>(false, JUMPDAY_NOT_FOUND_MSG);
             }
             return new GenericResult<>(true, jumpday);
         } catch (Exception e) {
             LOGGER.error("Error finding jumpday", e);
-            return new GenericResult<>(false, "jumpday.service.error", e);
+            return new GenericResult<>(false, JUMPDAY_SERVICE_ERROR_MSG, e);
         }
     }
 
@@ -52,13 +52,13 @@ public class MongoJumpdayService implements IJumpdayService {
         try {
             Jumpday existingJumpday = jumpdayRepository.findByDate(jumpday.getDate());
             if (existingJumpday != null) {
-                return new GenericResult<>(false, "jumpday.already.exists");
+                return new GenericResult<>(false, JUMPDAY_ALREADY_EXISTS_MSG);
             }
             jumpday = jumpdayRepository.save(jumpday);
             return new GenericResult<>(true, jumpday);
         } catch (Exception e) {
             LOGGER.error("Error saving jumpday", e);
-            return new GenericResult<>(false, "jumpday.service.error", e);
+            return new GenericResult<>(false, JUMPDAY_SERVICE_ERROR_MSG, e);
         }
     }
 }
