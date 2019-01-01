@@ -1,7 +1,9 @@
 package in.skdv.skdvinbackend.controller.api;
 
 import in.skdv.skdvinbackend.controller.api.assembler.JumpdayResourceAssembler;
+import in.skdv.skdvinbackend.exception.ErrorMessage;
 import in.skdv.skdvinbackend.exception.JumpdayExistsException;
+import in.skdv.skdvinbackend.exception.JumpdayInternalException;
 import in.skdv.skdvinbackend.model.dto.JumpdayDTO;
 import in.skdv.skdvinbackend.model.entity.Jumpday;
 import in.skdv.skdvinbackend.service.IJumpdayService;
@@ -62,7 +64,7 @@ public class JumpdayController {
             return ResponseEntity.ok(new GenericResult<>(true, convertToDto(result.getPayload())));
         }
 
-        if (result.getMessage().equals(IJumpdayService.JUMPDAY_NOT_FOUND_MSG)) {
+        if (result.getMessage().equals(ErrorMessage.JUMPDAY_NOT_FOUND_MSG.toString())) {
             return ResponseEntity.status(HttpServletResponse.SC_BAD_REQUEST)
                     .body(new GenericResult(false, messageSource.getMessage(result.getMessage(), null, LocaleContextHolder.getLocale())));
         }
@@ -73,7 +75,7 @@ public class JumpdayController {
     }
 
     @PostMapping
-    ResponseEntity<?> addJumpday(@RequestBody JumpdayDTO input, HttpServletResponse response) throws URISyntaxException {
+    ResponseEntity<Resource<JumpdayDTO>> addJumpday(@RequestBody JumpdayDTO input, HttpServletResponse response) throws URISyntaxException {
         GenericResult<Jumpday> result = jumpdayService.saveJumpday(convertToEntity(input));
 
         if (result.isSuccess()) {
@@ -83,14 +85,13 @@ public class JumpdayController {
                     .body(jumpdayResource);
         }
 
-        if (result.getMessage().equals(IJumpdayService.JUMPDAY_ALREADY_EXISTS_MSG)) {
-            LOGGER.warn("Jumpday already exists: {}", input.getDate());
+        if (result.getMessage().equals(ErrorMessage.JUMPDAY_ALREADY_EXISTS_MSG.toString())) {
+            LOGGER.warn("Jumpday already exists: {}", input);
             throw new JumpdayExistsException(result.getMessage());
         }
 
-        LOGGER.warn("Error adding jumpday: {}", result.getMessage());
-        return ResponseEntity.status(HttpServletResponse.SC_INTERNAL_SERVER_ERROR)
-                .body(new GenericResult(false, messageSource.getMessage(result.getMessage(), null, LocaleContextHolder.getLocale())));
+        LOGGER.error("Error adding jumpday: {}", result.getMessage());
+        throw new JumpdayInternalException(result.getMessage());
     }
 
 

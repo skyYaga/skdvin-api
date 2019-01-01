@@ -1,6 +1,7 @@
 package in.skdv.skdvinbackend.controller.api.advice;
 
 import in.skdv.skdvinbackend.exception.JumpdayExistsException;
+import in.skdv.skdvinbackend.exception.JumpdayInternalException;
 import in.skdv.skdvinbackend.util.GenericResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
@@ -15,7 +16,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import javax.servlet.http.HttpServletResponse;
 
 @ControllerAdvice
-public class JumdayExistsAdvice {
+public class JumdayAdvice {
 
     @Autowired
     private MessageSource messageSource;
@@ -25,6 +26,14 @@ public class JumdayExistsAdvice {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     ResponseEntity<GenericResult> jumpdayExistsHandler(JumpdayExistsException ex) {
         return ResponseEntity.status(HttpServletResponse.SC_BAD_REQUEST)
+                .body(new GenericResult(false, messageSource.getMessage(ex.getMessage(), null, LocaleContextHolder.getLocale())));
+    }
+
+    @ResponseBody
+    @ExceptionHandler(JumpdayInternalException.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    ResponseEntity<GenericResult> jumpdayInternalErrorHandler(JumpdayInternalException ex) {
+        return ResponseEntity.status(HttpServletResponse.SC_INTERNAL_SERVER_ERROR)
                 .body(new GenericResult(false, messageSource.getMessage(ex.getMessage(), null, LocaleContextHolder.getLocale())));
     }
 }

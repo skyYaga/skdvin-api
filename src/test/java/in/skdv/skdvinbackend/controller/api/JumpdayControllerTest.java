@@ -124,8 +124,8 @@ public class JumpdayControllerTest {
                         fieldWithPath("slots[].tandemTotal").description("The total capacity of tandem slots"),
                         fieldWithPath("slots[].videoTotal").description("The total capacity of video slots"),
                         fieldWithPath("slots[].appointments").ignored(),
-                        fieldWithPath("clientId").ignored()
-                ), responseFields(
+                        fieldWithPath("freeTimes").ignored()
+                        ), responseFields(
                         fieldWithPath("date").description("The date of the jumpday"),
                         fieldWithPath("jumping").description("true when it's a jumpday"),
                         fieldWithPath("tandemmaster").description("A list of tandem masters avalable at this date"),

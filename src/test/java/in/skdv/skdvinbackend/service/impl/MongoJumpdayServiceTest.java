@@ -38,7 +38,7 @@ public class MongoJumpdayServiceTest {
         GenericResult<Jumpday> savedJumpday = jumpdayService.saveJumpday(jumpday);
         assertNotNull(savedJumpday);
         assertTrue(savedJumpday.isSuccess());
-        assertNotNull(savedJumpday.getPayload().get_id());
+        assertNotNull(savedJumpday.getPayload().getObjectId());
         assertEquals(jumpday.getDate(), savedJumpday.getPayload().getDate());
         assertTrue(savedJumpday.getPayload().isJumping());
         assertEquals(1, savedJumpday.getPayload().getSlots().size());
