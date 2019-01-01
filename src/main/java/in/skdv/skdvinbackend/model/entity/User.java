@@ -13,7 +13,7 @@ import java.util.List;
 public class User {
 
     @Id
-    private ObjectId _id;
+    private ObjectId objectId;
 
     @NotNull
     @NotEmpty
@@ -43,8 +43,8 @@ public class User {
         this.roles = roles;
     }
 
-    public ObjectId get_id() {
-        return _id;
+    public ObjectId getObjectId() {
+        return objectId;
     }
 
     public String getUsername() {
@@ -106,7 +106,7 @@ public class User {
     @Override
     public String toString() {
         return "User{" +
-                "_id=" + _id +
+                "objectId=" + objectId +
                 ", username='" + username + '\'' +
                 ", email='" + email + '\'' +
                 ", roles=" + roles +

@@ -1,5 +1,7 @@
 package in.skdv.skdvinbackend.util;
 
+import in.skdv.skdvinbackend.exception.ErrorMessage;
+
 public class GenericResult<E> {
 
     private boolean success;
@@ -8,21 +10,33 @@ public class GenericResult<E> {
     private E payload;
 
     public GenericResult(boolean success) {
-        this(success, null, null);
+        this(success, null, null, null);
     }
 
     public GenericResult(boolean success, String message) {
         this(success, message, null);
     }
 
+    public GenericResult(boolean success, E payload) {
+        this(success, null, null, payload);
+    }
+
+    public GenericResult(boolean success, ErrorMessage message) {
+        this(success, message.toString(), null);
+    }
+
+    public GenericResult(boolean success, ErrorMessage message, Exception exception) {
+        this(success, message.toString(), exception);
+    }
+
     public GenericResult(boolean success, String message, Exception exception) {
+        this(success, message, exception, null);
+    }
+
+    public GenericResult(boolean success, String message, Exception exception, E payload) {
         this.success = success;
         this.message = message;
         this.exception = exception;
-    }
-
-    public GenericResult(boolean success, E payload) {
-        this.success = success;
         this.payload = payload;
     }
 

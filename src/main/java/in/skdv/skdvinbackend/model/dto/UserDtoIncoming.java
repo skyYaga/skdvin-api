@@ -1,5 +1,6 @@
 package in.skdv.skdvinbackend.model.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import in.skdv.skdvinbackend.model.entity.Role;
 import in.skdv.skdvinbackend.util.ValidEmail;
 import in.skdv.skdvinbackend.util.ValidPassword;
@@ -8,6 +9,7 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.util.List;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class UserDtoIncoming {
 
     @NotNull

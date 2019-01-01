@@ -56,7 +56,7 @@ public class MongoUserDetailsServiceTest {
         User savedUser = userDetailsService.registerNewUser(user);
 
         assertNotNull(savedUser);
-        assertNotNull(savedUser.get_id());
+        assertNotNull(savedUser.getObjectId());
         assertEquals(user.getUsername(), savedUser.getUsername());
         assertEquals(user.getEmail(), savedUser.getEmail());
         assertEquals(user.getRoles(), savedUser.getRoles());
