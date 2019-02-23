@@ -79,17 +79,14 @@ public class MongoAppointmentService implements IAppointmentService {
 
     @Override
     public Appointment findAppointment(int id) {
-        // TODO: make this a MongoDB query
-        for (Jumpday jumpday : jumpdayRepository.findAll()) {
-            for (Slot slot : jumpday.getSlots()) {
-                for (Appointment appointment : slot.getAppointments()) {
-                    if (appointment.getAppointmentId() == id) {
-                        return appointment;
-                    }
-                }
-            }
-        }
-        return null;
+        List<Jumpday> jumpdayList = jumpdayRepository.findAll();
+
+        Optional<Appointment> appointment = jumpdayList.stream()
+                .flatMap(day -> day.getSlots().stream())
+                .flatMap(s -> s.getAppointments().stream())
+                .filter(a -> a.getAppointmentId() == id).findFirst();
+
+        return appointment.orElse(null);
     }
 
     @Override

@@ -1,8 +1,10 @@
 package in.skdv.skdvinbackend.controller.api;
 
 import in.skdv.skdvinbackend.ModelMockHelper;
+import in.skdv.skdvinbackend.model.entity.Appointment;
 import in.skdv.skdvinbackend.model.entity.Jumpday;
 import in.skdv.skdvinbackend.repository.JumpdayRepository;
+import in.skdv.skdvinbackend.service.IAppointmentService;
 import in.skdv.skdvinbackend.service.IJumpdayService;
 import in.skdv.skdvinbackend.util.GenericResult;
 import org.junit.Before;
@@ -67,6 +69,9 @@ public class JumpdayControllerTest {
 
     @Autowired
     private IJumpdayService jumpdayService;
+
+    @Autowired
+    private IAppointmentService appointmentService;
 
     @Autowired
     private JumpdayRepository jumpdayRepository;
@@ -298,6 +303,43 @@ public class JumpdayControllerTest {
                         fieldWithPath("payload.slots[].appointments").ignored()
                 )));
 
+    }
+
+    @Test
+    @WithMockUser
+    public void testGetByDate_WithAppointments() throws Exception {
+        // 4 tandem / 2 video at 10:00 and 11:30
+        Jumpday jumpday = ModelMockHelper.createJumpday();
+        // 1 tandem / 1 video at 10:00
+        Appointment appointment1 = ModelMockHelper.createSingleAppointment();
+        // 2 tandem / 0 video at 10:00
+        Appointment appointment2 = ModelMockHelper.createSecondAppointment();
+
+        jumpdayService.saveJumpday(jumpday);
+        appointmentService.saveAppointment(appointment1);
+        appointmentService.saveAppointment(appointment2);
+
+        mockMvc.perform(RestDocumentationRequestBuilders.get("/api/jumpday/{date}", jumpday.getDate().toString()))
+                .andExpect(status().isOk())
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(jsonPath("$.success", is(true)))
+                .andExpect(jsonPath("$.payload.date", is(jumpday.getDate().toString())))
+                .andExpect(jsonPath("$.payload.jumping", is(jumpday.isJumping())))
+                .andExpect(jsonPath("$.payload.slots", hasSize(jumpday.getSlots().size())))
+                .andExpect(jsonPath("$.payload.slots[0].time", is("10:00")))
+                .andExpect(jsonPath("$.payload.slots[0].tandemTotal", is(4)))
+                .andExpect(jsonPath("$.payload.slots[0].tandemBooked", is(3)))
+                .andExpect(jsonPath("$.payload.slots[0].tandemAvailable", is(1)))
+                .andExpect(jsonPath("$.payload.slots[0].videoTotal", is(2)))
+                .andExpect(jsonPath("$.payload.slots[0].videoBooked", is(1)))
+                .andExpect(jsonPath("$.payload.slots[0].videoAvailable", is(1)))
+                .andExpect(jsonPath("$.payload.slots[1].time", is(jumpday.getSlots().get(1).getTime().toString())))
+                .andExpect(jsonPath("$.payload.slots[1].tandemTotal", is(jumpday.getSlots().get(1).getTandemTotal())))
+                .andExpect(jsonPath("$.payload.slots[1].tandemBooked", is(jumpday.getSlots().get(1).getTandemBooked())))
+                .andExpect(jsonPath("$.payload.slots[1].tandemAvailable", is(jumpday.getSlots().get(1).getTandemAvailable())))
+                .andExpect(jsonPath("$.payload.slots[1].videoTotal", is(jumpday.getSlots().get(1).getVideoTotal())))
+                .andExpect(jsonPath("$.payload.slots[1].videoBooked", is(jumpday.getSlots().get(1).getVideoBooked())))
+                .andExpect(jsonPath("$.payload.slots[1].videoAvailable", is(jumpday.getSlots().get(1).getVideoAvailable())));
     }
 
     @Test

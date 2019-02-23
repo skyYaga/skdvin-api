@@ -74,7 +74,7 @@ public class JumpdayController {
     }
 
     @PostMapping
-    ResponseEntity<Resource<JumpdayDTO>> addJumpday(@RequestBody JumpdayDTO input, HttpServletResponse response) throws URISyntaxException {
+    public ResponseEntity<Resource<JumpdayDTO>> addJumpday(@RequestBody JumpdayDTO input, HttpServletResponse response) throws URISyntaxException {
         GenericResult<Jumpday> result = jumpdayService.saveJumpday(jumpdayConverter.convertToEntity(input));
 
         if (result.isSuccess()) {

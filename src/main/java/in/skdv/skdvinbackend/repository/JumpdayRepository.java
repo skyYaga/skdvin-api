@@ -8,4 +8,5 @@ import java.time.LocalDate;
 public interface JumpdayRepository extends MongoRepository<Jumpday, Integer> {
 
     Jumpday findByDate(LocalDate date);
+
 }

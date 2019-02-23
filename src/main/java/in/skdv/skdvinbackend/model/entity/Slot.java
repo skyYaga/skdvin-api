@@ -12,10 +12,6 @@ public class Slot {
     private LocalTime time;
     private int tandemTotal;
     private int videoTotal;
-    private int tandemBooked;
-    private int videoBooked;
-    private int tandemAvailable;
-    private int videoAvailable;
     private List<Appointment> appointments = new ArrayList<>();
 
 

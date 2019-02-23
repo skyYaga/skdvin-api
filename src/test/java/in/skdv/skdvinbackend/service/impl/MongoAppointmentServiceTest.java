@@ -105,6 +105,7 @@ public class MongoAppointmentServiceTest {
     @Test
     public void testFindAppointment() {
         GenericResult<Appointment> appointment = appointmentService.saveAppointment(ModelMockHelper.createSecondAppointment());
+        appointmentService.saveAppointment(ModelMockHelper.createSingleAppointment());
         assertTrue(appointment.isSuccess());
 
         Appointment foundAppointment = appointmentService.findAppointment(appointment.getPayload().getAppointmentId());

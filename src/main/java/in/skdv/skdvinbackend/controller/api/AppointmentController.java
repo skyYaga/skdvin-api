@@ -34,13 +34,13 @@ public class AppointmentController {
     }
 
     @GetMapping(value = "/{appointmentId}")
-    AppointmentDTO readAppointment(@PathVariable int appointmentId) {
+    public AppointmentDTO readAppointment(@PathVariable int appointmentId) {
         Appointment appointment = appointmentService.findAppointment(appointmentId);
         return appointmentConverter.convertToDto(appointment);
     }
 
     @PostMapping
-    ResponseEntity<GenericResult> addAppointment(@RequestBody AppointmentDTO input, HttpServletResponse response) {
+    public ResponseEntity<GenericResult> addAppointment(@RequestBody AppointmentDTO input, HttpServletResponse response) {
 
         GenericResult<Appointment> result = appointmentService.saveAppointment(appointmentConverter.convertToEntity(input));
 
@@ -66,7 +66,7 @@ public class AppointmentController {
     }
 
     @PutMapping
-    ResponseEntity<GenericResult> updateAppointment(@RequestBody AppointmentDTO input) {
+    public ResponseEntity<GenericResult> updateAppointment(@RequestBody AppointmentDTO input) {
         GenericResult<Appointment> result = appointmentService.updateAppointment(appointmentConverter.convertToEntity(input));
 
         if (result.isSuccess()) {

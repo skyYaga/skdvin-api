@@ -46,7 +46,7 @@ public class UserController {
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PostMapping
-    UserDTO addUser(@RequestBody @Valid UserDtoIncoming input, HttpServletResponse response) {
+    public UserDTO addUser(@RequestBody @Valid UserDtoIncoming input, HttpServletResponse response) {
 
         User user = null;
         response.setStatus(HttpServletResponse.SC_CREATED);
@@ -66,7 +66,7 @@ public class UserController {
     }
 
     @PostMapping("/setup")
-    UserDTO setupUser(@RequestBody @Valid UserDtoIncoming input, HttpServletResponse response) {
+    public UserDTO setupUser(@RequestBody @Valid UserDtoIncoming input, HttpServletResponse response) {
 
         List<User> userList = userService.findAll();
 
@@ -82,7 +82,7 @@ public class UserController {
     }
 
     @PostMapping(path = "/changepassword/{token}")
-    ResponseEntity<GenericResult> changePassword(@PathVariable String token, @RequestBody @Valid PasswordDto passwordDto, BindingResult result) {
+    public ResponseEntity<GenericResult> changePassword(@PathVariable String token, @RequestBody @Valid PasswordDto passwordDto, BindingResult result) {
 
         if (result.hasErrors()) {
             return ResponseEntity.badRequest().body(new GenericResult(false, result.getAllErrors()));
@@ -106,7 +106,7 @@ public class UserController {
     }
 
     @PostMapping(path = "/resetpassword")
-    ResponseEntity<GenericResult> resetPassword(@RequestParam("email") String email) {
+    public ResponseEntity<GenericResult> resetPassword(@RequestParam("email") String email) {
 
         User user = userService.findUserByEmail(email);
         if (user == null) {
@@ -126,7 +126,7 @@ public class UserController {
     }
 
     @GetMapping("/confirm/{token}")
-    UserDTO confirmRegistrationToken(@PathVariable String token, HttpServletResponse response) {
+    public UserDTO confirmRegistrationToken(@PathVariable String token, HttpServletResponse response) {
         boolean hasToken = userService.hasVerificationToken(token);
 
         if (!hasToken) {
