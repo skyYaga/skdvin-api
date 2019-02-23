@@ -1,6 +1,6 @@
 package in.skdv.skdvinbackend.model.entity;
 
-import in.skdv.skdvinbackend.util.ValidEmail;
+import in.skdv.skdvinbackend.model.common.AbstractUser;
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -10,25 +10,14 @@ import javax.validation.constraints.NotNull;
 import java.util.List;
 
 @Document
-public class User {
+public class User extends AbstractUser {
 
     @Id
     private ObjectId objectId;
 
     @NotNull
     @NotEmpty
-    private String username;
-
-    @NotNull
-    @NotEmpty
     private String password;
-
-    @ValidEmail
-    @NotNull
-    @NotEmpty
-    private String email;
-    
-    private List<Role> roles;
 
     private boolean enabled = false;
     private VerificationToken verificationToken;
@@ -47,36 +36,12 @@ public class User {
         return objectId;
     }
 
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
     public String getPassword() {
         return password;
     }
 
     public void setPassword(String password) {
         this.password = password;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public List<Role> getRoles() {
-        return roles;
-    }
-
-    public void setRoles(List<Role> roles) {
-        this.roles = roles;
     }
 
     public boolean isEnabled() {
@@ -101,15 +66,5 @@ public class User {
 
     public void setPasswordResetToken(VerificationToken passwordResetToken) {
         this.passwordResetToken = passwordResetToken;
-    }
-
-    @Override
-    public String toString() {
-        return "User{" +
-                "objectId=" + objectId +
-                ", username='" + username + '\'' +
-                ", email='" + email + '\'' +
-                ", roles=" + roles +
-                '}';
     }
 }
