@@ -4,11 +4,11 @@ import in.skdv.skdvinbackend.controller.api.assembler.JumpdayResourceAssembler;
 import in.skdv.skdvinbackend.exception.ErrorMessage;
 import in.skdv.skdvinbackend.exception.JumpdayExistsException;
 import in.skdv.skdvinbackend.exception.JumpdayInternalException;
+import in.skdv.skdvinbackend.model.converter.JumpdayConverter;
 import in.skdv.skdvinbackend.model.dto.JumpdayDTO;
 import in.skdv.skdvinbackend.model.entity.Jumpday;
 import in.skdv.skdvinbackend.service.IJumpdayService;
 import in.skdv.skdvinbackend.util.GenericResult;
-import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,8 +22,6 @@ import javax.servlet.http.HttpServletResponse;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 
@@ -35,8 +33,8 @@ public class JumpdayController {
 
     private IJumpdayService jumpdayService;
     private MessageSource messageSource;
-    private ModelMapper modelMapper = new ModelMapper();
     private JumpdayResourceAssembler assembler;
+    private JumpdayConverter jumpdayConverter = new JumpdayConverter();
 
     @Autowired
     public JumpdayController(IJumpdayService jumpdayService, MessageSource messageSource, JumpdayResourceAssembler assembler) {
@@ -49,7 +47,7 @@ public class JumpdayController {
     public ResponseEntity<GenericResult> readJumpdays() {
         GenericResult<List<Jumpday>> result = jumpdayService.findJumpdays();
         if (result.isSuccess()) {
-            return ResponseEntity.ok(new GenericResult<>(true, convertToDto(result.getPayload())));
+            return ResponseEntity.ok(new GenericResult<>(true, jumpdayConverter.convertToDto(result.getPayload())));
         }
 
         LOGGER.warn("Error reading Jumpdays: {}", result.getMessage());
@@ -59,9 +57,10 @@ public class JumpdayController {
 
     @GetMapping(value = "/{jumpdayDate}")
     public ResponseEntity<GenericResult> readJumpday(@PathVariable String jumpdayDate) {
+
         GenericResult<Jumpday> result = jumpdayService.findJumpday(LocalDate.parse(jumpdayDate));
         if (result.isSuccess()) {
-            return ResponseEntity.ok(new GenericResult<>(true, convertToDto(result.getPayload())));
+            return ResponseEntity.ok(new GenericResult<>(true, jumpdayConverter.convertToDto(result.getPayload())));
         }
 
         if (result.getMessage().equals(ErrorMessage.JUMPDAY_NOT_FOUND_MSG.toString())) {
@@ -75,11 +74,11 @@ public class JumpdayController {
     }
 
     @PostMapping
-    ResponseEntity<Resource<JumpdayDTO>> addJumpday(@RequestBody JumpdayDTO input, HttpServletResponse response) throws URISyntaxException {
-        GenericResult<Jumpday> result = jumpdayService.saveJumpday(convertToEntity(input));
+    public ResponseEntity<Resource<JumpdayDTO>> addJumpday(@RequestBody JumpdayDTO input, HttpServletResponse response) throws URISyntaxException {
+        GenericResult<Jumpday> result = jumpdayService.saveJumpday(jumpdayConverter.convertToEntity(input));
 
         if (result.isSuccess()) {
-            Resource<JumpdayDTO> jumpdayResource = assembler.toResource(convertToDto(result.getPayload()));
+            Resource<JumpdayDTO> jumpdayResource = assembler.toResource(jumpdayConverter.convertToDto(result.getPayload()));
             return ResponseEntity
                     .created(new URI(jumpdayResource.getId().expand().getHref()))
                     .body(jumpdayResource);
@@ -92,29 +91,5 @@ public class JumpdayController {
 
         LOGGER.error("Error adding jumpday: {}", result.getMessage());
         throw new JumpdayInternalException(result.getMessage());
-    }
-
-
-    private JumpdayDTO convertToDto(Jumpday jumpday) {
-        if (jumpday == null) {
-            return null;
-        }
-        return modelMapper.map(jumpday, JumpdayDTO.class);
-    }
-
-    private List<JumpdayDTO> convertToDto(List<Jumpday> jumpdays) {
-        if (jumpdays == null) {
-            return Collections.emptyList();
-        }
-        List<JumpdayDTO> jumpdayDTOList = new ArrayList<>();
-        jumpdays.forEach(a -> jumpdayDTOList.add(this.convertToDto(a)));
-        return jumpdayDTOList;
-    }
-
-    private Jumpday convertToEntity(JumpdayDTO jumpdayDTO) {
-        if (jumpdayDTO == null) {
-            return null;
-        }
-        return modelMapper.map(jumpdayDTO, Jumpday.class);
     }
 }

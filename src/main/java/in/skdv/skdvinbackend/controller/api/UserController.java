@@ -2,6 +2,7 @@ package in.skdv.skdvinbackend.controller.api;
 
 import in.skdv.skdvinbackend.exception.EmailExistsException;
 import in.skdv.skdvinbackend.exception.TokenExpiredException;
+import in.skdv.skdvinbackend.model.converter.UserConverter;
 import in.skdv.skdvinbackend.model.dto.PasswordDto;
 import in.skdv.skdvinbackend.model.dto.UserDTO;
 import in.skdv.skdvinbackend.model.dto.UserDtoIncoming;
@@ -9,7 +10,6 @@ import in.skdv.skdvinbackend.model.entity.Role;
 import in.skdv.skdvinbackend.model.entity.User;
 import in.skdv.skdvinbackend.service.IUserService;
 import in.skdv.skdvinbackend.util.GenericResult;
-import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,25 +35,24 @@ public class UserController {
     private static final Logger LOGGER = LoggerFactory.getLogger(UserController.class);
 
     private IUserService userService;
-    private ModelMapper modelMapper = new ModelMapper();
-
-    @Autowired
+    private UserConverter userConverter = new UserConverter();
     private MessageSource messageSource;
 
     @Autowired
-    public UserController(IUserService userService) {
+    public UserController(IUserService userService, MessageSource messageSource) {
         this.userService = userService;
+        this.messageSource = messageSource;
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PostMapping
-    UserDTO addUser(@RequestBody @Valid UserDtoIncoming input, HttpServletResponse response) {
+    public UserDTO addUser(@RequestBody @Valid UserDtoIncoming input, HttpServletResponse response) {
 
         User user = null;
         response.setStatus(HttpServletResponse.SC_CREATED);
 
         try {
-            user = userService.registerNewUser(convertToEntity(input));
+            user = userService.registerNewUser(userConverter.convertToEntity(input));
         } catch (EmailExistsException e) {
             LOGGER.warn("E-Mail already exists", e);
             response.setStatus(HttpServletResponse.SC_CONFLICT);
@@ -63,11 +62,11 @@ public class UserController {
         }
 
         // do not return pw
-        return convertToDto(user);
+        return userConverter.convertToDto(user);
     }
 
     @PostMapping("/setup")
-    UserDTO setupUser(@RequestBody @Valid UserDtoIncoming input, HttpServletResponse response) {
+    public UserDTO setupUser(@RequestBody @Valid UserDtoIncoming input, HttpServletResponse response) {
 
         List<User> userList = userService.findAll();
 
@@ -83,7 +82,7 @@ public class UserController {
     }
 
     @PostMapping(path = "/changepassword/{token}")
-    ResponseEntity<GenericResult> changePassword(@PathVariable String token, @RequestBody @Valid PasswordDto passwordDto, BindingResult result) {
+    public ResponseEntity<GenericResult> changePassword(@PathVariable String token, @RequestBody @Valid PasswordDto passwordDto, BindingResult result) {
 
         if (result.hasErrors()) {
             return ResponseEntity.badRequest().body(new GenericResult(false, result.getAllErrors()));
@@ -107,7 +106,7 @@ public class UserController {
     }
 
     @PostMapping(path = "/resetpassword")
-    ResponseEntity<GenericResult> resetPassword(@RequestParam("email") String email) {
+    public ResponseEntity<GenericResult> resetPassword(@RequestParam("email") String email) {
 
         User user = userService.findUserByEmail(email);
         if (user == null) {
@@ -127,7 +126,7 @@ public class UserController {
     }
 
     @GetMapping("/confirm/{token}")
-    UserDTO confirmRegistrationToken(@PathVariable String token, HttpServletResponse response) {
+    public UserDTO confirmRegistrationToken(@PathVariable String token, HttpServletResponse response) {
         boolean hasToken = userService.hasVerificationToken(token);
 
         if (!hasToken) {
@@ -147,20 +146,6 @@ public class UserController {
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
         }
 
-        return convertToDto(user);
-    }
-
-    private UserDTO convertToDto(User user) {
-        if (user == null) {
-            return null;
-        }
-        return modelMapper.map(user, UserDTO.class);
-    }
-
-    private User convertToEntity(UserDtoIncoming userDto) {
-        if (userDto == null) {
-            return null;
-        }
-        return modelMapper.map(userDto, User.class);
+        return userConverter.convertToDto(user);
     }
 }

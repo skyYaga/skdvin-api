@@ -18,8 +18,12 @@ import javax.servlet.http.HttpServletResponse;
 @ControllerAdvice
 public class JumdayAdvice {
 
-    @Autowired
     private MessageSource messageSource;
+
+    @Autowired
+    public JumdayAdvice(MessageSource messageSource) {
+        this.messageSource = messageSource;
+    }
 
     @ResponseBody
     @ExceptionHandler(JumpdayExistsException.class)

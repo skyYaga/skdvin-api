@@ -1,6 +1,7 @@
 package in.skdv.skdvinbackend.service.impl;
 
 import in.skdv.skdvinbackend.exception.EmailExistsException;
+import in.skdv.skdvinbackend.exception.ErrorMessage;
 import in.skdv.skdvinbackend.exception.TokenExpiredException;
 import in.skdv.skdvinbackend.model.dto.PasswordDto;
 import in.skdv.skdvinbackend.model.entity.User;
@@ -33,14 +34,16 @@ public class MongoUserDetailsService implements UserDetailsService, IUserService
 
     private static final int EXPIRATION_HOURS = 24;
 
-    @Autowired
     private UserRepository userRepository;
-
-    @Autowired
     private PasswordEncoder passwordEncoder;
+    private IEmailService emailService;
 
     @Autowired
-    private IEmailService emailService;
+    public MongoUserDetailsService(UserRepository userRepository, PasswordEncoder passwordEncoder, IEmailService emailService) {
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.emailService = emailService;
+    }
 
     /**
      * Locates the user based on the username. In the actual implementation, the search
@@ -125,7 +128,7 @@ public class MongoUserDetailsService implements UserDetailsService, IUserService
             return result;
         } catch (MessagingException e) {
             LOGGER.error("Error sending Password Reset Token: ", e);
-            return new GenericResult<>(false, "user.resetPassword.failed", e);
+            return new GenericResult<>(false, ErrorMessage.USER_RESET_PASSWORD_FAILED, e);
         }
     }
 
@@ -139,9 +142,9 @@ public class MongoUserDetailsService implements UserDetailsService, IUserService
                 return new GenericResult<>(true, user);
             }
 
-            return new GenericResult<>(false, "user.token.expired");
+            return new GenericResult<>(false, ErrorMessage.USER_TOKEN_EXPIRED);
         }
-        return new GenericResult<>(false, "user.token.notfound");
+        return new GenericResult<>(false, ErrorMessage.USER_TOKEN_NOT_FOUND);
     }
 
     @Override

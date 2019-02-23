@@ -1,9 +1,12 @@
 package in.skdv.skdvinbackend.controller.api;
 
 import in.skdv.skdvinbackend.ModelMockHelper;
+import in.skdv.skdvinbackend.model.converter.AppointmentConverter;
+import in.skdv.skdvinbackend.model.dto.AppointmentDTO;
 import in.skdv.skdvinbackend.model.entity.Appointment;
-import in.skdv.skdvinbackend.repository.AppointmentRepository;
+import in.skdv.skdvinbackend.repository.JumpdayRepository;
 import in.skdv.skdvinbackend.service.IAppointmentService;
+import in.skdv.skdvinbackend.util.GenericResult;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -21,9 +24,9 @@ import org.springframework.web.context.WebApplicationContext;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.time.LocalDate;
 import java.util.Arrays;
 
-import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertNotNull;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
@@ -45,7 +48,7 @@ public class AppointmentControllerTest {
     private MockMvc mockMvc;
 
     @Autowired
-    private AppointmentRepository appointmentRepository;
+    private JumpdayRepository jumpdayRepository;
 
     @Autowired
     private IAppointmentService appointmentService;
@@ -70,21 +73,11 @@ public class AppointmentControllerTest {
         this.mockMvc = webAppContextSetup(webApplicationContext)
                         .apply(springSecurity()).build();
 
-        appointmentRepository.deleteAll();
+        jumpdayRepository.deleteAll();
+        jumpdayRepository.save(ModelMockHelper.createJumpday());
 
         appointmentService.saveAppointment(ModelMockHelper.createSingleAppointment());
         appointmentService.saveAppointment(ModelMockHelper.createSecondAppointment());
-    }
-
-    @Test
-    @WithMockUser
-    public void testGetAll() throws Exception {
-        mockMvc.perform(get("/api/appointments/"))
-//                .andDo(MockMvcResultHandlers.print())
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(2)))
-                .andExpect(jsonPath("$[0].customer.firstName", is("Max")))
-                .andExpect(jsonPath("$[1].customer.firstName", is("Jane")));
     }
 
     @Test
@@ -96,7 +89,8 @@ public class AppointmentControllerTest {
     @Test
     @WithMockUser
     public void testGetOne() throws Exception {
-        Appointment appointment = appointmentService.saveAppointment(ModelMockHelper.createSingleAppointment());
+        GenericResult<Appointment> appointmentGenericResult = appointmentService.saveAppointment(ModelMockHelper.createSingleAppointment());
+        Appointment appointment = appointmentGenericResult.getPayload();
 
         mockMvc.perform(get("/api/appointments/" + appointment.getAppointmentId()))
 //                .andDo(MockMvcResultHandlers.print())
@@ -107,7 +101,8 @@ public class AppointmentControllerTest {
 
     @Test
     public void testGetOneUnauthorized() throws Exception {
-        Appointment appointment = appointmentService.saveAppointment(ModelMockHelper.createSingleAppointment());
+        GenericResult<Appointment> appointmentGenericResult = appointmentService.saveAppointment(ModelMockHelper.createSingleAppointment());
+        Appointment appointment = appointmentGenericResult.getPayload();
 
         mockMvc.perform(get("/api/appointments/" + appointment.getAppointmentId()))
                 .andExpect(status().isUnauthorized());
@@ -115,7 +110,7 @@ public class AppointmentControllerTest {
 
     @Test
     @WithMockUser
-    public void testCreateNewAppointment() throws Exception {
+    public void testAddAppointment() throws Exception {
         String appointmentJson = json(ModelMockHelper.createSingleAppointment());
 
         mockMvc.perform(post("/api/appointments/")
@@ -123,11 +118,12 @@ public class AppointmentControllerTest {
                 .content(appointmentJson))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.customer.firstName", is("Max")));
+                .andExpect(jsonPath("$.success", is(true)))
+                .andExpect(jsonPath("$.payload.customer.firstName", is("Max")));
     }
 
     @Test
-    public void testCreateNewAppointmentUnauthorized() throws Exception {
+    public void testAddAppointment_Unauthorized() throws Exception {
         String appointmentJson = json(ModelMockHelper.createSingleAppointment());
 
         mockMvc.perform(post("/api/appointments/")
@@ -138,10 +134,61 @@ public class AppointmentControllerTest {
 
     @Test
     @WithMockUser
-    public void testUpdateAppointment() throws Exception {
-        Appointment appointment = appointmentService.findAppointments().get(0);
+    public void testAddAppointment_NoSlotLeft() throws Exception {
+        appointmentService.saveAppointment(ModelMockHelper.createAppointment(3, 0));
 
-        appointment.setTandem(10);
+        String appointmentJson = json(ModelMockHelper.createAppointment(2, 0));
+
+        mockMvc.perform(post("/api/appointments?lang=de")
+                .contentType(contentType)
+                .content(appointmentJson))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.message", is("Sprungtag hat nicht genügend freie Slots")));
+    }
+
+    @Test
+    @WithMockUser
+    public void testAddAppointment_NoJumpDay() throws Exception {
+        Appointment appointment = ModelMockHelper.createSingleAppointment();
+        appointment.setDate(appointment.getDate().plusDays(10));
+        String appointmentJson = json(appointment);
+
+
+        mockMvc.perform(post("/api/appointments?lang=de")
+                .contentType(contentType)
+                .content(appointmentJson))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.message", is("Sprungtag nicht gefunden")));
+    }
+
+    @Test
+    @WithMockUser
+    public void testAddAppointment_MoreVideoThanTandemSlots() throws Exception {
+        Appointment appointment = ModelMockHelper.createAppointment(1, 2);
+        String appointmentJson = json(appointment);
+
+
+        mockMvc.perform(post("/api/appointments?lang=en")
+                .contentType(contentType)
+                .content(appointmentJson))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.message", is("The appointment has more video than tandem slots")));
+    }
+
+    @Test
+    @WithMockUser
+    public void testUpdateAppointment() throws Exception {
+        AppointmentConverter appointmentConverter = new AppointmentConverter();
+        AppointmentDTO appointment = appointmentConverter.convertToDto(appointmentService.findAppointmentsByDay(LocalDate.now()).get(0));
+
+        int newCount = appointment.getTandem() + 1;
+
+        appointment.setTandem(newCount);
         appointment.getCustomer().setFirstName("Unitjane");
 
         String appointmentJson = json(appointment);
@@ -151,13 +198,14 @@ public class AppointmentControllerTest {
                 .content(appointmentJson))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.tandem", is(10)))
-                .andExpect(jsonPath("$.customer.firstName", is("Unitjane")));
+                .andExpect(jsonPath("$.success", is(true)))
+                .andExpect(jsonPath("$.payload.tandem", is(newCount)))
+                .andExpect(jsonPath("$.payload.customer.firstName", is("Unitjane")));
     }
 
     @Test
     public void testUpdateAppointmentUnauthorized() throws Exception {
-        Appointment appointment = appointmentService.findAppointments().get(0);
+        Appointment appointment = appointmentService.findAppointmentsByDay(LocalDate.now()).get(0);
 
         appointment.setTandem(10);
         appointment.getCustomer().setFirstName("Unitjane");
@@ -168,6 +216,63 @@ public class AppointmentControllerTest {
                 .contentType(contentType)
                 .content(appointmentJson))
                 .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @WithMockUser
+    public void testUpdateAppointment_NoJumpDay() throws Exception {
+        AppointmentConverter appointmentConverter = new AppointmentConverter();
+        AppointmentDTO appointment = appointmentConverter.convertToDto(appointmentService.findAppointmentsByDay(LocalDate.now()).get(0));
+
+        appointment.setDate(appointment.getDate().plusDays(10));
+
+        String appointmentJson = json(appointment);
+
+        mockMvc.perform(put("/api/appointments?lang=de")
+                .contentType(contentType)
+                .content(appointmentJson))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.message", is("Sprungtag nicht gefunden")));
+    }
+
+    @Test
+    @WithMockUser
+    public void testUpdateAppointment_MoreVideoThanTandemSlots() throws Exception {
+        AppointmentConverter appointmentConverter = new AppointmentConverter();
+        AppointmentDTO appointment = appointmentConverter.convertToDto(appointmentService.findAppointmentsByDay(LocalDate.now()).get(0));
+
+        appointment.setVideo(appointment.getTandem() + 1);
+
+        String appointmentJson = json(appointment);
+
+        mockMvc.perform(put("/api/appointments?lang=en")
+                .contentType(contentType)
+                .content(appointmentJson))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.message", is("The appointment has more video than tandem slots")));
+    }
+
+    @Test
+    @WithMockUser
+    public void testUpdateAppointment_NoSlotLeft() throws Exception {
+        AppointmentConverter appointmentConverter = new AppointmentConverter();
+        AppointmentDTO appointment = appointmentConverter.convertToDto(appointmentService.findAppointmentsByDay(LocalDate.now()).get(0));
+
+        appointment.setTandem(10);
+
+        String appointmentJson = json(appointment);
+
+        mockMvc.perform(put("/api/appointments?lang=en")
+                .contentType(contentType)
+                .content(appointmentJson))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.message", is("Jumpday has not enough free slots")));
     }
 
     private String json(Object o) throws IOException {

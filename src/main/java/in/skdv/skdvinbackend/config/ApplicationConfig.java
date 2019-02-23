@@ -1,6 +1,5 @@
 package in.skdv.skdvinbackend.config;
 
-import in.skdv.skdvinbackend.repository.AppointmentRepository;
 import in.skdv.skdvinbackend.repository.JumpdayRepository;
 import in.skdv.skdvinbackend.service.IAppointmentService;
 import in.skdv.skdvinbackend.service.IJumpdayService;
@@ -23,9 +22,6 @@ import java.util.Locale;
 public class ApplicationConfig implements WebMvcConfigurer {
 
     @Autowired
-    private AppointmentRepository appointmentRepository;
-
-    @Autowired
     private JumpdayRepository jumpdayRepository;
 
     @Bean
@@ -36,7 +32,7 @@ public class ApplicationConfig implements WebMvcConfigurer {
     @Bean
     @Autowired
     public IAppointmentService getAppointmentService(ISequenceService sequenceService) {
-        return new MongoAppointmentService(appointmentRepository, sequenceService);
+        return new MongoAppointmentService(jumpdayRepository, sequenceService);
     }
 
     @Bean
