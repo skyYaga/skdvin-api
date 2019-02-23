@@ -41,7 +41,7 @@ public class MongoJumpdayServiceTest {
         assertNotNull(savedJumpday.getPayload().getObjectId());
         assertEquals(jumpday.getDate(), savedJumpday.getPayload().getDate());
         assertTrue(savedJumpday.getPayload().isJumping());
-        assertEquals(1, savedJumpday.getPayload().getSlots().size());
+        assertEquals(2, savedJumpday.getPayload().getSlots().size());
         assertEquals(jumpday.getSlots().get(0).getTime(), savedJumpday.getPayload().getSlots().get(0).getTime());
         assertEquals(4, savedJumpday.getPayload().getSlots().get(0).getTandemTotal());
         assertEquals(2, savedJumpday.getPayload().getSlots().get(0).getVideoTotal());

@@ -108,10 +108,11 @@ public class JumpdayControllerTest {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.date", is(LocalDate.now().toString())))
                 .andExpect(jsonPath("$.jumping", is(true)))
-                .andExpect(jsonPath("$.slots", hasSize(1)))
+                .andExpect(jsonPath("$.slots", hasSize(2)))
                 .andExpect(jsonPath("$.slots[0].tandemTotal", is(4)))
                 .andExpect(jsonPath("$.slots[0].videoTotal", is(2)))
                 .andExpect(jsonPath("$.slots[0].time", is("10:00")))
+                .andExpect(jsonPath("$.slots[1].time", is("11:30")))
                 .andExpect(jsonPath("$._links.self.href", is("http://localhost:8080/api/jumpday/" + LocalDate.now())))
                 .andExpect(jsonPath("$._links.jumpdays.href", is("http://localhost:8080/api/jumpday")))
                 .andDo(document("jumpday/create-jumpday", requestFields(
@@ -124,6 +125,10 @@ public class JumpdayControllerTest {
                         fieldWithPath("slots[].tandemTotal").description("The total capacity of tandem slots"),
                         fieldWithPath("slots[].videoTotal").description("The total capacity of video slots"),
                         fieldWithPath("slots[].appointments").ignored(),
+                        fieldWithPath("slots[].tandemBooked").ignored(),
+                        fieldWithPath("slots[].tandemAvailable").ignored(),
+                        fieldWithPath("slots[].videoBooked").ignored(),
+                        fieldWithPath("slots[].videoAvailable").ignored(),
                         fieldWithPath("freeTimes").ignored()
                         ), responseFields(
                         fieldWithPath("date").description("The date of the jumpday"),
@@ -133,7 +138,11 @@ public class JumpdayControllerTest {
                         fieldWithPath("slots[]").description("The list of time slots on this jumpday"),
                         fieldWithPath("slots[].time").description("The time of this slot"),
                         fieldWithPath("slots[].tandemTotal").description("The total capacity of tandem slots"),
+                        fieldWithPath("slots[].tandemBooked").description("The total booked tandem slots"),
+                        fieldWithPath("slots[].tandemAvailable").description("The total available tandem slots"),
                         fieldWithPath("slots[].videoTotal").description("The total capacity of video slots"),
+                        fieldWithPath("slots[].videoBooked").description("The total booked video slots"),
+                        fieldWithPath("slots[].videoAvailable").description("The total available video slots"),
                         fieldWithPath("_links.self.href").description("API link to the new created jumpday"),
                         fieldWithPath("_links.jumpdays.href").description("API link to all jumpdays"),
                         fieldWithPath("freeTimes").ignored(),
@@ -227,7 +236,11 @@ public class JumpdayControllerTest {
                         fieldWithPath("payload[].slots[]").description("The list of time slots on this jumpday"),
                         fieldWithPath("payload[].slots[].time").description("The time of this slot"),
                         fieldWithPath("payload[].slots[].tandemTotal").description("The total capacity of tandem slots"),
+                        fieldWithPath("payload[].slots[].tandemBooked").description("The total booked tandem slots"),
+                        fieldWithPath("payload[].slots[].tandemAvailable").description("The total available tandem slots"),
                         fieldWithPath("payload[].slots[].videoTotal").description("The total capacity of video slots"),
+                        fieldWithPath("payload[].slots[].videoBooked").description("The total booked video slots"),
+                        fieldWithPath("payload[].slots[].videoAvailable").description("The total available video slots"),
                         fieldWithPath("message").ignored(),
                         fieldWithPath("exception").ignored(),
                         fieldWithPath("payload[].freeTimes").ignored(),
@@ -274,7 +287,11 @@ public class JumpdayControllerTest {
                         fieldWithPath("payload.slots[]").description("The list of time slots on this jumpday"),
                         fieldWithPath("payload.slots[].time").description("The time of this slot"),
                         fieldWithPath("payload.slots[].tandemTotal").description("The total capacity of tandem slots"),
+                        fieldWithPath("payload.slots[].tandemBooked").description("The total booked tandem slots"),
+                        fieldWithPath("payload.slots[].tandemAvailable").description("The total available tandem slots"),
                         fieldWithPath("payload.slots[].videoTotal").description("The total capacity of video slots"),
+                        fieldWithPath("payload.slots[].videoBooked").description("The total booked video slots"),
+                        fieldWithPath("payload.slots[].videoAvailable").description("The total available video slots"),
                         fieldWithPath("message").ignored(),
                         fieldWithPath("exception").ignored(),
                         fieldWithPath("payload.freeTimes").ignored(),

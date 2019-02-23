@@ -3,6 +3,7 @@ package in.skdv.skdvinbackend.model.entity;
 import com.fasterxml.jackson.annotation.JsonFormat;
 
 import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.List;
 
 public class Slot {
@@ -11,7 +12,11 @@ public class Slot {
     private LocalTime time;
     private int tandemTotal;
     private int videoTotal;
-    private List<Appointment> appointments;
+    private int tandemBooked;
+    private int videoBooked;
+    private int tandemAvailable;
+    private int videoAvailable;
+    private List<Appointment> appointments = new ArrayList<>();
 
 
     public LocalTime getTime() {
@@ -44,6 +49,22 @@ public class Slot {
 
     public void setAppointments(List<Appointment> appointments) {
         this.appointments = appointments;
+    }
+
+    public int getTandemBooked() {
+        return appointments.stream().mapToInt(Appointment::getTandem).sum();
+    }
+
+    public int getVideoBooked() {
+        return appointments.stream().mapToInt(Appointment::getVideo).sum();
+    }
+
+    public int getTandemAvailable() {
+        return getTandemTotal() - getTandemBooked();
+    }
+
+    public int getVideoAvailable() {
+        return getVideoTotal() - getVideoBooked();
     }
 
     @Override

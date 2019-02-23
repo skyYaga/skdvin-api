@@ -6,12 +6,17 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.UUID;
 
 public class ModelMockHelper {
 
     public static Appointment createSingleAppointment() {
+        return createAppointment(1, 1);
+    }
+
+    public static Appointment createAppointment(int tandemCount, int videoCount) {
         Customer customer = new Customer();
         customer.setFirstName("Max");
         customer.setLastName("Mustermann");
@@ -24,9 +29,9 @@ public class ModelMockHelper {
         Appointment appointment = new Appointment();
         appointment.setCustomer(customer);
         appointment.setState(AppointmentState.NONE);
-        appointment.setDate(LocalDateTime.now());
-        appointment.setTandem(1);
-        appointment.setVideo(1);
+        appointment.setDate(LocalDateTime.of(LocalDate.now(), LocalTime.of(10, 0)));
+        appointment.setTandem(tandemCount);
+        appointment.setVideo(videoCount);
 
         return appointment;
     }
@@ -44,7 +49,7 @@ public class ModelMockHelper {
         Appointment appointment = new Appointment();
         appointment.setCustomer(customer);
         appointment.setState(AppointmentState.NONE);
-        appointment.setDate(LocalDateTime.now());
+        appointment.setDate(LocalDateTime.of(LocalDate.now(), LocalTime.of(10, 0)));
         appointment.setTandem(2);
         appointment.setVideo(0);
 
@@ -84,8 +89,12 @@ public class ModelMockHelper {
         slot.setTime(LocalTime.of(10, 0));
         slot.setTandemTotal(4);
         slot.setVideoTotal(2);
+        Slot slot2 = new Slot();
+        slot2.setTime(LocalTime.of(11, 30));
+        slot2.setTandemTotal(4);
+        slot2.setVideoTotal(2);
 
-        jumpday.setSlots(Collections.singletonList(slot));
+        jumpday.setSlots(Arrays.asList(slot, slot2));
 
         return jumpday;
     }

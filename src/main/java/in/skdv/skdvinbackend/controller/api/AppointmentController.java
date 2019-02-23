@@ -1,74 +1,93 @@
 package in.skdv.skdvinbackend.controller.api;
 
+import in.skdv.skdvinbackend.exception.ErrorMessage;
+import in.skdv.skdvinbackend.model.converter.AppointmentConverter;
 import in.skdv.skdvinbackend.model.dto.AppointmentDTO;
 import in.skdv.skdvinbackend.model.entity.Appointment;
 import in.skdv.skdvinbackend.service.IAppointmentService;
-import org.modelmapper.ModelMapper;
+import in.skdv.skdvinbackend.util.GenericResult;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/appointments")
 public class AppointmentController {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(AppointmentController.class);
+
     private IAppointmentService appointmentService;
-    private ModelMapper modelMapper = new ModelMapper();
+    private MessageSource messageSource;
+    private AppointmentConverter appointmentConverter = new AppointmentConverter();
 
     @Autowired
-    public AppointmentController(IAppointmentService appointmentService) {
+    public AppointmentController(IAppointmentService appointmentService, MessageSource messageSource) {
         this.appointmentService = appointmentService;
-    }
-
-    @GetMapping
-    List<AppointmentDTO> readAppointments() {
-        return convertToDto(appointmentService.findAppointments());
+        this.messageSource = messageSource;
     }
 
     @GetMapping(value = "/{appointmentId}")
     AppointmentDTO readAppointment(@PathVariable int appointmentId) {
         Appointment appointment = appointmentService.findAppointment(appointmentId);
-        return convertToDto(appointment);
+        return appointmentConverter.convertToDto(appointment);
     }
 
     @PostMapping
-    AppointmentDTO addAppointment(@RequestBody AppointmentDTO input, HttpServletResponse response) {
-        Appointment appointment = appointmentService.saveAppointment(convertToEntity(input));
-        response.setStatus(HttpServletResponse.SC_CREATED);
-        return convertToDto(appointment);
+    ResponseEntity<GenericResult> addAppointment(@RequestBody AppointmentDTO input, HttpServletResponse response) {
+
+        GenericResult<Appointment> result = appointmentService.saveAppointment(appointmentConverter.convertToEntity(input));
+
+        if (result.isSuccess()) {
+            return ResponseEntity.status(HttpStatus.CREATED)
+                .body(new GenericResult<>(true, appointmentConverter.convertToDto(result.getPayload())));
+        }
+
+        if (result.getMessage().equals(ErrorMessage.JUMPDAY_NOT_FOUND_MSG.toString()) ||
+                result.getMessage().equals(ErrorMessage.APPOINTMENT_MORE_VIDEO_THAN_TAMDEM_SLOTS.toString())) {
+            return ResponseEntity.status(HttpServletResponse.SC_BAD_REQUEST)
+                    .body(new GenericResult(false, messageSource.getMessage(result.getMessage(), null, LocaleContextHolder.getLocale())));
+        }
+
+        if (result.getMessage().equals(ErrorMessage.JUMPDAY_NO_FREE_SLOTS.toString())) {
+            return ResponseEntity.status(HttpServletResponse.SC_CONFLICT)
+                    .body(new GenericResult(false, messageSource.getMessage(result.getMessage(), null, LocaleContextHolder.getLocale())));
+        }
+
+        LOGGER.warn("Error adding Appointment: {}", result.getMessage());
+        return ResponseEntity.status(HttpServletResponse.SC_INTERNAL_SERVER_ERROR)
+                .body(new GenericResult(false, messageSource.getMessage(result.getMessage(), null, LocaleContextHolder.getLocale())));
     }
 
     @PutMapping
-    AppointmentDTO updateAppointment(@RequestBody AppointmentDTO input) {
-        Appointment appointment = appointmentService.updateAppointment(convertToEntity(input));
-        return convertToDto(appointment);
-    }
+    ResponseEntity<GenericResult> updateAppointment(@RequestBody AppointmentDTO input) {
+        GenericResult<Appointment> result = appointmentService.updateAppointment(appointmentConverter.convertToEntity(input));
 
-    private AppointmentDTO convertToDto(Appointment appointment) {
-        if (appointment == null) {
-            return null;
+        if (result.isSuccess()) {
+            return ResponseEntity.ok(new GenericResult<>(true, appointmentConverter.convertToDto(result.getPayload())));
         }
-        return modelMapper.map(appointment, AppointmentDTO.class);
-    }
 
-
-    private List<AppointmentDTO> convertToDto(List<Appointment> appointments) {
-        if (appointments == null) {
-            return Collections.emptyList();
+        if (result.getMessage().equals(ErrorMessage.JUMPDAY_NOT_FOUND_MSG.toString()) ||
+                result.getMessage().equals(ErrorMessage.APPOINTMENT_MORE_VIDEO_THAN_TAMDEM_SLOTS.toString())) {
+            return ResponseEntity.status(HttpServletResponse.SC_BAD_REQUEST)
+                    .body(new GenericResult(false, messageSource.getMessage(result.getMessage(), null, LocaleContextHolder.getLocale())));
         }
-        List<AppointmentDTO> appointmentDTOList = new ArrayList<>();
-        appointments.forEach(a -> appointmentDTOList.add(this.convertToDto(a)));
-        return appointmentDTOList;
-    }
 
-    private Appointment convertToEntity(AppointmentDTO appointmentDto) {
-        if (appointmentDto == null) {
-            return null;
+        if (result.getMessage().equals(ErrorMessage.JUMPDAY_NO_FREE_SLOTS.toString())) {
+            return ResponseEntity.status(HttpServletResponse.SC_CONFLICT)
+                    .body(new GenericResult(false, messageSource.getMessage(result.getMessage(), null, LocaleContextHolder.getLocale())));
         }
-        return modelMapper.map(appointmentDto, Appointment.class);
+
+
+
+        LOGGER.warn("Error adding Appointment: {}", result.getMessage());
+        return ResponseEntity.status(HttpServletResponse.SC_INTERNAL_SERVER_ERROR)
+                .body(new GenericResult(false, messageSource.getMessage(result.getMessage(), null, LocaleContextHolder.getLocale())));
     }
 }
