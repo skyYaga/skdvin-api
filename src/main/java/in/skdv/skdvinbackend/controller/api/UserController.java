@@ -39,8 +39,12 @@ public class UserController {
     private MessageSource messageSource;
 
     @Autowired
-    public UserController(IUserService userService, MessageSource messageSource) {
+    public void setUserService(IUserService userService) {
         this.userService = userService;
+    }
+
+    @Autowired
+    public UserController(MessageSource messageSource) {
         this.messageSource = messageSource;
     }
 

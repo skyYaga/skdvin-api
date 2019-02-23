@@ -15,12 +15,17 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
-    @Autowired
     private MongoUserDetailsService userDetailsService;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
+    }
+
+
+    @Autowired
+    public void userDetailsService(MongoUserDetailsService userDetailsService) {
+        this.userDetailsService = userDetailsService;
     }
 
     @Override

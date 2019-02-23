@@ -22,7 +22,7 @@ public class EmailService implements IEmailService {
 
     private static final Logger LOG = LoggerFactory.getLogger(EmailService.class);
     private static final String USER_REGISTRATION_ENDPOINT = "/api/user/confirm/";
-    private static final String USER_PASSWORD_RESET_ENDPOINT = "/api/user/resetpassword/";
+    private static final String USER_PW_RESET_ENDPOINT = "/api/user/resetpassword/";
 
     private JavaMailSender mailSender;
     private TemplateEngine emailTemplateEngine;
@@ -61,7 +61,7 @@ public class EmailService implements IEmailService {
         String htmlContent = emailTemplateEngine.process("html/user-registration", ctx);
         message.setText(htmlContent, true);
 
-        LOG.info("Sending user registration mail to {0}", toEmail);
+        LOG.info("Sending user registration mail to {}", toEmail);
 
         mailSender.send(mimeMessage);
     }
@@ -73,7 +73,7 @@ public class EmailService implements IEmailService {
 
         Context ctx = new Context(locale);
         ctx.setVariable("username", user.getUsername());
-        ctx.setVariable("tokenurl", baseurl + USER_PASSWORD_RESET_ENDPOINT + user.getPasswordResetToken().getToken());
+        ctx.setVariable("tokenurl", baseurl + USER_PW_RESET_ENDPOINT + user.getPasswordResetToken().getToken());
 
         MimeMessage mimeMessage = mailSender.createMimeMessage();
         MimeMessageHelper message = new MimeMessageHelper(mimeMessage, "UTF-8");
