@@ -78,7 +78,7 @@ public class AppointmentControllerMockTest {
                 .thenReturn(new GenericResult<>(false, ErrorMessage.APPOINTMENT_SERVICE_ERROR_MSG));
         String appointmentJson = json(ModelMockHelper.createSingleAppointment());
 
-        mockMvc.perform(post("/api/appointments?lang=en")
+        mockMvc.perform(post("/api/appointment?lang=en")
                 .contentType(contentType)
                 .content(appointmentJson))
                 .andDo(MockMvcResultHandlers.print())
@@ -94,7 +94,7 @@ public class AppointmentControllerMockTest {
                 .thenReturn(new GenericResult<>(false, ErrorMessage.APPOINTMENT_SERVICE_ERROR_MSG));
         String appointmentJson = json(ModelMockHelper.createSingleAppointment());
 
-        mockMvc.perform(put("/api/appointments?lang=de")
+        mockMvc.perform(put("/api/appointment?lang=de")
                 .contentType(contentType)
                 .content(appointmentJson))
                 .andDo(MockMvcResultHandlers.print())

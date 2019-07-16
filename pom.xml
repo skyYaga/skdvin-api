@@ -22,6 +22,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<java.version>1.8</java.version>
+		<auth0.version>1.2.1</auth0.version>
 		<modelmapper.version>2.3.2</modelmapper.version>
 		<passay.version>1.4.0</passay.version>
 	</properties>
@@ -62,6 +63,12 @@
 			<groupId>org.passay</groupId>
 			<artifactId>passay</artifactId>
 			<version>${passay.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.auth0</groupId>
+			<artifactId>auth0-spring-security-api</artifactId>
+			<version>${auth0.version}</version>
 		</dependency>
 
 		<dependency>
