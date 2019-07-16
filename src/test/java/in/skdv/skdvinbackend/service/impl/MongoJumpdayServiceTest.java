@@ -1,5 +1,6 @@
 package in.skdv.skdvinbackend.service.impl;
 
+import in.skdv.skdvinbackend.AbstractSkdvinTest;
 import in.skdv.skdvinbackend.ModelMockHelper;
 import in.skdv.skdvinbackend.model.entity.Jumpday;
 import in.skdv.skdvinbackend.repository.JumpdayRepository;
@@ -19,7 +20,7 @@ import static org.junit.Assert.*;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
-public class MongoJumpdayServiceTest {
+public class MongoJumpdayServiceTest extends AbstractSkdvinTest {
 
     @Autowired
     JumpdayRepository jumpdayRepository;

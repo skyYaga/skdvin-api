@@ -1,5 +1,6 @@
 package in.skdv.skdvinbackend.mail.template;
 
+import in.skdv.skdvinbackend.AbstractSkdvinTest;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +15,7 @@ import static org.junit.Assert.assertEquals;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
-public class EmailTemplateTest {
+public class EmailTemplateTest extends AbstractSkdvinTest {
 
     private static final String BASE_URL = "https://example.com";
 

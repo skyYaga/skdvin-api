@@ -1,5 +1,6 @@
 package in.skdv.skdvinbackend.controller.api;
 
+import in.skdv.skdvinbackend.AbstractSkdvinTest;
 import in.skdv.skdvinbackend.ModelMockHelper;
 import in.skdv.skdvinbackend.exception.ErrorMessage;
 import in.skdv.skdvinbackend.model.entity.Jumpday;
@@ -27,6 +28,8 @@ import java.nio.charset.Charset;
 import java.time.LocalDate;
 import java.util.Arrays;
 
+import static in.skdv.skdvinbackend.config.Authorities.CREATE_JUMPDAYS;
+import static in.skdv.skdvinbackend.config.Authorities.READ_JUMPDAYS;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertNotNull;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
@@ -38,7 +41,7 @@ import static org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppC
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
-public class JumpdayControllerMockTest {
+public class JumpdayControllerMockTest extends AbstractSkdvinTest {
 
     private MediaType contentType = new MediaType(MediaType.APPLICATION_JSON.getType(),
             MediaType.APPLICATION_JSON.getSubtype(),
@@ -73,7 +76,7 @@ public class JumpdayControllerMockTest {
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(authorities = CREATE_JUMPDAYS)
     public void testAddJumpday_InternalError() throws Exception {
         Mockito.when(jumpdayService.saveJumpday(Mockito.any(Jumpday.class)))
                 .thenReturn(new GenericResult<>(false, ErrorMessage.JUMPDAY_SERVICE_ERROR_MSG));
@@ -90,7 +93,7 @@ public class JumpdayControllerMockTest {
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(authorities = READ_JUMPDAYS)
     public void testFindJumpday_InternalError() throws Exception {
         Mockito.when(jumpdayService.findJumpday(Mockito.any(LocalDate.class)))
                 .thenReturn(new GenericResult<>(false, ErrorMessage.JUMPDAY_SERVICE_ERROR_MSG));
@@ -102,7 +105,7 @@ public class JumpdayControllerMockTest {
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(authorities = READ_JUMPDAYS)
     public void testFindJumpdays_InternalError() throws Exception {
         Mockito.when(jumpdayService.findJumpdays())
                 .thenReturn(new GenericResult<>(false, ErrorMessage.JUMPDAY_SERVICE_ERROR_MSG));

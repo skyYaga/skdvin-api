@@ -1,5 +1,6 @@
 package in.skdv.skdvinbackend.controller.api;
 
+import in.skdv.skdvinbackend.AbstractSkdvinTest;
 import in.skdv.skdvinbackend.ModelMockHelper;
 import in.skdv.skdvinbackend.model.converter.AppointmentConverter;
 import in.skdv.skdvinbackend.model.dto.AppointmentDTO;
@@ -27,6 +28,8 @@ import java.nio.charset.Charset;
 import java.time.LocalDate;
 import java.util.Arrays;
 
+import static in.skdv.skdvinbackend.config.Authorities.READ_APPOINTMENTS;
+import static in.skdv.skdvinbackend.config.Authorities.READ_JUMPDAYS;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertNotNull;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
@@ -37,7 +40,7 @@ import static org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppC
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
-public class AppointmentControllerTest {
+public class AppointmentControllerTest extends AbstractSkdvinTest {
 
     private MediaType contentType = new MediaType(MediaType.APPLICATION_JSON.getType(),
             MediaType.APPLICATION_JSON.getSubtype(),
@@ -87,7 +90,7 @@ public class AppointmentControllerTest {
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(authorities = READ_APPOINTMENTS)
     public void testGetOne() throws Exception {
         GenericResult<Appointment> appointmentGenericResult = appointmentService.saveAppointment(ModelMockHelper.createSingleAppointment());
         Appointment appointment = appointmentGenericResult.getPayload();

@@ -1,5 +1,6 @@
 package in.skdv.skdvinbackend.controller.api;
 
+import in.skdv.skdvinbackend.AbstractSkdvinTest;
 import in.skdv.skdvinbackend.ModelMockHelper;
 import in.skdv.skdvinbackend.exception.ErrorMessage;
 import in.skdv.skdvinbackend.model.entity.Appointment;
@@ -37,7 +38,7 @@ import static org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppC
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
-public class AppointmentControllerMockTest {
+public class AppointmentControllerMockTest extends AbstractSkdvinTest {
 
     private MediaType contentType = new MediaType(MediaType.APPLICATION_JSON.getType(),
             MediaType.APPLICATION_JSON.getSubtype(),

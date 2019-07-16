@@ -1,5 +1,6 @@
 package in.skdv.skdvinbackend.controller.api;
 
+import in.skdv.skdvinbackend.AbstractSkdvinTest;
 import in.skdv.skdvinbackend.ModelMockHelper;
 import in.skdv.skdvinbackend.model.entity.Appointment;
 import in.skdv.skdvinbackend.model.entity.Jumpday;
@@ -36,6 +37,8 @@ import java.nio.charset.Charset;
 import java.time.LocalDate;
 import java.util.Arrays;
 
+import static in.skdv.skdvinbackend.config.Authorities.CREATE_JUMPDAYS;
+import static in.skdv.skdvinbackend.config.Authorities.READ_JUMPDAYS;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertNotNull;
@@ -54,7 +57,7 @@ import static org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppC
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
-public class JumpdayControllerTest {
+public class JumpdayControllerTest extends AbstractSkdvinTest {
 
     @Rule
     public JUnitRestDocumentation restDocumentation = new JUnitRestDocumentation();
@@ -156,7 +159,7 @@ public class JumpdayControllerTest {
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(authorities = CREATE_JUMPDAYS)
     public void testCreateJumpday_AlreadyExists_DE() throws Exception {
         String jumpdayJson = json(ModelMockHelper.createJumpday());
 
@@ -176,7 +179,7 @@ public class JumpdayControllerTest {
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(authorities = CREATE_JUMPDAYS)
     public void testCreateJumpday_AlreadyExists_EN() throws Exception {
         String jumpdayJson = json(ModelMockHelper.createJumpday());
 
@@ -265,7 +268,7 @@ public class JumpdayControllerTest {
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(authorities = READ_JUMPDAYS)
     public void testGetByDate() throws Exception {
         GenericResult<Jumpday> result = jumpdayService.saveJumpday(ModelMockHelper.createJumpday());
         Jumpday jumpday = result.getPayload();
@@ -306,7 +309,7 @@ public class JumpdayControllerTest {
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(authorities = READ_JUMPDAYS)
     public void testGetByDate_WithAppointments() throws Exception {
         // 4 tandem / 2 video at 10:00 and 11:30
         Jumpday jumpday = ModelMockHelper.createJumpday();
@@ -343,7 +346,7 @@ public class JumpdayControllerTest {
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(authorities = READ_JUMPDAYS)
     public void testGetByDate_NotFound_DE() throws Exception {
         mockMvc.perform(get("/api/jumpday/{date}?lang=de", LocalDate.now().toString()))
                 .andExpect(status().isBadRequest())
@@ -353,7 +356,7 @@ public class JumpdayControllerTest {
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(authorities = READ_JUMPDAYS)
     public void testGetByDate_NotFound_EN() throws Exception {
         mockMvc.perform(get("/api/jumpday/{date}?lang=en", LocalDate.now().toString()))
                 .andExpect(status().isBadRequest())

@@ -15,6 +15,8 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import java.util.Arrays;
 import java.util.Collections;
 
+import static in.skdv.skdvinbackend.config.Authorities.*;
+
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
@@ -46,12 +48,12 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .configure(http)
                 .authorizeRequests()
                 .antMatchers("/docs/**").permitAll()
-                .antMatchers(HttpMethod.GET, "/api/jumpday").hasAuthority("read:jumpdays")
-                .antMatchers(HttpMethod.POST, "/api/jumpday").hasAuthority("ROLE_ADMIN")
-                .antMatchers(HttpMethod.GET, "/api/jumpday/{jumpdayDate}").hasAuthority("ROLE_ADMIN")
-                .antMatchers(HttpMethod.GET, "/api/appointment/{appointmentId}").hasAuthority("ROLE_ADMIN")
+                .antMatchers(HttpMethod.GET, "/api/jumpday").hasAuthority(READ_JUMPDAYS)
+                .antMatchers(HttpMethod.POST, "/api/jumpday").hasAuthority(CREATE_JUMPDAYS)
+                .antMatchers(HttpMethod.GET, "/api/jumpday/{jumpdayDate}").hasAuthority(READ_JUMPDAYS)
+                .antMatchers(HttpMethod.GET, "/api/appointment/{appointmentId}").hasAuthority(READ_APPOINTMENTS)
                 .antMatchers(HttpMethod.POST, "/api/appointment/{appointmentId}").permitAll()
-                .antMatchers(HttpMethod.POST, "/api/appointment/{appointmentId}").hasAuthority("ROLE_ADMIN")
+                .antMatchers(HttpMethod.PUT, "/api/appointment/{appointmentId}").hasAuthority(UPDATE_APPOINTMENTS)
                 .anyRequest().authenticated()
                 // Disable Session Management as it's a REST API
                 .and().sessionManagement().disable();
