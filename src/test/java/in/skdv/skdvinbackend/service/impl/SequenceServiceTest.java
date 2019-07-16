@@ -1,5 +1,6 @@
 package in.skdv.skdvinbackend.service.impl;
 
+import in.skdv.skdvinbackend.AbstractSkdvinTest;
 import in.skdv.skdvinbackend.model.entity.Sequence;
 import in.skdv.skdvinbackend.service.ISequenceService;
 import org.junit.Assert;
@@ -12,7 +13,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
-public class SequenceServiceTest {
+public class SequenceServiceTest extends AbstractSkdvinTest {
 
     @Autowired
     private ISequenceService sequenceService;

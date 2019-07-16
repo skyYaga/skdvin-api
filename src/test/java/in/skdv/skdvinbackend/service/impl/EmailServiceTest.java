@@ -1,5 +1,6 @@
 package in.skdv.skdvinbackend.service.impl;
 
+import in.skdv.skdvinbackend.AbstractSkdvinTest;
 import in.skdv.skdvinbackend.ModelMockHelper;
 import in.skdv.skdvinbackend.model.entity.User;
 import in.skdv.skdvinbackend.service.IEmailService;
@@ -28,7 +29,7 @@ import static org.mockito.Mockito.*;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
-public class EmailServiceTest {
+public class EmailServiceTest extends AbstractSkdvinTest {
 
     private static final String FROM_EMAIL = "skdvin@example.com";
     private static final String BASE_URL = "https://example.com";

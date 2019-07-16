@@ -1,5 +1,6 @@
 package in.skdv.skdvinbackend.controller.api;
 
+import in.skdv.skdvinbackend.AbstractSkdvinTest;
 import in.skdv.skdvinbackend.ModelMockHelper;
 import in.skdv.skdvinbackend.model.converter.AppointmentConverter;
 import in.skdv.skdvinbackend.model.dto.AppointmentDTO;
@@ -27,6 +28,8 @@ import java.nio.charset.Charset;
 import java.time.LocalDate;
 import java.util.Arrays;
 
+import static in.skdv.skdvinbackend.config.Authorities.READ_APPOINTMENTS;
+import static in.skdv.skdvinbackend.config.Authorities.READ_JUMPDAYS;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertNotNull;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
@@ -37,7 +40,7 @@ import static org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppC
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
-public class AppointmentControllerTest {
+public class AppointmentControllerTest extends AbstractSkdvinTest {
 
     private MediaType contentType = new MediaType(MediaType.APPLICATION_JSON.getType(),
             MediaType.APPLICATION_JSON.getSubtype(),
@@ -82,17 +85,17 @@ public class AppointmentControllerTest {
 
     @Test
     public void testGetAllUnauthorized() throws Exception {
-        mockMvc.perform(get("/api/appointments/"))
+        mockMvc.perform(get("/api/appointment/"))
                 .andExpect(status().isUnauthorized());
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(authorities = READ_APPOINTMENTS)
     public void testGetOne() throws Exception {
         GenericResult<Appointment> appointmentGenericResult = appointmentService.saveAppointment(ModelMockHelper.createSingleAppointment());
         Appointment appointment = appointmentGenericResult.getPayload();
 
-        mockMvc.perform(get("/api/appointments/" + appointment.getAppointmentId()))
+        mockMvc.perform(get("/api/appointment/" + appointment.getAppointmentId()))
 //                .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.appointmentId", is(appointment.getAppointmentId())))
@@ -104,7 +107,7 @@ public class AppointmentControllerTest {
         GenericResult<Appointment> appointmentGenericResult = appointmentService.saveAppointment(ModelMockHelper.createSingleAppointment());
         Appointment appointment = appointmentGenericResult.getPayload();
 
-        mockMvc.perform(get("/api/appointments/" + appointment.getAppointmentId()))
+        mockMvc.perform(get("/api/appointment/" + appointment.getAppointmentId()))
                 .andExpect(status().isUnauthorized());
     }
 
@@ -113,7 +116,7 @@ public class AppointmentControllerTest {
     public void testAddAppointment() throws Exception {
         String appointmentJson = json(ModelMockHelper.createSingleAppointment());
 
-        mockMvc.perform(post("/api/appointments/")
+        mockMvc.perform(post("/api/appointment/")
                 .contentType(contentType)
                 .content(appointmentJson))
                 .andDo(MockMvcResultHandlers.print())
@@ -126,7 +129,7 @@ public class AppointmentControllerTest {
     public void testAddAppointment_Unauthorized() throws Exception {
         String appointmentJson = json(ModelMockHelper.createSingleAppointment());
 
-        mockMvc.perform(post("/api/appointments/")
+        mockMvc.perform(post("/api/appointment/")
                 .contentType(contentType)
                 .content(appointmentJson))
                 .andExpect(status().isUnauthorized());
@@ -139,7 +142,7 @@ public class AppointmentControllerTest {
 
         String appointmentJson = json(ModelMockHelper.createAppointment(2, 0));
 
-        mockMvc.perform(post("/api/appointments?lang=de")
+        mockMvc.perform(post("/api/appointment?lang=de")
                 .contentType(contentType)
                 .content(appointmentJson))
                 .andDo(MockMvcResultHandlers.print())
@@ -155,7 +158,7 @@ public class AppointmentControllerTest {
         String appointmentJson = json(appointment);
 
 
-        mockMvc.perform(post("/api/appointments?lang=de")
+        mockMvc.perform(post("/api/appointment?lang=de")
                 .contentType(contentType)
                 .content(appointmentJson))
                 .andDo(MockMvcResultHandlers.print())
@@ -171,7 +174,7 @@ public class AppointmentControllerTest {
         String appointmentJson = json(appointment);
 
 
-        mockMvc.perform(post("/api/appointments?lang=en")
+        mockMvc.perform(post("/api/appointment?lang=en")
                 .contentType(contentType)
                 .content(appointmentJson))
                 .andDo(MockMvcResultHandlers.print())
@@ -193,7 +196,7 @@ public class AppointmentControllerTest {
 
         String appointmentJson = json(appointment);
 
-        mockMvc.perform(put("/api/appointments/")
+        mockMvc.perform(put("/api/appointment/")
                 .contentType(contentType)
                 .content(appointmentJson))
                 .andDo(MockMvcResultHandlers.print())
@@ -212,7 +215,7 @@ public class AppointmentControllerTest {
 
         String appointmentJson = json(appointment);
 
-        mockMvc.perform(put("/api/appointments/")
+        mockMvc.perform(put("/api/appointment/")
                 .contentType(contentType)
                 .content(appointmentJson))
                 .andExpect(status().isUnauthorized());
@@ -228,7 +231,7 @@ public class AppointmentControllerTest {
 
         String appointmentJson = json(appointment);
 
-        mockMvc.perform(put("/api/appointments?lang=de")
+        mockMvc.perform(put("/api/appointment?lang=de")
                 .contentType(contentType)
                 .content(appointmentJson))
                 .andDo(MockMvcResultHandlers.print())
@@ -247,7 +250,7 @@ public class AppointmentControllerTest {
 
         String appointmentJson = json(appointment);
 
-        mockMvc.perform(put("/api/appointments?lang=en")
+        mockMvc.perform(put("/api/appointment?lang=en")
                 .contentType(contentType)
                 .content(appointmentJson))
                 .andDo(MockMvcResultHandlers.print())
@@ -266,7 +269,7 @@ public class AppointmentControllerTest {
 
         String appointmentJson = json(appointment);
 
-        mockMvc.perform(put("/api/appointments?lang=en")
+        mockMvc.perform(put("/api/appointment?lang=en")
                 .contentType(contentType)
                 .content(appointmentJson))
                 .andDo(MockMvcResultHandlers.print())

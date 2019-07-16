@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletResponse;
 
 @RestController
-@RequestMapping("/api/appointments")
+@RequestMapping("/api/appointment")
 public class AppointmentController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AppointmentController.class);
