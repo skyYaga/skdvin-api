@@ -20,7 +20,13 @@ public abstract class AbstractAppointment {
     private int tandem;
 
     @NotNull
-    private int video;
+    private int picOrVid;
+
+    @NotNull
+    private int picAndVid;
+
+    @NotNull
+    private int handcam;
 
     private AppointmentState state;
 
@@ -58,12 +64,12 @@ public abstract class AbstractAppointment {
         this.tandem = tandem;
     }
 
-    public int getVideo() {
-        return video;
+    public int getPicOrVid() {
+        return picOrVid;
     }
 
-    public void setVideo(int video) {
-        this.video = video;
+    public void setPicOrVid(int picOrVid) {
+        this.picOrVid = picOrVid;
     }
 
     public AppointmentState getState() {
@@ -96,5 +102,21 @@ public abstract class AbstractAppointment {
 
     public void setClientId(String clientId) {
         this.clientId = clientId;
+    }
+
+    public int getPicAndVid() {
+        return picAndVid;
+    }
+
+    public void setPicAndVid(int picAndVid) {
+        this.picAndVid = picAndVid;
+    }
+
+    public int getHandcam() {
+        return handcam;
+    }
+
+    public void setHandcam(int handcam) {
+        this.handcam = handcam;
     }
 }

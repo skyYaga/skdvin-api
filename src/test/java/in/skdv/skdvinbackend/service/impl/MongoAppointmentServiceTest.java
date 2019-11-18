@@ -65,17 +65,7 @@ public class MongoAppointmentServiceTest extends AbstractSkdvinTest {
 
     @Test
     public void testSaveAppointment_NoTandemSlotsAvailable() {
-        Appointment appointment = ModelMockHelper.createAppointment(5, 0);
-
-        GenericResult<Appointment> savedAppointment = appointmentService.saveAppointment(appointment);
-
-        assertFalse(savedAppointment.isSuccess());
-        assertEquals(ErrorMessage.JUMPDAY_NO_FREE_SLOTS.toString(), savedAppointment.getMessage());
-    }
-
-    @Test
-    public void testSaveAppointment_NoVideoSlotsAvailable() {
-        Appointment appointment = ModelMockHelper.createAppointment(3, 3);
+        Appointment appointment = ModelMockHelper.createAppointment(5, 0, 0, 0);
 
         GenericResult<Appointment> savedAppointment = appointmentService.saveAppointment(appointment);
 
@@ -85,7 +75,7 @@ public class MongoAppointmentServiceTest extends AbstractSkdvinTest {
 
     @Test
     public void testSaveAppointment_NoSlotsAvailable() {
-        Appointment appointment = ModelMockHelper.createAppointment(5, 3);
+        Appointment appointment = ModelMockHelper.createAppointment(5, 3, 0, 0);
 
         GenericResult<Appointment> savedAppointment = appointmentService.saveAppointment(appointment);
 
@@ -94,8 +84,68 @@ public class MongoAppointmentServiceTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testSaveAppointment_MoreVideoThanTandemSlots() {
-        Appointment appointment = ModelMockHelper.createAppointment(3, 5);
+    public void testSaveAppointment_PicOrVid_NoSlotsAvailable() {
+        Appointment appointment = ModelMockHelper.createAppointment(3, 3, 0, 0);
+
+        GenericResult<Appointment> savedAppointment = appointmentService.saveAppointment(appointment);
+
+        assertFalse(savedAppointment.isSuccess());
+        assertEquals(ErrorMessage.JUMPDAY_NO_FREE_SLOTS.toString(), savedAppointment.getMessage());
+    }
+
+    @Test
+    public void testSaveAppointment_PicOrVid_MoreVideoThanTandemSlots() {
+        Appointment appointment = ModelMockHelper.createAppointment(3, 5, 0, 0);
+
+        GenericResult<Appointment> savedAppointment = appointmentService.saveAppointment(appointment);
+
+        assertFalse(savedAppointment.isSuccess());
+        assertEquals(ErrorMessage.APPOINTMENT_MORE_VIDEO_THAN_TAMDEM_SLOTS.toString(), savedAppointment.getMessage());
+    }
+
+    @Test
+    public void testSaveAppointment_PicAndVid_NoSlotsAvailable() {
+        Appointment appointment = ModelMockHelper.createAppointment(3, 0, 3, 0);
+
+        GenericResult<Appointment> savedAppointment = appointmentService.saveAppointment(appointment);
+
+        assertFalse(savedAppointment.isSuccess());
+        assertEquals(ErrorMessage.JUMPDAY_NO_FREE_SLOTS.toString(), savedAppointment.getMessage());
+    }
+
+    @Test
+    public void testSaveAppointment_PicAndVid_MoreVideoThanTandemSlots() {
+        Appointment appointment = ModelMockHelper.createAppointment(3, 0, 5, 0);
+
+        GenericResult<Appointment> savedAppointment = appointmentService.saveAppointment(appointment);
+
+        assertFalse(savedAppointment.isSuccess());
+        assertEquals(ErrorMessage.APPOINTMENT_MORE_VIDEO_THAN_TAMDEM_SLOTS.toString(), savedAppointment.getMessage());
+    }
+
+    @Test
+    public void testSaveAppointment_Handcam_NoSlotsAvailable() {
+        Appointment appointment = ModelMockHelper.createAppointment(3, 0, 0, 3);
+
+        GenericResult<Appointment> savedAppointment = appointmentService.saveAppointment(appointment);
+
+        assertFalse(savedAppointment.isSuccess());
+        assertEquals(ErrorMessage.JUMPDAY_NO_FREE_SLOTS.toString(), savedAppointment.getMessage());
+    }
+
+    @Test
+    public void testSaveAppointment_Handcam_MoreVideoThanTandemSlots() {
+        Appointment appointment = ModelMockHelper.createAppointment(3, 0, 0, 5);
+
+        GenericResult<Appointment> savedAppointment = appointmentService.saveAppointment(appointment);
+
+        assertFalse(savedAppointment.isSuccess());
+        assertEquals(ErrorMessage.APPOINTMENT_MORE_VIDEO_THAN_TAMDEM_SLOTS.toString(), savedAppointment.getMessage());
+    }
+
+    @Test
+    public void testSaveAppointment_PicVidHandcam_MoreVideoThanTandemSlots() {
+        Appointment appointment = ModelMockHelper.createAppointment(3, 2, 1, 1);
 
         GenericResult<Appointment> savedAppointment = appointmentService.saveAppointment(appointment);
 

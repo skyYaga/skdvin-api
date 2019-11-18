@@ -13,10 +13,10 @@ import java.util.UUID;
 public class ModelMockHelper {
 
     public static Appointment createSingleAppointment() {
-        return createAppointment(1, 1);
+        return createAppointment(1, 1, 0, 0);
     }
 
-    public static Appointment createAppointment(int tandemCount, int videoCount) {
+    public static Appointment createAppointment(int tandemCount, int picOrVid, int picAndVid, int handcam) {
         Customer customer = new Customer();
         customer.setFirstName("Max");
         customer.setLastName("Mustermann");
@@ -31,7 +31,9 @@ public class ModelMockHelper {
         appointment.setState(AppointmentState.NONE);
         appointment.setDate(LocalDateTime.of(LocalDate.now(), LocalTime.of(10, 0)));
         appointment.setTandem(tandemCount);
-        appointment.setVideo(videoCount);
+        appointment.setPicOrVid(picOrVid);
+        appointment.setPicAndVid(picAndVid);
+        appointment.setHandcam(handcam);
 
         return appointment;
     }
@@ -51,12 +53,14 @@ public class ModelMockHelper {
         appointment.setState(AppointmentState.NONE);
         appointment.setDate(LocalDateTime.of(LocalDate.now(), LocalTime.of(10, 0)));
         appointment.setTandem(2);
-        appointment.setVideo(0);
+        appointment.setPicOrVid(0);
+        appointment.setPicAndVid(0);
+        appointment.setHandcam(0);
 
         return appointment;
     }
 
-    public static User createUser() {
+    private static User createUser() {
         return new User("max", "s3cr3t$!", "max@example.com", Collections.singletonList(Role.ROLE_USER));
     }
 
@@ -88,11 +92,15 @@ public class ModelMockHelper {
         Slot slot = new Slot();
         slot.setTime(LocalTime.of(10, 0));
         slot.setTandemTotal(4);
-        slot.setVideoTotal(2);
+        slot.setPicOrVidTotal(2);
+        slot.setPicAndVidTotal(1);
+        slot.setHandcamTotal(1);
         Slot slot2 = new Slot();
         slot2.setTime(LocalTime.of(11, 30));
         slot2.setTandemTotal(4);
-        slot2.setVideoTotal(2);
+        slot2.setPicOrVidTotal(2);
+        slot2.setPicAndVidTotal(1);
+        slot2.setHandcamTotal(1);
 
         jumpday.setSlots(Arrays.asList(slot, slot2));
 
