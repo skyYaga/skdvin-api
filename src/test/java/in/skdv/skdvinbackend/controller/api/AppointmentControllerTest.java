@@ -25,11 +25,11 @@ import org.springframework.web.context.WebApplicationContext;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.util.Arrays;
 
 import static in.skdv.skdvinbackend.config.Authorities.READ_APPOINTMENTS;
-import static in.skdv.skdvinbackend.config.Authorities.READ_JUMPDAYS;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertNotNull;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
@@ -44,7 +44,7 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
 
     private MediaType contentType = new MediaType(MediaType.APPLICATION_JSON.getType(),
             MediaType.APPLICATION_JSON.getSubtype(),
-            Charset.forName("utf8"));
+            StandardCharsets.UTF_8);
 
     private HttpMessageConverter mappingJackson2HttpMessageConverter;
 
@@ -138,9 +138,9 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
     @Test
     @WithMockUser
     public void testAddAppointment_NoSlotLeft() throws Exception {
-        appointmentService.saveAppointment(ModelMockHelper.createAppointment(3, 0));
+        appointmentService.saveAppointment(ModelMockHelper.createAppointment(3, 0, 0, 0));
 
-        String appointmentJson = json(ModelMockHelper.createAppointment(2, 0));
+        String appointmentJson = json(ModelMockHelper.createAppointment(2, 0, 0, 0));
 
         mockMvc.perform(post("/api/appointment?lang=de")
                 .contentType(contentType)
@@ -169,8 +169,56 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
 
     @Test
     @WithMockUser
-    public void testAddAppointment_MoreVideoThanTandemSlots() throws Exception {
-        Appointment appointment = ModelMockHelper.createAppointment(1, 2);
+    public void testAddAppointment_MorePicOrVidThanTandemSlots() throws Exception {
+        Appointment appointment = ModelMockHelper.createAppointment(1, 2, 0, 0);
+        String appointmentJson = json(appointment);
+
+
+        mockMvc.perform(post("/api/appointment?lang=en")
+                .contentType(contentType)
+                .content(appointmentJson))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.message", is("The appointment has more video than tandem slots")));
+    }
+
+    @Test
+    @WithMockUser
+    public void testAddAppointment_MorePicAndVidThanTandemSlots() throws Exception {
+        Appointment appointment = ModelMockHelper.createAppointment(1, 0, 2, 0);
+        String appointmentJson = json(appointment);
+
+
+        mockMvc.perform(post("/api/appointment?lang=en")
+                .contentType(contentType)
+                .content(appointmentJson))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.message", is("The appointment has more video than tandem slots")));
+    }
+
+    @Test
+    @WithMockUser
+    public void testAddAppointment_MoreHandCamThanTandemSlots() throws Exception {
+        Appointment appointment = ModelMockHelper.createAppointment(1, 0, 0, 2);
+        String appointmentJson = json(appointment);
+
+
+        mockMvc.perform(post("/api/appointment?lang=en")
+                .contentType(contentType)
+                .content(appointmentJson))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.message", is("The appointment has more video than tandem slots")));
+    }
+
+    @Test
+    @WithMockUser
+    public void testAddAppointment_MorePicVidHandCamThanTandemSlots() throws Exception {
+        Appointment appointment = ModelMockHelper.createAppointment(1, 1, 1, 1);
         String appointmentJson = json(appointment);
 
 
@@ -242,11 +290,73 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
 
     @Test
     @WithMockUser
-    public void testUpdateAppointment_MoreVideoThanTandemSlots() throws Exception {
+    public void testUpdateAppointment_MorePicAndVidThanTandemSlots() throws Exception {
+        GenericResult<Appointment> result = appointmentService.saveAppointment(ModelMockHelper.createAppointment(1, 0, 1, 0));
         AppointmentConverter appointmentConverter = new AppointmentConverter();
-        AppointmentDTO appointment = appointmentConverter.convertToDto(appointmentService.findAppointmentsByDay(LocalDate.now()).get(0));
+        AppointmentDTO appointment = appointmentConverter.convertToDto(appointmentService.findAppointment(result.getPayload().getAppointmentId()));
 
-        appointment.setVideo(appointment.getTandem() + 1);
+        appointment.setPicOrVid(appointment.getPicAndVid() + 1);
+
+        String appointmentJson = json(appointment);
+
+        mockMvc.perform(put("/api/appointment?lang=en")
+                .contentType(contentType)
+                .content(appointmentJson))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.message", is("The appointment has more video than tandem slots")));
+    }
+
+    @Test
+    @WithMockUser
+    public void testUpdateAppointment_MorePicOrVidThanTandemSlots() throws Exception {
+        GenericResult<Appointment> result = appointmentService.saveAppointment(ModelMockHelper.createAppointment(1, 1, 0, 0));
+        AppointmentConverter appointmentConverter = new AppointmentConverter();
+        AppointmentDTO appointment = appointmentConverter.convertToDto(appointmentService.findAppointment(result.getPayload().getAppointmentId()));
+
+        appointment.setPicOrVid(appointment.getPicOrVid() + 1);
+
+        String appointmentJson = json(appointment);
+
+        mockMvc.perform(put("/api/appointment?lang=en")
+                .contentType(contentType)
+                .content(appointmentJson))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.message", is("The appointment has more video than tandem slots")));
+    }
+
+    @Test
+    @WithMockUser
+    public void testUpdateAppointment_MoreHandcamThanTandemSlots() throws Exception {
+        GenericResult<Appointment> result = appointmentService.saveAppointment(ModelMockHelper.createAppointment(1, 0, 0, 1));
+        AppointmentConverter appointmentConverter = new AppointmentConverter();
+        AppointmentDTO appointment = appointmentConverter.convertToDto(appointmentService.findAppointment(result.getPayload().getAppointmentId()));
+
+        appointment.setPicOrVid(appointment.getHandcam() + 1);
+
+        String appointmentJson = json(appointment);
+
+        mockMvc.perform(put("/api/appointment?lang=en")
+                .contentType(contentType)
+                .content(appointmentJson))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.message", is("The appointment has more video than tandem slots")));
+    }
+
+    @Test
+    @WithMockUser
+    public void testUpdateAppointment_MorePicVidHandcamThanTandemSlots() throws Exception {
+        GenericResult<Appointment> result = appointmentService.saveAppointment(ModelMockHelper.createAppointment(1, 0, 1, 0));
+        AppointmentConverter appointmentConverter = new AppointmentConverter();
+        AppointmentDTO appointment = appointmentConverter.convertToDto(appointmentService.findAppointment(result.getPayload().getAppointmentId()));
+
+        appointment.setPicOrVid(appointment.getPicOrVid() + 1);
+        appointment.setPicOrVid(appointment.getHandcam() + 1);
 
         String appointmentJson = json(appointment);
 

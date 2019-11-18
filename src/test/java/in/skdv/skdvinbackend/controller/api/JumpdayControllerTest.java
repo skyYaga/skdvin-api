@@ -34,6 +34,7 @@ import org.springframework.web.context.WebApplicationContext;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.util.Arrays;
 
@@ -64,7 +65,7 @@ public class JumpdayControllerTest extends AbstractSkdvinTest {
 
     private MediaType contentType = new MediaType(MediaType.APPLICATION_JSON.getType(),
             MediaType.APPLICATION_JSON.getSubtype(),
-            Charset.forName("utf8"));
+            StandardCharsets.UTF_8);
 
     private HttpMessageConverter mappingJackson2HttpMessageConverter;
 
@@ -118,7 +119,9 @@ public class JumpdayControllerTest extends AbstractSkdvinTest {
                 .andExpect(jsonPath("$.jumping", is(true)))
                 .andExpect(jsonPath("$.slots", hasSize(2)))
                 .andExpect(jsonPath("$.slots[0].tandemTotal", is(4)))
-                .andExpect(jsonPath("$.slots[0].videoTotal", is(2)))
+                .andExpect(jsonPath("$.slots[0].picOrVidTotal", is(2)))
+                .andExpect(jsonPath("$.slots[0].picAndVidTotal", is(1)))
+                .andExpect(jsonPath("$.slots[0].handcamTotal", is(1)))
                 .andExpect(jsonPath("$.slots[0].time", is("10:00")))
                 .andExpect(jsonPath("$.slots[1].time", is("11:30")))
                 .andExpect(jsonPath("$._links.self.href", is("http://localhost:8080/api/jumpday/" + LocalDate.now())))
@@ -131,12 +134,18 @@ public class JumpdayControllerTest extends AbstractSkdvinTest {
                         fieldWithPath("slots[]").description("The list of time slots on this jumpday"),
                         fieldWithPath("slots[].time").description("The time of this slot"),
                         fieldWithPath("slots[].tandemTotal").description("The total capacity of tandem slots"),
-                        fieldWithPath("slots[].videoTotal").description("The total capacity of video slots"),
+                        fieldWithPath("slots[].picOrVidTotal").description("The total capacity of picture OR video slots"),
+                        fieldWithPath("slots[].picAndVidTotal").description("The total capacity of picture AND video slots"),
+                        fieldWithPath("slots[].handcamTotal").description("The total capacity of handcam slots"),
                         fieldWithPath("slots[].appointments").ignored(),
                         fieldWithPath("slots[].tandemBooked").ignored(),
                         fieldWithPath("slots[].tandemAvailable").ignored(),
-                        fieldWithPath("slots[].videoBooked").ignored(),
-                        fieldWithPath("slots[].videoAvailable").ignored(),
+                        fieldWithPath("slots[].picOrVidBooked").ignored(),
+                        fieldWithPath("slots[].picAndVidBooked").ignored(),
+                        fieldWithPath("slots[].handcamBooked").ignored(),
+                        fieldWithPath("slots[].picOrVidAvailable").ignored(),
+                        fieldWithPath("slots[].picAndVidAvailable").ignored(),
+                        fieldWithPath("slots[].handcamAvailable").ignored(),
                         fieldWithPath("freeTimes").ignored()
                         ), responseFields(
                         fieldWithPath("date").description("The date of the jumpday"),
@@ -148,9 +157,15 @@ public class JumpdayControllerTest extends AbstractSkdvinTest {
                         fieldWithPath("slots[].tandemTotal").description("The total capacity of tandem slots"),
                         fieldWithPath("slots[].tandemBooked").description("The total booked tandem slots"),
                         fieldWithPath("slots[].tandemAvailable").description("The total available tandem slots"),
-                        fieldWithPath("slots[].videoTotal").description("The total capacity of video slots"),
-                        fieldWithPath("slots[].videoBooked").description("The total booked video slots"),
-                        fieldWithPath("slots[].videoAvailable").description("The total available video slots"),
+                        fieldWithPath("slots[].picOrVidTotal").description("The total capacity of picture OR video slots"),
+                        fieldWithPath("slots[].picOrVidBooked").description("The total booked picture OR video slots"),
+                        fieldWithPath("slots[].picOrVidAvailable").description("The total available picture OR video slots"),
+                        fieldWithPath("slots[].picAndVidTotal").description("The total capacity of picture AND video slots"),
+                        fieldWithPath("slots[].picAndVidBooked").description("The total booked picture AND video slots"),
+                        fieldWithPath("slots[].picAndVidAvailable").description("The total available picture AND video slots"),
+                        fieldWithPath("slots[].handcamTotal").description("The total capacity of handcam slots"),
+                        fieldWithPath("slots[].handcamBooked").description("The total booked handcam slots"),
+                        fieldWithPath("slots[].handcamAvailable").description("The total available handcam slots"),
                         fieldWithPath("_links.self.href").description("API link to the new created jumpday"),
                         fieldWithPath("_links.jumpdays.href").description("API link to all jumpdays"),
                         fieldWithPath("freeTimes").ignored(),
@@ -233,7 +248,9 @@ public class JumpdayControllerTest extends AbstractSkdvinTest {
                 .andExpect(jsonPath("$.payload[0].slots", hasSize(jumpday.getSlots().size())))
                 .andExpect(jsonPath("$.payload[0].slots[0].time", is(jumpday.getSlots().get(0).getTime().toString())))
                 .andExpect(jsonPath("$.payload[0].slots[0].tandemTotal", is(jumpday.getSlots().get(0).getTandemTotal())))
-                .andExpect(jsonPath("$.payload[0].slots[0].videoTotal", is(jumpday.getSlots().get(0).getVideoTotal())))
+                .andExpect(jsonPath("$.payload[0].slots[0].picOrVidTotal", is(jumpday.getSlots().get(0).getPicOrVidTotal())))
+                .andExpect(jsonPath("$.payload[0].slots[0].picAndVidTotal", is(jumpday.getSlots().get(0).getPicAndVidTotal())))
+                .andExpect(jsonPath("$.payload[0].slots[0].handcamTotal", is(jumpday.getSlots().get(0).getHandcamTotal())))
                 .andDo(document("jumpday/get-jumpday", responseFields(
                         fieldWithPath("success").description("true when the request was successful"),
                         fieldWithPath("payload[]").description("The list of jumpdays"),
@@ -246,9 +263,15 @@ public class JumpdayControllerTest extends AbstractSkdvinTest {
                         fieldWithPath("payload[].slots[].tandemTotal").description("The total capacity of tandem slots"),
                         fieldWithPath("payload[].slots[].tandemBooked").description("The total booked tandem slots"),
                         fieldWithPath("payload[].slots[].tandemAvailable").description("The total available tandem slots"),
-                        fieldWithPath("payload[].slots[].videoTotal").description("The total capacity of video slots"),
-                        fieldWithPath("payload[].slots[].videoBooked").description("The total booked video slots"),
-                        fieldWithPath("payload[].slots[].videoAvailable").description("The total available video slots"),
+                        fieldWithPath("payload[].slots[].picOrVidTotal").description("The total capacity of picture OR video slots"),
+                        fieldWithPath("payload[].slots[].picOrVidBooked").description("The total booked picture OR video slots"),
+                        fieldWithPath("payload[].slots[].picOrVidAvailable").description("The total available picture OR video slots"),
+                        fieldWithPath("payload[].slots[].picAndVidTotal").description("The total capacity of picture AND video slots"),
+                        fieldWithPath("payload[].slots[].picAndVidBooked").description("The total booked picture AND video slots"),
+                        fieldWithPath("payload[].slots[].picAndVidAvailable").description("The total available picture AND video slots"),
+                        fieldWithPath("payload[].slots[].handcamTotal").description("The total capacity of handcam slots"),
+                        fieldWithPath("payload[].slots[].handcamBooked").description("The total booked handcam slots"),
+                        fieldWithPath("payload[].slots[].handcamAvailable").description("The total available handcam slots"),
                         fieldWithPath("message").ignored(),
                         fieldWithPath("exception").ignored(),
                         fieldWithPath("payload[].freeTimes").ignored(),
@@ -282,7 +305,9 @@ public class JumpdayControllerTest extends AbstractSkdvinTest {
                 .andExpect(jsonPath("$.payload.slots", hasSize(jumpday.getSlots().size())))
                 .andExpect(jsonPath("$.payload.slots[0].time", is(jumpday.getSlots().get(0).getTime().toString())))
                 .andExpect(jsonPath("$.payload.slots[0].tandemTotal", is(jumpday.getSlots().get(0).getTandemTotal())))
-                .andExpect(jsonPath("$.payload.slots[0].videoTotal", is(jumpday.getSlots().get(0).getVideoTotal())))
+                .andExpect(jsonPath("$.payload.slots[0].picOrVidTotal", is(jumpday.getSlots().get(0).getPicOrVidTotal())))
+                .andExpect(jsonPath("$.payload.slots[0].picAndVidTotal", is(jumpday.getSlots().get(0).getPicAndVidTotal())))
+                .andExpect(jsonPath("$.payload.slots[0].handcamTotal", is(jumpday.getSlots().get(0).getHandcamTotal())))
                 .andDo(document("jumpday/get-jumpdays", pathParameters(
                         parameterWithName("date").description("The date of the requested jumpday")
                 ), responseFields(
@@ -297,9 +322,15 @@ public class JumpdayControllerTest extends AbstractSkdvinTest {
                         fieldWithPath("payload.slots[].tandemTotal").description("The total capacity of tandem slots"),
                         fieldWithPath("payload.slots[].tandemBooked").description("The total booked tandem slots"),
                         fieldWithPath("payload.slots[].tandemAvailable").description("The total available tandem slots"),
-                        fieldWithPath("payload.slots[].videoTotal").description("The total capacity of video slots"),
-                        fieldWithPath("payload.slots[].videoBooked").description("The total booked video slots"),
-                        fieldWithPath("payload.slots[].videoAvailable").description("The total available video slots"),
+                        fieldWithPath("payload.slots[].picOrVidTotal").description("The total capacity of picture OR video slots"),
+                        fieldWithPath("payload.slots[].picOrVidBooked").description("The total booked picture OR video slots"),
+                        fieldWithPath("payload.slots[].picOrVidAvailable").description("The total available picture OR video slots"),
+                        fieldWithPath("payload.slots[].picAndVidTotal").description("The total capacity of picture AND video slots"),
+                        fieldWithPath("payload.slots[].picAndVidBooked").description("The total booked picture AND video slots"),
+                        fieldWithPath("payload.slots[].picAndVidAvailable").description("The total available picture AND video slots"),
+                        fieldWithPath("payload.slots[].handcamTotal").description("The total capacity of handcam slots"),
+                        fieldWithPath("payload.slots[].handcamBooked").description("The total booked handcam slots"),
+                        fieldWithPath("payload.slots[].handcamAvailable").description("The total available handcam slots"),
                         fieldWithPath("message").ignored(),
                         fieldWithPath("exception").ignored(),
                         fieldWithPath("payload.freeTimes").ignored(),
@@ -333,16 +364,28 @@ public class JumpdayControllerTest extends AbstractSkdvinTest {
                 .andExpect(jsonPath("$.payload.slots[0].tandemTotal", is(4)))
                 .andExpect(jsonPath("$.payload.slots[0].tandemBooked", is(3)))
                 .andExpect(jsonPath("$.payload.slots[0].tandemAvailable", is(1)))
-                .andExpect(jsonPath("$.payload.slots[0].videoTotal", is(2)))
-                .andExpect(jsonPath("$.payload.slots[0].videoBooked", is(1)))
-                .andExpect(jsonPath("$.payload.slots[0].videoAvailable", is(1)))
+                .andExpect(jsonPath("$.payload.slots[0].picOrVidTotal", is(2)))
+                .andExpect(jsonPath("$.payload.slots[0].picOrVidBooked", is(1)))
+                .andExpect(jsonPath("$.payload.slots[0].picOrVidAvailable", is(1)))
+                .andExpect(jsonPath("$.payload.slots[0].picAndVidTotal", is(1)))
+                .andExpect(jsonPath("$.payload.slots[0].picAndVidBooked", is(0)))
+                .andExpect(jsonPath("$.payload.slots[0].picAndVidAvailable", is(1)))
+                .andExpect(jsonPath("$.payload.slots[0].handcamTotal", is(1)))
+                .andExpect(jsonPath("$.payload.slots[0].handcamBooked", is(0)))
+                .andExpect(jsonPath("$.payload.slots[0].handcamAvailable", is(1)))
                 .andExpect(jsonPath("$.payload.slots[1].time", is(jumpday.getSlots().get(1).getTime().toString())))
                 .andExpect(jsonPath("$.payload.slots[1].tandemTotal", is(jumpday.getSlots().get(1).getTandemTotal())))
                 .andExpect(jsonPath("$.payload.slots[1].tandemBooked", is(jumpday.getSlots().get(1).getTandemBooked())))
                 .andExpect(jsonPath("$.payload.slots[1].tandemAvailable", is(jumpday.getSlots().get(1).getTandemAvailable())))
-                .andExpect(jsonPath("$.payload.slots[1].videoTotal", is(jumpday.getSlots().get(1).getVideoTotal())))
-                .andExpect(jsonPath("$.payload.slots[1].videoBooked", is(jumpday.getSlots().get(1).getVideoBooked())))
-                .andExpect(jsonPath("$.payload.slots[1].videoAvailable", is(jumpday.getSlots().get(1).getVideoAvailable())));
+                .andExpect(jsonPath("$.payload.slots[1].picOrVidTotal", is(jumpday.getSlots().get(1).getPicOrVidTotal())))
+                .andExpect(jsonPath("$.payload.slots[1].picOrVidBooked", is(jumpday.getSlots().get(1).getPicOrVidBooked())))
+                .andExpect(jsonPath("$.payload.slots[1].picOrVidAvailable", is(jumpday.getSlots().get(1).getPicOrVidAvailable())))
+                .andExpect(jsonPath("$.payload.slots[1].picAndVidTotal", is(jumpday.getSlots().get(1).getPicAndVidTotal())))
+                .andExpect(jsonPath("$.payload.slots[1].picAndVidBooked", is(jumpday.getSlots().get(1).getPicAndVidBooked())))
+                .andExpect(jsonPath("$.payload.slots[1].picAndVidAvailable", is(jumpday.getSlots().get(1).getPicAndVidAvailable())))
+                .andExpect(jsonPath("$.payload.slots[1].handcamTotal", is(jumpday.getSlots().get(1).getHandcamTotal())))
+                .andExpect(jsonPath("$.payload.slots[1].handcamBooked", is(jumpday.getSlots().get(1).getHandcamBooked())))
+                .andExpect(jsonPath("$.payload.slots[1].handcamAvailable", is(jumpday.getSlots().get(1).getHandcamAvailable())));
     }
 
     @Test

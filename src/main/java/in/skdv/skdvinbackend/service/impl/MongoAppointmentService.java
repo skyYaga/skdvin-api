@@ -100,7 +100,8 @@ public class MongoAppointmentService implements IAppointmentService {
             return new GenericResult<>(false, ErrorMessage.JUMPDAY_NOT_FOUND_MSG);
         }
 
-        if (appointment.getVideo() > appointment.getTandem()) {
+        if ((appointment.getPicOrVid() + appointment.getPicAndVid() + appointment.getHandcam())
+                > appointment.getTandem()) {
             return new GenericResult<>(false, ErrorMessage.APPOINTMENT_MORE_VIDEO_THAN_TAMDEM_SLOTS);
         }
 
@@ -122,7 +123,10 @@ public class MongoAppointmentService implements IAppointmentService {
         Optional<Slot> slotOptional = jumpday.getSlotForAppointment(appointment);
         if (slotOptional.isPresent()) {
             Slot slot = slotOptional.get();
-            return slot.getTandemAvailable() >= appointment.getTandem() && slot.getVideoAvailable() >= appointment.getVideo();
+            return slot.getTandemAvailable() >= appointment.getTandem()
+                    && slot.getPicOrVidAvailable() >= appointment.getPicOrVid()
+                    && slot.getPicAndVidAvailable() >= appointment.getPicAndVid()
+                    && slot.getHandcamAvailable() >= appointment.getHandcam();
         }
         return false;
     }

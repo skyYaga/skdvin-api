@@ -11,7 +11,9 @@ public class Slot {
     @JsonFormat(pattern = "HH:mm")
     private LocalTime time;
     private int tandemTotal;
-    private int videoTotal;
+    private int picOrVidTotal;
+    private int picAndVidTotal;
+    private int handcamTotal;
     private List<Appointment> appointments = new ArrayList<>();
 
 
@@ -31,12 +33,12 @@ public class Slot {
         this.tandemTotal = tandemTotal;
     }
 
-    public int getVideoTotal() {
-        return videoTotal;
+    public int getPicOrVidTotal() {
+        return picOrVidTotal;
     }
 
-    public void setVideoTotal(int videoTotal) {
-        this.videoTotal = videoTotal;
+    public void setPicOrVidTotal(int picOrVidTotal) {
+        this.picOrVidTotal = picOrVidTotal;
     }
 
     public List<Appointment> getAppointments() {
@@ -51,16 +53,32 @@ public class Slot {
         return appointments.stream().mapToInt(Appointment::getTandem).sum();
     }
 
-    public int getVideoBooked() {
-        return appointments.stream().mapToInt(Appointment::getVideo).sum();
+    public int getPicOrVidBooked() {
+        return appointments.stream().mapToInt(Appointment::getPicOrVid).sum();
+    }
+
+    public int getPicAndVidBooked() {
+        return appointments.stream().mapToInt(Appointment::getPicAndVid).sum();
+    }
+
+    public int getHandcamBooked() {
+        return appointments.stream().mapToInt(Appointment::getHandcam).sum();
     }
 
     public int getTandemAvailable() {
         return getTandemTotal() - getTandemBooked();
     }
 
-    public int getVideoAvailable() {
-        return getVideoTotal() - getVideoBooked();
+    public int getPicOrVidAvailable() {
+        return getPicOrVidTotal() - getPicOrVidBooked();
+    }
+
+    public int getPicAndVidAvailable() {
+        return getPicAndVidTotal() - getPicAndVidBooked();
+    }
+
+    public int getHandcamAvailable() {
+        return getHandcamTotal() - getHandcamBooked();
     }
 
     @Override
@@ -68,8 +86,26 @@ public class Slot {
         return "Slot{" +
                 "time=" + time +
                 ", tandemTotal=" + tandemTotal +
-                ", videoTotal=" + videoTotal +
+                ", picOrVidTotal=" + picOrVidTotal +
+                ", picAndVidTotal=" + picAndVidTotal +
+                ", handcamTotal=" + handcamTotal +
                 ", appointments=" + appointments +
                 '}';
+    }
+
+    public int getPicAndVidTotal() {
+        return picAndVidTotal;
+    }
+
+    public void setPicAndVidTotal(int picAndVidTotal) {
+        this.picAndVidTotal = picAndVidTotal;
+    }
+
+    public int getHandcamTotal() {
+        return handcamTotal;
+    }
+
+    public void setHandcamTotal(int handcamTotal) {
+        this.handcamTotal = handcamTotal;
     }
 }

@@ -22,7 +22,7 @@ public class AppointmentConverterTest {
         Assert.assertEquals(appointment.getDate(), appointmentDTO.getDate());
         Assert.assertEquals(appointment.getCustomer(), appointmentDTO.getCustomer());
         Assert.assertEquals(appointment.getTandem(), appointmentDTO.getTandem());
-        Assert.assertEquals(appointment.getVideo(), appointmentDTO.getVideo());
+        Assert.assertEquals(appointment.getPicOrVid(), appointmentDTO.getPicOrVid());
     }
 
     @Test
@@ -48,7 +48,7 @@ public class AppointmentConverterTest {
         Assert.assertEquals(appointmentDTO.getDate(), appointment.getDate());
         Assert.assertEquals(appointmentDTO.getCustomer(), appointment.getCustomer());
         Assert.assertEquals(appointmentDTO.getTandem(), appointment.getTandem());
-        Assert.assertEquals(appointmentDTO.getVideo(), appointment.getVideo());
+        Assert.assertEquals(appointmentDTO.getPicOrVid(), appointment.getPicOrVid());
 
     }
 
