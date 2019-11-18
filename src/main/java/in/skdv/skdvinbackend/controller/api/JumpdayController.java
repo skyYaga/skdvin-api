@@ -1,6 +1,5 @@
 package in.skdv.skdvinbackend.controller.api;
 
-import in.skdv.skdvinbackend.controller.api.assembler.JumpdayResourceAssembler;
 import in.skdv.skdvinbackend.exception.ErrorMessage;
 import in.skdv.skdvinbackend.exception.JumpdayExistsException;
 import in.skdv.skdvinbackend.exception.JumpdayInternalException;
@@ -14,13 +13,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
-import org.springframework.hateoas.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -33,14 +29,12 @@ public class JumpdayController {
 
     private IJumpdayService jumpdayService;
     private MessageSource messageSource;
-    private JumpdayResourceAssembler assembler;
     private JumpdayConverter jumpdayConverter = new JumpdayConverter();
 
     @Autowired
-    public JumpdayController(IJumpdayService jumpdayService, MessageSource messageSource, JumpdayResourceAssembler assembler) {
+    public JumpdayController(IJumpdayService jumpdayService, MessageSource messageSource) {
         this.jumpdayService = jumpdayService;
         this.messageSource = messageSource;
-        this.assembler = assembler;
     }
 
     @GetMapping
@@ -74,14 +68,12 @@ public class JumpdayController {
     }
 
     @PostMapping
-    public ResponseEntity<Resource<JumpdayDTO>> addJumpday(@RequestBody JumpdayDTO input, HttpServletResponse response) throws URISyntaxException {
+    public ResponseEntity<GenericResult> addJumpday(@RequestBody JumpdayDTO input, HttpServletResponse response) {
         GenericResult<Jumpday> result = jumpdayService.saveJumpday(jumpdayConverter.convertToEntity(input));
 
         if (result.isSuccess()) {
-            Resource<JumpdayDTO> jumpdayResource = assembler.toResource(jumpdayConverter.convertToDto(result.getPayload()));
-            return ResponseEntity
-                    .created(new URI(jumpdayResource.getId().expand().getHref()))
-                    .body(jumpdayResource);
+            return ResponseEntity.status(HttpServletResponse.SC_CREATED)
+                    .body(new GenericResult<>(true, jumpdayConverter.convertToDto(result.getPayload())));
         }
 
         if (result.getMessage().equals(ErrorMessage.JUMPDAY_ALREADY_EXISTS_MSG.toString())) {
