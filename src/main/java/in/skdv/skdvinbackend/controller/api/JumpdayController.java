@@ -81,7 +81,7 @@ public class JumpdayController {
         }
 
         if (result.getMessage().equals(ErrorMessage.JUMPDAY_ALREADY_EXISTS_MSG.toString())) {
-            LOGGER.warn("Jumpday already exists: {}", input);
+            LOGGER.warn("Jumpday already exists: {}", input.getDate());
             throw new JumpdayExistsException(result.getMessage());
         }
 

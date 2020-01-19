@@ -1,4 +1,4 @@
-package in.skdv.skdvinbackend.config;
+package in.skdv.skdvinbackend.util;
 
 import org.springframework.security.oauth2.core.OAuth2Error;
 import org.springframework.security.oauth2.core.OAuth2TokenValidator;
@@ -8,7 +8,7 @@ import org.springframework.security.oauth2.jwt.Jwt;
 public class AudienceValidator implements OAuth2TokenValidator<Jwt> {
     private final String audience;
 
-    AudienceValidator(String audience) {
+    public AudienceValidator(String audience) {
         this.audience = audience;
     }
 
