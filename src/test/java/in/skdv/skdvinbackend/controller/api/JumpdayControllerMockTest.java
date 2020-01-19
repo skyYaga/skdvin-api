@@ -1,6 +1,7 @@
 package in.skdv.skdvinbackend.controller.api;
 
 import in.skdv.skdvinbackend.AbstractSkdvinTest;
+import in.skdv.skdvinbackend.MockJwtDecoder;
 import in.skdv.skdvinbackend.ModelMockHelper;
 import in.skdv.skdvinbackend.exception.ErrorMessage;
 import in.skdv.skdvinbackend.model.entity.Jumpday;
@@ -17,14 +18,13 @@ import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.mock.http.MockHttpOutputMessage;
-import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.web.context.WebApplicationContext;
 
 import java.io.IOException;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.util.Arrays;
 
@@ -45,7 +45,7 @@ public class JumpdayControllerMockTest extends AbstractSkdvinTest {
 
     private MediaType contentType = new MediaType(MediaType.APPLICATION_JSON.getType(),
             MediaType.APPLICATION_JSON.getSubtype(),
-            Charset.forName("utf8"));
+            StandardCharsets.UTF_8);
 
     private HttpMessageConverter mappingJackson2HttpMessageConverter;
 
@@ -76,7 +76,6 @@ public class JumpdayControllerMockTest extends AbstractSkdvinTest {
     }
 
     @Test
-    @WithMockUser(authorities = CREATE_JUMPDAYS)
     public void testAddJumpday_InternalError() throws Exception {
         Mockito.when(jumpdayService.saveJumpday(Mockito.any(Jumpday.class)))
                 .thenReturn(new GenericResult<>(false, ErrorMessage.JUMPDAY_SERVICE_ERROR_MSG));
@@ -84,6 +83,7 @@ public class JumpdayControllerMockTest extends AbstractSkdvinTest {
 
 
         mockMvc.perform(post("/api/jumpday?lang=en")
+                .header("Authorization", MockJwtDecoder.addHeader(CREATE_JUMPDAYS))
                 .contentType(contentType)
                 .content(jumpdayJson))
                 .andDo(MockMvcResultHandlers.print())
@@ -93,24 +93,24 @@ public class JumpdayControllerMockTest extends AbstractSkdvinTest {
     }
 
     @Test
-    @WithMockUser(authorities = READ_JUMPDAYS)
     public void testFindJumpday_InternalError() throws Exception {
         Mockito.when(jumpdayService.findJumpday(Mockito.any(LocalDate.class)))
                 .thenReturn(new GenericResult<>(false, ErrorMessage.JUMPDAY_SERVICE_ERROR_MSG));
 
-        mockMvc.perform(get("/api/jumpday/{date}?lang=de", LocalDate.now().toString()))
+        mockMvc.perform(get("/api/jumpday/{date}?lang=de", LocalDate.now().toString())
+                .header("Authorization", MockJwtDecoder.addHeader(READ_JUMPDAYS)))
                 .andExpect(status().isInternalServerError())
                 .andExpect(jsonPath("$.success", is(false)))
                 .andExpect(jsonPath("$.message", is("Interner Sprungtag Fehler")));
     }
 
     @Test
-    @WithMockUser(authorities = READ_JUMPDAYS)
     public void testFindJumpdays_InternalError() throws Exception {
         Mockito.when(jumpdayService.findJumpdays())
                 .thenReturn(new GenericResult<>(false, ErrorMessage.JUMPDAY_SERVICE_ERROR_MSG));
 
-        mockMvc.perform(get("/api/jumpday?lang=en"))
+        mockMvc.perform(get("/api/jumpday?lang=en")
+                .header("Authorization", MockJwtDecoder.addHeader(READ_JUMPDAYS)))
                 .andExpect(status().isInternalServerError())
                 .andExpect(jsonPath("$.success", is(false)))
                 .andExpect(jsonPath("$.message", is("Internal Jumpday error")));

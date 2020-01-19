@@ -1,6 +1,7 @@
 package in.skdv.skdvinbackend.controller.api;
 
 import in.skdv.skdvinbackend.AbstractSkdvinTest;
+import in.skdv.skdvinbackend.MockJwtDecoder;
 import in.skdv.skdvinbackend.ModelMockHelper;
 import in.skdv.skdvinbackend.model.entity.Appointment;
 import in.skdv.skdvinbackend.model.entity.Jumpday;
@@ -26,7 +27,6 @@ import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation;
 import org.springframework.restdocs.mockmvc.MockMvcRestDocumentationConfigurer;
 import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders;
 import org.springframework.restdocs.mockmvc.RestDocumentationResultHandler;
-import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
@@ -105,11 +105,11 @@ public class JumpdayControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    @WithMockUser
     public void testCreateJumpday() throws Exception {
         String jumpdayJson = json(ModelMockHelper.createJumpday());
 
         mockMvc.perform(RestDocumentationRequestBuilders.post("/api/jumpday/")
+                .header("Authorization", MockJwtDecoder.addHeader(CREATE_JUMPDAYS))
                 .contentType(contentType)
                 .content(jumpdayJson))
                 .andDo(MockMvcResultHandlers.print())
@@ -173,17 +173,18 @@ public class JumpdayControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    @WithMockUser(authorities = CREATE_JUMPDAYS)
     public void testCreateJumpday_AlreadyExists_DE() throws Exception {
         String jumpdayJson = json(ModelMockHelper.createJumpday());
 
         mockMvc.perform(RestDocumentationRequestBuilders.post("/api/jumpday")
+                .header("Authorization", MockJwtDecoder.addHeader(CREATE_JUMPDAYS))
                 .contentType(contentType)
                 .content(jumpdayJson))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isCreated());
 
         mockMvc.perform(RestDocumentationRequestBuilders.post("/api/jumpday?lang=de")
+                .header("Authorization", MockJwtDecoder.addHeader(CREATE_JUMPDAYS))
                 .contentType(contentType)
                 .content(jumpdayJson))
                 .andDo(MockMvcResultHandlers.print())
@@ -193,17 +194,18 @@ public class JumpdayControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    @WithMockUser(authorities = CREATE_JUMPDAYS)
     public void testCreateJumpday_AlreadyExists_EN() throws Exception {
         String jumpdayJson = json(ModelMockHelper.createJumpday());
 
         mockMvc.perform(RestDocumentationRequestBuilders.post("/api/jumpday")
+                .header("Authorization", MockJwtDecoder.addHeader(CREATE_JUMPDAYS))
                 .contentType(contentType)
                 .content(jumpdayJson))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isCreated());
 
         mockMvc.perform(RestDocumentationRequestBuilders.post("/api/jumpday?lang=en")
+                .header("Authorization", MockJwtDecoder.addHeader(CREATE_JUMPDAYS))
                 .contentType(contentType)
                 .content(jumpdayJson))
                 .andDo(MockMvcResultHandlers.print())
@@ -214,14 +216,14 @@ public class JumpdayControllerTest extends AbstractSkdvinTest {
 
 
     @Test
-    @WithMockUser
     public void testGetAll() throws Exception {
         GenericResult<Jumpday> result = jumpdayService.saveJumpday(ModelMockHelper.createJumpday());
         assertTrue(result.isSuccess());
         GenericResult<Jumpday> result2 = jumpdayService.saveJumpday(ModelMockHelper.createJumpday(LocalDate.now().plusDays(1)));
         assertTrue(result2.isSuccess());
 
-        mockMvc.perform(get("/api/jumpday/"))
+        mockMvc.perform(get("/api/jumpday/")
+                .header("Authorization", MockJwtDecoder.addHeader(READ_JUMPDAYS)))
                 .andExpect(status().isOk())
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(jsonPath("$.success", is(true)))
@@ -232,12 +234,12 @@ public class JumpdayControllerTest extends AbstractSkdvinTest {
 
 
     @Test
-    @WithMockUser
     public void testGetAll_OneResult() throws Exception {
         GenericResult<Jumpday> result = jumpdayService.saveJumpday(ModelMockHelper.createJumpday());
         Jumpday jumpday = result.getPayload();
 
-        mockMvc.perform(get("/api/jumpday/"))
+        mockMvc.perform(get("/api/jumpday/")
+                .header("Authorization", MockJwtDecoder.addHeader(READ_JUMPDAYS)))
                 .andExpect(status().isOk())
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(jsonPath("$.success", is(true)))
@@ -280,9 +282,9 @@ public class JumpdayControllerTest extends AbstractSkdvinTest {
 
 
     @Test
-    @WithMockUser
     public void testGetAll_NoResult() throws Exception {
-        mockMvc.perform(get("/api/jumpday/"))
+        mockMvc.perform(get("/api/jumpday/")
+                .header("Authorization", MockJwtDecoder.addHeader(READ_JUMPDAYS)))
                 .andExpect(status().isOk())
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(jsonPath("$.success", is(true)))
@@ -290,12 +292,12 @@ public class JumpdayControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    @WithMockUser(authorities = READ_JUMPDAYS)
     public void testGetByDate() throws Exception {
         GenericResult<Jumpday> result = jumpdayService.saveJumpday(ModelMockHelper.createJumpday());
         Jumpday jumpday = result.getPayload();
 
-        mockMvc.perform(RestDocumentationRequestBuilders.get("/api/jumpday/{date}", jumpday.getDate().toString()))
+        mockMvc.perform(RestDocumentationRequestBuilders.get("/api/jumpday/{date}", jumpday.getDate().toString())
+                .header("Authorization", MockJwtDecoder.addHeader(READ_JUMPDAYS)))
                 .andExpect(status().isOk())
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(jsonPath("$.success", is(true)))
@@ -339,7 +341,6 @@ public class JumpdayControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    @WithMockUser(authorities = READ_JUMPDAYS)
     public void testGetByDate_WithAppointments() throws Exception {
         // 4 tandem / 2 video at 10:00 and 11:30
         Jumpday jumpday = ModelMockHelper.createJumpday();
@@ -352,7 +353,8 @@ public class JumpdayControllerTest extends AbstractSkdvinTest {
         appointmentService.saveAppointment(appointment1);
         appointmentService.saveAppointment(appointment2);
 
-        mockMvc.perform(RestDocumentationRequestBuilders.get("/api/jumpday/{date}", jumpday.getDate().toString()))
+        mockMvc.perform(RestDocumentationRequestBuilders.get("/api/jumpday/{date}", jumpday.getDate().toString())
+                .header("Authorization", MockJwtDecoder.addHeader(READ_JUMPDAYS)))
                 .andExpect(status().isOk())
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(jsonPath("$.success", is(true)))
@@ -388,9 +390,9 @@ public class JumpdayControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    @WithMockUser(authorities = READ_JUMPDAYS)
     public void testGetByDate_NotFound_DE() throws Exception {
-        mockMvc.perform(get("/api/jumpday/{date}?lang=de", LocalDate.now().toString()))
+        mockMvc.perform(get("/api/jumpday/{date}?lang=de", LocalDate.now().toString())
+                .header("Authorization", MockJwtDecoder.addHeader(READ_JUMPDAYS)))
                 .andExpect(status().isBadRequest())
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(jsonPath("$.success", is(false)))
@@ -398,9 +400,9 @@ public class JumpdayControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    @WithMockUser(authorities = READ_JUMPDAYS)
     public void testGetByDate_NotFound_EN() throws Exception {
-        mockMvc.perform(get("/api/jumpday/{date}?lang=en", LocalDate.now().toString()))
+        mockMvc.perform(get("/api/jumpday/{date}?lang=en", LocalDate.now().toString())
+                .header("Authorization", MockJwtDecoder.addHeader(READ_JUMPDAYS)))
                 .andExpect(status().isBadRequest())
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(jsonPath("$.success", is(false)))

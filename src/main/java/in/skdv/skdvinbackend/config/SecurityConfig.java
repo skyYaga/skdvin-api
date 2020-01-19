@@ -1,62 +1,62 @@
 package in.skdv.skdvinbackend.config;
 
-import com.auth0.spring.security.api.JwtWebSecurityConfigurer;
+import in.skdv.skdvinbackend.util.AudienceValidator;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
-import org.springframework.http.HttpMethod;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-
-import java.util.Arrays;
-import java.util.Collections;
-
-import static in.skdv.skdvinbackend.config.Authorities.*;
+import org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator;
+import org.springframework.security.oauth2.core.OAuth2TokenValidator;
+import org.springframework.security.oauth2.jwt.*;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
+import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
-    @Value("${auth0.apiAudience}")
-    private String apiAudience;
+    @Value("${auth0.audience}")
+    private String audience;
 
-    @Value("${auth0.issuer}")
+    @Value("${spring.security.oauth2.resourceserver.jwt.issuer-uri}")
     private String issuer;
 
-    @Bean
-    CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Collections.singletonList("http://localhost:3000"));
-        configuration.setAllowedMethods(Arrays.asList("GET","POST"));
-        configuration.setAllowCredentials(true);
-        configuration.addAllowedHeader("Authorization");
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
-        return source;
-    }
-
     @Override
-    protected void configure(HttpSecurity http) throws Exception {
-        http.cors();
-        // Auth0 config
-        JwtWebSecurityConfigurer
-                .forRS256(apiAudience, issuer)
-                .configure(http)
-                .authorizeRequests()
-                .antMatchers("/docs/**").permitAll()
-                .antMatchers(HttpMethod.GET, "/api/jumpday").hasAuthority(READ_JUMPDAYS)
-                .antMatchers(HttpMethod.POST, "/api/jumpday").hasAuthority(CREATE_JUMPDAYS)
-                .antMatchers(HttpMethod.GET, "/api/jumpday/{jumpdayDate}").hasAuthority(READ_JUMPDAYS)
-                .antMatchers(HttpMethod.GET, "/api/appointment/{appointmentId}").hasAuthority(READ_APPOINTMENTS)
-                .antMatchers(HttpMethod.POST, "/api/appointment/{appointmentId}").permitAll()
-                .antMatchers(HttpMethod.PUT, "/api/appointment/{appointmentId}").hasAuthority(UPDATE_APPOINTMENTS)
-                .anyRequest().authenticated()
-                // Disable Session Management as it's a REST API
-                .and().sessionManagement().disable();
+    public void configure(HttpSecurity http) throws Exception {
+        http.authorizeRequests()
+                .mvcMatchers("/docs/**").permitAll()
+            .and()
+                .csrf().disable()
+                .oauth2ResourceServer()
+                    .jwt()
+                        .jwtAuthenticationConverter(getJwtAuthenticationConverter());
     }
 
+    private Converter<Jwt,? extends AbstractAuthenticationToken> getJwtAuthenticationConverter() {
+        JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
+        JwtGrantedAuthoritiesConverter grantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();
+        grantedAuthoritiesConverter.setAuthoritiesClaimName("permissions");
+        converter.setJwtGrantedAuthoritiesConverter(grantedAuthoritiesConverter);
+        return converter;
+    }
+
+    @Bean
+    JwtDecoder jwtDecoder() {
+        NimbusJwtDecoder jwtDecoder = (NimbusJwtDecoder) loadRemoteJwtDecoder();
+
+        OAuth2TokenValidator<Jwt> audienceValidator = new AudienceValidator(audience);
+        OAuth2TokenValidator<Jwt> withIssuer = JwtValidators.   createDefaultWithIssuer(issuer);
+        OAuth2TokenValidator<Jwt> withAudience = new DelegatingOAuth2TokenValidator<>(withIssuer, audienceValidator);
+        jwtDecoder.setJwtValidator(withAudience);
+
+        return jwtDecoder;
+    }
+
+    JwtDecoder loadRemoteJwtDecoder() {
+        return JwtDecoders.fromOidcIssuerLocation(issuer);
+    }
 }

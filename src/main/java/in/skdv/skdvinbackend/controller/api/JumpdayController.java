@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
@@ -38,6 +39,7 @@ public class JumpdayController {
     }
 
     @GetMapping
+    @PreAuthorize("hasAuthority('SCOPE_read:jumpdays')")
     public ResponseEntity<GenericResult> readJumpdays() {
         GenericResult<List<Jumpday>> result = jumpdayService.findJumpdays();
         if (result.isSuccess()) {
@@ -50,6 +52,7 @@ public class JumpdayController {
     }
 
     @GetMapping(value = "/{jumpdayDate}")
+    @PreAuthorize("hasAuthority('SCOPE_read:jumpdays')")
     public ResponseEntity<GenericResult> readJumpday(@PathVariable String jumpdayDate) {
 
         GenericResult<Jumpday> result = jumpdayService.findJumpday(LocalDate.parse(jumpdayDate));
@@ -68,6 +71,7 @@ public class JumpdayController {
     }
 
     @PostMapping
+    @PreAuthorize("hasAuthority('SCOPE_create:jumpdays')")
     public ResponseEntity<GenericResult> addJumpday(@RequestBody JumpdayDTO input, HttpServletResponse response) {
         GenericResult<Jumpday> result = jumpdayService.saveJumpday(jumpdayConverter.convertToEntity(input));
 
@@ -77,7 +81,7 @@ public class JumpdayController {
         }
 
         if (result.getMessage().equals(ErrorMessage.JUMPDAY_ALREADY_EXISTS_MSG.toString())) {
-            LOGGER.warn("Jumpday already exists: {}", input);
+            LOGGER.warn("Jumpday already exists: {}", input.getDate().toString().replaceAll("[\n|\r|\t]", "_"));
             throw new JumpdayExistsException(result.getMessage());
         }
 

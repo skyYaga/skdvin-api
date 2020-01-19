@@ -13,6 +13,7 @@ import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
@@ -34,6 +35,7 @@ public class AppointmentController {
     }
 
     @GetMapping(value = "/{appointmentId}")
+    @PreAuthorize("hasAuthority('SCOPE_read:appointments')")
     public AppointmentDTO readAppointment(@PathVariable int appointmentId) {
         Appointment appointment = appointmentService.findAppointment(appointmentId);
         return appointmentConverter.convertToDto(appointment);
@@ -66,6 +68,7 @@ public class AppointmentController {
     }
 
     @PutMapping
+    @PreAuthorize("hasAuthority('SCOPE_update:appointments')")
     public ResponseEntity<GenericResult> updateAppointment(@RequestBody AppointmentDTO input) {
         GenericResult<Appointment> result = appointmentService.updateAppointment(appointmentConverter.convertToEntity(input));
 

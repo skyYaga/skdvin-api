@@ -4,6 +4,11 @@ logging:
     com.auth0: DEBUG
 
 spring:
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${AUTH0_ISSUER:}
   data:
     mongodb:
       uri: ${MONGODB_URI:mongodb://localhost/test}
@@ -25,8 +30,7 @@ spring:
       write-dates-as-timestamps: false
 
 auth0:
-  issuer: ${AUTH0_ISSUER:}
-  apiAudience: ${AUTH0_AUDIENCE:}
+  audience: ${AUTH0_AUDIENCE:}
 
 skdvin:
   baseurl: ${SKDVIN_BASEURL:}
