@@ -1,6 +1,7 @@
 package in.skdv.skdvinbackend.model.entity;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import in.skdv.skdvinbackend.model.common.SlotQuery;
 
 import java.time.LocalTime;
 import java.util.ArrayList;
@@ -107,5 +108,12 @@ public class Slot {
 
     public void setHandcamTotal(int handcamTotal) {
         this.handcamTotal = handcamTotal;
+    }
+
+    public boolean isValidForQuery(SlotQuery slotQuery) {
+        return slotQuery.getTandem() <= getTandemAvailable() &&
+                slotQuery.getPicAndVid() <= getPicAndVidAvailable() &&
+                slotQuery.getPicOrVid() <= getPicOrVidAvailable() &&
+                slotQuery.getHandcam() <= getHandcamAvailable();
     }
 }

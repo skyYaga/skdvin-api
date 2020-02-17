@@ -3,6 +3,8 @@ package in.skdv.skdvinbackend.service.impl;
 import in.skdv.skdvinbackend.AbstractSkdvinTest;
 import in.skdv.skdvinbackend.ModelMockHelper;
 import in.skdv.skdvinbackend.exception.ErrorMessage;
+import in.skdv.skdvinbackend.model.common.FreeSlot;
+import in.skdv.skdvinbackend.model.common.SlotQuery;
 import in.skdv.skdvinbackend.model.entity.Appointment;
 import in.skdv.skdvinbackend.repository.JumpdayRepository;
 import in.skdv.skdvinbackend.service.IAppointmentService;
@@ -13,10 +15,9 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.util.ReflectionTestUtils;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
+import java.time.*;
 import java.util.List;
 
 import static org.junit.Assert.*;
@@ -34,6 +35,10 @@ public class MongoAppointmentServiceTest extends AbstractSkdvinTest {
 
     @Before
     public void setup() {
+        // Set mock clock
+        Clock mockClock = Clock.fixed(Instant.parse(LocalDate.now().toString() + "T00:00:00Z"), ZoneOffset.UTC);
+        ReflectionTestUtils.setField(appointmentService, "clock", mockClock);
+
         jumpdayRepository.deleteAll();
         jumpdayRepository.save(ModelMockHelper.createJumpday());
     }
@@ -242,6 +247,43 @@ public class MongoAppointmentServiceTest extends AbstractSkdvinTest {
         assertEquals(appointmentId, updatedAppointment.getPayload().getAppointmentId());
             assertEquals("Jane", updatedAppointment.getPayload().getCustomer().getFirstName());
         assertEquals(newDate, updatedAppointment.getPayload().getDate());
+    }
+
+    @Test
+    public void testFindFreeSlots() {
+        SlotQuery slotQuery = new SlotQuery(2, 1, 0, 0);
+
+        GenericResult<List<FreeSlot>> freeSlots = appointmentService.findFreeSlots(slotQuery);
+
+        assertTrue(freeSlots.isSuccess());
+        assertNotNull(freeSlots.getPayload());
+        assertEquals(1, freeSlots.getPayload().size());
+        assertEquals(LocalDate.now(), freeSlots.getPayload().get(0).getDate());
+        assertEquals(2, freeSlots.getPayload().get(0).getTimes().size());
+        assertEquals(LocalTime.of(10, 0), freeSlots.getPayload().get(0).getTimes().get(0));
+        assertEquals(LocalTime.of(11, 30), freeSlots.getPayload().get(0).getTimes().get(1));
+    }
+
+    @Test
+    public void testFindFreeSlots_TooManyTandems() {
+        SlotQuery slotQuery = new SlotQuery(5, 1, 0, 0);
+
+        GenericResult<List<FreeSlot>> freeSlots = appointmentService.findFreeSlots(slotQuery);
+
+        assertFalse(freeSlots.isSuccess());
+        assertNull(freeSlots.getPayload());
+        assertEquals(ErrorMessage.APPOINTMENT_NO_FREE_SLOTS.toString(), freeSlots.getMessage());
+    }
+
+    @Test
+    public void testFindFreeSlots_TooManyVids() {
+        SlotQuery slotQuery = new SlotQuery(4, 4, 0, 0);
+
+        GenericResult<List<FreeSlot>> freeSlots = appointmentService.findFreeSlots(slotQuery);
+
+        assertFalse(freeSlots.isSuccess());
+        assertNull(freeSlots.getPayload());
+        assertEquals(ErrorMessage.APPOINTMENT_NO_FREE_SLOTS.toString(), freeSlots.getMessage());
     }
 
 }

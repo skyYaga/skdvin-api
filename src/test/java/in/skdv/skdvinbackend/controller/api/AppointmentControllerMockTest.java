@@ -4,6 +4,7 @@ import in.skdv.skdvinbackend.AbstractSkdvinTest;
 import in.skdv.skdvinbackend.MockJwtDecoder;
 import in.skdv.skdvinbackend.ModelMockHelper;
 import in.skdv.skdvinbackend.exception.ErrorMessage;
+import in.skdv.skdvinbackend.model.common.SlotQuery;
 import in.skdv.skdvinbackend.model.entity.Appointment;
 import in.skdv.skdvinbackend.service.IAppointmentService;
 import in.skdv.skdvinbackend.util.GenericResult;
@@ -31,8 +32,7 @@ import static in.skdv.skdvinbackend.config.Authorities.UPDATE_APPOINTMENTS;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertNotNull;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppContextSetup;
@@ -102,6 +102,23 @@ public class AppointmentControllerMockTest extends AbstractSkdvinTest {
                 .andExpect(status().isInternalServerError())
                 .andExpect(jsonPath("$.success", is(false)))
                 .andExpect(jsonPath("$.message", is("Interner Termin Fehler")));
+    }
+
+    @Test
+    public void testFindFreeSlots_InternalError() throws Exception {
+        Mockito.when(appointmentService.findFreeSlots(Mockito.any(SlotQuery.class)))
+                .thenReturn(new GenericResult<>(false, ErrorMessage.APPOINTMENT_SERVICE_ERROR_MSG));
+
+        SlotQuery query = new SlotQuery(2, 0, 0, 2);
+        String queryJson = json(query);
+
+        mockMvc.perform(get("/api/appointment/slots?lang=en")
+                .contentType(contentType)
+                .content(queryJson))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.message", is("Internal appointment error")));
     }
 
 

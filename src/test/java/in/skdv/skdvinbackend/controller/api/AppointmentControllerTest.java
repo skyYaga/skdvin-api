@@ -3,6 +3,7 @@ package in.skdv.skdvinbackend.controller.api;
 import in.skdv.skdvinbackend.AbstractSkdvinTest;
 import in.skdv.skdvinbackend.MockJwtDecoder;
 import in.skdv.skdvinbackend.ModelMockHelper;
+import in.skdv.skdvinbackend.model.common.SlotQuery;
 import in.skdv.skdvinbackend.model.converter.AppointmentConverter;
 import in.skdv.skdvinbackend.model.dto.AppointmentDTO;
 import in.skdv.skdvinbackend.model.entity.Appointment;
@@ -10,28 +11,43 @@ import in.skdv.skdvinbackend.repository.JumpdayRepository;
 import in.skdv.skdvinbackend.service.IAppointmentService;
 import in.skdv.skdvinbackend.util.GenericResult;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.restdocs.RestDocsMockMvcConfigurationCustomizer;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.mock.http.MockHttpOutputMessage;
+import org.springframework.restdocs.JUnitRestDocumentation;
+import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation;
+import org.springframework.restdocs.mockmvc.MockMvcRestDocumentationConfigurer;
+import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders;
+import org.springframework.restdocs.mockmvc.RestDocumentationResultHandler;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.web.context.WebApplicationContext;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.time.LocalDate;
+import java.time.*;
 import java.util.Arrays;
 
 import static in.skdv.skdvinbackend.config.Authorities.READ_APPOINTMENTS;
 import static in.skdv.skdvinbackend.config.Authorities.UPDATE_APPOINTMENTS;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertNotNull;
+import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
+import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
+import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
+import static org.springframework.restdocs.payload.PayloadDocumentation.*;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -41,6 +57,9 @@ import static org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppC
 @RunWith(SpringRunner.class)
 @SpringBootTest
 public class AppointmentControllerTest extends AbstractSkdvinTest {
+
+    @Rule
+    public JUnitRestDocumentation restDocumentation = new JUnitRestDocumentation();
 
     private MediaType contentType = new MediaType(MediaType.APPLICATION_JSON.getType(),
             MediaType.APPLICATION_JSON.getSubtype(),
@@ -73,8 +92,14 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
 
     @Before
     public void setup() {
+        // Set mock clock
+        Clock mockClock = Clock.fixed(Instant.parse(LocalDate.now().toString() + "T00:00:00Z"), ZoneOffset.UTC);
+        ReflectionTestUtils.setField(appointmentService, "clock", mockClock);
+
         this.mockMvc = webAppContextSetup(webApplicationContext)
-                        .apply(springSecurity()).build();
+                .apply(springSecurity())
+                .apply(documentationConfiguration(this.restDocumentation))
+                .build();
 
         jumpdayRepository.deleteAll();
         jumpdayRepository.save(ModelMockHelper.createJumpday());
@@ -364,11 +389,87 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
                 .andExpect(jsonPath("$.message", is("Jumpday has not enough free slots")));
     }
 
+    @Test
+    public void testFindFreeSlots() throws Exception {
+        SlotQuery query = new SlotQuery(2, 0, 0, 0);
+        String queryJson = json(query);
+
+        mockMvc.perform(RestDocumentationRequestBuilders.get("/api/appointment/slots?lang=en")
+                .contentType(contentType)
+                .content(queryJson))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success", is(true)))
+                .andExpect(jsonPath("$.payload[0].date", is(LocalDate.now().toString())))
+                .andExpect(jsonPath("$.payload[0].times[0]", is(LocalTime.of(11, 30).toString())))
+                .andDo(document("jumpday/create-jumpday",
+                        requestFields(
+                            fieldWithPath("tandem").description("number of tandem jumps"),
+                            fieldWithPath("picOrVid").description("picOrVid count"),
+                            fieldWithPath("picAndVid").description("picAndVid count"),
+                            fieldWithPath("handcam").description("handcam count"),
+                            fieldWithPath("valid").ignored()
+                        ),
+                        responseFields(
+                            fieldWithPath("success").description("true when the request was successful"),
+                            fieldWithPath("exception").description("exception message"),
+                            fieldWithPath("message").description("optional return code message"),
+                            fieldWithPath("payload[]").description("an array of date/time Objects"),
+                            fieldWithPath("payload[].date").description("date of free slots"),
+                            fieldWithPath("payload[].times[]").description("time values of free slots")
+                        )
+                ));
+    }
+
+    @Test
+    public void testFindFreeSlots_MoreVideoThanTandem() throws Exception {
+        SlotQuery query = new SlotQuery(1, 2, 0, 0);
+        String queryJson = json(query);
+
+        mockMvc.perform(get("/api/appointment/slots?lang=en")
+                .contentType(contentType)
+                .content(queryJson))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.message", is("The appointment has more video than tandem slots")));
+    }
+
+    @Test
+    public void testFindFreeSlots_NoFreeSlots() throws Exception {
+        SlotQuery query = new SlotQuery(2, 0, 0, 2);
+        String queryJson = json(query);
+
+        mockMvc.perform(get("/api/appointment/slots?lang=en")
+                .contentType(contentType)
+                .content(queryJson))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.message", is("No free appointments found")))
+                .andExpect(jsonPath("$.payload", nullValue()));
+    }
+
     private String json(Object o) throws IOException {
         MockHttpOutputMessage mockHttpOutputMessage = new MockHttpOutputMessage();
         this.mappingJackson2HttpMessageConverter.write(
                 o, MediaType.APPLICATION_JSON, mockHttpOutputMessage);
         return mockHttpOutputMessage.getBodyAsString();
+    }
+
+    @TestConfiguration
+    static class CustomizationConfiguration implements RestDocsMockMvcConfigurationCustomizer {
+        @Override
+        public void customize(MockMvcRestDocumentationConfigurer configurer) {
+            configurer.operationPreprocessors()
+                    .withRequestDefaults(prettyPrint())
+                    .withResponseDefaults(prettyPrint());
+        }
+
+        @Bean
+        public RestDocumentationResultHandler restDocumentation() {
+            return MockMvcRestDocumentation.document("{method-name}");
+        }
     }
 
 }

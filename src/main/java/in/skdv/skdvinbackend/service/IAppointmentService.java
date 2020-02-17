@@ -1,5 +1,7 @@
 package in.skdv.skdvinbackend.service;
 
+import in.skdv.skdvinbackend.model.common.FreeSlot;
+import in.skdv.skdvinbackend.model.common.SlotQuery;
 import in.skdv.skdvinbackend.model.entity.Appointment;
 import in.skdv.skdvinbackend.util.GenericResult;
 
@@ -15,4 +17,6 @@ public interface IAppointmentService {
     Appointment findAppointment(int id);
 
     List<Appointment> findAppointmentsByDay(LocalDate date);
+
+    GenericResult<List<FreeSlot>> findFreeSlots(SlotQuery slotQuery);
 }
