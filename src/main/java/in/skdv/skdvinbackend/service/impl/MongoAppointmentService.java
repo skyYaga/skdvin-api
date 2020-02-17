@@ -1,6 +1,8 @@
 package in.skdv.skdvinbackend.service.impl;
 
 import in.skdv.skdvinbackend.exception.ErrorMessage;
+import in.skdv.skdvinbackend.model.common.FreeSlot;
+import in.skdv.skdvinbackend.model.common.SlotQuery;
 import in.skdv.skdvinbackend.model.entity.Appointment;
 import in.skdv.skdvinbackend.model.entity.Jumpday;
 import in.skdv.skdvinbackend.model.entity.Slot;
@@ -10,8 +12,11 @@ import in.skdv.skdvinbackend.service.ISequenceService;
 import in.skdv.skdvinbackend.util.GenericResult;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
@@ -23,6 +28,7 @@ public class MongoAppointmentService implements IAppointmentService {
 
     private JumpdayRepository jumpdayRepository;
     private ISequenceService sequenceService;
+    private Clock clock = Clock.systemDefaultZone();
 
     @Autowired
     public MongoAppointmentService(JumpdayRepository jumpdayRepository, ISequenceService sequenceService) {
@@ -93,6 +99,35 @@ public class MongoAppointmentService implements IAppointmentService {
     public List<Appointment> findAppointmentsByDay(LocalDate date) {
         return jumpdayRepository.findByDate(date).getSlots().stream()
                 .flatMap(s -> s.getAppointments().stream()).collect(Collectors.toList());
+    }
+
+    @Override
+    public GenericResult<List<FreeSlot>> findFreeSlots(SlotQuery slotQuery) {
+        if (!slotQuery.isValid()) {
+            return new GenericResult<>(false, ErrorMessage.APPOINTMENT_MORE_VIDEO_THAN_TAMDEM_SLOTS);
+        }
+
+        List<Jumpday> jumpdayList = jumpdayRepository.findAll();
+        List<FreeSlot> resultList = new ArrayList<>();
+
+        jumpdayList.forEach(jumpday -> {
+            if (!jumpday.getDate().isBefore(LocalDate.now())) {
+                List<LocalTime> slotTimes = jumpday.getSlots().stream()
+                        .filter(slot -> slot.getTime().isAfter(LocalTime.now(clock)) &&
+                                slot.isValidForQuery(slotQuery))
+                        .map(Slot::getTime)
+                        .collect(Collectors.toList());
+
+                if (slotTimes.size() > 0) {
+                    resultList.add(new FreeSlot(jumpday.getDate(), slotTimes));
+                }
+            }
+        });
+
+        if (resultList.size() > 0) {
+            return new GenericResult<>(true, resultList);
+        }
+        return new GenericResult<>(false, ErrorMessage.APPOINTMENT_NO_FREE_SLOTS);
     }
 
     private GenericResult<Appointment> saveAppointmentInternal(Jumpday jumpday, Appointment appointment) {
