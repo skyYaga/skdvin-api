@@ -1,6 +1,8 @@
 package in.skdv.skdvinbackend.controller.api;
 
 import in.skdv.skdvinbackend.exception.ErrorMessage;
+import in.skdv.skdvinbackend.model.common.FreeSlot;
+import in.skdv.skdvinbackend.model.common.SlotQuery;
 import in.skdv.skdvinbackend.model.converter.AppointmentConverter;
 import in.skdv.skdvinbackend.model.dto.AppointmentDTO;
 import in.skdv.skdvinbackend.model.entity.Appointment;
@@ -17,6 +19,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/appointment")
@@ -87,9 +90,30 @@ public class AppointmentController {
                     .body(new GenericResult(false, messageSource.getMessage(result.getMessage(), null, LocaleContextHolder.getLocale())));
         }
 
-
-
         LOGGER.warn("Error adding Appointment: {}", result.getMessage());
+        return ResponseEntity.status(HttpServletResponse.SC_INTERNAL_SERVER_ERROR)
+                .body(new GenericResult(false, messageSource.getMessage(result.getMessage(), null, LocaleContextHolder.getLocale())));
+    }
+
+    @GetMapping(value = "/slots")
+    public ResponseEntity<GenericResult> findFreeSlots(@RequestBody SlotQuery input) {
+        GenericResult<List<FreeSlot>> result = appointmentService.findFreeSlots(input);
+
+        if (result.isSuccess()) {
+            return ResponseEntity.ok(new GenericResult<>(true, result.getPayload()));
+        }
+
+        if (result.getMessage().equals(ErrorMessage.APPOINTMENT_NO_FREE_SLOTS.toString())) {
+            return ResponseEntity.status(HttpServletResponse.SC_OK)
+                    .body(new GenericResult(false, messageSource.getMessage(result.getMessage(), null, LocaleContextHolder.getLocale())));
+        }
+
+        if (result.getMessage().equals(ErrorMessage.APPOINTMENT_MORE_VIDEO_THAN_TAMDEM_SLOTS.toString())) {
+            return ResponseEntity.status(HttpServletResponse.SC_BAD_REQUEST)
+                    .body(new GenericResult(false, messageSource.getMessage(result.getMessage(), null, LocaleContextHolder.getLocale())));
+        }
+
+        LOGGER.warn("Error finding free slot: {}", result.getMessage());
         return ResponseEntity.status(HttpServletResponse.SC_INTERNAL_SERVER_ERROR)
                 .body(new GenericResult(false, messageSource.getMessage(result.getMessage(), null, LocaleContextHolder.getLocale())));
     }
