@@ -7,6 +7,8 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 
+import static in.skdv.skdvinbackend.model.entity.AppointmentState.UNCONFIRMED;
+
 public abstract class AbstractAppointment {
 
     @NotNull
@@ -28,7 +30,7 @@ public abstract class AbstractAppointment {
     @NotNull
     private int handcam;
 
-    private AppointmentState state;
+    private AppointmentState state = UNCONFIRMED;
 
     @NotNull
     private LocalDateTime createdOn;

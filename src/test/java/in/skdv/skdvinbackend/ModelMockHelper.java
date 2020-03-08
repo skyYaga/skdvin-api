@@ -6,9 +6,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.UUID;
+import java.util.*;
 
 public class ModelMockHelper {
 
@@ -20,15 +18,15 @@ public class ModelMockHelper {
         Customer customer = new Customer();
         customer.setFirstName("Max");
         customer.setLastName("Mustermann");
-        customer.setPlz("12345");
+        customer.setZip("12345");
         customer.setCity("Foo City");
         customer.setEmail("max@example.com");
-        customer.setMobile("0987654321");
         customer.setTel("0987654");
+        customer.setJumpers(createJumpers(tandemCount));
 
         Appointment appointment = new Appointment();
         appointment.setCustomer(customer);
-        appointment.setState(AppointmentState.NONE);
+        appointment.setState(AppointmentState.UNCONFIRMED);
         appointment.setDate(LocalDateTime.of(LocalDate.now(), LocalTime.of(10, 0)));
         appointment.setTandem(tandemCount);
         appointment.setPicOrVid(picOrVid);
@@ -42,15 +40,15 @@ public class ModelMockHelper {
         Customer customer = new Customer();
         customer.setFirstName("Jane");
         customer.setLastName("Doe");
-        customer.setPlz("54321");
+        customer.setZip("54321");
         customer.setCity("Bar City");
         customer.setEmail("jane@example.com");
-        customer.setMobile("0123456789");
         customer.setTel("01234567");
+        customer.setJumpers(createJumpers(2));
 
         Appointment appointment = new Appointment();
         appointment.setCustomer(customer);
-        appointment.setState(AppointmentState.NONE);
+        appointment.setState(AppointmentState.CONFIRMED);
         appointment.setDate(LocalDateTime.of(LocalDate.now(), LocalTime.of(10, 0)));
         appointment.setTandem(2);
         appointment.setPicOrVid(0);
@@ -109,5 +107,17 @@ public class ModelMockHelper {
 
     public static Jumpday createJumpday() {
         return createJumpday(LocalDate.now());
+    }
+
+    public static List<Jumper> createJumpers(int tandemCount) {
+        List<Jumper> jumpers = new ArrayList<>();
+        for (int i = 0; i < tandemCount; i++) {
+            jumpers.add(new Jumper(
+                    "first" + i,
+                    "last" + i,
+                    LocalDate.of(1980, 1, 1),
+                    70 + i));
+        }
+        return jumpers;
     }
 }

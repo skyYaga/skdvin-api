@@ -110,11 +110,12 @@ public class AppointmentControllerMockTest extends AbstractSkdvinTest {
                 .thenReturn(new GenericResult<>(false, ErrorMessage.APPOINTMENT_SERVICE_ERROR_MSG));
 
         SlotQuery query = new SlotQuery(2, 0, 0, 2);
-        String queryJson = json(query);
 
         mockMvc.perform(get("/api/appointment/slots?lang=en")
-                .contentType(contentType)
-                .content(queryJson))
+                .param("tandem", String.valueOf(query.getTandem()))
+                .param("picOrVid", String.valueOf(query.getPicOrVid()))
+                .param("picAndVid", String.valueOf(query.getPicAndVid()))
+                .param("handcam", String.valueOf(query.getHandcam())))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isInternalServerError())
                 .andExpect(jsonPath("$.success", is(false)))
