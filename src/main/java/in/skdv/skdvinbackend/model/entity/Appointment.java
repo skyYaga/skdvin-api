@@ -10,6 +10,8 @@ public class Appointment extends AbstractAppointment {
     @Field("id")
     private int appointmentId;
 
+    private VerificationToken verificationToken;
+
 
     public int getAppointmentId() {
         return appointmentId;
@@ -17,5 +19,13 @@ public class Appointment extends AbstractAppointment {
 
     public void setAppointmentId(int appointmentId) {
         this.appointmentId = appointmentId;
+    }
+
+    public VerificationToken getVerificationToken() {
+        return verificationToken;
+    }
+
+    public void setVerificationToken(VerificationToken verificationToken) {
+        this.verificationToken = verificationToken;
     }
 }

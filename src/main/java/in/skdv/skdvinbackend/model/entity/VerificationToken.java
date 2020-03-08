@@ -25,4 +25,5 @@ public class VerificationToken {
     public void setExpiryDate(LocalDateTime expiryDate) {
         this.expiryDate = expiryDate;
     }
+
 }

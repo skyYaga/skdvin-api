@@ -9,6 +9,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.thymeleaf.TemplateEngine;
+import org.thymeleaf.extras.java8time.dialect.Java8TimeDialect;
 import org.thymeleaf.spring5.SpringTemplateEngine;
 import org.thymeleaf.templatemode.TemplateMode;
 import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver;
@@ -39,8 +40,11 @@ public class EmailConfig {
     }
 
     @Bean
-    public TemplateEngine emailTemplateEngine() {
+    @Autowired
+    public TemplateEngine emailTemplateEngine(ResourceBundleMessageSource emailMessageSource) {
         SpringTemplateEngine templateEngine = new SpringTemplateEngine();
+        // Thymeleaf LocalDateTime formatting
+        templateEngine.addDialect(new Java8TimeDialect());
         // Resolver for TEXT emails
         templateEngine.addTemplateResolver(textTemplateResolver());
         // Resolver for HTML emails (except the editable one)
@@ -48,7 +52,7 @@ public class EmailConfig {
         // Resolver for HTML editable emails (which will be treated as a String)
         templateEngine.addTemplateResolver(stringTemplateResolver());
         // Message source, internationalization specific to emails
-        templateEngine.setTemplateEngineMessageSource(emailMessageSource());
+        templateEngine.setTemplateEngineMessageSource(emailMessageSource);
         return templateEngine;
     }
 

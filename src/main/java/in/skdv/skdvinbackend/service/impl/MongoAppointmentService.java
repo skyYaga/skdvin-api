@@ -4,6 +4,7 @@ import in.skdv.skdvinbackend.exception.ErrorMessage;
 import in.skdv.skdvinbackend.model.common.FreeSlot;
 import in.skdv.skdvinbackend.model.common.SlotQuery;
 import in.skdv.skdvinbackend.model.entity.Appointment;
+import in.skdv.skdvinbackend.model.entity.AppointmentState;
 import in.skdv.skdvinbackend.model.entity.Jumpday;
 import in.skdv.skdvinbackend.model.entity.Slot;
 import in.skdv.skdvinbackend.repository.JumpdayRepository;
@@ -48,7 +49,7 @@ public class MongoAppointmentService implements IAppointmentService {
         Appointment oldAppointment = findAppointment(newAppointment.getAppointmentId());
 
         if (oldAppointment == null) {
-            return new GenericResult<>(false, ErrorMessage.JUMPDAY_NOT_FOUND_MSG);
+            return new GenericResult<>(false, ErrorMessage.APPOINTMENT_NOT_FOUND);
         }
 
         if (oldAppointment.getDate().toLocalDate().equals(newAppointment.getDate().toLocalDate())) {
@@ -113,8 +114,10 @@ public class MongoAppointmentService implements IAppointmentService {
         jumpdayList.forEach(jumpday -> {
             if (!jumpday.getDate().isBefore(LocalDate.now())) {
                 List<LocalTime> slotTimes = jumpday.getSlots().stream()
-                        .filter(slot -> slot.getTime().isAfter(LocalTime.now(clock)) &&
-                                slot.isValidForQuery(slotQuery))
+                        .filter(slot ->
+                            (isTodayButTimeInFuture(jumpday, slot) || isInFuture(jumpday))
+                                    && slot.isValidForQuery(slotQuery)
+                        )
                         .map(Slot::getTime)
                         .collect(Collectors.toList());
 
@@ -130,6 +133,24 @@ public class MongoAppointmentService implements IAppointmentService {
         return new GenericResult<>(false, ErrorMessage.APPOINTMENT_NO_FREE_SLOTS);
     }
 
+    @Override
+    public GenericResult<Void> updateAppointmentState(Appointment appointment, AppointmentState appointmentState) {
+        appointment.setState(appointmentState);
+        GenericResult<Appointment> result = updateAppointment(appointment);
+        if (result.isSuccess()) {
+            return new GenericResult<>(true);
+        }
+        return new GenericResult<>(false, result.getMessage());
+    }
+
+    private boolean isInFuture(Jumpday jumpday) {
+        return jumpday.getDate().isAfter(LocalDate.now());
+    }
+
+    private boolean isTodayButTimeInFuture(Jumpday jumpday, Slot slot) {
+        return jumpday.getDate().isEqual(LocalDate.now()) && slot.getTime().isAfter(LocalTime.now(clock));
+    }
+
     private GenericResult<Appointment> saveAppointmentInternal(Jumpday jumpday, Appointment appointment) {
         if (jumpday == null) {
             return new GenericResult<>(false, ErrorMessage.JUMPDAY_NOT_FOUND_MSG);
@@ -138,6 +159,10 @@ public class MongoAppointmentService implements IAppointmentService {
         if ((appointment.getPicOrVid() + appointment.getPicAndVid() + appointment.getHandcam())
                 > appointment.getTandem()) {
             return new GenericResult<>(false, ErrorMessage.APPOINTMENT_MORE_VIDEO_THAN_TAMDEM_SLOTS);
+        }
+
+        if (appointment.getTandem() != appointment.getCustomer().getJumpers().size()) {
+            return new GenericResult<>(false, ErrorMessage.APPOINTMENT_MISSING_JUMPER_INFO);
         }
 
         if (hasSlotsAvailable(jumpday, appointment)) {

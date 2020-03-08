@@ -6,6 +6,7 @@ import in.skdv.skdvinbackend.exception.ErrorMessage;
 import in.skdv.skdvinbackend.model.common.FreeSlot;
 import in.skdv.skdvinbackend.model.common.SlotQuery;
 import in.skdv.skdvinbackend.model.entity.Appointment;
+import in.skdv.skdvinbackend.model.entity.AppointmentState;
 import in.skdv.skdvinbackend.repository.JumpdayRepository;
 import in.skdv.skdvinbackend.service.IAppointmentService;
 import in.skdv.skdvinbackend.util.GenericResult;
@@ -284,6 +285,25 @@ public class MongoAppointmentServiceTest extends AbstractSkdvinTest {
         assertFalse(freeSlots.isSuccess());
         assertNull(freeSlots.getPayload());
         assertEquals(ErrorMessage.APPOINTMENT_NO_FREE_SLOTS.toString(), freeSlots.getMessage());
+    }
+
+    @Test
+    public void testUpdateAppointmentState() {
+        GenericResult<Appointment> result = appointmentService.saveAppointment(ModelMockHelper.createSingleAppointment());
+        GenericResult<Void> stateResult = appointmentService.updateAppointmentState(result.getPayload(), AppointmentState.CONFIRMED);
+        Appointment appointment = appointmentService.findAppointment(result.getPayload().getAppointmentId());
+
+        assertTrue(stateResult.isSuccess());
+        assertEquals(AppointmentState.CONFIRMED, appointment.getState());
+    }
+
+    @Test
+    public void testUpdateAppointmentState_InvalidAppointment() {
+        Appointment invalidAppointment = ModelMockHelper.createSingleAppointment();
+        GenericResult<Void> result = appointmentService.updateAppointmentState(invalidAppointment, AppointmentState.CONFIRMED);
+
+        assertFalse(result.isSuccess());
+        assertEquals(ErrorMessage.APPOINTMENT_NOT_FOUND.toString(), result.getMessage());
     }
 
 }
