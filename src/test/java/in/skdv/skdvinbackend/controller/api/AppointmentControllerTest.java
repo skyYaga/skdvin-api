@@ -10,20 +10,25 @@ import in.skdv.skdvinbackend.model.entity.Appointment;
 import in.skdv.skdvinbackend.model.entity.AppointmentState;
 import in.skdv.skdvinbackend.repository.JumpdayRepository;
 import in.skdv.skdvinbackend.service.IAppointmentService;
+import in.skdv.skdvinbackend.service.IEmailService;
 import in.skdv.skdvinbackend.util.GenericResult;
 import in.skdv.skdvinbackend.util.VerificationTokenUtil;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.restdocs.RestDocsMockMvcConfigurationCustomizer;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.mock.http.MockHttpOutputMessage;
 import org.springframework.restdocs.JUnitRestDocumentation;
 import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation;
@@ -36,6 +41,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.web.context.WebApplicationContext;
 
+import javax.mail.internet.MimeMessage;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.*;
@@ -46,7 +52,9 @@ import static in.skdv.skdvinbackend.config.Authorities.READ_APPOINTMENTS;
 import static in.skdv.skdvinbackend.config.Authorities.UPDATE_APPOINTMENTS;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.verify;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
@@ -65,6 +73,9 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
     @Rule
     public JUnitRestDocumentation restDocumentation = new JUnitRestDocumentation();
 
+    private static final String FROM_EMAIL = "skdvin@example.com";
+    private static final String BASE_URL = "https://example.com";
+
     private MediaType contentType = new MediaType(MediaType.APPLICATION_JSON.getType(),
             MediaType.APPLICATION_JSON.getSubtype(),
             StandardCharsets.UTF_8);
@@ -72,6 +83,12 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
     private HttpMessageConverter mappingJackson2HttpMessageConverter;
 
     private MockMvc mockMvc;
+
+    @MockBean
+    private JavaMailSender mailSender;
+
+    @Autowired
+    private IEmailService emailService;
 
     @Autowired
     private JumpdayRepository jumpdayRepository;
@@ -110,6 +127,10 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
 
         appointmentService.saveAppointment(ModelMockHelper.createSingleAppointment());
         appointmentService.saveAppointment(ModelMockHelper.createSecondAppointment());
+
+        ReflectionTestUtils.setField(emailService, "fromEmail", FROM_EMAIL);
+        ReflectionTestUtils.setField(emailService, "baseurl", BASE_URL);
+        doReturn(new JavaMailSenderImpl().createMimeMessage()).when(mailSender).createMimeMessage();
     }
 
     @Test
@@ -137,7 +158,7 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
     public void testAddAppointment() throws Exception {
         String appointmentJson = json(ModelMockHelper.createSingleAppointment());
 
-        mockMvc.perform(RestDocumentationRequestBuilders.post("/api/appointment/")
+        mockMvc.perform(RestDocumentationRequestBuilders.post("/api/appointment?lang=en")
                 .contentType(contentType)
                 .content(appointmentJson))
                 .andDo(MockMvcResultHandlers.print())
@@ -197,6 +218,10 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
                                 fieldWithPath("payload.createdBy").ignored(),
                                 fieldWithPath("payload.clientId").ignored()
                         )));
+
+        ArgumentCaptor<MimeMessage> argument = ArgumentCaptor.forClass(MimeMessage.class);
+        verify(mailSender).send(argument.capture());
+        assertTrue(argument.getValue().getSubject().startsWith("Confirm your booking"));
     }
 
     @Test
@@ -519,7 +544,7 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
         GenericResult<Appointment> result = appointmentService.saveAppointment(appointment);
         Appointment savedAppointment = result.getPayload();
 
-        mockMvc.perform(RestDocumentationRequestBuilders.get("/api/appointment/{appointmentId}/confirm/{token}",
+        mockMvc.perform(RestDocumentationRequestBuilders.get("/api/appointment/{appointmentId}/confirm/{token}?lang=en",
                 appointment.getAppointmentId(), savedAppointment.getVerificationToken().getToken())
                 .contentType(contentType))
                 .andDo(MockMvcResultHandlers.print())
@@ -536,6 +561,10 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
                                 fieldWithPath("exception").description("Exception if any"),
                                 fieldWithPath("payload").description("The request's actual payload")
                         )));
+
+        ArgumentCaptor<MimeMessage> argument = ArgumentCaptor.forClass(MimeMessage.class);
+        verify(mailSender).send(argument.capture());
+        assertEquals("Your booking " + savedAppointment.getAppointmentId() + " is confirmed", argument.getValue().getSubject());
     }
 
     @Test
