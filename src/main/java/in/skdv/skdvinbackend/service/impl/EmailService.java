@@ -1,6 +1,6 @@
 package in.skdv.skdvinbackend.service.impl;
 
-import in.skdv.skdvinbackend.model.entity.User;
+import in.skdv.skdvinbackend.model.entity.Appointment;
 import in.skdv.skdvinbackend.service.IEmailService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,8 +21,7 @@ import java.util.Locale;
 public class EmailService implements IEmailService {
 
     private static final Logger LOG = LoggerFactory.getLogger(EmailService.class);
-    private static final String USER_REGISTRATION_ENDPOINT = "/api/user/confirm/";
-    private static final String USER_PW_RESET_ENDPOINT = "/api/user/resetpassword/";
+    private static final String APPOINTMENT_CONFIRMATION_ENDPOINT = "/api/appointment/confirm/";
 
     private JavaMailSender mailSender;
     private TemplateEngine emailTemplateEngine;
@@ -43,49 +42,48 @@ public class EmailService implements IEmailService {
     }
 
     @Override
-    public void sendUserRegistrationToken(User user) throws MessagingException {
+    public void sendAppointmentVerification(Appointment appointment) throws MessagingException {
         Locale locale = LocaleContextHolder.getLocale();
-        String toEmail = user.getEmail();
+        String toEmail = appointment.getCustomer().getEmail();
 
         Context ctx = new Context(locale);
-        ctx.setVariable("username", user.getUsername());
-        ctx.setVariable("tokenurl", baseurl + USER_REGISTRATION_ENDPOINT + user.getVerificationToken().getToken());
+        ctx.setVariable("appointment", appointment);
+        ctx.setVariable("tokenurl", baseurl + APPOINTMENT_CONFIRMATION_ENDPOINT + appointment.getVerificationToken().getToken());
 
         MimeMessage mimeMessage = mailSender.createMimeMessage();
         MimeMessageHelper message = new MimeMessageHelper(mimeMessage, "UTF-8");
 
-        message.setSubject(emailMessageSource.getMessage("user.registration.subject", null, locale));
+        message.setSubject(emailMessageSource.getMessage("appointment.verification.subject", new Object[]{appointment.getAppointmentId()}, locale));
         message.setFrom(fromEmail);
         message.setTo(toEmail);
 
-        String htmlContent = emailTemplateEngine.process("html/user-registration", ctx);
+        String htmlContent = emailTemplateEngine.process("html/appointment-verification", ctx);
         message.setText(htmlContent, true);
 
-        LOG.info("Sending user registration mail to {}", toEmail);
+        LOG.info("Sending appointment verification mail to {}", toEmail);
 
         mailSender.send(mimeMessage);
     }
 
     @Override
-    public void sendPasswordResetToken(User user) throws MessagingException {
+    public void sendAppointmentConfirmation(Appointment appointment) throws MessagingException {
         Locale locale = LocaleContextHolder.getLocale();
-        String toEmail = user.getEmail();
+        String toEmail = appointment.getCustomer().getEmail();
 
         Context ctx = new Context(locale);
-        ctx.setVariable("username", user.getUsername());
-        ctx.setVariable("tokenurl", baseurl + USER_PW_RESET_ENDPOINT + user.getPasswordResetToken().getToken());
+        ctx.setVariable("appointment", appointment);
 
         MimeMessage mimeMessage = mailSender.createMimeMessage();
         MimeMessageHelper message = new MimeMessageHelper(mimeMessage, "UTF-8");
 
-        message.setSubject(emailMessageSource.getMessage("user.passwordreset.subject", null, locale));
+        message.setSubject(emailMessageSource.getMessage("appointment.confirmation.subject", new Object[]{appointment.getAppointmentId()}, locale));
         message.setFrom(fromEmail);
         message.setTo(toEmail);
 
-        String htmlContent = emailTemplateEngine.process("html/user-password-reset", ctx);
+        String htmlContent = emailTemplateEngine.process("html/appointment-confirmation", ctx);
         message.setText(htmlContent, true);
 
-        LOG.info("Sending password reset mail to {}", toEmail);
+        LOG.info("Sending appointment confirmation mail to {}", toEmail);
 
         mailSender.send(mimeMessage);
     }

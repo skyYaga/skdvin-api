@@ -2,8 +2,9 @@ package in.skdv.skdvinbackend.service.impl;
 
 import in.skdv.skdvinbackend.AbstractSkdvinTest;
 import in.skdv.skdvinbackend.ModelMockHelper;
-import in.skdv.skdvinbackend.model.entity.User;
+import in.skdv.skdvinbackend.model.entity.Appointment;
 import in.skdv.skdvinbackend.service.IEmailService;
+import in.skdv.skdvinbackend.util.VerificationTokenUtil;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -23,8 +24,7 @@ import javax.mail.internet.MimeMessage;
 import java.io.IOException;
 import java.util.regex.Pattern;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
 @RunWith(SpringRunner.class)
@@ -52,38 +52,39 @@ public class EmailServiceTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testRegistrationMail() throws MessagingException, IOException {
+    public void testAppointmentVerificationMail() throws MessagingException, IOException {
         doNothing().when(mailSender).send(Mockito.any(MimeMessage.class));
 
-        User user = ModelMockHelper.createUserWithVerificationToken();
-        emailService.sendUserRegistrationToken(user);
+        Appointment appointment = ModelMockHelper.createSingleAppointment();
+        appointment.setVerificationToken(VerificationTokenUtil.generate());
+
+        emailService.sendAppointmentVerification(appointment);
 
         ArgumentCaptor<MimeMessage> argument = ArgumentCaptor.forClass(MimeMessage.class);
         verify(mailSender).send(argument.capture());
 
         assertEquals(FROM_EMAIL, argument.getValue().getFrom()[0].toString());
-        assertEquals(user.getEmail(), argument.getValue().getAllRecipients()[0].toString());
+        assertEquals(appointment.getCustomer().getEmail(), argument.getValue().getAllRecipients()[0].toString());
 
-        Pattern pattern = Pattern.compile(".*" + user.getUsername() +
-                ".*" + BASE_URL + "/api/user/confirm/[A-Za-z0-9-]{36}.*", Pattern.DOTALL);
+        Pattern pattern = Pattern.compile(".*" + BASE_URL + "/api/appointment/confirm/[A-Za-z0-9-]{36}.*", Pattern.DOTALL);
         assertTrue(pattern.matcher(argument.getValue().getContent().toString()).matches());
     }
 
     @Test
-    public void testPasswordResetMail() throws MessagingException, IOException {
+    public void testAppointmentConfirmationMail() throws MessagingException, IOException {
         doNothing().when(mailSender).send(Mockito.any(MimeMessage.class));
 
-        User user = ModelMockHelper.createUserWithPasswordResetToken();
-        emailService.sendPasswordResetToken(user);
+        Appointment appointment = ModelMockHelper.createSingleAppointment();
+        appointment.setVerificationToken(VerificationTokenUtil.generate());
+
+        emailService.sendAppointmentConfirmation(appointment);
 
         ArgumentCaptor<MimeMessage> argument = ArgumentCaptor.forClass(MimeMessage.class);
         verify(mailSender).send(argument.capture());
 
         assertEquals(FROM_EMAIL, argument.getValue().getFrom()[0].toString());
-        assertEquals(user.getEmail(), argument.getValue().getAllRecipients()[0].toString());
+        assertEquals(appointment.getCustomer().getEmail(), argument.getValue().getAllRecipients()[0].toString());
 
-        Pattern pattern = Pattern.compile(".*" + user.getUsername() +
-                ".*" + BASE_URL + "/api/user/resetpassword/[A-Za-z0-9-]{36}.*", Pattern.DOTALL);
-        assertTrue(pattern.matcher(argument.getValue().getContent().toString()).matches());
+        assertFalse(argument.getValue().getContent().toString().isEmpty());
     }
 }

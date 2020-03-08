@@ -1,6 +1,7 @@
 package in.skdv.skdvinbackend.mail.template;
 
 import in.skdv.skdvinbackend.AbstractSkdvinTest;
+import in.skdv.skdvinbackend.ModelMockHelper;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,87 +24,147 @@ public class EmailTemplateTest extends AbstractSkdvinTest {
     private TemplateEngine emailTemplateEngine;
 
     @Test
-    public void testUserRegistrationMail_US() {
+    public void testAppointmentVerificationMail_US() {
         Context ctx = new Context(Locale.US);
-        ctx.setVariable("username", "horst");
+        ctx.setVariable("appointment", ModelMockHelper.createSingleAppointment());
         ctx.setVariable("tokenurl", BASE_URL);
-        String htmlMail = emailTemplateEngine.process("html/user-registration", ctx);
+        String htmlMail = emailTemplateEngine.process("html/appointment-verification", ctx);
         assertEquals("<!DOCTYPE html>\n" +
                 "<html>\n" +
                 "<head>\n" +
                 "    \n" +
-                "    <meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\" />\n" +
+                "    <meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\"/>\n" +
                 "</head>\n" +
                 "<body>\n" +
-                "<p>Hello horst!</p>\n" +
-                "<p>Please click on the Link below to confirm your registration.</p>\n" +
+                "<h1>Appointment 0</h1>\n" +
+                "<p>Hello Max!</p>\n" +
+                "<p>Please click on the Link below to confirm your appointment.</p>\n" +
                 "<a href=\"https://example.com\">https://example.com</a>\n" +
-                "<p>Regards</p>\n" +
+                "<p>IMPORTANT: If you do not confirm your appointment by clicking on the link above, it will be cancelled automatically after 24 hours!</p>\n" +
+                "<p>Your Appointment data:</p>\n" +
+                "<p>08.03.2020 / 10:00</p>\n" +
+                "<p>1 x Tandem</p>\n" +
+                "<p>(1 x Picture or Video)</p>\n" +
+                "<p>(0 x Picture and Video)</p>\n" +
+                "<p>(0 x Handcam)</p>\n" +
+                "<p>Your data:</p>\n" +
+                "<p>Max Mustermann</p>\n" +
+                "<p>email: max@example.com</p>\n" +
+                "<p>phone: 0987654</p>\n" +
+                "<p>ZIP / city: 12345 Foo City</p>\n" +
+                "<ul>\n" +
+                "    <li>first0 last0 (01.01.1980 / 70kg)</li>\n" +
+                "</ul>\n" +
+                "<p>Your Fallschirm-Sport-Zentrum Haßfurt e.V.</p>\n" +
                 "</body>\n" +
                 "</html>", htmlMail);
     }
 
     @Test
-    public void testUserRegistrationMail_DE() {
+    public void testAppointmentVerificationMail_DE() {
         Context ctx = new Context(Locale.GERMANY);
-        ctx.setVariable("username", "horst");
+        ctx.setVariable("appointment", ModelMockHelper.createSingleAppointment());
         ctx.setVariable("tokenurl", BASE_URL);
-        String htmlMail = emailTemplateEngine.process("html/user-registration", ctx);
+        String htmlMail = emailTemplateEngine.process("html/appointment-verification", ctx);
         assertEquals("<!DOCTYPE html>\n" +
                 "<html>\n" +
                 "<head>\n" +
                 "    \n" +
-                "    <meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\" />\n" +
+                "    <meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\"/>\n" +
                 "</head>\n" +
                 "<body>\n" +
-                "<p>Hallo horst!</p>\n" +
-                "<p>Bitte klicke auf den Link unten, um deine Registrierung abzuschließen.</p>\n" +
+                "<h1>Termin 0</h1>\n" +
+                "<p>Hallo Max!</p>\n" +
+                "<p>Bitte den Termin durch einen Klick auf folgenden Link bestätigen:</p>\n" +
                 "<a href=\"https://example.com\">https://example.com</a>\n" +
-                "<p>Viele Grüße</p>\n" +
+                "<p>WICHTIG: Sollten Sie Ihren Termin nicht durch einen Klick auf den Link oben bestätigen, wird dieser nach 24 Stunden automatisch storniert!</p>\n" +
+                "<p>Zur Überprüfung hier ihre Termindaten:</p>\n" +
+                "<p>08.03.2020 / 10:00</p>\n" +
+                "<p>1 x Tandem</p>\n" +
+                "<p>(1 x Foto oder Video)</p>\n" +
+                "<p>(0 x Foto und Video)</p>\n" +
+                "<p>(0 x Handcam)</p>\n" +
+                "<p>Ihre Daten:</p>\n" +
+                "<p>Max Mustermann</p>\n" +
+                "<p>E-Mail: max@example.com</p>\n" +
+                "<p>Telefon: 0987654</p>\n" +
+                "<p>PLZ / Wohnort: 12345 Foo City</p>\n" +
+                "<ul>\n" +
+                "    <li>first0 last0 (01.01.1980 / 70kg)</li>\n" +
+                "</ul>\n" +
+                "<p>Ihr Fallschirm-Sport-Zentrum Haßfurt e.V.</p>\n" +
                 "</body>\n" +
                 "</html>", htmlMail);
     }
-
     @Test
-    public void testPasswordResetMail_US() {
+    public void testAppointmentConfirmationMail_US() {
         Context ctx = new Context(Locale.US);
-        ctx.setVariable("username", "horst");
-        ctx.setVariable("tokenurl", BASE_URL);
-        String htmlMail = emailTemplateEngine.process("html/user-password-reset", ctx);
+        ctx.setVariable("appointment", ModelMockHelper.createSingleAppointment());
+        String htmlMail = emailTemplateEngine.process("html/appointment-confirmation", ctx);
         assertEquals("<!DOCTYPE html>\n" +
                 "<html>\n" +
                 "<head>\n" +
                 "    \n" +
-                "    <meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\" />\n" +
+                "    <meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\"/>\n" +
                 "</head>\n" +
                 "<body>\n" +
-                "<p>Hello horst!</p>\n" +
-                "<p>Please click on the Link below to reset your password.</p>\n" +
-                "<a href=\"https://example.com\">https://example.com</a>\n" +
-                "<p>Regards</p>\n" +
+                "<h1>Appointment 0</h1>\n" +
+                "<p>Hello Max!</p>\n" +
+                "<p>Thanks for your reservation. See the details below:</p>\n" +
+                "<p>08.03.2020 / 10:00</p>\n" +
+                "<p>1 x Tandem</p>\n" +
+                "<p>(1 x Picture or Video)</p>\n" +
+                "<p>(0 x Picture and Video)</p>\n" +
+                "<p>(0 x Handcam)</p>\n" +
+                "<p>Your data:</p>\n" +
+                "<p>Max Mustermann</p>\n" +
+                "<p>email: max@example.com</p>\n" +
+                "<p>phone: 0987654</p>\n" +
+                "<p>ZIP / city: 12345 Foo City</p>\n" +
+                "<ul>\n" +
+                "    <li>first0 last0 (01.01.1980 / 70kg)</li>\n" +
+                "</ul>\n" +
+                "<p>Please come to our manifest at the time of your reservation (10:00).\n" +
+                "Your booked times are just an indication, there is no guarantee to get in the air at the time ouf your booking. Please bring a few hours of your time.\n" +
+                "If you have any further questions or if you have to cancel your booking, send an email to mail@fsz-hassfurt.de or call us (during the weekend): +49(0)9521-3375.</p>\n" +
+                "<p>Your Fallschirm-Sport-Zentrum Haßfurt e.V.</p>\n" +
                 "</body>\n" +
                 "</html>", htmlMail);
     }
 
     @Test
-    public void testPasswordResetMail_DE() {
+    public void testAppointmentConfirmationMail_DE() {
         Context ctx = new Context(Locale.GERMANY);
-        ctx.setVariable("username", "horst");
-        ctx.setVariable("tokenurl", BASE_URL);
-        String htmlMail = emailTemplateEngine.process("html/user-password-reset", ctx);
+        ctx.setVariable("appointment", ModelMockHelper.createSingleAppointment());
+        String htmlMail = emailTemplateEngine.process("html/appointment-confirmation", ctx);
         assertEquals("<!DOCTYPE html>\n" +
                 "<html>\n" +
                 "<head>\n" +
                 "    \n" +
-                "    <meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\" />\n" +
+                "    <meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\"/>\n" +
                 "</head>\n" +
                 "<body>\n" +
-                "<p>Hallo horst!</p>\n" +
-                "<p>Bitte klicke auf den Link unten, um dein Passwort zurückzusetzen.</p>\n" +
-                "<a href=\"https://example.com\">https://example.com</a>\n" +
-                "<p>Viele Grüße</p>\n" +
+                "<h1>Termin 0</h1>\n" +
+                "<p>Hallo Max!</p>\n" +
+                "<p>Vielen Dank für Ihre Reservierung. Nachfolgend alle Details:</p>\n" +
+                "<p>08.03.2020 / 10:00</p>\n" +
+                "<p>1 x Tandem</p>\n" +
+                "<p>(1 x Foto oder Video)</p>\n" +
+                "<p>(0 x Foto und Video)</p>\n" +
+                "<p>(0 x Handcam)</p>\n" +
+                "<p>Ihre Daten:</p>\n" +
+                "<p>Max Mustermann</p>\n" +
+                "<p>E-Mail: max@example.com</p>\n" +
+                "<p>Telefon: 0987654</p>\n" +
+                "<p>PLZ / Wohnort: 12345 Foo City</p>\n" +
+                "<ul>\n" +
+                "    <li>first0 last0 (01.01.1980 / 70kg)</li>\n" +
+                "</ul>\n" +
+                "<p>Melden Sie sich zum gebuchten Zeitpunkt (10:00 Uhr) einfach vor Ort bei uns am Manifest.\n" +
+                "Die angegebenen Zeiten sind lediglich Richtzeiten, es besteht keine Garantie zur gebuchten Uhrzeit in die Luft zu kommen. Bitte bringen Sie ein paar Stunden Zeit mit.\n" +
+                "Falls Sie noch Fragen haben oder Ihren Termin nicht wahrnehmen können, senden Sie eine Mail an mail@fsz-hassfurt.de oder melden Sie sich telefonisch (am Wochenende) unter 09521-3375.</p>\n" +
+                "<p>Ihr Fallschirm-Sport-Zentrum Haßfurt e.V.</p>\n" +
                 "</body>\n" +
                 "</html>", htmlMail);
     }
-
 }

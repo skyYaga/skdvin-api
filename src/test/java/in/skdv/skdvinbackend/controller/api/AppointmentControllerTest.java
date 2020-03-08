@@ -7,9 +7,11 @@ import in.skdv.skdvinbackend.model.common.SlotQuery;
 import in.skdv.skdvinbackend.model.converter.AppointmentConverter;
 import in.skdv.skdvinbackend.model.dto.AppointmentDTO;
 import in.skdv.skdvinbackend.model.entity.Appointment;
+import in.skdv.skdvinbackend.model.entity.AppointmentState;
 import in.skdv.skdvinbackend.repository.JumpdayRepository;
 import in.skdv.skdvinbackend.service.IAppointmentService;
 import in.skdv.skdvinbackend.util.GenericResult;
+import in.skdv.skdvinbackend.util.VerificationTokenUtil;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -37,6 +39,7 @@ import org.springframework.web.context.WebApplicationContext;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.*;
+import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 
 import static in.skdv.skdvinbackend.config.Authorities.READ_APPOINTMENTS;
@@ -48,6 +51,7 @@ import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.docu
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
 import static org.springframework.restdocs.payload.PayloadDocumentation.*;
+import static org.springframework.restdocs.request.RequestDocumentation.*;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -133,13 +137,66 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
     public void testAddAppointment() throws Exception {
         String appointmentJson = json(ModelMockHelper.createSingleAppointment());
 
-        mockMvc.perform(post("/api/appointment/")
+        mockMvc.perform(RestDocumentationRequestBuilders.post("/api/appointment/")
                 .contentType(contentType)
                 .content(appointmentJson))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.success", is(true)))
-                .andExpect(jsonPath("$.payload.customer.firstName", is("Max")));
+                .andExpect(jsonPath("$.payload.customer.firstName", is("Max")))
+                .andDo(document("appointment/add-appointment",
+                        requestFields(
+                                fieldWithPath("customer").description("Customer Details"),
+                                fieldWithPath("customer.firstName").description("Customer's first name"),
+                                fieldWithPath("customer.lastName").description("Customer's last name"),
+                                fieldWithPath("customer.tel").description("Customer's phone number"),
+                                fieldWithPath("customer.email").description("Customer's email address"),
+                                fieldWithPath("customer.zip").description("Customer's zip code"),
+                                fieldWithPath("customer.city").description("Customer's city"),
+                                fieldWithPath("customer.jumpers[]").description("Jumpers for this appointment"),
+                                fieldWithPath("customer.jumpers[].firstName").description("Jumper's first name"),
+                                fieldWithPath("customer.jumpers[].lastName").description("Jumper's last name"),
+                                fieldWithPath("customer.jumpers[].dateOfBirth").description("Jumper's date of birth"),
+                                fieldWithPath("customer.jumpers[].weight").description("Jumper's weight"),
+                                fieldWithPath("date").description("Appointments date/time"),
+                                fieldWithPath("tandem").description("Tandem count"),
+                                fieldWithPath("picOrVid").description("picture or video count"),
+                                fieldWithPath("picAndVid").description("picture and video count"),
+                                fieldWithPath("handcam").description("handcam count"),
+                                fieldWithPath("state").ignored(),
+                                fieldWithPath("createdOn").ignored(),
+                                fieldWithPath("createdBy").ignored(),
+                                fieldWithPath("clientId").ignored(),
+                                fieldWithPath("verificationToken").ignored()
+                        ),
+                        responseFields(
+                                fieldWithPath("success").description("true, if the request was successful"),
+                                fieldWithPath("message").description("Message in case of error"),
+                                fieldWithPath("exception").description("Exception if any"),
+                                fieldWithPath("payload").description("The request's actual payload"),
+                                fieldWithPath("payload.appointmentId").description("The created appointment's id"),
+                                fieldWithPath("payload.customer").description("Customer Details"),
+                                fieldWithPath("payload.customer.firstName").description("Customer's first name"),
+                                fieldWithPath("payload.customer.lastName").description("Customer's last name"),
+                                fieldWithPath("payload.customer.tel").description("Customer's phone number"),
+                                fieldWithPath("payload.customer.email").description("Customer's email address"),
+                                fieldWithPath("payload.customer.zip").description("Customer's zip code"),
+                                fieldWithPath("payload.customer.city").description("Customer's city"),
+                                fieldWithPath("payload.customer.jumpers[]").description("Jumpers for this appointment"),
+                                fieldWithPath("payload.customer.jumpers[].firstName").description("Jumper's first name"),
+                                fieldWithPath("payload.customer.jumpers[].lastName").description("Jumper's last name"),
+                                fieldWithPath("payload.customer.jumpers[].dateOfBirth").description("Jumper's date of birth"),
+                                fieldWithPath("payload.customer.jumpers[].weight").description("Jumper's weight"),
+                                fieldWithPath("payload.date").description("Appointments date/time"),
+                                fieldWithPath("payload.tandem").description("Tandem count"),
+                                fieldWithPath("payload.picOrVid").description("picture or video count"),
+                                fieldWithPath("payload.picAndVid").description("picture and video count"),
+                                fieldWithPath("payload.handcam").description("handcam count"),
+                                fieldWithPath("payload.state").ignored(),
+                                fieldWithPath("payload.createdOn").ignored(),
+                                fieldWithPath("payload.createdBy").ignored(),
+                                fieldWithPath("payload.clientId").ignored()
+                        )));
     }
 
     @Test
@@ -241,6 +298,7 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
 
         appointment.setTandem(newCount);
         appointment.getCustomer().setFirstName("Unitjane");
+        appointment.getCustomer().setJumpers(ModelMockHelper.createJumpers(2));
 
         String appointmentJson = json(appointment);
 
@@ -376,6 +434,7 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
         AppointmentDTO appointment = appointmentConverter.convertToDto(appointmentService.findAppointmentsByDay(LocalDate.now()).get(0));
 
         appointment.setTandem(10);
+        appointment.getCustomer().setJumpers(ModelMockHelper.createJumpers(10));
 
         String appointmentJson = json(appointment);
 
@@ -392,23 +451,24 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
     @Test
     public void testFindFreeSlots() throws Exception {
         SlotQuery query = new SlotQuery(2, 0, 0, 0);
-        String queryJson = json(query);
 
         mockMvc.perform(RestDocumentationRequestBuilders.get("/api/appointment/slots?lang=en")
-                .contentType(contentType)
-                .content(queryJson))
+                .param("tandem", String.valueOf(query.getTandem()))
+                .param("picOrVid", String.valueOf(query.getPicOrVid()))
+                .param("picAndVid", String.valueOf(query.getPicAndVid()))
+                .param("handcam", String.valueOf(query.getHandcam())))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success", is(true)))
                 .andExpect(jsonPath("$.payload[0].date", is(LocalDate.now().toString())))
                 .andExpect(jsonPath("$.payload[0].times[0]", is(LocalTime.of(11, 30).toString())))
-                .andDo(document("jumpday/create-jumpday",
-                        requestFields(
-                            fieldWithPath("tandem").description("number of tandem jumps"),
-                            fieldWithPath("picOrVid").description("picOrVid count"),
-                            fieldWithPath("picAndVid").description("picAndVid count"),
-                            fieldWithPath("handcam").description("handcam count"),
-                            fieldWithPath("valid").ignored()
+                .andDo(document("appointment/find-slots",
+                        requestParameters(
+                            parameterWithName("tandem").description("number of tandem jumps"),
+                            parameterWithName("picOrVid").description("picOrVid count"),
+                            parameterWithName("picAndVid").description("picAndVid count"),
+                            parameterWithName("handcam").description("handcam count"),
+                            parameterWithName("lang").ignored()
                         ),
                         responseFields(
                             fieldWithPath("success").description("true when the request was successful"),
@@ -424,11 +484,12 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
     @Test
     public void testFindFreeSlots_MoreVideoThanTandem() throws Exception {
         SlotQuery query = new SlotQuery(1, 2, 0, 0);
-        String queryJson = json(query);
 
         mockMvc.perform(get("/api/appointment/slots?lang=en")
-                .contentType(contentType)
-                .content(queryJson))
+                .param("tandem", String.valueOf(query.getTandem()))
+                .param("picOrVid", String.valueOf(query.getPicOrVid()))
+                .param("picAndVid", String.valueOf(query.getPicAndVid()))
+                .param("handcam", String.valueOf(query.getHandcam())))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.success", is(false)))
@@ -438,16 +499,106 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
     @Test
     public void testFindFreeSlots_NoFreeSlots() throws Exception {
         SlotQuery query = new SlotQuery(2, 0, 0, 2);
-        String queryJson = json(query);
 
         mockMvc.perform(get("/api/appointment/slots?lang=en")
-                .contentType(contentType)
-                .content(queryJson))
+                .param("tandem", String.valueOf(query.getTandem()))
+                .param("picOrVid", String.valueOf(query.getPicOrVid()))
+                .param("picAndVid", String.valueOf(query.getPicAndVid()))
+                .param("handcam", String.valueOf(query.getHandcam())))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success", is(false)))
                 .andExpect(jsonPath("$.message", is("No free appointments found")))
                 .andExpect(jsonPath("$.payload", nullValue()));
+    }
+
+    @Test
+    public void testConfirmAppointment() throws Exception {
+        Appointment appointment = ModelMockHelper.createSingleAppointment();
+        appointment.setVerificationToken(VerificationTokenUtil.generate());
+        GenericResult<Appointment> result = appointmentService.saveAppointment(appointment);
+        Appointment savedAppointment = result.getPayload();
+
+        mockMvc.perform(RestDocumentationRequestBuilders.get("/api/appointment/{appointmentId}/confirm/{token}",
+                appointment.getAppointmentId(), savedAppointment.getVerificationToken().getToken())
+                .contentType(contentType))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success", is(true)))
+                .andDo(document("appointment/confirm-appointment",
+                        pathParameters(
+                                parameterWithName("appointmentId").description("The id of the appointment"),
+                                parameterWithName("token").description("The verification token for this appointment")
+                        ),
+                        responseFields(
+                                fieldWithPath("success").description("true, if the request was successful"),
+                                fieldWithPath("message").description("Message in case of error"),
+                                fieldWithPath("exception").description("Exception if any"),
+                                fieldWithPath("payload").description("The request's actual payload")
+                        )));
+    }
+
+    @Test
+    public void testConfirmAppointment_InvalidToken() throws Exception {
+        Appointment appointment = ModelMockHelper.createSingleAppointment();
+        appointment.setVerificationToken(VerificationTokenUtil.generate());
+        appointmentService.saveAppointment(appointment);
+
+        mockMvc.perform(get("/api/appointment/{appointmentId}/confirm/{token}?lang=en",
+                appointment.getAppointmentId(), "foo")
+                .contentType(contentType))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.message", is("Confirmation Token invalid")));
+    }
+
+    @Test
+    public void testConfirmAppointment_ExpiredToken() throws Exception {
+        Appointment appointment = ModelMockHelper.createSingleAppointment();
+        appointment.setVerificationToken(VerificationTokenUtil.generate());
+        appointment.getVerificationToken().setExpiryDate(LocalDateTime.now().minus(1, ChronoUnit.HOURS));
+        appointmentService.saveAppointment(appointment);
+
+        mockMvc.perform(get("/api/appointment/{appointmentId}/confirm/{token}?lang=en",
+                appointment.getAppointmentId(), appointment.getVerificationToken().getToken())
+                .contentType(contentType))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.message", is("Confirmation Token invalid")));
+    }
+
+    @Test
+    public void testConfirmAppointment_AlreadyConfirmed() throws Exception {
+        Appointment appointment = ModelMockHelper.createSingleAppointment();
+        appointment.setVerificationToken(VerificationTokenUtil.generate());
+        appointment.setState(AppointmentState.CONFIRMED);
+        appointmentService.saveAppointment(appointment);
+
+        mockMvc.perform(get("/api/appointment/{appointmentId}/confirm/{token}?lang=en",
+                appointment.getAppointmentId(), appointment.getVerificationToken().getToken())
+                .contentType(contentType))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.message", is("Appointment already confirmed")));
+    }
+
+    @Test
+    public void testConfirmAppointment_InvalidAppointment() throws Exception {
+        Appointment appointment = ModelMockHelper.createSingleAppointment();
+        appointment.setVerificationToken(VerificationTokenUtil.generate());
+        appointment.getVerificationToken().setExpiryDate(LocalDateTime.now().minus(1, ChronoUnit.HOURS));
+        appointmentService.saveAppointment(appointment);
+
+        mockMvc.perform(get("/api/appointment/{appointmentId}/confirm/{token}?lang=en",
+                42, appointment.getVerificationToken().getToken())
+                .contentType(contentType))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.message", is("Appointment not found")));
     }
 
     private String json(Object o) throws IOException {
