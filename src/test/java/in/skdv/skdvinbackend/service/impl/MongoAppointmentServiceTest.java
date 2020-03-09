@@ -7,9 +7,12 @@ import in.skdv.skdvinbackend.model.common.FreeSlot;
 import in.skdv.skdvinbackend.model.common.SlotQuery;
 import in.skdv.skdvinbackend.model.entity.Appointment;
 import in.skdv.skdvinbackend.model.entity.AppointmentState;
+import in.skdv.skdvinbackend.model.entity.VerificationToken;
 import in.skdv.skdvinbackend.repository.JumpdayRepository;
 import in.skdv.skdvinbackend.service.IAppointmentService;
 import in.skdv.skdvinbackend.util.GenericResult;
+import in.skdv.skdvinbackend.util.VerificationTokenUtil;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -19,6 +22,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.*;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 import static org.junit.Assert.*;
@@ -304,6 +308,54 @@ public class MongoAppointmentServiceTest extends AbstractSkdvinTest {
 
         assertFalse(result.isSuccess());
         assertEquals(ErrorMessage.APPOINTMENT_NOT_FOUND.toString(), result.getMessage());
+    }
+
+    @Test
+    public void testFindUnconfirmedAppointments_ExpiredAndUnconfirmed() {
+        Appointment appointment = ModelMockHelper.createSingleAppointment();
+        VerificationToken verificationToken = VerificationTokenUtil.generate();
+        verificationToken.setExpiryDate(LocalDateTime.now().minus(25, ChronoUnit.HOURS));
+        appointment.setVerificationToken(verificationToken);
+        appointmentService.saveAppointment(appointment);
+
+        List<Appointment> unconfirmedAppointments = appointmentService.findUnconfirmedAppointments();
+
+        Assert.assertEquals(1, unconfirmedAppointments.size());
+    }
+
+    @Test
+    public void testFindUnconfirmedAppointments_ExpiredAndConfirmed() {
+        Appointment appointment = ModelMockHelper.createSingleAppointment();
+        VerificationToken verificationToken = VerificationTokenUtil.generate();
+        verificationToken.setExpiryDate(LocalDateTime.now().minus(25, ChronoUnit.HOURS));
+        appointment.setVerificationToken(verificationToken);
+        appointment.setState(AppointmentState.CONFIRMED);
+        appointmentService.saveAppointment(appointment);
+
+        List<Appointment> unconfirmedAppointments = appointmentService.findUnconfirmedAppointments();
+
+        Assert.assertEquals(0, unconfirmedAppointments.size());
+    }
+
+    @Test
+    public void testFindUnconfirmedAppointments_NotExpiredAndUnconfirmed() {
+        Appointment appointment = ModelMockHelper.createSingleAppointment();
+        appointment.setVerificationToken(VerificationTokenUtil.generate());
+        appointmentService.saveAppointment(appointment);
+
+        List<Appointment> unconfirmedAppointments = appointmentService.findUnconfirmedAppointments();
+
+        Assert.assertEquals(0, unconfirmedAppointments.size());
+    }
+
+    @Test
+    public void testDeleteAppointment() {
+        Appointment appointment = ModelMockHelper.createSingleAppointment();
+        appointmentService.saveAppointment(appointment);
+
+        appointmentService.deleteAppointment(appointment.getAppointmentId());
+
+        Assert.assertNull(appointmentService.findAppointment(appointment.getAppointmentId()));
     }
 
 }

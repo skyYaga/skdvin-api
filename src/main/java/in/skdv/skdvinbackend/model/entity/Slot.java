@@ -2,6 +2,7 @@ package in.skdv.skdvinbackend.model.entity;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import in.skdv.skdvinbackend.model.common.SlotQuery;
+import org.springframework.data.mongodb.core.mapping.DBRef;
 
 import java.time.LocalTime;
 import java.util.ArrayList;
@@ -15,6 +16,7 @@ public class Slot {
     private int picOrVidTotal;
     private int picAndVidTotal;
     private int handcamTotal;
+    @DBRef
     private List<Appointment> appointments = new ArrayList<>();
 
 

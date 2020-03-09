@@ -1,5 +1,7 @@
 package in.skdv.skdvinbackend.config;
 
+import in.skdv.skdvinbackend.listener.JumpdayCascadeSaveMongoEventListener;
+import in.skdv.skdvinbackend.repository.AppointmentRepository;
 import in.skdv.skdvinbackend.repository.JumpdayRepository;
 import in.skdv.skdvinbackend.service.IAppointmentService;
 import in.skdv.skdvinbackend.service.IJumpdayService;
@@ -11,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.support.ResourceBundleMessageSource;
+import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -24,6 +27,17 @@ public class ApplicationConfig implements WebMvcConfigurer {
     @Autowired
     private JumpdayRepository jumpdayRepository;
 
+    @Autowired
+    private AppointmentRepository appointmentRepository;
+
+    @Autowired
+    private MongoTemplate mongoTemplate;
+
+    @Bean
+    private JumpdayCascadeSaveMongoEventListener jumpdayCascadeSaveMongoEventListener() {
+        return new JumpdayCascadeSaveMongoEventListener(mongoTemplate);
+    }
+
     @Bean
     public ISequenceService getSequenceService() {
         return new SequenceService();
@@ -32,7 +46,7 @@ public class ApplicationConfig implements WebMvcConfigurer {
     @Bean
     @Autowired
     public IAppointmentService getAppointmentService(ISequenceService sequenceService) {
-        return new MongoAppointmentService(jumpdayRepository, sequenceService);
+        return new MongoAppointmentService(jumpdayRepository, appointmentRepository, sequenceService, mongoTemplate);
     }
 
     @Bean

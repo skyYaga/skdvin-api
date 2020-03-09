@@ -87,4 +87,27 @@ public class EmailService implements IEmailService {
 
         mailSender.send(mimeMessage);
     }
+
+    @Override
+    public void sendAppointmentUnconfirmedCancellation(Appointment appointment) throws MessagingException {
+        Locale locale = LocaleContextHolder.getLocale();
+        String toEmail = appointment.getCustomer().getEmail();
+
+        Context ctx = new Context(locale);
+        ctx.setVariable("appointment", appointment);
+
+        MimeMessage mimeMessage = mailSender.createMimeMessage();
+        MimeMessageHelper message = new MimeMessageHelper(mimeMessage, "UTF-8");
+
+        message.setSubject(emailMessageSource.getMessage("appointment.unconfirmed.cancellation.subject", new Object[]{appointment.getAppointmentId()}, locale));
+        message.setFrom(fromEmail);
+        message.setTo(toEmail);
+
+        String htmlContent = emailTemplateEngine.process("html/appointment-unconfirmed-cancellation", ctx);
+        message.setText(htmlContent, true);
+
+        LOG.info("Sending appointment unconfirmed cancellation mail to {}", toEmail);
+
+        mailSender.send(mimeMessage);
+    }
 }

@@ -24,35 +24,38 @@
 <p th:text="#{appointment.data.heading}">
     Zur Überprüfung hier ihre Termindaten
 </p>
-<p th:text="${#temporals.format(appointment.date, 'dd.MM.yyyy / HH:mm')}">
+<span th:text="#{date(${#temporals.format(appointment.date, 'dd.MM.yyyy / HH:mm')})}">
     Datum: 01.01.2020 / 10:00 Uhr
-</p>
-<p th:text="#{tandem(${appointment.tandem})}">
+</span><br/>
+<span th:text="#{tandem(${appointment.tandem})}">
     1 x Tandem
-</p>
-<p th:text="#{picorvid(${appointment.picOrVid})}">
+</span><br/>
+<span th:text="#{picorvid(${appointment.picOrVid})}">
     1 x Foto oder Video
-</p>
-<p th:text="#{picandvid(${appointment.picAndVid})}">
+</span><br/>
+<span th:text="#{picandvid(${appointment.picAndVid})}">
     1 x Foto und Video
-</p>
-<p th:text="#{handcam(${appointment.handcam})}">
+</span><br/>
+<span th:text="#{handcam(${appointment.handcam})}">
     1 x Handcam
-</p>
+</span>
 <p th:text="#{yourdata}">
     Ihre Daten:
 </p>
-<p th:text="#{firstlast(${appointment.customer.firstName}, ${appointment.customer.lastName})}">
+<span th:text="#{firstlast(${appointment.customer.firstName}, ${appointment.customer.lastName})}">
     Max Mustermann
-</p>
-<p th:text="#{email(${appointment.customer.email})}">
+</span><br/>
+<span th:text="#{email(${appointment.customer.email})}">
     E-Mail: max.mustermann@example.com
-</p>
-<p th:text="#{phone(${appointment.customer.tel})}">
+</span><br/>
+<span th:text="#{phone(${appointment.customer.tel})}">
     Telefon: 0123456789
-</p>
-<p th:text="#{zipcity(${appointment.customer.zip}, ${appointment.customer.city})}">
+</span><br/>
+<span th:text="#{zipcity(${appointment.customer.zip}, ${appointment.customer.city})}">
     PLZ / Wohnort: 12345 Musterstadt
+</span>
+<p th:text="#{jumperdata}">
+    Springerdaten
 </p>
 <ul th:each="jumper: ${appointment.customer.jumpers}">
     <li th:text="#{appointment.customer.jumper(
