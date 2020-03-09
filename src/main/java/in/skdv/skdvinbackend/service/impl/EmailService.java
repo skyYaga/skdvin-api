@@ -21,7 +21,7 @@ import java.util.Locale;
 public class EmailService implements IEmailService {
 
     private static final Logger LOG = LoggerFactory.getLogger(EmailService.class);
-    private static final String APPOINTMENT_CONFIRMATION_ENDPOINT = "/api/appointment/confirm/";
+    private static final String APPOINTMENT_CONFIRMATION_ENDPOINT = "/appointment/verify?id=%d&token=%s";
 
     private JavaMailSender mailSender;
     private TemplateEngine emailTemplateEngine;
@@ -48,7 +48,9 @@ public class EmailService implements IEmailService {
 
         Context ctx = new Context(locale);
         ctx.setVariable("appointment", appointment);
-        ctx.setVariable("tokenurl", baseurl + APPOINTMENT_CONFIRMATION_ENDPOINT + appointment.getVerificationToken().getToken());
+        ctx.setVariable("tokenurl", baseurl +
+                String.format(APPOINTMENT_CONFIRMATION_ENDPOINT,
+                        appointment.getAppointmentId(), appointment.getVerificationToken().getToken()));
 
         MimeMessage mimeMessage = mailSender.createMimeMessage();
         MimeMessageHelper message = new MimeMessageHelper(mimeMessage, "UTF-8");

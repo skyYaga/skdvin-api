@@ -40,7 +40,7 @@ public class EmailTemplateTest extends AbstractSkdvinTest {
                 "    <meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\"/>\n" +
                 "</head>\n" +
                 "<body>\n" +
-                "<h1>Appointment 0</h1>\n" +
+                "<h1>Appointment #0</h1>\n" +
                 "<p>Hello Max!</p>\n" +
                 "<p>Please click on the Link below to confirm your appointment.</p>\n" +
                 "<a href=\"https://example.com\">https://example.com</a>\n" +
@@ -79,7 +79,7 @@ public class EmailTemplateTest extends AbstractSkdvinTest {
                 "    <meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\"/>\n" +
                 "</head>\n" +
                 "<body>\n" +
-                "<h1>Termin 0</h1>\n" +
+                "<h1>Termin #0</h1>\n" +
                 "<p>Hallo Max!</p>\n" +
                 "<p>Bitte den Termin durch einen Klick auf folgenden Link bestätigen:</p>\n" +
                 "<a href=\"https://example.com\">https://example.com</a>\n" +
@@ -117,7 +117,7 @@ public class EmailTemplateTest extends AbstractSkdvinTest {
                 "    <meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\"/>\n" +
                 "</head>\n" +
                 "<body>\n" +
-                "<h1>Appointment 0</h1>\n" +
+                "<h1>Appointment #0</h1>\n" +
                 "<p>Hello Max!</p>\n" +
                 "<p>Thanks for your reservation. See the details below:</p>\n" +
                 "<span>Date: " + appointment.getDate().format(formatter) + " / 10:00</span><br/>\n" +
@@ -153,7 +153,7 @@ public class EmailTemplateTest extends AbstractSkdvinTest {
                 "    <meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\"/>\n" +
                 "</head>\n" +
                 "<body>\n" +
-                "<h1>Termin 0</h1>\n" +
+                "<h1>Termin #0</h1>\n" +
                 "<p>Hallo Max!</p>\n" +
                 "<p>Vielen Dank für Ihre Reservierung. Nachfolgend alle Details:</p>\n" +
                 "<span>Datum: " + appointment.getDate().format(formatter) + " / 10:00</span><br/>\n" +
@@ -189,7 +189,7 @@ public class EmailTemplateTest extends AbstractSkdvinTest {
                 "    <meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\"/>\n" +
                 "</head>\n" +
                 "<body>\n" +
-                "<h1><span>CANCELLATION</span> <span>Appointment 0</span></h1>\n" +
+                "<h1><span>CANCELLATION</span> <span>Appointment #0</span></h1>\n" +
                 "<p>Hello Max!</p>\n" +
                 "<p>As you have not confirmed your appointment, it has just been automatically cancelled.<br/>If you simply forgot to confirm it, you can book a new appointment on skdv.in.<br/><br/>The following appointment was deleted:</p>\n" +
                 "<span>Date: " + appointment.getDate().format(formatter) + " / 10:00</span><br/>\n" +
@@ -224,7 +224,7 @@ public class EmailTemplateTest extends AbstractSkdvinTest {
                 "    <meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\"/>\n" +
                 "</head>\n" +
                 "<body>\n" +
-                "<h1><span>STORNIERUNG</span> <span>Termin 0</span></h1>\n" +
+                "<h1><span>STORNIERUNG</span> <span>Termin #0</span></h1>\n" +
                 "<p>Hallo Max!</p>\n" +
                 "<p>Da Sie Ihren Termin nicht bestätigt haben, wurde dieser soeben automatisch storniert.<br/>Wenn Sie einfach vergessen haben diesen zu bestätigen, können Sie auf skdv.in einen neuen Termin buchen.<br/><br/>Folgender Termin wurde gelöscht:</p>\n" +
                 "<span>Datum: " + appointment.getDate().format(formatter) + " / 10:00</span><br/>\n" +

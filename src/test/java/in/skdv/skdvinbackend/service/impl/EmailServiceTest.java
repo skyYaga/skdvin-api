@@ -66,7 +66,7 @@ public class EmailServiceTest extends AbstractSkdvinTest {
         assertEquals(FROM_EMAIL, argument.getValue().getFrom()[0].toString());
         assertEquals(appointment.getCustomer().getEmail(), argument.getValue().getAllRecipients()[0].toString());
 
-        Pattern pattern = Pattern.compile(".*" + BASE_URL + "/api/appointment/confirm/[A-Za-z0-9-]{36}.*", Pattern.DOTALL);
+        Pattern pattern = Pattern.compile(".*" + BASE_URL + "/appointment/verify\\?id=[0-9]+&token=[A-Za-z0-9-]{36}.*", Pattern.DOTALL);
         assertTrue(pattern.matcher(argument.getValue().getContent().toString()).matches());
     }
 

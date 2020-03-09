@@ -564,7 +564,7 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
 
         ArgumentCaptor<MimeMessage> argument = ArgumentCaptor.forClass(MimeMessage.class);
         verify(mailSender).send(argument.capture());
-        assertEquals("Your booking " + savedAppointment.getAppointmentId() + " is confirmed", argument.getValue().getSubject());
+        assertEquals("Your booking #" + savedAppointment.getAppointmentId() + " is confirmed", argument.getValue().getSubject());
     }
 
     @Test

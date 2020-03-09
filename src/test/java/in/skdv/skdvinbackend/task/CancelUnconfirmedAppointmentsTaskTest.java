@@ -91,6 +91,6 @@ public class CancelUnconfirmedAppointmentsTaskTest extends AbstractSkdvinTest {
 
         ArgumentCaptor<MimeMessage> argument = ArgumentCaptor.forClass(MimeMessage.class);
         verify(mailSender).send(argument.capture());
-        assertEquals(argument.getValue().getSubject(), "CANCELLATION of booking " + appointment.getAppointmentId());
+        assertEquals(argument.getValue().getSubject(), "CANCELLATION of booking #" + appointment.getAppointmentId());
     }
 }
