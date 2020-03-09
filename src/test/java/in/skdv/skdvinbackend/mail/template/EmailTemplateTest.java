@@ -2,6 +2,7 @@ package in.skdv.skdvinbackend.mail.template;
 
 import in.skdv.skdvinbackend.AbstractSkdvinTest;
 import in.skdv.skdvinbackend.ModelMockHelper;
+import in.skdv.skdvinbackend.model.entity.Appointment;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +11,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
+import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 
 import static org.junit.Assert.assertEquals;
@@ -19,6 +21,7 @@ import static org.junit.Assert.assertEquals;
 public class EmailTemplateTest extends AbstractSkdvinTest {
 
     private static final String BASE_URL = "https://example.com";
+    private DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
 
     @Autowired
     private TemplateEngine emailTemplateEngine;
@@ -26,7 +29,8 @@ public class EmailTemplateTest extends AbstractSkdvinTest {
     @Test
     public void testAppointmentVerificationMail_US() {
         Context ctx = new Context(Locale.US);
-        ctx.setVariable("appointment", ModelMockHelper.createSingleAppointment());
+        Appointment appointment = ModelMockHelper.createSingleAppointment();
+        ctx.setVariable("appointment", appointment);
         ctx.setVariable("tokenurl", BASE_URL);
         String htmlMail = emailTemplateEngine.process("html/appointment-verification", ctx);
         assertEquals("<!DOCTYPE html>\n" +
@@ -42,7 +46,7 @@ public class EmailTemplateTest extends AbstractSkdvinTest {
                 "<a href=\"https://example.com\">https://example.com</a>\n" +
                 "<p>IMPORTANT: If you do not confirm your appointment by clicking on the link above, it will be cancelled automatically after 24 hours!</p>\n" +
                 "<p>Your Appointment data:</p>\n" +
-                "<p>08.03.2020 / 10:00</p>\n" +
+                "<p>" + appointment.getDate().format(formatter) + " / 10:00</p>\n" +
                 "<p>1 x Tandem</p>\n" +
                 "<p>(1 x Picture or Video)</p>\n" +
                 "<p>(0 x Picture and Video)</p>\n" +
@@ -63,7 +67,8 @@ public class EmailTemplateTest extends AbstractSkdvinTest {
     @Test
     public void testAppointmentVerificationMail_DE() {
         Context ctx = new Context(Locale.GERMANY);
-        ctx.setVariable("appointment", ModelMockHelper.createSingleAppointment());
+        Appointment appointment = ModelMockHelper.createSingleAppointment();
+        ctx.setVariable("appointment", appointment);
         ctx.setVariable("tokenurl", BASE_URL);
         String htmlMail = emailTemplateEngine.process("html/appointment-verification", ctx);
         assertEquals("<!DOCTYPE html>\n" +
@@ -79,7 +84,7 @@ public class EmailTemplateTest extends AbstractSkdvinTest {
                 "<a href=\"https://example.com\">https://example.com</a>\n" +
                 "<p>WICHTIG: Sollten Sie Ihren Termin nicht durch einen Klick auf den Link oben bestätigen, wird dieser nach 24 Stunden automatisch storniert!</p>\n" +
                 "<p>Zur Überprüfung hier ihre Termindaten:</p>\n" +
-                "<p>08.03.2020 / 10:00</p>\n" +
+                "<p>" + appointment.getDate().format(formatter) + " / 10:00</p>\n" +
                 "<p>1 x Tandem</p>\n" +
                 "<p>(1 x Foto oder Video)</p>\n" +
                 "<p>(0 x Foto und Video)</p>\n" +
@@ -99,7 +104,8 @@ public class EmailTemplateTest extends AbstractSkdvinTest {
     @Test
     public void testAppointmentConfirmationMail_US() {
         Context ctx = new Context(Locale.US);
-        ctx.setVariable("appointment", ModelMockHelper.createSingleAppointment());
+        Appointment appointment = ModelMockHelper.createSingleAppointment();
+        ctx.setVariable("appointment", appointment);
         String htmlMail = emailTemplateEngine.process("html/appointment-confirmation", ctx);
         assertEquals("<!DOCTYPE html>\n" +
                 "<html>\n" +
@@ -111,7 +117,7 @@ public class EmailTemplateTest extends AbstractSkdvinTest {
                 "<h1>Appointment 0</h1>\n" +
                 "<p>Hello Max!</p>\n" +
                 "<p>Thanks for your reservation. See the details below:</p>\n" +
-                "<p>08.03.2020 / 10:00</p>\n" +
+                "<p>" + appointment.getDate().format(formatter) + " / 10:00</p>\n" +
                 "<p>1 x Tandem</p>\n" +
                 "<p>(1 x Picture or Video)</p>\n" +
                 "<p>(0 x Picture and Video)</p>\n" +
@@ -135,7 +141,8 @@ public class EmailTemplateTest extends AbstractSkdvinTest {
     @Test
     public void testAppointmentConfirmationMail_DE() {
         Context ctx = new Context(Locale.GERMANY);
-        ctx.setVariable("appointment", ModelMockHelper.createSingleAppointment());
+        Appointment appointment = ModelMockHelper.createSingleAppointment();
+        ctx.setVariable("appointment", appointment);
         String htmlMail = emailTemplateEngine.process("html/appointment-confirmation", ctx);
         assertEquals("<!DOCTYPE html>\n" +
                 "<html>\n" +
@@ -147,7 +154,7 @@ public class EmailTemplateTest extends AbstractSkdvinTest {
                 "<h1>Termin 0</h1>\n" +
                 "<p>Hallo Max!</p>\n" +
                 "<p>Vielen Dank für Ihre Reservierung. Nachfolgend alle Details:</p>\n" +
-                "<p>08.03.2020 / 10:00</p>\n" +
+                "<p>" + appointment.getDate().format(formatter) + " / 10:00</p>\n" +
                 "<p>1 x Tandem</p>\n" +
                 "<p>(1 x Foto oder Video)</p>\n" +
                 "<p>(0 x Foto und Video)</p>\n" +
