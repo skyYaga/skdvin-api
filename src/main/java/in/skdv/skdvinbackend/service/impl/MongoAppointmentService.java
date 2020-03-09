@@ -131,13 +131,13 @@ public class MongoAppointmentService implements IAppointmentService {
                         .map(Slot::getTime)
                         .collect(Collectors.toList());
 
-                if (slotTimes.size() > 0) {
+                if (!slotTimes.isEmpty()) {
                     resultList.add(new FreeSlot(jumpday.getDate(), slotTimes));
                 }
             }
         });
 
-        if (resultList.size() > 0) {
+        if (!resultList.isEmpty()) {
             return new GenericResult<>(true, resultList);
         }
         return new GenericResult<>(false, ErrorMessage.APPOINTMENT_NO_FREE_SLOTS);

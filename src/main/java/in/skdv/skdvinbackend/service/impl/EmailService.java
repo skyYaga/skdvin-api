@@ -16,7 +16,9 @@ import org.thymeleaf.context.Context;
 
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 
 public class EmailService implements IEmailService {
 
@@ -43,73 +45,68 @@ public class EmailService implements IEmailService {
 
     @Override
     public void sendAppointmentVerification(Appointment appointment) throws MessagingException {
-        Locale locale = LocaleContextHolder.getLocale();
-        String toEmail = appointment.getCustomer().getEmail();
+        MimeMessage mimeMessage = mailSender.createMimeMessage();
 
-        Context ctx = new Context(locale);
-        ctx.setVariable("appointment", appointment);
-        ctx.setVariable("tokenurl", baseurl +
-                String.format(APPOINTMENT_CONFIRMATION_ENDPOINT,
+        String subject = "appointment.verification.subject";
+        String template = "html/appointment-verification";
+
+        Map<String, Object> contextVariables = new HashMap<>();
+        contextVariables.put("tokenurl", baseurl + String.format(APPOINTMENT_CONFIRMATION_ENDPOINT,
                         appointment.getAppointmentId(), appointment.getVerificationToken().getToken()));
 
-        MimeMessage mimeMessage = mailSender.createMimeMessage();
-        MimeMessageHelper message = new MimeMessageHelper(mimeMessage, "UTF-8");
+        prepareAppointmentMessage(mimeMessage, appointment, subject, template, contextVariables);
 
-        message.setSubject(emailMessageSource.getMessage("appointment.verification.subject", new Object[]{appointment.getAppointmentId()}, locale));
-        message.setFrom(fromEmail);
-        message.setTo(toEmail);
-
-        String htmlContent = emailTemplateEngine.process("html/appointment-verification", ctx);
-        message.setText(htmlContent, true);
-
-        LOG.info("Sending appointment verification mail to {}", toEmail);
+        LOG.info("Sending appointment verification mail to {}", appointment.getCustomer().getEmail());
 
         mailSender.send(mimeMessage);
     }
 
     @Override
     public void sendAppointmentConfirmation(Appointment appointment) throws MessagingException {
-        Locale locale = LocaleContextHolder.getLocale();
-        String toEmail = appointment.getCustomer().getEmail();
-
-        Context ctx = new Context(locale);
-        ctx.setVariable("appointment", appointment);
-
         MimeMessage mimeMessage = mailSender.createMimeMessage();
-        MimeMessageHelper message = new MimeMessageHelper(mimeMessage, "UTF-8");
 
-        message.setSubject(emailMessageSource.getMessage("appointment.confirmation.subject", new Object[]{appointment.getAppointmentId()}, locale));
-        message.setFrom(fromEmail);
-        message.setTo(toEmail);
+        String subject = "appointment.confirmation.subject";
+        String template = "html/appointment-confirmation";
 
-        String htmlContent = emailTemplateEngine.process("html/appointment-confirmation", ctx);
-        message.setText(htmlContent, true);
+        prepareAppointmentMessage(mimeMessage, appointment, subject, template, null);
 
-        LOG.info("Sending appointment confirmation mail to {}", toEmail);
+        LOG.info("Sending appointment confirmation mail to {}", appointment.getCustomer().getEmail());
 
         mailSender.send(mimeMessage);
     }
 
     @Override
     public void sendAppointmentUnconfirmedCancellation(Appointment appointment) throws MessagingException {
+        MimeMessage mimeMessage = mailSender.createMimeMessage();
+
+        String subject = "appointment.unconfirmed.cancellation.subject";
+        String template = "html/appointment-unconfirmed-cancellation";
+
+        prepareAppointmentMessage(mimeMessage, appointment, subject, template, null);
+
+        LOG.info("Sending appointment unconfirmed cancellation mail to {}", appointment.getCustomer().getEmail());
+
+        mailSender.send(mimeMessage);
+    }
+
+    private void prepareAppointmentMessage(MimeMessage mimeMessage, Appointment appointment, String subject, String template, Map<String, Object> contextVariables) throws MessagingException {
         Locale locale = LocaleContextHolder.getLocale();
-        String toEmail = appointment.getCustomer().getEmail();
 
         Context ctx = new Context(locale);
         ctx.setVariable("appointment", appointment);
 
-        MimeMessage mimeMessage = mailSender.createMimeMessage();
-        MimeMessageHelper message = new MimeMessageHelper(mimeMessage, "UTF-8");
+        if (contextVariables != null) {
+            contextVariables.forEach(ctx::setVariable);
+        }
 
-        message.setSubject(emailMessageSource.getMessage("appointment.unconfirmed.cancellation.subject", new Object[]{appointment.getAppointmentId()}, locale));
+        String toEmail = appointment.getCustomer().getEmail();
+        String htmlContent = emailTemplateEngine.process(template, ctx);
+
+        MimeMessageHelper message = new MimeMessageHelper(mimeMessage, "UTF-8");
+        message.setSubject(emailMessageSource.getMessage(subject, new Object[]{appointment.getAppointmentId()}, locale));
         message.setFrom(fromEmail);
         message.setTo(toEmail);
-
-        String htmlContent = emailTemplateEngine.process("html/appointment-unconfirmed-cancellation", ctx);
         message.setText(htmlContent, true);
-
-        LOG.info("Sending appointment unconfirmed cancellation mail to {}", toEmail);
-
-        mailSender.send(mimeMessage);
     }
+
 }

@@ -4,6 +4,11 @@ package in.skdv.skdvinbackend.config;
  * Authorities used in {@link SecurityConfig} to secure the API Endpoints
  */
 public final class Authorities {
+
+    private Authorities() {
+        throw new IllegalStateException("Utility class that should not be instantiated.");
+    }
+
     public static final String READ_JUMPDAYS = "SCOPE_read:jumpdays";
     public static final String CREATE_JUMPDAYS = "SCOPE_create:jumpdays";
     
