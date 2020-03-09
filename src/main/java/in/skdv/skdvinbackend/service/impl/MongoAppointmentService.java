@@ -7,11 +7,14 @@ import in.skdv.skdvinbackend.model.entity.Appointment;
 import in.skdv.skdvinbackend.model.entity.AppointmentState;
 import in.skdv.skdvinbackend.model.entity.Jumpday;
 import in.skdv.skdvinbackend.model.entity.Slot;
+import in.skdv.skdvinbackend.repository.AppointmentRepository;
 import in.skdv.skdvinbackend.repository.JumpdayRepository;
 import in.skdv.skdvinbackend.service.IAppointmentService;
 import in.skdv.skdvinbackend.service.ISequenceService;
 import in.skdv.skdvinbackend.util.GenericResult;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Query;
 
 import java.time.Clock;
 import java.time.LocalDate;
@@ -23,18 +26,25 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static org.springframework.data.mongodb.core.query.Criteria.where;
+
 public class MongoAppointmentService implements IAppointmentService {
 
     private static final String APPOINTMENT_SEQUENCE = "appointment";
 
+    private final MongoTemplate mongoTemplate;
+    private final AppointmentRepository appointmentRepository;
     private JumpdayRepository jumpdayRepository;
     private ISequenceService sequenceService;
     private Clock clock = Clock.systemDefaultZone();
 
     @Autowired
-    public MongoAppointmentService(JumpdayRepository jumpdayRepository, ISequenceService sequenceService) {
+    public MongoAppointmentService(JumpdayRepository jumpdayRepository, AppointmentRepository appointmentRepository,
+                                   ISequenceService sequenceService, MongoTemplate mongoTemplate) {
         this.jumpdayRepository = jumpdayRepository;
+        this.appointmentRepository = appointmentRepository;
         this.sequenceService = sequenceService;
+        this.mongoTemplate = mongoTemplate;
     }
 
     @Override
@@ -91,7 +101,7 @@ public class MongoAppointmentService implements IAppointmentService {
         Optional<Appointment> appointment = jumpdayList.stream()
                 .flatMap(day -> day.getSlots().stream())
                 .flatMap(s -> s.getAppointments().stream())
-                .filter(a -> a.getAppointmentId() == id).findFirst();
+                .filter(a -> a != null && a.getAppointmentId() == id).findFirst();
 
         return appointment.orElse(null);
     }
@@ -121,13 +131,13 @@ public class MongoAppointmentService implements IAppointmentService {
                         .map(Slot::getTime)
                         .collect(Collectors.toList());
 
-                if (slotTimes.size() > 0) {
+                if (!slotTimes.isEmpty()) {
                     resultList.add(new FreeSlot(jumpday.getDate(), slotTimes));
                 }
             }
         });
 
-        if (resultList.size() > 0) {
+        if (!resultList.isEmpty()) {
             return new GenericResult<>(true, resultList);
         }
         return new GenericResult<>(false, ErrorMessage.APPOINTMENT_NO_FREE_SLOTS);
@@ -141,6 +151,20 @@ public class MongoAppointmentService implements IAppointmentService {
             return new GenericResult<>(true);
         }
         return new GenericResult<>(false, result.getMessage());
+    }
+
+    @Override
+    public List<Appointment> findUnconfirmedAppointments() {
+        List<Appointment> appointments = mongoTemplate.find(Query.query(
+                where("verificationToken.expiryDate").lt(LocalDateTime.now())
+                        .and("state").is(AppointmentState.UNCONFIRMED)),
+                Appointment.class);
+        return appointments;
+    }
+
+    @Override
+    public void deleteAppointment(int appointmentId) {
+        appointmentRepository.deleteById(appointmentId);
     }
 
     private boolean isInFuture(Jumpday jumpday) {

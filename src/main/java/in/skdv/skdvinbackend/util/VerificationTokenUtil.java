@@ -10,6 +10,10 @@ public class VerificationTokenUtil {
 
     private static final int EXPIRATION_HOURS = 24;
 
+    private VerificationTokenUtil() {
+        throw new IllegalStateException("Utility class that should not be instantiated.");
+    }
+
     public static VerificationToken generate() {
         VerificationToken verificationToken = new VerificationToken();
         verificationToken.setToken(UUID.randomUUID().toString());

@@ -22,4 +22,8 @@ public interface IAppointmentService {
     GenericResult<List<FreeSlot>> findFreeSlots(SlotQuery slotQuery);
 
     GenericResult<Void> updateAppointmentState(Appointment appointment, AppointmentState appointmentState);
+
+    List<Appointment> findUnconfirmedAppointments();
+
+    void deleteAppointment(int appointmentId);
 }

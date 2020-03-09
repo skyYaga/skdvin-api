@@ -9,4 +9,6 @@ public interface IEmailService {
     void sendAppointmentVerification(Appointment appointment) throws MessagingException;
 
     void sendAppointmentConfirmation(Appointment appointment) throws MessagingException;
+
+    void sendAppointmentUnconfirmedCancellation(Appointment appointment) throws MessagingException;
 }

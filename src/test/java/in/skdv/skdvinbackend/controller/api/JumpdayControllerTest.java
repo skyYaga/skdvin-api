@@ -135,7 +135,6 @@ public class JumpdayControllerTest extends AbstractSkdvinTest {
                         fieldWithPath("slots[].picOrVidTotal").description("The total capacity of picture OR video slots"),
                         fieldWithPath("slots[].picAndVidTotal").description("The total capacity of picture AND video slots"),
                         fieldWithPath("slots[].handcamTotal").description("The total capacity of handcam slots"),
-                        fieldWithPath("slots[].appointments").ignored(),
                         fieldWithPath("slots[].tandemBooked").ignored(),
                         fieldWithPath("slots[].tandemAvailable").ignored(),
                         fieldWithPath("slots[].picOrVidBooked").ignored(),
