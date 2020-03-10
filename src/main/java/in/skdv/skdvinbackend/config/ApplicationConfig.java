@@ -10,11 +10,14 @@ import in.skdv.skdvinbackend.service.impl.MongoAppointmentService;
 import in.skdv.skdvinbackend.service.impl.MongoJumpdayService;
 import in.skdv.skdvinbackend.service.impl.SequenceService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.http.HttpMethod;
 import org.springframework.web.servlet.LocaleResolver;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.i18n.LocaleChangeInterceptor;
@@ -23,6 +26,12 @@ import org.springframework.web.servlet.i18n.SessionLocaleResolver;
 import java.util.Locale;
 
 public class ApplicationConfig implements WebMvcConfigurer {
+
+    @Value("${skdvin.cors.enabled:false}")
+    private boolean corsEnabled;
+
+    @Value("${skdvin.baseurl:}")
+    private String corsUrl;
 
     @Autowired
     private JumpdayRepository jumpdayRepository;
@@ -81,4 +90,16 @@ public class ApplicationConfig implements WebMvcConfigurer {
         registry.addInterceptor(localeChangeInterceptor());
     }
 
+    @Override
+    public void addCorsMappings(CorsRegistry registry) {
+        if (corsEnabled) {
+            registry.addMapping("/**")
+                    .allowedOrigins(corsUrl)
+                    .allowedMethods(
+                    HttpMethod.GET.name(),
+                    HttpMethod.POST.name(),
+                    HttpMethod.PUT.name()
+            );
+        }
+    }
 }

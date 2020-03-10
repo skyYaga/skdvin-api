@@ -35,3 +35,5 @@ auth0:
 skdvin:
   baseurl: ${SKDVIN_BASEURL:}
   from: ${SKDVIN_FROM:}
+  cors:
+    enabled: ${SKDVIN_CORS_ENABLED:false}
