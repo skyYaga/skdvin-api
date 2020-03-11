@@ -5,6 +5,7 @@ import in.skdv.skdvinbackend.model.common.FreeSlot;
 import in.skdv.skdvinbackend.model.common.SlotQuery;
 import in.skdv.skdvinbackend.model.converter.AppointmentConverter;
 import in.skdv.skdvinbackend.model.dto.AppointmentDTO;
+import in.skdv.skdvinbackend.model.dto.AppointmentStateOnlyDTO;
 import in.skdv.skdvinbackend.model.entity.Appointment;
 import in.skdv.skdvinbackend.model.entity.AppointmentState;
 import in.skdv.skdvinbackend.service.IAppointmentService;
@@ -23,6 +24,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.mail.MessagingException;
 import javax.servlet.http.HttpServletResponse;
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -146,6 +148,40 @@ public class AppointmentController {
             return ResponseEntity.status(HttpServletResponse.SC_CONFLICT)
                     .body(new GenericResult<>(false, messageSource.getMessage(
                             ErrorMessage.APPOINTMENT_ALREADY_CONFIRMED.toString(), null, LocaleContextHolder.getLocale())));
+        }
+        return ResponseEntity.status(HttpServletResponse.SC_NOT_FOUND)
+                .body(new GenericResult<>(false, messageSource.getMessage(
+                        ErrorMessage.APPOINTMENT_NOT_FOUND.toString(), null, LocaleContextHolder.getLocale())));
+    }
+
+    @GetMapping(value = "/date/{date}")
+    @PreAuthorize("hasAuthority('SCOPE_read:appointments')")
+    public ResponseEntity<GenericResult> getAppointmentsByDate(@PathVariable String date) {
+        List<Appointment> appointments = appointmentService.findAppointmentsByDay(LocalDate.parse(date));
+        if (appointments != null) {
+            if (appointments.isEmpty()) {
+                return ResponseEntity.ok(new GenericResult<>(true, appointmentConverter.convertToDto(appointments)));
+            }
+            return ResponseEntity.ok(new GenericResult<>(true, appointmentConverter.convertToDto(appointments)));
+        }
+
+        LOGGER.warn("Error reading Appointments");
+        return ResponseEntity.status(HttpServletResponse.SC_INTERNAL_SERVER_ERROR)
+                .body(new GenericResult(false, messageSource.getMessage(ErrorMessage.APPOINTMENT_SERVICE_ERROR_MSG.toString(), null, LocaleContextHolder.getLocale())));
+    }
+
+
+    @PatchMapping(value = "/{appointmentId}")
+    @PreAuthorize("hasAuthority('SCOPE_update:appointments')")
+    public ResponseEntity<GenericResult<Void>> updateAppointmentState(@RequestBody AppointmentStateOnlyDTO appointmentStateOnly, @PathVariable int appointmentId) {
+        Appointment appointment = appointmentService.findAppointment(appointmentId);
+        if (appointment != null) {
+            GenericResult<Void> result = appointmentService.updateAppointmentState(appointment, appointmentStateOnly.getState());
+            if (result.isSuccess()) {
+                return ResponseEntity.ok(new GenericResult<>(true));
+            }
+            return ResponseEntity.status(HttpServletResponse.SC_INTERNAL_SERVER_ERROR)
+                    .body(new GenericResult<>(false, messageSource.getMessage(ErrorMessage.APPOINTMENT_SERVICE_ERROR_MSG.toString(), null, LocaleContextHolder.getLocale())));
         }
         return ResponseEntity.status(HttpServletResponse.SC_NOT_FOUND)
                 .body(new GenericResult<>(false, messageSource.getMessage(

@@ -7,6 +7,7 @@ import org.springframework.data.mongodb.core.mapping.DBRef;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class Slot {
 
@@ -53,19 +54,19 @@ public class Slot {
     }
 
     public int getTandemBooked() {
-        return appointments.stream().mapToInt(Appointment::getTandem).sum();
+        return appointments.stream().filter(Objects::nonNull).mapToInt(Appointment::getTandem).sum();
     }
 
     public int getPicOrVidBooked() {
-        return appointments.stream().mapToInt(Appointment::getPicOrVid).sum();
+        return appointments.stream().filter(Objects::nonNull).mapToInt(Appointment::getPicOrVid).sum();
     }
 
     public int getPicAndVidBooked() {
-        return appointments.stream().mapToInt(Appointment::getPicAndVid).sum();
+        return appointments.stream().filter(Objects::nonNull).mapToInt(Appointment::getPicAndVid).sum();
     }
 
     public int getHandcamBooked() {
-        return appointments.stream().mapToInt(Appointment::getHandcam).sum();
+        return appointments.stream().filter(Objects::nonNull).mapToInt(Appointment::getHandcam).sum();
     }
 
     public int getTandemAvailable() {

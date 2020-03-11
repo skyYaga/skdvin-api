@@ -14,7 +14,6 @@ public class SkdvinBackendApplicationTestsCors extends AbstractSkdvinTest {
 
 	@Test
 	public void contextLoadsWithCorsEnabled() {
-
 		Assert.assertTrue(true);
 	}
 

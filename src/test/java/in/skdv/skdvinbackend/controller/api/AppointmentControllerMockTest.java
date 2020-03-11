@@ -5,7 +5,9 @@ import in.skdv.skdvinbackend.MockJwtDecoder;
 import in.skdv.skdvinbackend.ModelMockHelper;
 import in.skdv.skdvinbackend.exception.ErrorMessage;
 import in.skdv.skdvinbackend.model.common.SlotQuery;
+import in.skdv.skdvinbackend.model.dto.AppointmentStateOnlyDTO;
 import in.skdv.skdvinbackend.model.entity.Appointment;
+import in.skdv.skdvinbackend.model.entity.AppointmentState;
 import in.skdv.skdvinbackend.service.IAppointmentService;
 import in.skdv.skdvinbackend.util.GenericResult;
 import org.junit.Before;
@@ -98,6 +100,28 @@ public class AppointmentControllerMockTest extends AbstractSkdvinTest {
                 .header("Authorization", MockJwtDecoder.addHeader(UPDATE_APPOINTMENTS))
                 .contentType(contentType)
                 .content(appointmentJson))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.message", is("Interner Termin Fehler")));
+    }
+
+    @Test
+    public void testUpdateAppointmentState_InternalError() throws Exception {
+        Appointment appointment = ModelMockHelper.createSingleAppointment();
+
+        Mockito.when(appointmentService.findAppointment(Mockito.any(int.class))).thenReturn(appointment);
+        Mockito.when(appointmentService.updateAppointmentState(Mockito.any(Appointment.class), Mockito.any(AppointmentState.class)))
+                .thenReturn(new GenericResult<>(false, ErrorMessage.APPOINTMENT_SERVICE_ERROR_MSG));
+
+        AppointmentStateOnlyDTO appointmentStateOnly = new AppointmentStateOnlyDTO();
+        appointmentStateOnly.setState(AppointmentState.ACTIVE);
+        String appointmentStateOnlyJson = json(appointmentStateOnly);
+
+        mockMvc.perform(patch("/api/appointment/{appointmentId}?lang=de", 1)
+                .header("Authorization", MockJwtDecoder.addHeader(UPDATE_APPOINTMENTS))
+                .contentType(contentType)
+                .content(appointmentStateOnlyJson))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isInternalServerError())
                 .andExpect(jsonPath("$.success", is(false)))

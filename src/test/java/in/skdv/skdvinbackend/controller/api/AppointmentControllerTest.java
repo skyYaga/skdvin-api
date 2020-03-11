@@ -6,6 +6,7 @@ import in.skdv.skdvinbackend.ModelMockHelper;
 import in.skdv.skdvinbackend.model.common.SlotQuery;
 import in.skdv.skdvinbackend.model.converter.AppointmentConverter;
 import in.skdv.skdvinbackend.model.dto.AppointmentDTO;
+import in.skdv.skdvinbackend.model.dto.AppointmentStateOnlyDTO;
 import in.skdv.skdvinbackend.model.entity.Appointment;
 import in.skdv.skdvinbackend.model.entity.AppointmentState;
 import in.skdv.skdvinbackend.repository.JumpdayRepository;
@@ -13,6 +14,7 @@ import in.skdv.skdvinbackend.service.IAppointmentService;
 import in.skdv.skdvinbackend.service.IEmailService;
 import in.skdv.skdvinbackend.util.GenericResult;
 import in.skdv.skdvinbackend.util.VerificationTokenUtil;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -45,13 +47,13 @@ import javax.mail.internet.MimeMessage;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.*;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 
 import static in.skdv.skdvinbackend.config.Authorities.READ_APPOINTMENTS;
 import static in.skdv.skdvinbackend.config.Authorities.UPDATE_APPOINTMENTS;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
@@ -489,19 +491,19 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
                 .andExpect(jsonPath("$.payload[0].times[0]", is(LocalTime.of(11, 30).toString())))
                 .andDo(document("appointment/find-slots",
                         requestParameters(
-                            parameterWithName("tandem").description("number of tandem jumps"),
-                            parameterWithName("picOrVid").description("picOrVid count"),
-                            parameterWithName("picAndVid").description("picAndVid count"),
-                            parameterWithName("handcam").description("handcam count"),
-                            parameterWithName("lang").ignored()
+                                parameterWithName("tandem").description("number of tandem jumps"),
+                                parameterWithName("picOrVid").description("picOrVid count"),
+                                parameterWithName("picAndVid").description("picAndVid count"),
+                                parameterWithName("handcam").description("handcam count"),
+                                parameterWithName("lang").ignored()
                         ),
                         responseFields(
-                            fieldWithPath("success").description("true when the request was successful"),
-                            fieldWithPath("exception").description("exception message"),
-                            fieldWithPath("message").description("optional return code message"),
-                            fieldWithPath("payload[]").description("an array of date/time Objects"),
-                            fieldWithPath("payload[].date").description("date of free slots"),
-                            fieldWithPath("payload[].times[]").description("time values of free slots")
+                                fieldWithPath("success").description("true when the request was successful"),
+                                fieldWithPath("exception").description("exception message"),
+                                fieldWithPath("message").description("optional return code message"),
+                                fieldWithPath("payload[]").description("an array of date/time Objects"),
+                                fieldWithPath("payload[].date").description("date of free slots"),
+                                fieldWithPath("payload[].times[]").description("time values of free slots")
                         )
                 ));
     }
@@ -619,11 +621,140 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
         Appointment appointment = ModelMockHelper.createSingleAppointment();
         appointment.setVerificationToken(VerificationTokenUtil.generate());
         appointment.getVerificationToken().setExpiryDate(LocalDateTime.now().minus(1, ChronoUnit.HOURS));
-        appointmentService.saveAppointment(appointment);
+        GenericResult<Appointment> result = appointmentService.saveAppointment(appointment);
 
         mockMvc.perform(get("/api/appointment/{appointmentId}/confirm/{token}?lang=en",
-                42, appointment.getVerificationToken().getToken())
+                9999999, appointment.getVerificationToken().getToken())
                 .contentType(contentType))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.message", is("Appointment not found")));
+    }
+
+    @Test
+    public void testGetAppointmentsByDay() throws Exception {
+        mockMvc.perform(RestDocumentationRequestBuilders.get("/api/appointment/date/{date}",
+                LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE))
+                .header("Authorization", MockJwtDecoder.addHeader(READ_APPOINTMENTS))
+                .contentType(contentType))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success", is(true)))
+                .andExpect(jsonPath("$.payload", hasSize(2)))
+                .andDo(document("appointment/get-appointments-by-day",
+                        pathParameters(
+                                parameterWithName("date").description("The date for which appointments to get")
+                        ),
+                        responseFields(
+                                fieldWithPath("success").description("true, if the request was successful"),
+                                fieldWithPath("message").description("Message in case of error"),
+                                fieldWithPath("exception").description("Exception if any"),
+                                fieldWithPath("payload").description("The request's actual payload"),
+                                fieldWithPath("payload[].appointmentId").description("The created appointment's id"),
+                                fieldWithPath("payload[].customer").description("Customer Details"),
+                                fieldWithPath("payload[].customer.firstName").description("Customer's first name"),
+                                fieldWithPath("payload[].customer.lastName").description("Customer's last name"),
+                                fieldWithPath("payload[].customer.tel").description("Customer's phone number"),
+                                fieldWithPath("payload[].customer.email").description("Customer's email address"),
+                                fieldWithPath("payload[].customer.zip").description("Customer's zip code"),
+                                fieldWithPath("payload[].customer.city").description("Customer's city"),
+                                fieldWithPath("payload[].customer.jumpers[]").description("Jumpers for this appointment"),
+                                fieldWithPath("payload[].customer.jumpers[].firstName").description("Jumper's first name"),
+                                fieldWithPath("payload[].customer.jumpers[].lastName").description("Jumper's last name"),
+                                fieldWithPath("payload[].customer.jumpers[].dateOfBirth").description("Jumper's date of birth"),
+                                fieldWithPath("payload[].customer.jumpers[].weight").description("Jumper's weight"),
+                                fieldWithPath("payload[].date").description("Appointments date/time"),
+                                fieldWithPath("payload[].tandem").description("Tandem count"),
+                                fieldWithPath("payload[].picOrVid").description("picture or video count"),
+                                fieldWithPath("payload[].picAndVid").description("picture and video count"),
+                                fieldWithPath("payload[].handcam").description("handcam count"),
+                                fieldWithPath("payload[].state").ignored(),
+                                fieldWithPath("payload[].createdOn").ignored(),
+                                fieldWithPath("payload[].createdBy").ignored(),
+                                fieldWithPath("payload[].clientId").ignored()
+                        )));
+    }
+
+    @Test
+    public void testGetAppointmentsByDay_Unauthorized() throws Exception {
+        Appointment appointment = ModelMockHelper.createSingleAppointment();
+
+        mockMvc.perform(RestDocumentationRequestBuilders.get("/api/appointment/date/{date}",
+                appointment.getDate())
+                .contentType(contentType))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    public void testUpdateAppointmentState() throws Exception {
+        Appointment appointment = ModelMockHelper.createSingleAppointment();
+        GenericResult<Appointment> result = appointmentService.saveAppointment(appointment);
+        Appointment savedAppointment = result.getPayload();
+
+        AppointmentStateOnlyDTO appointmentStateOnly = new AppointmentStateOnlyDTO();
+        appointmentStateOnly.setState(AppointmentState.ACTIVE);
+        String appointmentStateOnlyJson = json(appointmentStateOnly);
+
+        mockMvc.perform(RestDocumentationRequestBuilders.patch("/api/appointment/{appointmentId}",
+                savedAppointment.getAppointmentId())
+                .header("Authorization", MockJwtDecoder.addHeader(UPDATE_APPOINTMENTS))
+                .contentType(contentType)
+                .content(appointmentStateOnlyJson))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success", is(true)))
+                .andDo(document("appointment/update-appointment-state",
+                        pathParameters(
+                                parameterWithName("appointmentId").description("The id of the appointment")
+                        ),
+                        requestFields(
+                                fieldWithPath("state").description("The new state for this appointment")
+                        ),
+                        responseFields(
+                                fieldWithPath("success").description("true, if the request was successful"),
+                                fieldWithPath("message").description("Message in case of error"),
+                                fieldWithPath("exception").description("Exception if any"),
+                                fieldWithPath("payload").description("The request's actual payload")
+                        )));
+
+        Assert.assertEquals(AppointmentState.ACTIVE, appointmentService.findAppointment(savedAppointment.getAppointmentId()).getState());
+    }
+
+    @Test
+    public void testUpdateAppointmentState_Unauthorized() throws Exception {
+        Appointment appointment = ModelMockHelper.createSingleAppointment();
+        GenericResult<Appointment> result = appointmentService.saveAppointment(appointment);
+        Appointment savedAppointment = result.getPayload();
+
+        AppointmentStateOnlyDTO appointmentStateOnly = new AppointmentStateOnlyDTO();
+        appointmentStateOnly.setState(AppointmentState.ACTIVE);
+        String appointmentStateOnlyJson = json(appointmentStateOnly);
+
+        mockMvc.perform(RestDocumentationRequestBuilders.patch("/api/appointment/{appointmentId}",
+                savedAppointment.getAppointmentId())
+                .contentType(contentType)
+                .content(appointmentStateOnlyJson))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    public void testUpdateAppointmentState_AppointmentNotFound() throws Exception {
+        Appointment appointment = ModelMockHelper.createSingleAppointment();
+        GenericResult<Appointment> result = appointmentService.saveAppointment(appointment);
+        Appointment savedAppointment = result.getPayload();
+
+        AppointmentStateOnlyDTO appointmentStateOnly = new AppointmentStateOnlyDTO();
+        appointmentStateOnly.setState(AppointmentState.ACTIVE);
+        String appointmentStateOnlyJson = json(appointmentStateOnly);
+
+        mockMvc.perform(RestDocumentationRequestBuilders.patch("/api/appointment/{appointmentId}?lang=en",
+                99999999)
+                .header("Authorization", MockJwtDecoder.addHeader(UPDATE_APPOINTMENTS))
+                .contentType(contentType)
+                .content(appointmentStateOnlyJson))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.success", is(false)))
