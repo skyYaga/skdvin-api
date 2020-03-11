@@ -98,7 +98,8 @@ public class ApplicationConfig implements WebMvcConfigurer {
                     .allowedMethods(
                     HttpMethod.GET.name(),
                     HttpMethod.POST.name(),
-                    HttpMethod.PUT.name()
+                    HttpMethod.PUT.name(),
+                    HttpMethod.PATCH.name()
             );
         }
     }

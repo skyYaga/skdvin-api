@@ -5,7 +5,9 @@ import in.skdv.skdvinbackend.MockJwtDecoder;
 import in.skdv.skdvinbackend.ModelMockHelper;
 import in.skdv.skdvinbackend.exception.ErrorMessage;
 import in.skdv.skdvinbackend.model.common.SlotQuery;
+import in.skdv.skdvinbackend.model.dto.AppointmentStateOnlyDTO;
 import in.skdv.skdvinbackend.model.entity.Appointment;
+import in.skdv.skdvinbackend.model.entity.AppointmentState;
 import in.skdv.skdvinbackend.service.IAppointmentService;
 import in.skdv.skdvinbackend.util.GenericResult;
 import org.junit.Before;
@@ -26,8 +28,10 @@ import org.springframework.web.context.WebApplicationContext;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
 import java.util.Arrays;
 
+import static in.skdv.skdvinbackend.config.Authorities.READ_APPOINTMENTS;
 import static in.skdv.skdvinbackend.config.Authorities.UPDATE_APPOINTMENTS;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertNotNull;
@@ -105,6 +109,28 @@ public class AppointmentControllerMockTest extends AbstractSkdvinTest {
     }
 
     @Test
+    public void testUpdateAppointmentState_InternalError() throws Exception {
+        Appointment appointment = ModelMockHelper.createSingleAppointment();
+
+        Mockito.when(appointmentService.findAppointment(Mockito.any(int.class))).thenReturn(appointment);
+        Mockito.when(appointmentService.updateAppointmentState(Mockito.any(Appointment.class), Mockito.any(AppointmentState.class)))
+                .thenReturn(new GenericResult<>(false, ErrorMessage.APPOINTMENT_SERVICE_ERROR_MSG));
+
+        AppointmentStateOnlyDTO appointmentStateOnly = new AppointmentStateOnlyDTO();
+        appointmentStateOnly.setState(AppointmentState.ACTIVE);
+        String appointmentStateOnlyJson = json(appointmentStateOnly);
+
+        mockMvc.perform(patch("/api/appointment/{appointmentId}?lang=de", 1)
+                .header("Authorization", MockJwtDecoder.addHeader(UPDATE_APPOINTMENTS))
+                .contentType(contentType)
+                .content(appointmentStateOnlyJson))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.message", is("Interner Termin Fehler")));
+    }
+
+    @Test
     public void testFindFreeSlots_InternalError() throws Exception {
         Mockito.when(appointmentService.findFreeSlots(Mockito.any(SlotQuery.class)))
                 .thenReturn(new GenericResult<>(false, ErrorMessage.APPOINTMENT_SERVICE_ERROR_MSG));
@@ -120,6 +146,20 @@ public class AppointmentControllerMockTest extends AbstractSkdvinTest {
                 .andExpect(status().isInternalServerError())
                 .andExpect(jsonPath("$.success", is(false)))
                 .andExpect(jsonPath("$.message", is("Internal appointment error")));
+    }
+
+    @Test
+    public void testGetAppointmentsByDate_InternalError() throws Exception {
+        Mockito.when(appointmentService.findAppointmentsByDay(Mockito.any(LocalDate.class)))
+                .thenReturn(null);
+
+        mockMvc.perform(get("/api/appointment/date/2020-01-01")
+                .queryParam("lang", "de")
+                .header("Authorization", MockJwtDecoder.addHeader(READ_APPOINTMENTS)))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.message", is("Interner Termin Fehler")));
     }
 
 

@@ -32,13 +32,10 @@ public abstract class AbstractAppointment {
 
     private AppointmentState state = UNCONFIRMED;
 
-    @NotNull
     private LocalDateTime createdOn;
 
-    @NotNull
     private String createdBy;
 
-    @NotNull
     private String clientId;
 
 

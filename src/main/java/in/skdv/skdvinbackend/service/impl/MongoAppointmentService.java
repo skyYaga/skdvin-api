@@ -108,8 +108,12 @@ public class MongoAppointmentService implements IAppointmentService {
 
     @Override
     public List<Appointment> findAppointmentsByDay(LocalDate date) {
-        return jumpdayRepository.findByDate(date).getSlots().stream()
-                .flatMap(s -> s.getAppointments().stream()).collect(Collectors.toList());
+        Jumpday jumpday = jumpdayRepository.findByDate(date);
+        if (jumpday != null && jumpday.getSlots() != null) {
+            return jumpday.getSlots().stream()
+                    .flatMap(s -> s.getAppointments().stream()).collect(Collectors.toList());
+        }
+        return new ArrayList<>();
     }
 
     @Override
@@ -155,11 +159,10 @@ public class MongoAppointmentService implements IAppointmentService {
 
     @Override
     public List<Appointment> findUnconfirmedAppointments() {
-        List<Appointment> appointments = mongoTemplate.find(Query.query(
+        return mongoTemplate.find(Query.query(
                 where("verificationToken.expiryDate").lt(LocalDateTime.now())
                         .and("state").is(AppointmentState.UNCONFIRMED)),
                 Appointment.class);
-        return appointments;
     }
 
     @Override
