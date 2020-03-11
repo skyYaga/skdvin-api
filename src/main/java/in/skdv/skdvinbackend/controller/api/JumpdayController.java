@@ -18,6 +18,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
+import javax.validation.Valid;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -72,7 +73,7 @@ public class JumpdayController {
 
     @PostMapping
     @PreAuthorize("hasAuthority('SCOPE_create:jumpdays')")
-    public ResponseEntity<GenericResult> addJumpday(@RequestBody JumpdayDTO input, HttpServletResponse response) {
+    public ResponseEntity<GenericResult> addJumpday(@RequestBody @Valid JumpdayDTO input, HttpServletResponse response) {
         GenericResult<Jumpday> result = jumpdayService.saveJumpday(jumpdayConverter.convertToEntity(input));
 
         if (result.isSuccess()) {

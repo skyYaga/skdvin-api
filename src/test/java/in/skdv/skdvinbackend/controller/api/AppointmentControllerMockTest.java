@@ -28,8 +28,10 @@ import org.springframework.web.context.WebApplicationContext;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
 import java.util.Arrays;
 
+import static in.skdv.skdvinbackend.config.Authorities.READ_APPOINTMENTS;
 import static in.skdv.skdvinbackend.config.Authorities.UPDATE_APPOINTMENTS;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertNotNull;
@@ -144,6 +146,20 @@ public class AppointmentControllerMockTest extends AbstractSkdvinTest {
                 .andExpect(status().isInternalServerError())
                 .andExpect(jsonPath("$.success", is(false)))
                 .andExpect(jsonPath("$.message", is("Internal appointment error")));
+    }
+
+    @Test
+    public void testGetAppointmentsByDate_InternalError() throws Exception {
+        Mockito.when(appointmentService.findAppointmentsByDay(Mockito.any(LocalDate.class)))
+                .thenReturn(null);
+
+        mockMvc.perform(get("/api/appointment/date/2020-01-01")
+                .queryParam("lang", "de")
+                .header("Authorization", MockJwtDecoder.addHeader(READ_APPOINTMENTS)))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.message", is("Interner Termin Fehler")));
     }
 
 

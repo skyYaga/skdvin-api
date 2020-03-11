@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.mail.MessagingException;
 import javax.servlet.http.HttpServletResponse;
+import javax.validation.Valid;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -53,7 +54,7 @@ public class AppointmentController {
     }
 
     @PostMapping
-    public ResponseEntity<GenericResult> addAppointment(@RequestBody AppointmentDTO input, HttpServletResponse response) {
+    public ResponseEntity<GenericResult> addAppointment(@RequestBody @Valid AppointmentDTO input, HttpServletResponse response) {
         Appointment appointment = appointmentConverter.convertToEntity(input);
         appointment.setVerificationToken(VerificationTokenUtil.generate());
 
@@ -74,7 +75,7 @@ public class AppointmentController {
 
     @PutMapping
     @PreAuthorize("hasAuthority('SCOPE_update:appointments')")
-    public ResponseEntity<GenericResult> updateAppointment(@RequestBody AppointmentDTO input) {
+    public ResponseEntity<GenericResult> updateAppointment(@RequestBody @Valid AppointmentDTO input) {
         GenericResult<Appointment> result = appointmentService.updateAppointment(appointmentConverter.convertToEntity(input));
 
         if (result.isSuccess()) {
@@ -159,9 +160,6 @@ public class AppointmentController {
     public ResponseEntity<GenericResult> getAppointmentsByDate(@PathVariable String date) {
         List<Appointment> appointments = appointmentService.findAppointmentsByDay(LocalDate.parse(date));
         if (appointments != null) {
-            if (appointments.isEmpty()) {
-                return ResponseEntity.ok(new GenericResult<>(true, appointmentConverter.convertToDto(appointments)));
-            }
             return ResponseEntity.ok(new GenericResult<>(true, appointmentConverter.convertToDto(appointments)));
         }
 
@@ -173,7 +171,7 @@ public class AppointmentController {
 
     @PatchMapping(value = "/{appointmentId}")
     @PreAuthorize("hasAuthority('SCOPE_update:appointments')")
-    public ResponseEntity<GenericResult<Void>> updateAppointmentState(@RequestBody AppointmentStateOnlyDTO appointmentStateOnly, @PathVariable int appointmentId) {
+    public ResponseEntity<GenericResult<Void>> updateAppointmentState(@RequestBody @Valid AppointmentStateOnlyDTO appointmentStateOnly, @PathVariable int appointmentId) {
         Appointment appointment = appointmentService.findAppointment(appointmentId);
         if (appointment != null) {
             GenericResult<Void> result = appointmentService.updateAppointmentState(appointment, appointmentStateOnly.getState());

@@ -2,19 +2,13 @@ package in.skdv.skdvinbackend.model.common;
 
 import in.skdv.skdvinbackend.model.entity.Slot;
 
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.util.List;
 
 public abstract class AbstractJumpday {
 
-    @NotNull
-    @NotEmpty
     private LocalDate date;
 
-    @NotNull
-    @NotEmpty
     private boolean jumping;
 
     private boolean freeTimes;
@@ -23,7 +17,6 @@ public abstract class AbstractJumpday {
     private List<String> tandemmaster;
     private List<String> videoflyer;
 
-    @NotNull
     private String clientId;
 
     public LocalDate getDate() {

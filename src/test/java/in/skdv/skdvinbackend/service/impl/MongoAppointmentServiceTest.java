@@ -177,7 +177,7 @@ public class MongoAppointmentServiceTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testFindAppointments() {
+    public void testFindAppointmentsByDay() {
         appointmentService.saveAppointment(ModelMockHelper.createSingleAppointment());
         appointmentService.saveAppointment(ModelMockHelper.createSecondAppointment());
 
@@ -185,6 +185,16 @@ public class MongoAppointmentServiceTest extends AbstractSkdvinTest {
 
         assertEquals(2, appointments.size());
         assertNotEquals(appointments.get(0).getAppointmentId(), appointments.get(1).getAppointmentId());
+    }
+
+    @Test
+    public void testFindAppointmentsByDay_NoJumpday() {
+        appointmentService.saveAppointment(ModelMockHelper.createSingleAppointment());
+        appointmentService.saveAppointment(ModelMockHelper.createSecondAppointment());
+
+        List<Appointment> appointments = appointmentService.findAppointmentsByDay(LocalDate.now().plus(1, ChronoUnit.DAYS));
+
+        assertTrue(appointments.isEmpty());
     }
 
     @Test
