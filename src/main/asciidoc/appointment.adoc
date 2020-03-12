@@ -8,6 +8,30 @@ A `POST` request is used to add a new appointment.
 operation::appointment/add-appointment[snippets='http-request,request-fields,http-response,response-fields']
 
 
+== Find/Get Appointment
+A `GET` request is used to find/get an appointment.
+
+operation::appointment/get-appointment[snippets='http-request,path-parameters,http-response,response-fields']
+
+
+== Find/Get Appointments by day
+A `GET` request is used to get appointments by day/date.
+
+operation::appointment/get-appointments-by-day[snippets='http-request,path-parameters,http-response,response-fields']
+
+
+== Update Appointment
+A `PUT` request is used to update an appointment.
+
+operation::appointment/update-appointment[snippets='http-request,request-fields,http-response,response-fields']
+
+
+== Update Appointment State
+A `PATCH` request is used to update an appointment's state.
+
+operation::appointment/update-appointment-state[snippets='http-request,path-parameters,request-fields,http-response,response-fields']
+
+
 == Find free Slots
 A `GET` request is used to find free appointment slots.
 

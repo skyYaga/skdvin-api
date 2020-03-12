@@ -245,4 +245,76 @@ public class EmailTemplateTest extends AbstractSkdvinTest {
                 "</body>\n" +
                 "</html>", htmlMail);
     }
+
+    @Test
+    public void testAppointmentUpdatedMail_EN() {
+        Context ctx = new Context(Locale.US);
+        Appointment appointment = ModelMockHelper.createSingleAppointment();
+        ctx.setVariable("appointment", appointment);
+        String htmlMail = emailTemplateEngine.process("html/appointment-updated", ctx);
+        assertEquals("<!DOCTYPE html>\n" +
+                "<html>\n" +
+                "<head>\n" +
+                "    \n" +
+                "    <meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\"/>\n" +
+                "</head>\n" +
+                "<body>\n" +
+                "<h1>Appointment #0</h1>\n" +
+                "<p>Hello Max!</p>\n" +
+                "<p>Your booking was updated. See the details below:</p>\n" +
+                "<span>Date: " + appointment.getDate().format(formatter) + " / 10:00</span><br/>\n" +
+                "<span>1 x Tandem</span><br/>\n" +
+                "<span>(1 x Picture or Video)</span><br/>\n" +
+                "<span>(0 x Picture and Video)</span><br/>\n" +
+                "<span>(0 x Handcam)</span>\n" +
+                "<p>Your data:</p>\n" +
+                "<span>Max Mustermann</span><br/>\n" +
+                "<span>email: max@example.com</span><br/>\n" +
+                "<span>phone: 0987654</span><br/>\n" +
+                "<span>ZIP / city: 12345 Foo City</span>\n" +
+                "<p>Jumper&#39;s data:</p>\n" +
+                "<ul>\n" +
+                "    <li>first0 last0 (01.01.1980 / 70kg)</li>\n" +
+                "</ul>\n" +
+                "<p>Please come to our manifest at the time of your reservation (10:00).<br/>Your booked times are just an indication, there is no guarantee to get in the air at the time ouf your booking. Please bring a few hours of your time.<br/>If you have any further questions or if you have to cancel your booking, send an email to mail@fsz-hassfurt.de or call us (during the weekend): +49(0)9521-3375.</p>\n" +
+                "<p>Your Fallschirm-Sport-Zentrum Haßfurt e.V.</p>\n" +
+                "</body>\n" +
+                "</html>", htmlMail);
+    }
+
+    @Test
+    public void testAppointmentUpdatedMail_DE() {
+        Context ctx = new Context(Locale.GERMANY);
+        Appointment appointment = ModelMockHelper.createSingleAppointment();
+        ctx.setVariable("appointment", appointment);
+        String htmlMail = emailTemplateEngine.process("html/appointment-updated", ctx);
+        assertEquals("<!DOCTYPE html>\n" +
+                "<html>\n" +
+                "<head>\n" +
+                "    \n" +
+                "    <meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\"/>\n" +
+                "</head>\n" +
+                "<body>\n" +
+                "<h1>Termin #0</h1>\n" +
+                "<p>Hallo Max!</p>\n" +
+                "<p>Ihre Buchung wurde aktualisiert. Nachfolgend alle Details:</p>\n" +
+                "<span>Datum: " + appointment.getDate().format(formatter) + " / 10:00</span><br/>\n" +
+                "<span>1 x Tandem</span><br/>\n" +
+                "<span>(1 x Foto oder Video)</span><br/>\n" +
+                "<span>(0 x Foto und Video)</span><br/>\n" +
+                "<span>(0 x Handcam)</span>\n" +
+                "<p>Ihre Daten:</p>\n" +
+                "<span>Max Mustermann</span><br/>\n" +
+                "<span>E-Mail: max@example.com</span><br/>\n" +
+                "<span>Telefon: 0987654</span><br/>\n" +
+                "<span>PLZ / Wohnort: 12345 Foo City</span>\n" +
+                "<p>Springerdaten:</p>\n" +
+                "<ul>\n" +
+                "    <li>first0 last0 (01.01.1980 / 70kg)</li>\n" +
+                "</ul>\n" +
+                "<p>Melden Sie sich zum gebuchten Zeitpunkt (10:00 Uhr) einfach vor Ort bei uns am Manifest.<br/>Die angegebenen Zeiten sind lediglich Richtzeiten, es besteht keine Garantie zur gebuchten Uhrzeit in die Luft zu kommen. Bitte bringen Sie ein paar Stunden Zeit mit.<br/>Falls Sie noch Fragen haben oder Ihren Termin nicht wahrnehmen können, senden Sie eine Mail an mail@fsz-hassfurt.de oder melden Sie sich telefonisch (am Wochenende) unter 09521-3375.</p>\n" +
+                "<p>Ihr Fallschirm-Sport-Zentrum Haßfurt e.V.</p>\n" +
+                "</body>\n" +
+                "</html>", htmlMail);
+    }
 }

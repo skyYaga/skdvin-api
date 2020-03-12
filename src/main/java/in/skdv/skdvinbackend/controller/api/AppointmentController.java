@@ -48,9 +48,15 @@ public class AppointmentController {
 
     @GetMapping(value = "/{appointmentId}")
     @PreAuthorize("hasAuthority('SCOPE_read:appointments')")
-    public AppointmentDTO readAppointment(@PathVariable int appointmentId) {
+    public ResponseEntity<GenericResult<AppointmentDTO>> readAppointment(@PathVariable int appointmentId) {
         Appointment appointment = appointmentService.findAppointment(appointmentId);
-        return appointmentConverter.convertToDto(appointment);
+        if (appointment != null) {
+            return ResponseEntity.ok(new GenericResult<>(true, appointmentConverter.convertToDto(appointment)));
+        }
+
+        LOGGER.warn("Error reading Appointments");
+        return ResponseEntity.status(HttpServletResponse.SC_NOT_FOUND)
+                .body(new GenericResult(false, messageSource.getMessage(ErrorMessage.APPOINTMENT_NOT_FOUND.toString(), null, LocaleContextHolder.getLocale())));
     }
 
     @PostMapping
@@ -79,6 +85,11 @@ public class AppointmentController {
         GenericResult<Appointment> result = appointmentService.updateAppointment(appointmentConverter.convertToEntity(input));
 
         if (result.isSuccess()) {
+            try {
+                emailService.sendAppointmentUpdated(result.getPayload());
+            } catch (MessagingException e) {
+                LOGGER.error("Error sending appointment verification mail", e);
+            }
             return ResponseEntity.ok(new GenericResult<>(true, appointmentConverter.convertToDto(result.getPayload())));
         }
 
