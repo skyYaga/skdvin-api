@@ -88,7 +88,7 @@ public class AppointmentController {
             try {
                 emailService.sendAppointmentUpdated(result.getPayload());
             } catch (MessagingException e) {
-                LOGGER.error("Error sending appointment verification mail", e);
+                LOGGER.error("Error sending appointment update mail", e);
             }
             return ResponseEntity.ok(new GenericResult<>(true, appointmentConverter.convertToDto(result.getPayload())));
         }
@@ -148,7 +148,7 @@ public class AppointmentController {
                         try {
                             emailService.sendAppointmentConfirmation(appointment);
                         } catch (MessagingException e) {
-                            LOGGER.error("Error sending appointment verification mail", e);
+                            LOGGER.error("Error sending confirmAppointment mail", e);
                         }
                         return ResponseEntity.ok(new GenericResult<>(true));
                     }
