@@ -89,6 +89,20 @@ public class EmailService implements IEmailService {
         mailSender.send(mimeMessage);
     }
 
+    @Override
+    public void sendAppointmentUpdated(Appointment appointment) throws MessagingException {
+        MimeMessage mimeMessage = mailSender.createMimeMessage();
+
+        String subject = "appointment.updated.subject";
+        String template = "html/appointment-updated";
+
+        prepareAppointmentMessage(mimeMessage, appointment, subject, template, null);
+
+        LOG.info("Sending appointment updated mail to {}", appointment.getCustomer().getEmail());
+
+        mailSender.send(mimeMessage);
+    }
+
     private void prepareAppointmentMessage(MimeMessage mimeMessage, Appointment appointment, String subject, String template, Map<String, Object> contextVariables) throws MessagingException {
         Locale locale = LocaleContextHolder.getLocale();
 
