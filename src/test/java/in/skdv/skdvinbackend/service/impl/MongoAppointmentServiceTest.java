@@ -177,6 +177,12 @@ public class MongoAppointmentServiceTest extends AbstractSkdvinTest {
     }
 
     @Test
+    public void testFindAppointment_InvalidId() {
+        Appointment foundAppointment = appointmentService.findAppointment(9999999);
+        assertNull(foundAppointment);
+    }
+
+    @Test
     public void testFindAppointmentsByDay() {
         appointmentService.saveAppointment(ModelMockHelper.createSingleAppointment());
         appointmentService.saveAppointment(ModelMockHelper.createSecondAppointment());

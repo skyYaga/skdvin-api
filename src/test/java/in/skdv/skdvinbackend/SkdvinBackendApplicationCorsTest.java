@@ -13,7 +13,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-public class SkdvinBackendApplicationTestsCors {
+public class SkdvinBackendApplicationCorsTest {
 
     @Test
     public void testCorsMapping() {
@@ -33,7 +33,8 @@ public class SkdvinBackendApplicationTestsCors {
         Assert.assertEquals(Arrays.asList(HttpMethod.GET.name(),
                 HttpMethod.POST.name(),
                 HttpMethod.PUT.name(),
-                HttpMethod.PATCH.name()),
+                HttpMethod.PATCH.name(),
+                HttpMethod.DELETE.name()),
                 ((CorsConfiguration) ReflectionTestUtils.getField(registrations.get(0), "config")).getAllowedMethods());
     }
 
