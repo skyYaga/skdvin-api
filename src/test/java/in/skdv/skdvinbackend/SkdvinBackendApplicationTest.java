@@ -8,7 +8,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
-public class SkdvinBackendApplicationTests extends AbstractSkdvinTest {
+public class SkdvinBackendApplicationTest extends AbstractSkdvinTest {
 
 	@Test
 	public void contextLoads() {

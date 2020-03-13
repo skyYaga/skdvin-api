@@ -833,7 +833,7 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
         appointmentStateOnly.setState(AppointmentState.ACTIVE);
         String appointmentStateOnlyJson = json(appointmentStateOnly);
 
-        mockMvc.perform(RestDocumentationRequestBuilders.patch("/api/appointment/{appointmentId}",
+        mockMvc.perform(patch("/api/appointment/{appointmentId}",
                 savedAppointment.getAppointmentId())
                 .contentType(contentType)
                 .content(appointmentStateOnlyJson))
@@ -851,7 +851,7 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
         appointmentStateOnly.setState(AppointmentState.ACTIVE);
         String appointmentStateOnlyJson = json(appointmentStateOnly);
 
-        mockMvc.perform(RestDocumentationRequestBuilders.patch("/api/appointment/{appointmentId}?lang=en",
+        mockMvc.perform(patch("/api/appointment/{appointmentId}?lang=en",
                 99999999)
                 .header("Authorization", MockJwtDecoder.addHeader(UPDATE_APPOINTMENTS))
                 .contentType(contentType)
@@ -860,6 +860,59 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.success", is(false)))
                 .andExpect(jsonPath("$.message", is("Appointment not found")));
+    }
+
+    @Test
+    public void testDeleteAppointment() throws Exception {
+        Appointment appointment = ModelMockHelper.createSingleAppointment();
+        GenericResult<Appointment> result = appointmentService.saveAppointment(appointment);
+        int appointmentId = result.getPayload().getAppointmentId();
+
+
+        mockMvc.perform(RestDocumentationRequestBuilders.delete("/api/appointment/{appointmentId}", appointmentId)
+                .queryParam("lang", "en")
+                .header("Authorization", MockJwtDecoder.addHeader(UPDATE_APPOINTMENTS))
+                .contentType(contentType))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success", is(true)))
+                .andDo(document("appointment/delete-appointment",
+                        pathParameters(
+                                parameterWithName("appointmentId").description("The id of the appointment")
+                        ),
+                        responseFields(
+                                fieldWithPath("success").description("true, if the request was successful"),
+                                fieldWithPath("message").description("Message in case of error"),
+                                fieldWithPath("exception").description("Exception if any"),
+                                fieldWithPath("payload").description("The request's actual payload")
+                        )));
+
+        ArgumentCaptor<MimeMessage> argument = ArgumentCaptor.forClass(MimeMessage.class);
+        verify(mailSender).send(argument.capture());
+        assertTrue(argument.getValue().getSubject().startsWith("Your booking was deleted"));
+    }
+
+    @Test
+    public void testDeleteAppointment_Unauthorized() throws Exception {
+        Appointment appointment = ModelMockHelper.createSingleAppointment();
+        GenericResult<Appointment> result = appointmentService.saveAppointment(appointment);
+        int appointmentId = result.getPayload().getAppointmentId();
+
+
+        mockMvc.perform(delete("/api/appointment/{appointmentId}", appointmentId)
+                .contentType(contentType))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    public void testDeleteAppointment_Invalid() throws Exception {
+        mockMvc.perform(delete("/api/appointment/{appointmentId}", 9999999)
+                .header("Authorization", MockJwtDecoder.addHeader(UPDATE_APPOINTMENTS))
+                .contentType(contentType))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.success", is(false)));
     }
 
     private String json(Object o) throws IOException {

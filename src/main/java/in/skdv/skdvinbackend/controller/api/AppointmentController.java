@@ -60,7 +60,7 @@ public class AppointmentController {
     }
 
     @PostMapping
-    public ResponseEntity<GenericResult> addAppointment(@RequestBody @Valid AppointmentDTO input, HttpServletResponse response) {
+    public ResponseEntity<GenericResult> addAppointment(@RequestBody @Valid AppointmentDTO input) {
         Appointment appointment = appointmentConverter.convertToEntity(input);
         appointment.setVerificationToken(VerificationTokenUtil.generate());
 
@@ -94,6 +94,27 @@ public class AppointmentController {
         }
 
         return sendSaveOrUpdateErrorResponse(result);
+    }
+
+    @DeleteMapping(value = "/{appointmentId}")
+    @PreAuthorize("hasAuthority('SCOPE_update:appointments')")
+    public ResponseEntity<GenericResult> deleteAppointment(@PathVariable int appointmentId) {
+
+        Appointment appointment = appointmentService.findAppointment(appointmentId);
+
+        if (appointment != null) {
+            appointmentService.deleteAppointment(appointmentId);
+            try {
+                emailService.sendAppointmentDeleted(appointment);
+            } catch (MessagingException e) {
+                LOGGER.error("Error sending appointment deletion mail", e);
+            }
+            return ResponseEntity.ok(new GenericResult<>(true));
+        }
+
+        return ResponseEntity.status(HttpServletResponse.SC_NOT_FOUND)
+                .body(new GenericResult<>(false, messageSource.getMessage(
+                        ErrorMessage.APPOINTMENT_NOT_FOUND.toString(), null, LocaleContextHolder.getLocale())));
     }
 
     private ResponseEntity<GenericResult> sendSaveOrUpdateErrorResponse(GenericResult<Appointment> result) {

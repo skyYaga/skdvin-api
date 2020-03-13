@@ -26,6 +26,12 @@ A `PUT` request is used to update an appointment.
 operation::appointment/update-appointment[snippets='http-request,request-fields,http-response,response-fields']
 
 
+== Delete Appointment
+A `DELETE` request is used to delete an appointment.
+
+operation::appointment/delete-appointment[snippets='http-request,path-parameters,http-response,response-fields']
+
+
 == Update Appointment State
 A `PATCH` request is used to update an appointment's state.
 
