@@ -1,7 +1,9 @@
 package in.skdv.skdvinbackend.service.impl;
 
 import in.skdv.skdvinbackend.exception.ErrorMessage;
+import in.skdv.skdvinbackend.exception.InvalidDeletionException;
 import in.skdv.skdvinbackend.model.entity.Jumpday;
+import in.skdv.skdvinbackend.model.entity.Slot;
 import in.skdv.skdvinbackend.repository.JumpdayRepository;
 import in.skdv.skdvinbackend.service.IJumpdayService;
 import in.skdv.skdvinbackend.util.GenericResult;
@@ -11,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class MongoJumpdayService implements IJumpdayService {
 
@@ -50,6 +53,9 @@ public class MongoJumpdayService implements IJumpdayService {
 
     @Override
     public GenericResult<Jumpday> saveJumpday(Jumpday jumpday) {
+        if (isInvalidJumpday(jumpday)) {
+            return new GenericResult<>(false, ErrorMessage.JUMPDAY_INVALID);
+        }
         try {
             Jumpday existingJumpday = jumpdayRepository.findByDate(jumpday.getDate());
             if (existingJumpday != null) {
@@ -61,5 +67,98 @@ public class MongoJumpdayService implements IJumpdayService {
             LOGGER.error("Error saving jumpday", e);
             return new GenericResult<>(false, ErrorMessage.JUMPDAY_SERVICE_ERROR_MSG, e);
         }
+    }
+
+    @Override
+    public GenericResult<Jumpday> updateJumpday(Jumpday changedJumpday) {
+        if (isInvalidJumpday(changedJumpday)) {
+            return new GenericResult<>(false, ErrorMessage.JUMPDAY_INVALID);
+        }
+        try {
+            Jumpday jumpday = jumpdayRepository.findByDate(changedJumpday.getDate());
+            if (jumpday == null) {
+                return new GenericResult<>(false, ErrorMessage.JUMPDAY_NOT_FOUND_MSG);
+            }
+            updateJumpdayInternal(jumpday, changedJumpday);
+            Jumpday updatedJumpday = jumpdayRepository.save(jumpday);
+            return new GenericResult<>(true, updatedJumpday);
+        } catch (InvalidDeletionException e) {
+            LOGGER.error("Error updating jumpday", e);
+            return new GenericResult<>(false, ErrorMessage.JUMPDAY_SLOT_HAS_APPOINTMENTS);
+        }
+    }
+
+    private void updateJumpdayInternal(Jumpday existingJumpday, Jumpday changedJumpday) throws InvalidDeletionException {
+        removeDeletedSlots(existingJumpday, changedJumpday);
+        updateExistingSlots(existingJumpday, changedJumpday);
+        addNewSlots(existingJumpday, changedJumpday);
+    }
+
+    private void updateExistingSlots(Jumpday existingJumpday, Jumpday changedJumpday) throws InvalidDeletionException  {
+        for (Slot slot : changedJumpday.getSlots()) {
+            for (Slot existingSlot : existingJumpday.getSlots()) {
+                if (existingSlot.getTime().equals(slot.getTime())) {
+                    if (containsNotMoreBookingsThanNewSlots(existingSlot, slot)) {
+                        existingSlot.setTandemTotal(slot.getTandemTotal());
+                        existingSlot.setPicOrVidTotal(slot.getPicOrVidTotal());
+                        existingSlot.setPicAndVidTotal(slot.getPicAndVidTotal());
+                        existingSlot.setHandcamTotal(slot.getHandcamTotal());
+                    } else {
+                        throw new InvalidDeletionException("The slot sizes can't be reduced due to existing appointments");
+                    }
+                }
+            }
+        }
+    }
+
+    private boolean containsNotMoreBookingsThanNewSlots(Slot existingSlot, Slot slot) {
+        return existingSlot.getTandemBooked() <= slot.getTandemTotal()
+                && existingSlot.getPicOrVidBooked() <= slot.getPicOrVidTotal()
+                && existingSlot.getPicAndVidBooked() <= slot.getPicAndVidTotal()
+                && existingSlot.getHandcamBooked() <= slot.getHandcamTotal();
+    }
+
+    private void addNewSlots(Jumpday existingJumpday, Jumpday changedJumpday) {
+        changedJumpday.getSlots().forEach(slot -> {
+            AtomicBoolean foundSlot = new AtomicBoolean(false);
+            existingJumpday.getSlots().forEach(existingSlot -> {
+                if (existingSlot.getTime().equals(slot.getTime())) {
+                    foundSlot.set(true);
+                }
+            });
+
+            if (!foundSlot.get()) {
+                existingJumpday.getSlots().add(slot);
+            }
+        });
+    }
+
+    private void removeDeletedSlots(Jumpday existingJumpday, Jumpday changedJumpday) throws InvalidDeletionException {
+        for (Slot slot : existingJumpday.getSlots()) {
+            AtomicBoolean foundSlot = new AtomicBoolean(false);
+            changedJumpday.getSlots().forEach(changedSlot -> {
+                if (changedSlot.getTime().equals(slot.getTime())) {
+                    foundSlot.set(true);
+                }
+            });
+
+            if (!foundSlot.get()) {
+                if (!slot.getAppointments().isEmpty()) {
+                    throw new InvalidDeletionException("The slot to remove still has appointments");
+                }
+                existingJumpday.getSlots().remove(slot);
+            }
+        }
+    }
+
+    private boolean isInvalidJumpday(Jumpday jumpday) {
+        for (Slot slot : jumpday.getSlots()) {
+            if (slot.getTandemTotal() < slot.getPicOrVidTotal() ||
+                    slot.getTandemTotal() < slot.getPicAndVidTotal() ||
+                    slot.getTandemTotal() < slot.getHandcamTotal()) {
+                return true;
+            }
+        }
+        return false;
     }
 }

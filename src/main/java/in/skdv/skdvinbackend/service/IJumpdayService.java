@@ -14,4 +14,5 @@ public interface IJumpdayService {
 
     GenericResult<Jumpday> saveJumpday(Jumpday jumpday);
 
+    GenericResult<Jumpday> updateJumpday(Jumpday changedJumpday);
 }
