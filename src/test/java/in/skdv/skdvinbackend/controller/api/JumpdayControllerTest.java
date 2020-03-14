@@ -144,6 +144,7 @@ public class JumpdayControllerTest extends AbstractSkdvinTest {
                         fieldWithPath("slots[].picOrVidAvailable").ignored(),
                         fieldWithPath("slots[].picAndVidAvailable").ignored(),
                         fieldWithPath("slots[].handcamAvailable").ignored(),
+                        fieldWithPath("slots[].appointments").ignored(),
                         fieldWithPath("freeTimes").ignored()
                         ), responseFields(
                         fieldWithPath("success").description("true when the request was successful"),
@@ -451,6 +452,7 @@ public class JumpdayControllerTest extends AbstractSkdvinTest {
                                 fieldWithPath("slots[].picOrVidAvailable").ignored(),
                                 fieldWithPath("slots[].picAndVidAvailable").ignored(),
                                 fieldWithPath("slots[].handcamAvailable").ignored(),
+                                fieldWithPath("slots[].appointments").ignored(),
                                 fieldWithPath("freeTimes").ignored()
                         ), responseFields(
                                 fieldWithPath("success").description("true when the request was successful"),
