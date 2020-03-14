@@ -70,12 +70,12 @@ public class MongoJumpdayService implements IJumpdayService {
     }
 
     @Override
-    public GenericResult<Jumpday> updateJumpday(Jumpday changedJumpday) {
+    public GenericResult<Jumpday> updateJumpday(LocalDate date, Jumpday changedJumpday) {
         if (isInvalidJumpday(changedJumpday)) {
             return new GenericResult<>(false, ErrorMessage.JUMPDAY_INVALID);
         }
         try {
-            Jumpday jumpday = jumpdayRepository.findByDate(changedJumpday.getDate());
+            Jumpday jumpday = jumpdayRepository.findByDate(date);
             if (jumpday == null) {
                 return new GenericResult<>(false, ErrorMessage.JUMPDAY_NOT_FOUND_MSG);
             }

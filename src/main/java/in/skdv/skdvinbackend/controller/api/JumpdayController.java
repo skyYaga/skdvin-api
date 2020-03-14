@@ -89,4 +89,30 @@ public class JumpdayController {
         LOGGER.error("Error adding jumpday: {}", result.getMessage());
         throw new JumpdayInternalException(result.getMessage());
     }
+
+    @PutMapping(value = "/{jumpdayDate}")
+    @PreAuthorize("hasAuthority('SCOPE_update:jumpdays')")
+    public ResponseEntity<GenericResult> updateJumpday(@PathVariable String jumpdayDate, @RequestBody @Valid JumpdayDTO input) {
+        GenericResult<Jumpday> result = jumpdayService.updateJumpday(LocalDate.parse(jumpdayDate), jumpdayConverter.convertToEntity(input));
+
+        if (!result.isSuccess()) {
+            if (result.getMessage().equals(ErrorMessage.JUMPDAY_NOT_FOUND_MSG.toString())) {
+                return ResponseEntity.status(HttpServletResponse.SC_NOT_FOUND)
+                        .body(new GenericResult<>(false, messageSource.getMessage(
+                                ErrorMessage.JUMPDAY_NOT_FOUND_MSG.toString(), null, LocaleContextHolder.getLocale())));
+            }
+            if (result.getMessage().equals(ErrorMessage.JUMPDAY_INVALID.toString())) {
+                return ResponseEntity.status(HttpServletResponse.SC_BAD_REQUEST)
+                        .body(new GenericResult<>(false, messageSource.getMessage(
+                                ErrorMessage.JUMPDAY_INVALID.toString(), null, LocaleContextHolder.getLocale())));
+            }
+            if (result.getMessage().equals(ErrorMessage.JUMPDAY_SLOT_HAS_APPOINTMENTS.toString())) {
+                return ResponseEntity.status(HttpServletResponse.SC_BAD_REQUEST)
+                        .body(new GenericResult<>(false, messageSource.getMessage(
+                                ErrorMessage.JUMPDAY_SLOT_HAS_APPOINTMENTS.toString(), null, LocaleContextHolder.getLocale())));
+            }
+        }
+
+        return ResponseEntity.ok(new GenericResult<>(true, jumpdayConverter.convertToDto(result.getPayload())));
+    }
 }

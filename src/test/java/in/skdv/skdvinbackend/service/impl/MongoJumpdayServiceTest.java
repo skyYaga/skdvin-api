@@ -124,7 +124,7 @@ public class MongoJumpdayServiceTest extends AbstractSkdvinTest {
 
         changedJumpday.getSlots().get(0).setTandemTotal(2);
 
-        GenericResult<Jumpday> result = jumpdayService.updateJumpday(changedJumpday);
+        GenericResult<Jumpday> result = jumpdayService.updateJumpday(changedJumpday.getDate(), changedJumpday);
 
         Assert.assertNotNull(result);
         Assert.assertTrue(result.isSuccess());
@@ -137,7 +137,7 @@ public class MongoJumpdayServiceTest extends AbstractSkdvinTest {
         jumpday.getSlots().get(0).setTandemTotal(2);
         jumpday.setDate(LocalDate.now().plus(1, ChronoUnit.YEARS));
 
-        GenericResult<Jumpday> result = jumpdayService.updateJumpday(jumpday);
+        GenericResult<Jumpday> result = jumpdayService.updateJumpday(jumpday.getDate(), jumpday);
 
         Assert.assertNotNull(result);
         Assert.assertFalse(result.isSuccess());
@@ -152,7 +152,7 @@ public class MongoJumpdayServiceTest extends AbstractSkdvinTest {
 
         changedJumpday.getSlots().remove(0);
 
-        GenericResult<Jumpday> result = jumpdayService.updateJumpday(changedJumpday);
+        GenericResult<Jumpday> result = jumpdayService.updateJumpday(changedJumpday.getDate(), changedJumpday);
 
         Assert.assertNotNull(result);
         Assert.assertTrue(result.isSuccess());
@@ -173,7 +173,7 @@ public class MongoJumpdayServiceTest extends AbstractSkdvinTest {
         slot.setHandcamTotal(0);
         changedJumpday.getSlots().add(slot);
 
-        GenericResult<Jumpday> result = jumpdayService.updateJumpday(changedJumpday);
+        GenericResult<Jumpday> result = jumpdayService.updateJumpday(changedJumpday.getDate(), changedJumpday);
 
         Assert.assertNotNull(result);
         Assert.assertTrue(result.isSuccess());
@@ -190,7 +190,7 @@ public class MongoJumpdayServiceTest extends AbstractSkdvinTest {
         Jumpday changedJumpday = initialResult.getPayload();
         changedJumpday.getSlots().remove(0);
 
-        GenericResult<Jumpday> result = jumpdayService.updateJumpday(changedJumpday);
+        GenericResult<Jumpday> result = jumpdayService.updateJumpday(changedJumpday.getDate(), changedJumpday);
 
         Assert.assertNotNull(result);
         Assert.assertFalse(result.isSuccess());
@@ -208,7 +208,7 @@ public class MongoJumpdayServiceTest extends AbstractSkdvinTest {
         Jumpday changedJumpday = initialResult.getPayload();
         changedJumpday.getSlots().get(0).setTandemTotal(2);
 
-        GenericResult<Jumpday> result = jumpdayService.updateJumpday(changedJumpday);
+        GenericResult<Jumpday> result = jumpdayService.updateJumpday(changedJumpday.getDate(), changedJumpday);
 
         Assert.assertNotNull(result);
         Assert.assertFalse(result.isSuccess());
@@ -223,7 +223,7 @@ public class MongoJumpdayServiceTest extends AbstractSkdvinTest {
 
         changedJumpday.getSlots().get(0).setPicAndVidTotal(10);
 
-        GenericResult<Jumpday> result = jumpdayService.updateJumpday(changedJumpday);
+        GenericResult<Jumpday> result = jumpdayService.updateJumpday(changedJumpday.getDate(), changedJumpday);
 
         Assert.assertNotNull(result);
         Assert.assertFalse(result.isSuccess());

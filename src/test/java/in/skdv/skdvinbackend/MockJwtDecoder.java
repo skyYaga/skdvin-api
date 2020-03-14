@@ -13,6 +13,7 @@ public class MockJwtDecoder {
 
     private static final String SIMPLIFIED_CREATE_JUMPDAYS = simplifyPermission(CREATE_JUMPDAYS);
     private static final String SIMPLIFIED_READ_JUMPDAYS = simplifyPermission(READ_JUMPDAYS);
+    private static final String SIMPLIFIED_UPDATE_JUMPDAYS = simplifyPermission(UPDATE_JUMPDAYS);
     private static final String SIMPLIFIED_READ_APPOINTMENTS = simplifyPermission(READ_APPOINTMENTS);
     private static final String SIMPLIFIED_UPDATE_APPOINTMENTS = simplifyPermission(UPDATE_APPOINTMENTS);
 
@@ -31,6 +32,9 @@ public class MockJwtDecoder {
         }
         if (SIMPLIFIED_READ_JUMPDAYS.equals(permission)) {
             convertedPermission = READ_JUMPDAYS;
+        }
+        if (SIMPLIFIED_UPDATE_JUMPDAYS.equals(permission)) {
+            convertedPermission = UPDATE_JUMPDAYS;
         }
         if (SIMPLIFIED_READ_APPOINTMENTS.equals(permission)) {
             convertedPermission = READ_APPOINTMENTS;
