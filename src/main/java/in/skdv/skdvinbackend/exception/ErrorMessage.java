@@ -18,7 +18,8 @@ public enum ErrorMessage {
     JUMPDAY_ALREADY_EXISTS_MSG("jumpday.already.exists"),
     JUMPDAY_NO_FREE_SLOTS("jumpday.no.free.slots"),
     JUMPDAY_INVALID("jumpday.invalid"),
-    JUMPDAY_SLOT_HAS_APPOINTMENTS("jumpday.slot.has.apointments");
+    JUMPDAY_SLOT_HAS_APPOINTMENTS("jumpday.slot.has.apointments"),
+    JUMPDAY_HAS_APPOINTMENTS("jumpday.has.apointments");
 
     private final String message;
 

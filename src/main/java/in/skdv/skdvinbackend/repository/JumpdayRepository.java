@@ -9,4 +9,6 @@ public interface JumpdayRepository extends MongoRepository<Jumpday, Integer> {
 
     Jumpday findByDate(LocalDate date);
 
+    void deleteByDate(LocalDate date);
+
 }
