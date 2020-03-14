@@ -12,6 +12,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.LocalDate;
+import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -94,7 +96,7 @@ public class MongoJumpdayService implements IJumpdayService {
         addNewSlots(existingJumpday, changedJumpday);
     }
 
-    private void updateExistingSlots(Jumpday existingJumpday, Jumpday changedJumpday) throws InvalidDeletionException  {
+    private void updateExistingSlots(Jumpday existingJumpday, Jumpday changedJumpday) throws InvalidDeletionException {
         for (Slot slot : changedJumpday.getSlots()) {
             for (Slot existingSlot : existingJumpday.getSlots()) {
                 if (existingSlot.getTime().equals(slot.getTime())) {
@@ -129,12 +131,15 @@ public class MongoJumpdayService implements IJumpdayService {
 
             if (!foundSlot.get()) {
                 existingJumpday.getSlots().add(slot);
+                existingJumpday.getSlots().sort(Comparator.comparing(Slot::getTime));
             }
         });
     }
 
     private void removeDeletedSlots(Jumpday existingJumpday, Jumpday changedJumpday) throws InvalidDeletionException {
-        for (Slot slot : existingJumpday.getSlots()) {
+        Iterator<Slot> iterator = existingJumpday.getSlots().iterator();
+        while (iterator.hasNext()) {
+            Slot slot = iterator.next();
             AtomicBoolean foundSlot = new AtomicBoolean(false);
             changedJumpday.getSlots().forEach(changedSlot -> {
                 if (changedSlot.getTime().equals(slot.getTime())) {
@@ -146,7 +151,7 @@ public class MongoJumpdayService implements IJumpdayService {
                 if (!slot.getAppointments().isEmpty()) {
                     throw new InvalidDeletionException("The slot to remove still has appointments");
                 }
-                existingJumpday.getSlots().remove(slot);
+                iterator.remove();
             }
         }
     }
