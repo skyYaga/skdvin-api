@@ -9,6 +9,7 @@ import in.skdv.skdvinbackend.repository.JumpdayRepository;
 import in.skdv.skdvinbackend.service.IAppointmentService;
 import in.skdv.skdvinbackend.service.IJumpdayService;
 import in.skdv.skdvinbackend.util.GenericResult;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -35,10 +36,10 @@ import org.springframework.web.context.WebApplicationContext;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 
-import static in.skdv.skdvinbackend.config.Authorities.CREATE_JUMPDAYS;
-import static in.skdv.skdvinbackend.config.Authorities.READ_JUMPDAYS;
+import static in.skdv.skdvinbackend.config.Authorities.*;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertNotNull;
@@ -51,6 +52,7 @@ import static org.springframework.restdocs.request.RequestDocumentation.paramete
 import static org.springframework.restdocs.request.RequestDocumentation.pathParameters;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppContextSetup;
@@ -406,6 +408,146 @@ public class JumpdayControllerTest extends AbstractSkdvinTest {
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(jsonPath("$.success", is(false)))
                 .andExpect(jsonPath("$.message", is("Jumpday not found")));
+    }
+
+    @Test
+    public void testUpdateJumpday() throws Exception {
+        int newCount = 4;
+        Jumpday jumpday = ModelMockHelper.createJumpday();
+        Jumpday savedJumpday = jumpdayRepository.save(jumpday);
+        Assert.assertNotNull(savedJumpday);
+
+        savedJumpday.getSlots().get(0).setTandemTotal(newCount);
+
+        String jumpdayJson = json(savedJumpday);
+
+        mockMvc.perform(RestDocumentationRequestBuilders.put("/api/jumpday/{date}", LocalDate.now().toString())
+                .header("Authorization", MockJwtDecoder.addHeader(UPDATE_JUMPDAYS))
+                .contentType(contentType)
+                .content(jumpdayJson))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success", is(true)))
+                .andExpect(jsonPath("$.payload.slots[0].tandemTotal", is(newCount)))
+                .andDo(document("jumpday/update-jumpday",
+                        pathParameters(
+                                parameterWithName("date").description("The date of the updated jumpday")
+                        ),
+                        requestFields(
+                                fieldWithPath("date").description("The date of the jumpday"),
+                                fieldWithPath("jumping").description("true when it's a jumpday"),
+                                fieldWithPath("tandemmaster").description("A list of tandem masters avalable at this date"),
+                                fieldWithPath("videoflyer").description("A list of video flyers avalable at this date"),
+                                fieldWithPath("slots[]").description("The list of time slots on this jumpday"),
+                                fieldWithPath("slots[].time").description("The time of this slot"),
+                                fieldWithPath("slots[].tandemTotal").description("The total capacity of tandem slots"),
+                                fieldWithPath("slots[].picOrVidTotal").description("The total capacity of picture OR video slots"),
+                                fieldWithPath("slots[].picAndVidTotal").description("The total capacity of picture AND video slots"),
+                                fieldWithPath("slots[].handcamTotal").description("The total capacity of handcam slots"),
+                                fieldWithPath("slots[].tandemBooked").ignored(),
+                                fieldWithPath("slots[].tandemAvailable").ignored(),
+                                fieldWithPath("slots[].picOrVidBooked").ignored(),
+                                fieldWithPath("slots[].picAndVidBooked").ignored(),
+                                fieldWithPath("slots[].handcamBooked").ignored(),
+                                fieldWithPath("slots[].picOrVidAvailable").ignored(),
+                                fieldWithPath("slots[].picAndVidAvailable").ignored(),
+                                fieldWithPath("slots[].handcamAvailable").ignored(),
+                                fieldWithPath("freeTimes").ignored()
+                        ), responseFields(
+                                fieldWithPath("success").description("true when the request was successful"),
+                                fieldWithPath("payload.date").description("The date of the jumpday"),
+                                fieldWithPath("payload.jumping").description("true when it's a jumpday"),
+                                fieldWithPath("payload.tandemmaster").description("A list of tandem masters avalable at this date"),
+                                fieldWithPath("payload.videoflyer").description("A list of video flyers avalable at this date"),
+                                fieldWithPath("payload.slots[]").description("The list of time slots on this jumpday"),
+                                fieldWithPath("payload.slots[].time").description("The time of this slot"),
+                                fieldWithPath("payload.slots[].tandemTotal").description("The total capacity of tandem slots"),
+                                fieldWithPath("payload.slots[].tandemBooked").description("The total booked tandem slots"),
+                                fieldWithPath("payload.slots[].tandemAvailable").description("The total available tandem slots"),
+                                fieldWithPath("payload.slots[].picOrVidTotal").description("The total capacity of picture OR video slots"),
+                                fieldWithPath("payload.slots[].picOrVidBooked").description("The total booked picture OR video slots"),
+                                fieldWithPath("payload.slots[].picOrVidAvailable").description("The total available picture OR video slots"),
+                                fieldWithPath("payload.slots[].picAndVidTotal").description("The total capacity of picture AND video slots"),
+                                fieldWithPath("payload.slots[].picAndVidBooked").description("The total booked picture AND video slots"),
+                                fieldWithPath("payload.slots[].picAndVidAvailable").description("The total available picture AND video slots"),
+                                fieldWithPath("payload.slots[].handcamTotal").description("The total capacity of handcam slots"),
+                                fieldWithPath("payload.slots[].handcamBooked").description("The total booked handcam slots"),
+                                fieldWithPath("payload.slots[].handcamAvailable").description("The total available handcam slots"),
+                                fieldWithPath("message").ignored(),
+                                fieldWithPath("exception").ignored(),
+                                fieldWithPath("payload.freeTimes").ignored(),
+                                fieldWithPath("payload.slots[].appointments").ignored()
+                        )));
+    }
+
+    @Test
+    public void testUpdateJumpday_Unauthorized() throws Exception {
+        Jumpday jumpday = ModelMockHelper.createJumpday();
+        String jumpdayJson = json(jumpday);
+
+        mockMvc.perform(put("/api/jumpday/{date}", LocalDate.now().toString())
+                .contentType(contentType)
+                .content(jumpdayJson))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    public void testUpdateJumpday_NotExisting() throws Exception {
+        Jumpday jumpday = ModelMockHelper.createJumpday();
+        jumpday.setDate(LocalDate.now().plus(1, ChronoUnit.YEARS));
+        String jumpdayJson = json(jumpday);
+
+        mockMvc.perform(RestDocumentationRequestBuilders.put("/api/jumpday/{date}", LocalDate.now().toString())
+                .queryParam("lang", "en")
+                .header("Authorization", MockJwtDecoder.addHeader(UPDATE_JUMPDAYS))
+                .contentType(contentType)
+                .content(jumpdayJson))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.message", is("Jumpday not found")));
+    }
+
+    @Test
+    public void testUpdateJumpday_InvalidChange() throws Exception {
+        Jumpday savedJumpday = jumpdayRepository.save(ModelMockHelper.createJumpday());
+        Assert.assertNotNull(savedJumpday);
+
+        savedJumpday.getSlots().get(0).setTandemTotal(1);
+
+        String jumpdayJson = json(savedJumpday);
+
+        mockMvc.perform(RestDocumentationRequestBuilders.put("/api/jumpday/{date}", LocalDate.now().toString())
+                .queryParam("lang", "en")
+                .header("Authorization", MockJwtDecoder.addHeader(UPDATE_JUMPDAYS))
+                .contentType(contentType)
+                .content(jumpdayJson))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.message", is("Jumpday invalid")));
+    }
+
+    @Test
+    public void testUpdateJumpday_AppointmentExists() throws Exception {
+        Jumpday savedJumpday = jumpdayRepository.save(ModelMockHelper.createJumpday());
+        appointmentService.saveAppointment(ModelMockHelper.createAppointment(3, 0, 0, 0));
+        Assert.assertNotNull(savedJumpday);
+
+        savedJumpday.getSlots().get(0).setTandemTotal(2);
+
+        String jumpdayJson = json(savedJumpday);
+
+        mockMvc.perform(RestDocumentationRequestBuilders.put("/api/jumpday/{date}", LocalDate.now().toString())
+                .queryParam("lang", "en")
+                .header("Authorization", MockJwtDecoder.addHeader(UPDATE_JUMPDAYS))
+                .contentType(contentType)
+                .content(jumpdayJson))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.message", is("The changed slot has too many appointments")));
     }
 
 

@@ -100,7 +100,7 @@ public class ModelMockHelper {
         slot2.setPicAndVidTotal(1);
         slot2.setHandcamTotal(1);
 
-        jumpday.setSlots(Arrays.asList(slot, slot2));
+        jumpday.setSlots(new ArrayList<>(Arrays.asList(slot, slot2)));
 
         return jumpday;
     }

@@ -16,3 +16,8 @@ operation::jumpday/get-jumpday[snippets='http-request,path-parameters,http-respo
 A `GET` request is used to get all jumpdays.
 
 operation::jumpday/get-jumpdays[snippets='http-request,http-response,response-fields']
+
+== Update Jumpday
+A `UPDATE` request is used to update a jumpday
+
+operation::jumpday/update-jumpday[snippets='http-request,path-parameters,request-fields,http-response,response-fields']

@@ -16,7 +16,9 @@ public enum ErrorMessage {
     JUMPDAY_SERVICE_ERROR_MSG("jumpday.service.error"),
     JUMPDAY_NOT_FOUND_MSG("jumpday.not.found"),
     JUMPDAY_ALREADY_EXISTS_MSG("jumpday.already.exists"),
-    JUMPDAY_NO_FREE_SLOTS("jumpday.no.free.slots");
+    JUMPDAY_NO_FREE_SLOTS("jumpday.no.free.slots"),
+    JUMPDAY_INVALID("jumpday.invalid"),
+    JUMPDAY_SLOT_HAS_APPOINTMENTS("jumpday.slot.has.apointments");
 
     private final String message;
 
