@@ -1,6 +1,5 @@
 package in.skdv.skdvinbackend.config;
 
-import in.skdv.skdvinbackend.listener.JumpdayCascadeSaveMongoEventListener;
 import in.skdv.skdvinbackend.repository.AppointmentRepository;
 import in.skdv.skdvinbackend.repository.JumpdayRepository;
 import in.skdv.skdvinbackend.service.IAppointmentService;
@@ -41,11 +40,6 @@ public class ApplicationConfig implements WebMvcConfigurer {
 
     @Autowired
     private MongoTemplate mongoTemplate;
-
-    @Bean
-    private JumpdayCascadeSaveMongoEventListener jumpdayCascadeSaveMongoEventListener() {
-        return new JumpdayCascadeSaveMongoEventListener(mongoTemplate);
-    }
 
     @Bean
     public ISequenceService getSequenceService() {

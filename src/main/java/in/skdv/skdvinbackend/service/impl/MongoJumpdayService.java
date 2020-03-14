@@ -90,6 +90,28 @@ public class MongoJumpdayService implements IJumpdayService {
         }
     }
 
+    @Override
+    public GenericResult<Void> deleteJumpday(LocalDate date) {
+        Jumpday jumpday = jumpdayRepository.findByDate(date);
+        if (jumpday == null) {
+            return new GenericResult<>(false, ErrorMessage.JUMPDAY_NOT_FOUND_MSG);
+        }
+        if (jumpdayHasAppointments(jumpday)) {
+            return new GenericResult<>(false, ErrorMessage.JUMPDAY_HAS_APPOINTMENTS);
+        }
+        jumpdayRepository.deleteByDate(date);
+        return new GenericResult<>(true);
+    }
+
+    private boolean jumpdayHasAppointments(Jumpday jumpday) {
+        for (Slot slot : jumpday.getSlots()) {
+            if (!slot.getAppointments().isEmpty()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private void updateJumpdayInternal(Jumpday existingJumpday, Jumpday changedJumpday) throws InvalidDeletionException {
         removeDeletedSlots(existingJumpday, changedJumpday);
         updateExistingSlots(existingJumpday, changedJumpday);

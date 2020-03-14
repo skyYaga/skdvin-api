@@ -51,8 +51,7 @@ import static org.springframework.restdocs.payload.PayloadDocumentation.*;
 import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
 import static org.springframework.restdocs.request.RequestDocumentation.pathParameters;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppContextSetup;
@@ -145,6 +144,7 @@ public class JumpdayControllerTest extends AbstractSkdvinTest {
                         fieldWithPath("slots[].picOrVidAvailable").ignored(),
                         fieldWithPath("slots[].picAndVidAvailable").ignored(),
                         fieldWithPath("slots[].handcamAvailable").ignored(),
+                        fieldWithPath("slots[].appointments").ignored(),
                         fieldWithPath("freeTimes").ignored()
                         ), responseFields(
                         fieldWithPath("success").description("true when the request was successful"),
@@ -452,6 +452,7 @@ public class JumpdayControllerTest extends AbstractSkdvinTest {
                                 fieldWithPath("slots[].picOrVidAvailable").ignored(),
                                 fieldWithPath("slots[].picAndVidAvailable").ignored(),
                                 fieldWithPath("slots[].handcamAvailable").ignored(),
+                                fieldWithPath("slots[].appointments").ignored(),
                                 fieldWithPath("freeTimes").ignored()
                         ), responseFields(
                                 fieldWithPath("success").description("true when the request was successful"),
@@ -548,6 +549,66 @@ public class JumpdayControllerTest extends AbstractSkdvinTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.success", is(false)))
                 .andExpect(jsonPath("$.message", is("The changed slot has too many appointments")));
+    }
+
+    @Test
+    public void testDeleteJumpday() throws Exception {
+        Jumpday jumpday = ModelMockHelper.createJumpday();
+        Jumpday savedJumpday = jumpdayRepository.save(jumpday);
+
+        mockMvc.perform(RestDocumentationRequestBuilders.delete("/api/jumpday/{date}", savedJumpday.getDate())
+                .header("Authorization", MockJwtDecoder.addHeader(UPDATE_JUMPDAYS))
+                .contentType(contentType))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success", is(true)))
+                .andDo(document("jumpday/delete-jumpday",
+                        pathParameters(
+                                parameterWithName("date").description("The date of the jumpday to delete")
+                        ),
+                        responseFields(
+                                fieldWithPath("success").description("true when the request was successful"),
+                                fieldWithPath("message").description("message in case of error"),
+                                fieldWithPath("exception").ignored(),
+                                fieldWithPath("payload").ignored()
+                        )));
+    }
+
+    @Test
+    public void testDeleteJumpday_Unauthorized() throws Exception {
+        Jumpday jumpday = ModelMockHelper.createJumpday();
+        Jumpday savedJumpday = jumpdayRepository.save(jumpday);
+
+        mockMvc.perform(delete("/api/jumpday/{date}", savedJumpday.getDate())
+                .contentType(contentType))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    public void testDeleteJumpday_NotFound() throws Exception {
+        mockMvc.perform(delete("/api/jumpday/{date}", LocalDate.now().plus(1, ChronoUnit.YEARS))
+                .queryParam("lang", "en")
+                .header("Authorization", MockJwtDecoder.addHeader(UPDATE_JUMPDAYS))
+                .contentType(contentType))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.message", is("Jumpday not found")));
+    }
+
+    @Test
+    public void testDeleteJumpday_AppointmentExists() throws Exception {
+        Jumpday jumpday = ModelMockHelper.createJumpday();
+        Jumpday savedJumpday = jumpdayRepository.save(jumpday);
+        GenericResult<Appointment> result = appointmentService.saveAppointment(ModelMockHelper.createSingleAppointment());
+        Assert.assertTrue(result.isSuccess());
+
+        mockMvc.perform(delete("/api/jumpday/{date}", savedJumpday.getDate())
+                .queryParam("lang", "en")
+                .header("Authorization", MockJwtDecoder.addHeader(UPDATE_JUMPDAYS))
+                .contentType(contentType))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.message", is("The jumpday still has appointments")));
     }
 
 

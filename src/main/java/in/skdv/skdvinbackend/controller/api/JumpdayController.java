@@ -115,4 +115,25 @@ public class JumpdayController {
 
         return ResponseEntity.ok(new GenericResult<>(true, jumpdayConverter.convertToDto(result.getPayload())));
     }
+
+    @DeleteMapping(value = "/{jumpdayDate}")
+    @PreAuthorize("hasAuthority('SCOPE_update:jumpdays')")
+    public ResponseEntity<GenericResult> deleteJumpday(@PathVariable String jumpdayDate) {
+        GenericResult<Void> result = jumpdayService.deleteJumpday(LocalDate.parse(jumpdayDate));
+
+        if (!result.isSuccess()) {
+            if (result.getMessage().equals(ErrorMessage.JUMPDAY_NOT_FOUND_MSG.toString())) {
+                return ResponseEntity.status(HttpServletResponse.SC_NOT_FOUND)
+                        .body(new GenericResult<>(false, messageSource.getMessage(
+                                ErrorMessage.JUMPDAY_NOT_FOUND_MSG.toString(), null, LocaleContextHolder.getLocale())));
+            }
+            if (result.getMessage().equals(ErrorMessage.JUMPDAY_HAS_APPOINTMENTS.toString())) {
+                return ResponseEntity.status(HttpServletResponse.SC_BAD_REQUEST)
+                        .body(new GenericResult<>(false, messageSource.getMessage(
+                                ErrorMessage.JUMPDAY_HAS_APPOINTMENTS.toString(), null, LocaleContextHolder.getLocale())));
+            }
+        }
+
+        return ResponseEntity.ok(new GenericResult<>(true));
+    }
 }

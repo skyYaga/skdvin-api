@@ -14,19 +14,13 @@ import in.skdv.skdvinbackend.service.ISequenceService;
 import in.skdv.skdvinbackend.util.GenericResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.Query;
 
 import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
-
-import static org.springframework.data.mongodb.core.query.Criteria.where;
 
 public class MongoAppointmentService implements IAppointmentService {
 
@@ -66,8 +60,8 @@ public class MongoAppointmentService implements IAppointmentService {
             // Delete Appointment in this jumpday and create a new one, then save
             Jumpday jumpday = jumpdayRepository.findByDate(newAppointment.getDate().toLocalDate());
             for (Slot slot : jumpday.getSlots()) {
-
-                slot.getAppointments().removeIf(appointment -> appointment.getAppointmentId() == newAppointment.getAppointmentId());
+                slot.getAppointments().removeIf(appointment -> appointment != null
+                        && appointment.getAppointmentId() == newAppointment.getAppointmentId());
             }
 
             return saveAppointmentInternal(jumpday, newAppointment);
@@ -81,7 +75,7 @@ public class MongoAppointmentService implements IAppointmentService {
             Jumpday jumpday = jumpdayRepository.findByDate(oldAppointment.getDate().toLocalDate());
             for (Slot slot : jumpday.getSlots()) {
 
-                for (Iterator<Appointment> iterator = slot.getAppointments().iterator(); iterator.hasNext();) {
+                for (Iterator<Appointment> iterator = slot.getAppointments().iterator(); iterator.hasNext(); ) {
                     Appointment appointment = iterator.next();
 
                     if (appointment.getAppointmentId() == newAppointment.getAppointmentId()) {
@@ -111,7 +105,7 @@ public class MongoAppointmentService implements IAppointmentService {
         Jumpday jumpday = jumpdayRepository.findByDate(date);
         if (jumpday != null && jumpday.getSlots() != null) {
             return jumpday.getSlots().stream()
-                    .flatMap(s -> s.getAppointments().stream()).collect(Collectors.toList());
+                    .flatMap(s -> s.getAppointments().stream().filter(Objects::nonNull)).collect(Collectors.toList());
         }
         return new ArrayList<>();
     }
@@ -129,8 +123,8 @@ public class MongoAppointmentService implements IAppointmentService {
             if (!jumpday.getDate().isBefore(LocalDate.now())) {
                 List<LocalTime> slotTimes = jumpday.getSlots().stream()
                         .filter(slot ->
-                            (isTodayButTimeInFuture(jumpday, slot) || isInFuture(jumpday))
-                                    && slot.isValidForQuery(slotQuery)
+                                (isTodayButTimeInFuture(jumpday, slot) || isInFuture(jumpday))
+                                        && slot.isValidForQuery(slotQuery)
                         )
                         .map(Slot::getTime)
                         .collect(Collectors.toList());
@@ -159,15 +153,26 @@ public class MongoAppointmentService implements IAppointmentService {
 
     @Override
     public List<Appointment> findUnconfirmedAppointments() {
-        return mongoTemplate.find(Query.query(
-                where("verificationToken.expiryDate").lt(LocalDateTime.now())
-                        .and("state").is(AppointmentState.UNCONFIRMED)),
-                Appointment.class);
+        List<Jumpday> jumpdayList = jumpdayRepository.findAll();
+
+        return jumpdayList.stream()
+                .flatMap(day -> day.getSlots().stream())
+                .flatMap(s -> s.getAppointments().stream())
+                .filter(a -> a != null && a.getVerificationToken() != null
+                        && a.getVerificationToken().getExpiryDate().isBefore(LocalDateTime.now())
+                        && a.getState().equals(AppointmentState.UNCONFIRMED))
+                .collect(Collectors.toList());
     }
 
     @Override
     public void deleteAppointment(int appointmentId) {
-        appointmentRepository.deleteById(appointmentId);
+        List<Jumpday> jumpdays = jumpdayRepository.findBySlotsAppointmentsAppointmentId(appointmentId);
+
+        jumpdays.forEach(jumpday -> jumpday.getSlots().forEach(slot -> {
+            slot.getAppointments().removeIf(appointment -> appointment.getAppointmentId() == appointmentId);
+        }));
+
+        jumpdayRepository.saveAll(jumpdays);
     }
 
     private boolean isInFuture(Jumpday jumpday) {

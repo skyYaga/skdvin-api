@@ -229,4 +229,41 @@ public class MongoJumpdayServiceTest extends AbstractSkdvinTest {
         Assert.assertFalse(result.isSuccess());
         Assert.assertEquals(ErrorMessage.JUMPDAY_INVALID.toString(), result.getMessage());
     }
+
+    @Test
+    public void testDeleteJumpday() {
+        GenericResult<Jumpday> initialResult = jumpdayService.saveJumpday(ModelMockHelper.createJumpday());
+        assertTrue(initialResult.isSuccess());
+
+        GenericResult<Void> result = jumpdayService.deleteJumpday(initialResult.getPayload().getDate());
+
+        Assert.assertNotNull(result);
+        Assert.assertTrue(result.isSuccess());
+    }
+
+    @Test
+    public void testDeleteJumpday_AppointmentsExist() {
+        GenericResult<Jumpday> initialResult = jumpdayService.saveJumpday(ModelMockHelper.createJumpday());
+        assertTrue(initialResult.isSuccess());
+        GenericResult<Appointment> appointmentResult = appointmentService.saveAppointment(ModelMockHelper.createSingleAppointment());
+        assertTrue(appointmentResult.isSuccess());
+
+        GenericResult<Void> result = jumpdayService.deleteJumpday(initialResult.getPayload().getDate());
+
+        Assert.assertNotNull(result);
+        Assert.assertFalse(result.isSuccess());
+        Assert.assertEquals(ErrorMessage.JUMPDAY_HAS_APPOINTMENTS.toString(), result.getMessage());
+    }
+
+    @Test
+    public void testDeleteJumpday_InvalidJumpday() {
+        Jumpday jumpday = ModelMockHelper.createJumpday();
+        jumpday.setDate(LocalDate.now().plus(1, ChronoUnit.YEARS));
+
+        GenericResult<Void> result = jumpdayService.deleteJumpday(jumpday.getDate());
+
+        Assert.assertNotNull(result);
+        Assert.assertFalse(result.isSuccess());
+        Assert.assertEquals(ErrorMessage.JUMPDAY_NOT_FOUND_MSG.toString(), result.getMessage());
+    }
 }
