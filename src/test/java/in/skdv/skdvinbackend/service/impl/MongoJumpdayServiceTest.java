@@ -252,7 +252,7 @@ public class MongoJumpdayServiceTest extends AbstractSkdvinTest {
 
         Assert.assertNotNull(result);
         Assert.assertFalse(result.isSuccess());
-        Assert.assertEquals(ErrorMessage.JUMPDAY_SLOT_HAS_APPOINTMENTS.toString(), result.getMessage());
+        Assert.assertEquals(ErrorMessage.JUMPDAY_HAS_APPOINTMENTS.toString(), result.getMessage());
     }
 
     @Test
