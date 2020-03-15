@@ -56,36 +56,46 @@ public class MongoAppointmentService implements IAppointmentService {
             return new GenericResult<>(false, ErrorMessage.APPOINTMENT_NOT_FOUND);
         }
 
-        if (oldAppointment.getDate().toLocalDate().equals(newAppointment.getDate().toLocalDate())) {
+        if (isAtSameDateAndTime(newAppointment, oldAppointment)) {
             // Delete Appointment in this jumpday and create a new one, then save
-            Jumpday jumpday = jumpdayRepository.findByDate(newAppointment.getDate().toLocalDate());
-            for (Slot slot : jumpday.getSlots()) {
-                slot.getAppointments().removeIf(appointment -> appointment != null
-                        && appointment.getAppointmentId() == newAppointment.getAppointmentId());
-            }
-
-            return saveAppointmentInternal(jumpday, newAppointment);
+            return replaceAppointment(newAppointment);
         }
 
         // Create new Appointment and save it and then delete old one and save
         GenericResult<Appointment> appointmentGenericResult = saveAppointment(newAppointment);
-
         if (appointmentGenericResult.isSuccess()) {
+            deleteOldAppointment(newAppointment, oldAppointment);
+        }
+        return appointmentGenericResult;
+    }
 
-            Jumpday jumpday = jumpdayRepository.findByDate(oldAppointment.getDate().toLocalDate());
-            for (Slot slot : jumpday.getSlots()) {
+    private void deleteOldAppointment(Appointment newAppointment, Appointment oldAppointment) {
+        Jumpday jumpday = jumpdayRepository.findByDate(oldAppointment.getDate().toLocalDate());
+        for (Slot slot : jumpday.getSlots()) {
 
-                for (Iterator<Appointment> iterator = slot.getAppointments().iterator(); iterator.hasNext(); ) {
-                    Appointment appointment = iterator.next();
+            for (Iterator<Appointment> iterator = slot.getAppointments().iterator(); iterator.hasNext(); ) {
+                Appointment appointment = iterator.next();
 
-                    if (appointment.getAppointmentId() == newAppointment.getAppointmentId()) {
-                        iterator.remove();
-                        jumpdayRepository.save(jumpday);
-                    }
+                if (appointment != null && appointment.getAppointmentId() == newAppointment.getAppointmentId()) {
+                    iterator.remove();
+                    jumpdayRepository.save(jumpday);
                 }
             }
         }
-        return appointmentGenericResult;
+    }
+
+    private GenericResult<Appointment> replaceAppointment(Appointment newAppointment) {
+        Jumpday jumpday = jumpdayRepository.findByDate(newAppointment.getDate().toLocalDate());
+        for (Slot slot : jumpday.getSlots()) {
+            slot.getAppointments().removeIf(appointment -> appointment != null
+                    && appointment.getAppointmentId() == newAppointment.getAppointmentId());
+        }
+
+        return saveAppointmentInternal(jumpday, newAppointment);
+    }
+
+    private boolean isAtSameDateAndTime(Appointment newAppointment, Appointment oldAppointment) {
+        return oldAppointment.getDate().toLocalDate().equals(newAppointment.getDate().toLocalDate());
     }
 
     @Override

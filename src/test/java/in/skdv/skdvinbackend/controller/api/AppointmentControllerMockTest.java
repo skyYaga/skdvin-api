@@ -83,7 +83,8 @@ public class AppointmentControllerMockTest extends AbstractSkdvinTest {
                 .thenReturn(new GenericResult<>(false, ErrorMessage.APPOINTMENT_SERVICE_ERROR_MSG));
         String appointmentJson = json(ModelMockHelper.createSingleAppointment());
 
-        mockMvc.perform(post("/api/appointment?lang=en")
+        mockMvc.perform(post("/api/appointment")
+                .header("Accept-Language", "en-US")
                 .contentType(contentType)
                 .content(appointmentJson))
                 .andDo(MockMvcResultHandlers.print())
@@ -137,7 +138,8 @@ public class AppointmentControllerMockTest extends AbstractSkdvinTest {
 
         SlotQuery query = new SlotQuery(2, 0, 0, 2);
 
-        mockMvc.perform(get("/api/appointment/slots?lang=en")
+        mockMvc.perform(get("/api/appointment/slots")
+                .header("Accept-Language", "en-US")
                 .param("tandem", String.valueOf(query.getTandem()))
                 .param("picOrVid", String.valueOf(query.getPicOrVid()))
                 .param("picAndVid", String.valueOf(query.getPicAndVid()))
