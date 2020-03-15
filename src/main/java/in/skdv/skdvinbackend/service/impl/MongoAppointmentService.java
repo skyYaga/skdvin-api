@@ -78,7 +78,7 @@ public class MongoAppointmentService implements IAppointmentService {
                 for (Iterator<Appointment> iterator = slot.getAppointments().iterator(); iterator.hasNext(); ) {
                     Appointment appointment = iterator.next();
 
-                    if (appointment.getAppointmentId() == newAppointment.getAppointmentId()) {
+                    if (appointment != null && appointment.getAppointmentId() == newAppointment.getAppointmentId()) {
                         iterator.remove();
                         jumpdayRepository.save(jumpday);
                     }
