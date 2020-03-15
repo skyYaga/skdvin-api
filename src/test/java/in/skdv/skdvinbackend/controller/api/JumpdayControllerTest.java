@@ -184,8 +184,9 @@ public class JumpdayControllerTest extends AbstractSkdvinTest {
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isCreated());
 
-        mockMvc.perform(RestDocumentationRequestBuilders.post("/api/jumpday?lang=de")
+        mockMvc.perform(RestDocumentationRequestBuilders.post("/api/jumpday")
                 .header("Authorization", MockJwtDecoder.addHeader(CREATE_JUMPDAYS))
+                .header("Accept-Language", "de-DE")
                 .contentType(contentType)
                 .content(jumpdayJson))
                 .andDo(MockMvcResultHandlers.print())
@@ -205,8 +206,9 @@ public class JumpdayControllerTest extends AbstractSkdvinTest {
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isCreated());
 
-        mockMvc.perform(RestDocumentationRequestBuilders.post("/api/jumpday?lang=en")
+        mockMvc.perform(RestDocumentationRequestBuilders.post("/api/jumpday")
                 .header("Authorization", MockJwtDecoder.addHeader(CREATE_JUMPDAYS))
+                .header("Accept-Language", "en-US")
                 .contentType(contentType)
                 .content(jumpdayJson))
                 .andDo(MockMvcResultHandlers.print())
@@ -392,8 +394,9 @@ public class JumpdayControllerTest extends AbstractSkdvinTest {
 
     @Test
     public void testGetByDate_NotFound_DE() throws Exception {
-        mockMvc.perform(get("/api/jumpday/{date}?lang=de", LocalDate.now().toString())
-                .header("Authorization", MockJwtDecoder.addHeader(READ_JUMPDAYS)))
+        mockMvc.perform(get("/api/jumpday/{date}", LocalDate.now().toString())
+                .header("Authorization", MockJwtDecoder.addHeader(READ_JUMPDAYS))
+                .header("Accept-Language", "de-DE"))
                 .andExpect(status().isBadRequest())
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(jsonPath("$.success", is(false)))
@@ -402,8 +405,9 @@ public class JumpdayControllerTest extends AbstractSkdvinTest {
 
     @Test
     public void testGetByDate_NotFound_EN() throws Exception {
-        mockMvc.perform(get("/api/jumpday/{date}?lang=en", LocalDate.now().toString())
-                .header("Authorization", MockJwtDecoder.addHeader(READ_JUMPDAYS)))
+        mockMvc.perform(get("/api/jumpday/{date}", LocalDate.now().toString())
+                .header("Authorization", MockJwtDecoder.addHeader(READ_JUMPDAYS))
+                .header("Accept-Language", "en-US"))
                 .andExpect(status().isBadRequest())
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(jsonPath("$.success", is(false)))
@@ -500,7 +504,7 @@ public class JumpdayControllerTest extends AbstractSkdvinTest {
         String jumpdayJson = json(jumpday);
 
         mockMvc.perform(RestDocumentationRequestBuilders.put("/api/jumpday/{date}", LocalDate.now().toString())
-                .queryParam("lang", "en")
+                .header("Accept-Language", "en-US")
                 .header("Authorization", MockJwtDecoder.addHeader(UPDATE_JUMPDAYS))
                 .contentType(contentType)
                 .content(jumpdayJson))
@@ -520,7 +524,7 @@ public class JumpdayControllerTest extends AbstractSkdvinTest {
         String jumpdayJson = json(savedJumpday);
 
         mockMvc.perform(RestDocumentationRequestBuilders.put("/api/jumpday/{date}", LocalDate.now().toString())
-                .queryParam("lang", "en")
+                .header("Accept-Language", "en-US")
                 .header("Authorization", MockJwtDecoder.addHeader(UPDATE_JUMPDAYS))
                 .contentType(contentType)
                 .content(jumpdayJson))
@@ -541,7 +545,7 @@ public class JumpdayControllerTest extends AbstractSkdvinTest {
         String jumpdayJson = json(savedJumpday);
 
         mockMvc.perform(RestDocumentationRequestBuilders.put("/api/jumpday/{date}", LocalDate.now().toString())
-                .queryParam("lang", "en")
+                .header("Accept-Language", "en-US")
                 .header("Authorization", MockJwtDecoder.addHeader(UPDATE_JUMPDAYS))
                 .contentType(contentType)
                 .content(jumpdayJson))
@@ -587,7 +591,7 @@ public class JumpdayControllerTest extends AbstractSkdvinTest {
     @Test
     public void testDeleteJumpday_NotFound() throws Exception {
         mockMvc.perform(delete("/api/jumpday/{date}", LocalDate.now().plus(1, ChronoUnit.YEARS))
-                .queryParam("lang", "en")
+                .header("Accept-Language", "en-US")
                 .header("Authorization", MockJwtDecoder.addHeader(UPDATE_JUMPDAYS))
                 .contentType(contentType))
                 .andExpect(status().isNotFound())
@@ -603,7 +607,7 @@ public class JumpdayControllerTest extends AbstractSkdvinTest {
         Assert.assertTrue(result.isSuccess());
 
         mockMvc.perform(delete("/api/jumpday/{date}", savedJumpday.getDate())
-                .queryParam("lang", "en")
+                .header("Accept-Language", "en-US")
                 .header("Authorization", MockJwtDecoder.addHeader(UPDATE_JUMPDAYS))
                 .contentType(contentType))
                 .andExpect(status().isBadRequest())

@@ -202,7 +202,8 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
     public void testAddAppointment() throws Exception {
         String appointmentJson = json(ModelMockHelper.createSingleAppointment());
 
-        mockMvc.perform(RestDocumentationRequestBuilders.post("/api/appointment?lang=en")
+        mockMvc.perform(RestDocumentationRequestBuilders.post("/api/appointment")
+                .header("Accept-Language", "en-US")
                 .contentType(contentType)
                 .content(appointmentJson))
                 .andDo(MockMvcResultHandlers.print())
@@ -274,7 +275,8 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
 
         String appointmentJson = json(ModelMockHelper.createAppointment(2, 0, 0, 0));
 
-        mockMvc.perform(post("/api/appointment?lang=de")
+        mockMvc.perform(post("/api/appointment")
+                .header("Accept-Language", "de-DE")
                 .contentType(contentType)
                 .content(appointmentJson))
                 .andDo(MockMvcResultHandlers.print())
@@ -289,7 +291,8 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
         String appointmentJson = json(appointment);
 
 
-        mockMvc.perform(post("/api/appointment?lang=de")
+        mockMvc.perform(post("/api/appointment")
+                .header("Accept-Language", "de-DE")
                 .contentType(contentType)
                 .content(appointmentJson))
                 .andDo(MockMvcResultHandlers.print())
@@ -304,7 +307,8 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
         String appointmentJson = json(appointment);
 
 
-        mockMvc.perform(post("/api/appointment?lang=en")
+        mockMvc.perform(post("/api/appointment")
+                .header("Accept-Language", "en-US")
                 .contentType(contentType)
                 .content(appointmentJson))
                 .andDo(MockMvcResultHandlers.print())
@@ -319,7 +323,8 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
         String appointmentJson = json(appointment);
 
 
-        mockMvc.perform(post("/api/appointment?lang=en")
+        mockMvc.perform(post("/api/appointment")
+                .header("Accept-Language", "en-US")
                 .contentType(contentType)
                 .content(appointmentJson))
                 .andDo(MockMvcResultHandlers.print())
@@ -334,7 +339,8 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
         String appointmentJson = json(appointment);
 
 
-        mockMvc.perform(post("/api/appointment?lang=en")
+        mockMvc.perform(post("/api/appointment")
+                .header("Accept-Language", "en-US")
                 .contentType(contentType)
                 .content(appointmentJson))
                 .andDo(MockMvcResultHandlers.print())
@@ -349,7 +355,8 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
         String appointmentJson = json(appointment);
 
 
-        mockMvc.perform(post("/api/appointment?lang=en")
+        mockMvc.perform(post("/api/appointment")
+                .header("Accept-Language", "en-US")
                 .contentType(contentType)
                 .content(appointmentJson))
                 .andDo(MockMvcResultHandlers.print())
@@ -372,7 +379,7 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
         String appointmentJson = json(appointment);
 
         mockMvc.perform(RestDocumentationRequestBuilders.put("/api/appointment")
-                .queryParam("lang", "en")
+                .header("Accept-Language", "en-US")
                 .header("Authorization", MockJwtDecoder.addHeader(UPDATE_APPOINTMENTS))
                 .contentType(contentType)
                 .content(appointmentJson))
@@ -465,7 +472,8 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
 
         String appointmentJson = json(appointment);
 
-        mockMvc.perform(put("/api/appointment?lang=de")
+        mockMvc.perform(put("/api/appointment")
+                .header("Accept-Language", "de-DE")
                 .header("Authorization", MockJwtDecoder.addHeader(UPDATE_APPOINTMENTS))
                 .contentType(contentType)
                 .content(appointmentJson))
@@ -485,7 +493,8 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
 
         String appointmentJson = json(appointment);
 
-        mockMvc.perform(put("/api/appointment?lang=en")
+        mockMvc.perform(put("/api/appointment")
+                .header("Accept-Language", "en-US")
                 .header("Authorization", MockJwtDecoder.addHeader(UPDATE_APPOINTMENTS))
                 .contentType(contentType)
                 .content(appointmentJson))
@@ -505,7 +514,8 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
 
         String appointmentJson = json(appointment);
 
-        mockMvc.perform(put("/api/appointment?lang=en")
+        mockMvc.perform(put("/api/appointment")
+                .header("Accept-Language", "en-US")
                 .header("Authorization", MockJwtDecoder.addHeader(UPDATE_APPOINTMENTS))
                 .contentType(contentType)
                 .content(appointmentJson))
@@ -525,7 +535,8 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
 
         String appointmentJson = json(appointment);
 
-        mockMvc.perform(put("/api/appointment?lang=en")
+        mockMvc.perform(put("/api/appointment")
+                .header("Accept-Language", "en-US")
                 .header("Authorization", MockJwtDecoder.addHeader(UPDATE_APPOINTMENTS))
                 .contentType(contentType)
                 .content(appointmentJson))
@@ -546,7 +557,8 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
 
         String appointmentJson = json(appointment);
 
-        mockMvc.perform(put("/api/appointment?lang=en")
+        mockMvc.perform(put("/api/appointment")
+                .header("Accept-Language", "en-US")
                 .header("Authorization", MockJwtDecoder.addHeader(UPDATE_APPOINTMENTS))
                 .contentType(contentType)
                 .content(appointmentJson))
@@ -566,7 +578,8 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
 
         String appointmentJson = json(appointment);
 
-        mockMvc.perform(put("/api/appointment?lang=en")
+        mockMvc.perform(put("/api/appointment")
+                .header("Accept-Language", "en-US")
                 .header("Authorization", MockJwtDecoder.addHeader(UPDATE_APPOINTMENTS))
                 .contentType(contentType)
                 .content(appointmentJson))
@@ -580,7 +593,8 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
     public void testFindFreeSlots() throws Exception {
         SlotQuery query = new SlotQuery(2, 0, 0, 0);
 
-        mockMvc.perform(RestDocumentationRequestBuilders.get("/api/appointment/slots?lang=en")
+        mockMvc.perform(RestDocumentationRequestBuilders.get("/api/appointment/slots")
+                .header("Accept-Language", "en-US")
                 .param("tandem", String.valueOf(query.getTandem()))
                 .param("picOrVid", String.valueOf(query.getPicOrVid()))
                 .param("picAndVid", String.valueOf(query.getPicAndVid()))
@@ -595,8 +609,7 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
                                 parameterWithName("tandem").description("number of tandem jumps"),
                                 parameterWithName("picOrVid").description("picOrVid count"),
                                 parameterWithName("picAndVid").description("picAndVid count"),
-                                parameterWithName("handcam").description("handcam count"),
-                                parameterWithName("lang").ignored()
+                                parameterWithName("handcam").description("handcam count")
                         ),
                         responseFields(
                                 fieldWithPath("success").description("true when the request was successful"),
@@ -610,10 +623,27 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testFindFreeSlots_MoreVideoThanTandem() throws Exception {
+    public void testFindFreeSlots_MoreVideoThanTandem_DE() throws Exception {
         SlotQuery query = new SlotQuery(1, 2, 0, 0);
 
-        mockMvc.perform(get("/api/appointment/slots?lang=en")
+        mockMvc.perform(get("/api/appointment/slots")
+                .header("Accept-Language", "de-DE")
+                .param("tandem", String.valueOf(query.getTandem()))
+                .param("picOrVid", String.valueOf(query.getPicOrVid()))
+                .param("picAndVid", String.valueOf(query.getPicAndVid()))
+                .param("handcam", String.valueOf(query.getHandcam())))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.message", is("Der Termin hat mehr gebuchte Video- als Tandem-Slots.")));
+    }
+
+    @Test
+    public void testFindFreeSlots_MoreVideoThanTandem_EN() throws Exception {
+        SlotQuery query = new SlotQuery(1, 2, 0, 0);
+
+        mockMvc.perform(get("/api/appointment/slots")
+                .header("Accept-Language", "en-US")
                 .param("tandem", String.valueOf(query.getTandem()))
                 .param("picOrVid", String.valueOf(query.getPicOrVid()))
                 .param("picAndVid", String.valueOf(query.getPicAndVid()))
@@ -628,7 +658,8 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
     public void testFindFreeSlots_NoFreeSlots() throws Exception {
         SlotQuery query = new SlotQuery(2, 0, 0, 2);
 
-        mockMvc.perform(get("/api/appointment/slots?lang=en")
+        mockMvc.perform(get("/api/appointment/slots")
+                .header("Accept-Language", "en-US")
                 .param("tandem", String.valueOf(query.getTandem()))
                 .param("picOrVid", String.valueOf(query.getPicOrVid()))
                 .param("picAndVid", String.valueOf(query.getPicAndVid()))
@@ -647,8 +678,9 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
         GenericResult<Appointment> result = appointmentService.saveAppointment(appointment);
         Appointment savedAppointment = result.getPayload();
 
-        mockMvc.perform(RestDocumentationRequestBuilders.get("/api/appointment/{appointmentId}/confirm/{token}?lang=en",
+        mockMvc.perform(RestDocumentationRequestBuilders.get("/api/appointment/{appointmentId}/confirm/{token}",
                 appointment.getAppointmentId(), savedAppointment.getVerificationToken().getToken())
+                .header("Accept-Language", "en-US")
                 .contentType(contentType))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isOk())
@@ -676,8 +708,9 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
         appointment.setVerificationToken(VerificationTokenUtil.generate());
         appointmentService.saveAppointment(appointment);
 
-        mockMvc.perform(get("/api/appointment/{appointmentId}/confirm/{token}?lang=en",
+        mockMvc.perform(get("/api/appointment/{appointmentId}/confirm/{token}",
                 appointment.getAppointmentId(), "foo")
+                .header("Accept-Language", "en-US")
                 .contentType(contentType))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isBadRequest())
@@ -692,8 +725,9 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
         appointment.getVerificationToken().setExpiryDate(LocalDateTime.now().minus(1, ChronoUnit.HOURS));
         appointmentService.saveAppointment(appointment);
 
-        mockMvc.perform(get("/api/appointment/{appointmentId}/confirm/{token}?lang=en",
+        mockMvc.perform(get("/api/appointment/{appointmentId}/confirm/{token}",
                 appointment.getAppointmentId(), appointment.getVerificationToken().getToken())
+                .header("Accept-Language", "en-US")
                 .contentType(contentType))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isBadRequest())
@@ -708,8 +742,9 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
         appointment.setState(AppointmentState.CONFIRMED);
         appointmentService.saveAppointment(appointment);
 
-        mockMvc.perform(get("/api/appointment/{appointmentId}/confirm/{token}?lang=en",
+        mockMvc.perform(get("/api/appointment/{appointmentId}/confirm/{token}",
                 appointment.getAppointmentId(), appointment.getVerificationToken().getToken())
+                .header("Accept-Language", "en-US")
                 .contentType(contentType))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isConflict())
@@ -724,8 +759,9 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
         appointment.getVerificationToken().setExpiryDate(LocalDateTime.now().minus(1, ChronoUnit.HOURS));
         GenericResult<Appointment> result = appointmentService.saveAppointment(appointment);
 
-        mockMvc.perform(get("/api/appointment/{appointmentId}/confirm/{token}?lang=en",
+        mockMvc.perform(get("/api/appointment/{appointmentId}/confirm/{token}",
                 9999999, appointment.getVerificationToken().getToken())
+                .header("Accept-Language", "en-US")
                 .contentType(contentType))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isNotFound())
@@ -851,8 +887,9 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
         appointmentStateOnly.setState(AppointmentState.ACTIVE);
         String appointmentStateOnlyJson = json(appointmentStateOnly);
 
-        mockMvc.perform(patch("/api/appointment/{appointmentId}?lang=en",
+        mockMvc.perform(patch("/api/appointment/{appointmentId}",
                 99999999)
+                .header("Accept-Language", "en-US")
                 .header("Authorization", MockJwtDecoder.addHeader(UPDATE_APPOINTMENTS))
                 .contentType(contentType)
                 .content(appointmentStateOnlyJson))
@@ -870,7 +907,7 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
 
 
         mockMvc.perform(RestDocumentationRequestBuilders.delete("/api/appointment/{appointmentId}", appointmentId)
-                .queryParam("lang", "en")
+                .header("Accept-Language", "en-US")
                 .header("Authorization", MockJwtDecoder.addHeader(UPDATE_APPOINTMENTS))
                 .contentType(contentType))
                 .andDo(MockMvcResultHandlers.print())

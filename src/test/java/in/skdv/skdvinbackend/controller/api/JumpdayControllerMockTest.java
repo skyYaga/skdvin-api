@@ -82,8 +82,9 @@ public class JumpdayControllerMockTest extends AbstractSkdvinTest {
         String jumpdayJson = json(ModelMockHelper.createJumpday());
 
 
-        mockMvc.perform(post("/api/jumpday?lang=en")
+        mockMvc.perform(post("/api/jumpday")
                 .header("Authorization", MockJwtDecoder.addHeader(CREATE_JUMPDAYS))
+                .header("Accept-Language", "en-US")
                 .contentType(contentType)
                 .content(jumpdayJson))
                 .andDo(MockMvcResultHandlers.print())
@@ -109,8 +110,9 @@ public class JumpdayControllerMockTest extends AbstractSkdvinTest {
         Mockito.when(jumpdayService.findJumpdays())
                 .thenReturn(new GenericResult<>(false, ErrorMessage.JUMPDAY_SERVICE_ERROR_MSG));
 
-        mockMvc.perform(get("/api/jumpday?lang=en")
-                .header("Authorization", MockJwtDecoder.addHeader(READ_JUMPDAYS)))
+        mockMvc.perform(get("/api/jumpday")
+                .header("Authorization", MockJwtDecoder.addHeader(READ_JUMPDAYS))
+                .header("Accept-Language", "en-US"))
                 .andExpect(status().isInternalServerError())
                 .andExpect(jsonPath("$.success", is(false)))
                 .andExpect(jsonPath("$.message", is("Internal Jumpday error")));
