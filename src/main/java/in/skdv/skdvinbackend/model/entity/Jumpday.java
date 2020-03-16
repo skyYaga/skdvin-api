@@ -3,13 +3,18 @@ package in.skdv.skdvinbackend.model.entity;
 import in.skdv.skdvinbackend.model.common.AbstractJumpday;
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.DBRef;
 
+import java.util.List;
 import java.util.Optional;
 
 public class Jumpday extends AbstractJumpday {
 
     @Id
     private ObjectId objectId;
+
+    @DBRef
+    private List<Tandemmaster> tandemmaster;
 
     public boolean addAppointment(Appointment appointment) {
         Optional<Slot> slot = getSlotForAppointment(appointment);
@@ -32,11 +37,11 @@ public class Jumpday extends AbstractJumpday {
         this.objectId = objectId;
     }
 
-    @Override
-    public String toString() {
-        return super.toString() +
-                "Jumpday{" +
-                "objectId=" + objectId +
-                '}';
+    public List<Tandemmaster> getTandemmaster() {
+        return tandemmaster;
+    }
+
+    public void setTandemmaster(List<Tandemmaster> tandemmaster) {
+        this.tandemmaster = tandemmaster;
     }
 }

@@ -84,8 +84,8 @@ public class ModelMockHelper {
         Jumpday jumpday = new Jumpday();
         jumpday.setDate(date);
         jumpday.setJumping(true);
-        jumpday.setTandemmaster(Collections.singletonList("Tandem Master"));
         jumpday.setVideoflyer(Collections.singletonList("Video Flyer"));
+        jumpday.setTandemmaster(Collections.emptyList());
 
         Slot slot = new Slot();
         slot.setTime(LocalTime.of(10, 0));
@@ -107,6 +107,10 @@ public class ModelMockHelper {
 
     public static Jumpday createJumpday() {
         return createJumpday(LocalDate.now());
+    }
+
+    public static Tandemmaster createTandemmaster() {
+        return new Tandemmaster("Max", "Mustermann");
     }
 
     public static List<Jumper> createJumpers(int tandemCount) {

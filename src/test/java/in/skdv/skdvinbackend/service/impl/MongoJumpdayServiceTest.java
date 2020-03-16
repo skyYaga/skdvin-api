@@ -56,7 +56,6 @@ public class MongoJumpdayServiceTest extends AbstractSkdvinTest {
         assertEquals(jumpday.getSlots().get(0).getTime(), savedJumpday.getPayload().getSlots().get(0).getTime());
         assertEquals(4, savedJumpday.getPayload().getSlots().get(0).getTandemTotal());
         assertEquals(2, savedJumpday.getPayload().getSlots().get(0).getPicOrVidTotal());
-        assertEquals(1, savedJumpday.getPayload().getTandemmaster().size());
         assertEquals(1, savedJumpday.getPayload().getVideoflyer().size());
     }
 

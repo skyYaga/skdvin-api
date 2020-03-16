@@ -2,6 +2,7 @@ package in.skdv.skdvinbackend.config;
 
 import in.skdv.skdvinbackend.repository.AppointmentRepository;
 import in.skdv.skdvinbackend.repository.JumpdayRepository;
+import in.skdv.skdvinbackend.repository.TandemmasterRepository;
 import in.skdv.skdvinbackend.service.IAppointmentService;
 import in.skdv.skdvinbackend.service.IJumpdayService;
 import in.skdv.skdvinbackend.service.ISequenceService;
@@ -35,6 +36,9 @@ public class ApplicationConfig implements WebMvcConfigurer {
 
     @Autowired
     private AppointmentRepository appointmentRepository;
+
+    @Autowired
+    private TandemmasterRepository tandemmasterRepository;
 
     @Autowired
     private MongoTemplate mongoTemplate;

@@ -19,7 +19,9 @@ public enum ErrorMessage {
     JUMPDAY_NO_FREE_SLOTS("jumpday.no.free.slots"),
     JUMPDAY_INVALID("jumpday.invalid"),
     JUMPDAY_SLOT_HAS_APPOINTMENTS("jumpday.slot.has.apointments"),
-    JUMPDAY_HAS_APPOINTMENTS("jumpday.has.apointments");
+    JUMPDAY_HAS_APPOINTMENTS("jumpday.has.apointments"),
+
+    TANDEMMASTER_NOT_FOUND("tandemmaster.not.found");
 
     private final String message;
 

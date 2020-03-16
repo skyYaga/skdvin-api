@@ -1,0 +1,26 @@
+= Appointment
+API Endpoint to manage Tandemmasters
+
+
+== Create/Add Tandemmaster
+A `POST` request is used to add a new tandemmaster.
+
+operation::tandemmaster/create-tandemmaster[snippets='http-request,request-fields,http-response,response-fields']
+
+
+== Get Tandemmasters
+A `GET` request is used to get tandemmasters.
+
+operation::tandemmaster/get-tandemmaster[snippets='http-request,http-response,response-fields']
+
+
+== Update Tandemmaster
+A `PUT` request is used to update a tandemmaster.
+
+operation::tandemmaster/update-tandemmaster[snippets='http-request,path-parameters,request-fields,http-response,response-fields']
+
+
+== Delete Tandemmaster
+A `DELETE` request is used to delete a tandemmaster.
+
+operation::tandemmaster/delete-tandemmaster[snippets='http-request,path-parameters,http-response,response-fields']

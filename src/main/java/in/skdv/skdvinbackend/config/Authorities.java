@@ -15,4 +15,9 @@ public final class Authorities {
 
     public static final String READ_APPOINTMENTS = "SCOPE_read:appointments";
     public static final String UPDATE_APPOINTMENTS = "SCOPE_update:appointments";
+
+    public static final String CREATE_TANDEMMASTER = "SCOPE_create:tandemmaster";
+    public static final String UPDATE_TANDEMMASTER = "SCOPE_update:tandemmaster";
+    public static final String READ_TANDEMMASTER = "SCOPE_read:tandemmaster";
+    public static final String DELETE_TANDEMMASTER = "SCOPE_delete:tandemmaster";
 }
