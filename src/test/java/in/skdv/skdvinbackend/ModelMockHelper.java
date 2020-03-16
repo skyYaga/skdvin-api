@@ -110,7 +110,14 @@ public class ModelMockHelper {
     }
 
     public static Tandemmaster createTandemmaster() {
-        return new Tandemmaster("Max", "Mustermann");
+        return createTandemmaster("Max", "Mustermann");
+    }
+
+    public static Tandemmaster createTandemmaster(String firstName, String lastName) {
+        Tandemmaster tandemmaster = new Tandemmaster();
+        tandemmaster.setFirstName(firstName);
+        tandemmaster.setLastName(lastName);
+        return tandemmaster;
     }
 
     public static List<Jumper> createJumpers(int tandemCount) {

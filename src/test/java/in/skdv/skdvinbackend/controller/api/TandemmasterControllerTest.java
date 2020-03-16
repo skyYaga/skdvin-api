@@ -139,7 +139,7 @@ public class TandemmasterControllerTest extends AbstractSkdvinTest {
     @Test
     public void testGetTandemmaster() throws Exception {
         tandemmasterRepository.save(ModelMockHelper.createTandemmaster());
-        tandemmasterRepository.save(new Tandemmaster("john", "doe"));
+        tandemmasterRepository.save(ModelMockHelper.createTandemmaster("john", "doe"));
 
         mockMvc.perform(get("/api/tandemmaster")
                 .header("Authorization", MockJwtDecoder.addHeader(READ_TANDEMMASTER))
@@ -165,7 +165,7 @@ public class TandemmasterControllerTest extends AbstractSkdvinTest {
     @Test
     public void testGetTandemmaster_Unauthorized() throws Exception {
         tandemmasterRepository.save(ModelMockHelper.createTandemmaster());
-        tandemmasterRepository.save(new Tandemmaster("john", "doe"));
+        tandemmasterRepository.save(ModelMockHelper.createTandemmaster("john", "doe"));
 
         mockMvc.perform(get("/api/tandemmaster")
                 .contentType(contentType))

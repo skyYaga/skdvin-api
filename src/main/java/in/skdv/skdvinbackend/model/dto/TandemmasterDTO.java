@@ -6,10 +6,6 @@ public class TandemmasterDTO extends AbstractTandemmaster {
 
     private String id;
 
-    public TandemmasterDTO() {
-        super();
-    }
-
     public String getId() {
         return id;
     }

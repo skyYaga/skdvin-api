@@ -27,7 +27,7 @@ public class TandemmasterConverterTest {
     @Test
     public void convertToDtoList() {
         Tandemmaster tandemmaster1 = ModelMockHelper.createTandemmaster();
-        Tandemmaster tandemmaster2 = new Tandemmaster("John", "Doe");
+        Tandemmaster tandemmaster2 = ModelMockHelper.createTandemmaster("John", "Doe");
 
         List<Tandemmaster> tandemmasters = Arrays.asList(tandemmaster1, tandemmaster2);
 

@@ -10,14 +10,6 @@ public class Tandemmaster extends AbstractTandemmaster {
     @Id
     private String id;
 
-    public Tandemmaster() {
-        super();
-    }
-
-    public Tandemmaster(String firstName, String lastName) {
-        super(firstName, lastName);
-    }
-
     public String getId() {
         return id;
     }

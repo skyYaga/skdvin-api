@@ -23,9 +23,9 @@ public class TandemmasterConverter {
         if (tandemmasters == null) {
             return Collections.emptyList();
         }
-        List<TandemmasterDTO> TandemmasterDTOList = new ArrayList<>();
-        tandemmasters.forEach(a -> TandemmasterDTOList.add(this.convertToDto(a)));
-        return TandemmasterDTOList;
+        List<TandemmasterDTO> tandemmasterDTOList = new ArrayList<>();
+        tandemmasters.forEach(a -> tandemmasterDTOList.add(this.convertToDto(a)));
+        return tandemmasterDTOList;
     }
 
     public Tandemmaster convertToEntity(TandemmasterDTO tandemmasterDTO) {

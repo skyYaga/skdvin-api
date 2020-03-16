@@ -12,13 +12,6 @@ public class AbstractTandemmaster {
     private String tel;
     private boolean handcam;
 
-    public AbstractTandemmaster(String firstName, String lastName) {
-        this.firstName = firstName;
-        this.lastName = lastName;
-    }
-
-    public AbstractTandemmaster() {}
-
     public String getFirstName() {
         return firstName;
     }
