@@ -5,7 +5,7 @@ import java.util.Map;
 
 public class TandemmasterDetailsDTO extends TandemmasterDTO {
 
-    public Map<LocalDate, Boolean> assignments;
+    private Map<LocalDate, Boolean> assignments;
 
     public Map<LocalDate, Boolean> getAssignments() {
         return assignments;

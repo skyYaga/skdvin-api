@@ -2,14 +2,14 @@ package in.skdv.skdvinbackend.model.converter;
 
 import in.skdv.skdvinbackend.ModelMockHelper;
 import in.skdv.skdvinbackend.model.dto.TandemmasterDTO;
+import in.skdv.skdvinbackend.model.dto.TandemmasterDetailsDTO;
 import in.skdv.skdvinbackend.model.entity.Tandemmaster;
 import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
 
 public class TandemmasterConverterTest {
 
@@ -61,5 +61,18 @@ public class TandemmasterConverterTest {
     @Test
     public void convertToEntity_Null() {
         assertNull(converter.convertToEntity(null));
+    }
+
+    @Test
+    public void convertToDetailsDto() {
+        Tandemmaster tandemmaster = ModelMockHelper.createTandemmaster();
+        TandemmasterDetailsDTO tandemmasterDTO = converter.convertToDetailsDto(tandemmaster);
+        assertNotNull(tandemmasterDTO);
+        assertEquals(tandemmaster.getFirstName(), tandemmasterDTO.getFirstName());
+    }
+
+    @Test
+    public void convertToDetailsDto_Null() {
+        assertNull(converter.convertToDto((Tandemmaster) null));
     }
 }

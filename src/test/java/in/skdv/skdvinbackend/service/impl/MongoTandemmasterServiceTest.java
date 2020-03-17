@@ -88,8 +88,8 @@ public class MongoTandemmasterServiceTest extends AbstractSkdvinTest {
         Assert.assertNotNull(result);
         Assert.assertTrue(result.isSuccess());
         Assert.assertTrue(assignedResult.isSuccess());
-        Assert.assertEquals(assignedResult.getPayload().getTandemmaster().size(), 1);
-        Assert.assertEquals(assignedResult.getPayload().getTandemmaster().get(0).getId(), tandemmasterId);
+        Assert.assertEquals(1,assignedResult.getPayload().getTandemmaster().size());
+        Assert.assertEquals(tandemmasterId, assignedResult.getPayload().getTandemmaster().get(0).getId());
     }
 
     @Test
@@ -102,7 +102,7 @@ public class MongoTandemmasterServiceTest extends AbstractSkdvinTest {
 
         Assert.assertNotNull(result);
         Assert.assertFalse(result.isSuccess());
-        Assert.assertEquals(result.getMessage(), ErrorMessage.TANDEMMASTER_NOT_FOUND.toString());
+        Assert.assertEquals(ErrorMessage.TANDEMMASTER_NOT_FOUND.toString(), result.getMessage());
     }
 
     @Test
@@ -114,7 +114,7 @@ public class MongoTandemmasterServiceTest extends AbstractSkdvinTest {
 
         Assert.assertNotNull(result);
         Assert.assertFalse(result.isSuccess());
-        Assert.assertEquals(result.getMessage(), ErrorMessage.JUMPDAY_NOT_FOUND_MSG.toString());
+        Assert.assertEquals(ErrorMessage.JUMPDAY_NOT_FOUND_MSG.toString(), result.getMessage());
     }
 
     @Test
@@ -128,7 +128,7 @@ public class MongoTandemmasterServiceTest extends AbstractSkdvinTest {
         Assert.assertNotNull(result);
         Assert.assertTrue(result.isSuccess());
         Assert.assertTrue(assignedResult.isSuccess());
-        Assert.assertEquals(assignedResult.getPayload().getTandemmaster().size(), 0);
+        Assert.assertEquals(0, assignedResult.getPayload().getTandemmaster().size());
     }
 
     @Test
@@ -143,7 +143,7 @@ public class MongoTandemmasterServiceTest extends AbstractSkdvinTest {
         Assert.assertNotNull(result);
         Assert.assertTrue(result.isSuccess());
         Assert.assertTrue(assignedResult.isSuccess());
-        Assert.assertEquals(assignedResult.getPayload().getTandemmaster().size(), 0);
+        Assert.assertEquals(0, assignedResult.getPayload().getTandemmaster().size());
     }
 
     private String assignTandemmaster(Jumpday jumpday) {
@@ -158,8 +158,8 @@ public class MongoTandemmasterServiceTest extends AbstractSkdvinTest {
         Assert.assertNotNull(result);
         Assert.assertTrue(result.isSuccess());
         Assert.assertTrue(assignedResult.isSuccess());
-        Assert.assertEquals(assignedResult.getPayload().getTandemmaster().size(), 1);
-        Assert.assertEquals(assignedResult.getPayload().getTandemmaster().get(0).getId(), tandemmaster.getId());
+        Assert.assertEquals(1, assignedResult.getPayload().getTandemmaster().size());
+        Assert.assertEquals(tandemmaster.getId(), assignedResult.getPayload().getTandemmaster().get(0).getId());
 
         return tandemmaster.getId();
     }
@@ -174,7 +174,7 @@ public class MongoTandemmasterServiceTest extends AbstractSkdvinTest {
 
         Assert.assertNotNull(result);
         Assert.assertFalse(result.isSuccess());
-        Assert.assertEquals(result.getMessage(), ErrorMessage.TANDEMMASTER_NOT_FOUND.toString());
+        Assert.assertEquals(ErrorMessage.TANDEMMASTER_NOT_FOUND.toString(), result.getMessage());
     }
 
     @Test
@@ -186,7 +186,7 @@ public class MongoTandemmasterServiceTest extends AbstractSkdvinTest {
 
         Assert.assertNotNull(result);
         Assert.assertFalse(result.isSuccess());
-        Assert.assertEquals(result.getMessage(), ErrorMessage.JUMPDAY_NOT_FOUND_MSG.toString());
+        Assert.assertEquals(ErrorMessage.JUMPDAY_NOT_FOUND_MSG.toString(), result.getMessage());
     }
 
     @Test
@@ -247,6 +247,6 @@ public class MongoTandemmasterServiceTest extends AbstractSkdvinTest {
         GenericResult<Void> result = tandemmasterService.assignTandemmaster(tandemmasterDetails);
 
         Assert.assertFalse(result.isSuccess());
-        Assert.assertEquals(result.getMessage(), ErrorMessage.JUMPDAY_NOT_FOUND_MSG.toString());
+        Assert.assertEquals(ErrorMessage.JUMPDAY_NOT_FOUND_MSG.toString(), result.getMessage());
     }
 }

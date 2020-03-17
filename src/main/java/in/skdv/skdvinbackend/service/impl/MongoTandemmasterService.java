@@ -9,8 +9,6 @@ import in.skdv.skdvinbackend.repository.JumpdayRepository;
 import in.skdv.skdvinbackend.repository.TandemmasterRepository;
 import in.skdv.skdvinbackend.service.ITandemmasterService;
 import in.skdv.skdvinbackend.util.GenericResult;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.LocalDate;
@@ -19,8 +17,6 @@ import java.util.Map;
 import java.util.Optional;
 
 public class MongoTandemmasterService implements ITandemmasterService {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(MongoTandemmasterService.class);
 
     private JumpdayRepository jumpdayRepository;
     private TandemmasterRepository tandemmasterRepository;
@@ -43,11 +39,7 @@ public class MongoTandemmasterService implements ITandemmasterService {
 
         jumpdayRepository.findAll().forEach(j -> {
             Optional<Tandemmaster> localTandemmaster = j.getTandemmaster().stream().filter(t -> t.getId().equals(id)).findFirst();
-            if (localTandemmaster.isPresent()) {
-                assignments.put(j.getDate(), true);
-            } else {
-                assignments.put(j.getDate(), false);
-            }
+            assignments.put(j.getDate(), localTandemmaster.isPresent());
         });
 
         TandemmasterDetailsDTO tandemmasterDetailsDTO = converter.convertToDetailsDto(tandemmaster.get());
