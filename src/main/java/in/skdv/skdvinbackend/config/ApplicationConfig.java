@@ -6,8 +6,10 @@ import in.skdv.skdvinbackend.repository.TandemmasterRepository;
 import in.skdv.skdvinbackend.service.IAppointmentService;
 import in.skdv.skdvinbackend.service.IJumpdayService;
 import in.skdv.skdvinbackend.service.ISequenceService;
+import in.skdv.skdvinbackend.service.ITandemmasterService;
 import in.skdv.skdvinbackend.service.impl.MongoAppointmentService;
 import in.skdv.skdvinbackend.service.impl.MongoJumpdayService;
+import in.skdv.skdvinbackend.service.impl.MongoTandemmasterService;
 import in.skdv.skdvinbackend.service.impl.SequenceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -57,6 +59,11 @@ public class ApplicationConfig implements WebMvcConfigurer {
     @Bean
     public IJumpdayService getJumpdayService() {
         return new MongoJumpdayService(jumpdayRepository);
+    }
+
+    @Bean
+    public ITandemmasterService getTandemmasterService() {
+        return new MongoTandemmasterService(jumpdayRepository, tandemmasterRepository);
     }
 
     @Bean

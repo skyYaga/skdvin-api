@@ -17,4 +17,5 @@ public interface IJumpdayService {
     GenericResult<Jumpday> updateJumpday(LocalDate date, Jumpday changedJumpday);
 
     GenericResult<Void> deleteJumpday(LocalDate date);
+
 }

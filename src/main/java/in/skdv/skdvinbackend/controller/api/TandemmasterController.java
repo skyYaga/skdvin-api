@@ -3,8 +3,10 @@ package in.skdv.skdvinbackend.controller.api;
 import in.skdv.skdvinbackend.exception.ErrorMessage;
 import in.skdv.skdvinbackend.model.converter.TandemmasterConverter;
 import in.skdv.skdvinbackend.model.dto.TandemmasterDTO;
+import in.skdv.skdvinbackend.model.dto.TandemmasterDetailsDTO;
 import in.skdv.skdvinbackend.model.entity.Tandemmaster;
 import in.skdv.skdvinbackend.repository.TandemmasterRepository;
+import in.skdv.skdvinbackend.service.ITandemmasterService;
 import in.skdv.skdvinbackend.util.GenericResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
@@ -24,11 +26,13 @@ public class TandemmasterController {
 
     private final TandemmasterRepository tandemmasterRepository;
     private TandemmasterConverter tandemmasterConverter = new TandemmasterConverter();
+    private ITandemmasterService tandemmasterService;
     private MessageSource messageSource;
 
     @Autowired
-    public TandemmasterController(TandemmasterRepository tandemmasterRepository, MessageSource messageSource) {
+    public TandemmasterController(TandemmasterRepository tandemmasterRepository, ITandemmasterService tandemmasterService, MessageSource messageSource) {
         this.tandemmasterRepository = tandemmasterRepository;
+        this.tandemmasterService = tandemmasterService;
         this.messageSource = messageSource;
     }
 
@@ -44,10 +48,23 @@ public class TandemmasterController {
 
     @GetMapping
     @PreAuthorize("hasAuthority('SCOPE_read:tandemmaster')")
-    public ResponseEntity<GenericResult<List<TandemmasterDTO>>> getTandemmaster() {
+    public ResponseEntity<GenericResult<List<TandemmasterDTO>>> getAllTandemmasters() {
         List<Tandemmaster> tandemmasters = tandemmasterRepository.findAll();
 
         return ResponseEntity.ok(new GenericResult<>(true, tandemmasterConverter.convertToDto(tandemmasters)));
+    }
+
+    @GetMapping(value = "/{id}")
+    @PreAuthorize("hasAuthority('SCOPE_read:tandemmaster')")
+    public ResponseEntity<GenericResult<TandemmasterDetailsDTO>> getTandemmaster(@PathVariable String id) {
+        TandemmasterDetailsDTO tandemmaster = tandemmasterService.getById(id);
+
+        if (tandemmaster == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new GenericResult<>(false, messageSource.getMessage(ErrorMessage.TANDEMMASTER_NOT_FOUND.toString(), null, LocaleContextHolder.getLocale())));
+        }
+
+        return ResponseEntity.ok(new GenericResult<>(true, tandemmaster));
     }
 
     @PutMapping(value = "/{id}")
@@ -78,5 +95,23 @@ public class TandemmasterController {
 
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(new GenericResult<>(false, messageSource.getMessage(ErrorMessage.TANDEMMASTER_NOT_FOUND.toString(), null, LocaleContextHolder.getLocale())));
+    }
+
+
+    @PatchMapping(value = "/{id}/assign")
+    @PreAuthorize("hasAuthority('SCOPE_update:tandemmaster')")
+    public ResponseEntity<GenericResult<Void>> assignTandemmasterToJumpdays(@PathVariable String id, @RequestBody @Valid TandemmasterDetailsDTO input) {
+        if (!id.equals(input.getId())) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new GenericResult<>(false));
+        }
+
+        GenericResult<Void> result = tandemmasterService.assignTandemmaster(input);
+
+        if (result.isSuccess()) {
+            return ResponseEntity.ok(new GenericResult<>(true));
+        }
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(new GenericResult<>(false, messageSource.getMessage(result.getMessage(), null, LocaleContextHolder.getLocale())));
     }
 }

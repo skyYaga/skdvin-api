@@ -7,6 +7,7 @@ import in.skdv.skdvinbackend.model.entity.Appointment;
 import in.skdv.skdvinbackend.model.entity.Jumpday;
 import in.skdv.skdvinbackend.model.entity.Slot;
 import in.skdv.skdvinbackend.repository.JumpdayRepository;
+import in.skdv.skdvinbackend.repository.TandemmasterRepository;
 import in.skdv.skdvinbackend.service.IAppointmentService;
 import in.skdv.skdvinbackend.service.IJumpdayService;
 import in.skdv.skdvinbackend.util.GenericResult;
@@ -34,6 +35,9 @@ public class MongoJumpdayServiceTest extends AbstractSkdvinTest {
 
     @Autowired
     IJumpdayService jumpdayService;
+
+    @Autowired
+    TandemmasterRepository tandemmasterRepository;
 
     @Autowired
     IAppointmentService appointmentService;
@@ -265,4 +269,5 @@ public class MongoJumpdayServiceTest extends AbstractSkdvinTest {
         Assert.assertFalse(result.isSuccess());
         Assert.assertEquals(ErrorMessage.JUMPDAY_NOT_FOUND_MSG.toString(), result.getMessage());
     }
+
 }

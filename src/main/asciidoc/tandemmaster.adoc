@@ -8,10 +8,16 @@ A `POST` request is used to add a new tandemmaster.
 operation::tandemmaster/create-tandemmaster[snippets='http-request,request-fields,http-response,response-fields']
 
 
-== Get Tandemmasters
-A `GET` request is used to get tandemmasters.
+== Get all Tandemmasters
+A `GET` request is used to get all tandemmasters.
 
-operation::tandemmaster/get-tandemmaster[snippets='http-request,http-response,response-fields']
+operation::tandemmaster/get-tandemmasters[snippets='http-request,http-response,response-fields']
+
+
+== Get Tandemmaster
+A `GET` request is used to get one tandemmasters.
+
+operation::tandemmaster/get-tandemmasters[snippets='http-request,path-parameters,http-response,response-fields']
 
 
 == Update Tandemmaster
@@ -24,3 +30,9 @@ operation::tandemmaster/update-tandemmaster[snippets='http-request,path-paramete
 A `DELETE` request is used to delete a tandemmaster.
 
 operation::tandemmaster/delete-tandemmaster[snippets='http-request,path-parameters,http-response,response-fields']
+
+
+== Assign Tandemmaster to jumpdays
+A `PATCH` request is used to assign a tandemmaster to jumpdays.
+
+operation::tandemmaster/assign-tandemmaster[snippets='http-request,path-parameters,request-fields,http-response,response-fields']

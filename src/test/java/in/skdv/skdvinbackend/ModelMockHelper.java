@@ -85,7 +85,7 @@ public class ModelMockHelper {
         jumpday.setDate(date);
         jumpday.setJumping(true);
         jumpday.setVideoflyer(Collections.singletonList("Video Flyer"));
-        jumpday.setTandemmaster(Collections.emptyList());
+        jumpday.setTandemmaster(new ArrayList<>());
 
         Slot slot = new Slot();
         slot.setTime(LocalTime.of(10, 0));

@@ -1,6 +1,7 @@
 package in.skdv.skdvinbackend.model.converter;
 
 import in.skdv.skdvinbackend.model.dto.TandemmasterDTO;
+import in.skdv.skdvinbackend.model.dto.TandemmasterDetailsDTO;
 import in.skdv.skdvinbackend.model.entity.Tandemmaster;
 import org.modelmapper.ModelMapper;
 
@@ -33,5 +34,12 @@ public class TandemmasterConverter {
             return null;
         }
         return modelMapper.map(tandemmasterDTO, Tandemmaster.class);
+    }
+
+    public TandemmasterDetailsDTO convertToDetailsDto(Tandemmaster tandemmaster) {
+        if (tandemmaster == null) {
+            return null;
+        }
+        return modelMapper.map(tandemmaster, TandemmasterDetailsDTO.class);
     }
 }
