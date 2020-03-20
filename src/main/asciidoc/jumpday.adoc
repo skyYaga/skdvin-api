@@ -21,7 +21,7 @@ operation::jumpday/get-jumpdays[snippets='http-request,http-response,response-fi
 
 
 == Update Jumpday
-A `UPDATE` request is used to update a jumpday
+A `PUT` request is used to update a jumpday
 
 operation::jumpday/update-jumpday[snippets='http-request,path-parameters,request-fields,http-response,response-fields']
 

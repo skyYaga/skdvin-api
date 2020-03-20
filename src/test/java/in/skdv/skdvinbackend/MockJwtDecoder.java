@@ -14,8 +14,14 @@ public class MockJwtDecoder {
     private static final String SIMPLIFIED_CREATE_JUMPDAYS = simplifyPermission(CREATE_JUMPDAYS);
     private static final String SIMPLIFIED_READ_JUMPDAYS = simplifyPermission(READ_JUMPDAYS);
     private static final String SIMPLIFIED_UPDATE_JUMPDAYS = simplifyPermission(UPDATE_JUMPDAYS);
+
     private static final String SIMPLIFIED_READ_APPOINTMENTS = simplifyPermission(READ_APPOINTMENTS);
     private static final String SIMPLIFIED_UPDATE_APPOINTMENTS = simplifyPermission(UPDATE_APPOINTMENTS);
+
+    private static final String SIMPLIFIED_CREATE_TANDEMMASTER = simplifyPermission(CREATE_TANDEMMASTER);
+    private static final String SIMPLIFIED_UPDATE_TANDEMMASTER = simplifyPermission(UPDATE_TANDEMMASTER);
+    private static final String SIMPLIFIED_READ_TANDEMMASTER = simplifyPermission(READ_TANDEMMASTER);
+    private static final String SIMPLIFIED_DELETE_TANDEMMASTER = simplifyPermission(DELETE_TANDEMMASTER);
 
     public static Jwt decode(String permission) throws JwtException {
         return new Jwt(permission,
@@ -41,6 +47,18 @@ public class MockJwtDecoder {
         }
         if (SIMPLIFIED_UPDATE_APPOINTMENTS.equals(permission)) {
             convertedPermission = UPDATE_APPOINTMENTS;
+        }
+        if (SIMPLIFIED_CREATE_TANDEMMASTER.equals(permission)) {
+            convertedPermission = CREATE_TANDEMMASTER;
+        }
+        if (SIMPLIFIED_UPDATE_TANDEMMASTER.equals(permission)) {
+            convertedPermission = UPDATE_TANDEMMASTER;
+        }
+        if (SIMPLIFIED_READ_TANDEMMASTER.equals(permission)) {
+            convertedPermission = READ_TANDEMMASTER;
+        }
+        if (SIMPLIFIED_DELETE_TANDEMMASTER.equals(permission)) {
+            convertedPermission = DELETE_TANDEMMASTER;
         }
 
         return convertedPermission.replace("SCOPE_", "");

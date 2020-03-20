@@ -7,6 +7,7 @@ import in.skdv.skdvinbackend.model.entity.Appointment;
 import in.skdv.skdvinbackend.model.entity.Jumpday;
 import in.skdv.skdvinbackend.model.entity.Slot;
 import in.skdv.skdvinbackend.repository.JumpdayRepository;
+import in.skdv.skdvinbackend.repository.TandemmasterRepository;
 import in.skdv.skdvinbackend.service.IAppointmentService;
 import in.skdv.skdvinbackend.service.IJumpdayService;
 import in.skdv.skdvinbackend.util.GenericResult;
@@ -36,6 +37,9 @@ public class MongoJumpdayServiceTest extends AbstractSkdvinTest {
     IJumpdayService jumpdayService;
 
     @Autowired
+    TandemmasterRepository tandemmasterRepository;
+
+    @Autowired
     IAppointmentService appointmentService;
 
     @Before
@@ -56,7 +60,6 @@ public class MongoJumpdayServiceTest extends AbstractSkdvinTest {
         assertEquals(jumpday.getSlots().get(0).getTime(), savedJumpday.getPayload().getSlots().get(0).getTime());
         assertEquals(4, savedJumpday.getPayload().getSlots().get(0).getTandemTotal());
         assertEquals(2, savedJumpday.getPayload().getSlots().get(0).getPicOrVidTotal());
-        assertEquals(1, savedJumpday.getPayload().getTandemmaster().size());
         assertEquals(1, savedJumpday.getPayload().getVideoflyer().size());
     }
 
@@ -266,4 +269,5 @@ public class MongoJumpdayServiceTest extends AbstractSkdvinTest {
         Assert.assertFalse(result.isSuccess());
         Assert.assertEquals(ErrorMessage.JUMPDAY_NOT_FOUND_MSG.toString(), result.getMessage());
     }
+
 }

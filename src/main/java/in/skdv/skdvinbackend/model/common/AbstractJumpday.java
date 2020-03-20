@@ -14,7 +14,7 @@ public abstract class AbstractJumpday {
     private boolean freeTimes;
 
     private List<Slot> slots;
-    private List<String> tandemmaster;
+
     private List<String> videoflyer;
 
     private String clientId;
@@ -51,14 +51,6 @@ public abstract class AbstractJumpday {
         this.slots = slots;
     }
 
-    public List<String> getTandemmaster() {
-        return tandemmaster;
-    }
-
-    public void setTandemmaster(List<String> tandemmaster) {
-        this.tandemmaster = tandemmaster;
-    }
-
     public List<String> getVideoflyer() {
         return videoflyer;
     }
@@ -74,7 +66,6 @@ public abstract class AbstractJumpday {
                 ", jumping=" + jumping +
                 ", freeTimes=" + freeTimes +
                 ", slots=" + slots +
-                ", tandemmaster=" + tandemmaster +
                 ", videoflyer=" + videoflyer +
                 ", clientId='" + clientId + '\'' +
                 '}';

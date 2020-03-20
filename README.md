@@ -7,4 +7,4 @@
 
 Java based REST-API for skdvin.
 
-For more information you can browse the API-Documentation here: [https://skdvin-api.herokuapp.com/docs/index.html](https://skdvin-api.herokuapp.com/docs/index.html)
+For more information you can browse the API-Documentation here: [https://skdvin-api-acc.herokuapp.com/docs/index.html](https://skdvin-api-acc.herokuapp.com/docs/index.html)
