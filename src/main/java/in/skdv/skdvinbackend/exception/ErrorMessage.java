@@ -21,7 +21,9 @@ public enum ErrorMessage {
     JUMPDAY_SLOT_HAS_APPOINTMENTS("jumpday.slot.has.apointments"),
     JUMPDAY_HAS_APPOINTMENTS("jumpday.has.apointments"),
 
-    TANDEMMASTER_NOT_FOUND("tandemmaster.not.found");
+    TANDEMMASTER_NOT_FOUND("tandemmaster.not.found"),
+
+    VIDEOFLYER_NOT_FOUND("videoflyer.not.found");
 
     private final String message;
 

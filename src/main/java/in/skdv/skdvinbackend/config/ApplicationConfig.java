@@ -3,14 +3,9 @@ package in.skdv.skdvinbackend.config;
 import in.skdv.skdvinbackend.repository.AppointmentRepository;
 import in.skdv.skdvinbackend.repository.JumpdayRepository;
 import in.skdv.skdvinbackend.repository.TandemmasterRepository;
-import in.skdv.skdvinbackend.service.IAppointmentService;
-import in.skdv.skdvinbackend.service.IJumpdayService;
-import in.skdv.skdvinbackend.service.ISequenceService;
-import in.skdv.skdvinbackend.service.ITandemmasterService;
-import in.skdv.skdvinbackend.service.impl.MongoAppointmentService;
-import in.skdv.skdvinbackend.service.impl.MongoJumpdayService;
-import in.skdv.skdvinbackend.service.impl.MongoTandemmasterService;
-import in.skdv.skdvinbackend.service.impl.SequenceService;
+import in.skdv.skdvinbackend.repository.VideoflyerRepository;
+import in.skdv.skdvinbackend.service.*;
+import in.skdv.skdvinbackend.service.impl.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.MessageSource;
@@ -43,6 +38,9 @@ public class ApplicationConfig implements WebMvcConfigurer {
     private TandemmasterRepository tandemmasterRepository;
 
     @Autowired
+    private VideoflyerRepository videoflyerRepository;
+
+    @Autowired
     private MongoTemplate mongoTemplate;
 
     @Bean
@@ -54,6 +52,11 @@ public class ApplicationConfig implements WebMvcConfigurer {
     @Autowired
     public IAppointmentService getAppointmentService(ISequenceService sequenceService) {
         return new MongoAppointmentService(jumpdayRepository, appointmentRepository, sequenceService, mongoTemplate);
+    }
+
+    @Bean
+    public IVideoflyerService getVideoflyerService() {
+        return new MongoVideoflyerService(jumpdayRepository, videoflyerRepository);
     }
 
     @Bean

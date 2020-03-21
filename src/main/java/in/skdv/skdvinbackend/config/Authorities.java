@@ -20,4 +20,9 @@ public final class Authorities {
     public static final String UPDATE_TANDEMMASTER = "SCOPE_update:tandemmaster";
     public static final String READ_TANDEMMASTER = "SCOPE_read:tandemmaster";
     public static final String DELETE_TANDEMMASTER = "SCOPE_delete:tandemmaster";
+
+    public static final String CREATE_VIDEOFLYER = "SCOPE_create:videoflyer";
+    public static final String UPDATE_VIDEOFLYER = "SCOPE_update:videoflyer";
+    public static final String READ_VIDEOFLYER = "SCOPE_read:videoflyer";
+    public static final String DELETE_VIDEOFLYER = "SCOPE_delete:videoflyer";
 }

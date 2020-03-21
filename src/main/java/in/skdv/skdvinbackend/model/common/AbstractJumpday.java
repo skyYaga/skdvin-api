@@ -15,8 +15,6 @@ public abstract class AbstractJumpday {
 
     private List<Slot> slots;
 
-    private List<String> videoflyer;
-
     private String clientId;
 
     public LocalDate getDate() {
@@ -51,14 +49,6 @@ public abstract class AbstractJumpday {
         this.slots = slots;
     }
 
-    public List<String> getVideoflyer() {
-        return videoflyer;
-    }
-
-    public void setVideoflyer(List<String> videoflyer) {
-        this.videoflyer = videoflyer;
-    }
-
     @Override
     public String toString() {
         return "JumpdayDTO{" +
@@ -66,7 +56,6 @@ public abstract class AbstractJumpday {
                 ", jumping=" + jumping +
                 ", freeTimes=" + freeTimes +
                 ", slots=" + slots +
-                ", videoflyer=" + videoflyer +
                 ", clientId='" + clientId + '\'' +
                 '}';
     }
