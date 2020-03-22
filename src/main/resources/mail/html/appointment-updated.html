@@ -48,7 +48,7 @@
 <ul th:each="jumper: ${appointment.customer.jumpers}">
     <li th:text="#{appointment.customer.jumper(
         ${jumper.firstName}, ${jumper.lastName},
-        ${#temporals.format(jumper.dateOfBirth, 'dd.MM.yyyy')}, ${jumper.weight})}"></li>
+        ${#temporals.format(jumper.dateOfBirth, 'dd.MM.yyyy')})}"></li>
 </ul>
 <p th:utext="#{appointment.confirmation.details(${#temporals.format(appointment.date, 'HH:mm')})}">
     Melden Sie sich zum gebuchten Zeitpunkt (HH:mm Uhr) einfach vor Ort bei uns am Manifest.
