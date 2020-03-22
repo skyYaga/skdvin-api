@@ -11,14 +11,11 @@ public class Jumper {
     private String lastName;
     @NotNull
     private LocalDate dateOfBirth;
-    @NotNull
-    private int weight;
 
-    public Jumper(String firstName, String lastName, LocalDate dateOfBirth, int weight) {
+    public Jumper(String firstName, String lastName, LocalDate dateOfBirth) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.dateOfBirth = dateOfBirth;
-        this.weight = weight;
     }
 
     public String getFirstName() {
@@ -45,11 +42,4 @@ public class Jumper {
         this.dateOfBirth = dateOfBirth;
     }
 
-    public int getWeight() {
-        return weight;
-    }
-
-    public void setWeight(int weight) {
-        this.weight = weight;
-    }
 }

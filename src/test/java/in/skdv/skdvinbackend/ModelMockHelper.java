@@ -137,8 +137,8 @@ public class ModelMockHelper {
             jumpers.add(new Jumper(
                     "first" + i,
                     "last" + i,
-                    LocalDate.of(1980, 1, 1),
-                    70 + i));
+                    LocalDate.of(1980, 1, 1)
+            ));
         }
         return jumpers;
     }
