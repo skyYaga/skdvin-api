@@ -16,6 +16,9 @@ public class Jumpday extends AbstractJumpday {
     @DBRef
     private List<Tandemmaster> tandemmaster;
 
+    @DBRef
+    private List<Videoflyer> videoflyer;
+
     public boolean addAppointment(Appointment appointment) {
         Optional<Slot> slot = getSlotForAppointment(appointment);
         if (slot.isPresent()) {
@@ -43,5 +46,13 @@ public class Jumpday extends AbstractJumpday {
 
     public void setTandemmaster(List<Tandemmaster> tandemmaster) {
         this.tandemmaster = tandemmaster;
+    }
+
+    public List<Videoflyer> getVideoflyer() {
+        return videoflyer;
+    }
+
+    public void setVideoflyer(List<Videoflyer> videoflyer) {
+        this.videoflyer = videoflyer;
     }
 }

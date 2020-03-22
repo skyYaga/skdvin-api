@@ -84,7 +84,7 @@ public class ModelMockHelper {
         Jumpday jumpday = new Jumpday();
         jumpday.setDate(date);
         jumpday.setJumping(true);
-        jumpday.setVideoflyer(Collections.singletonList("Video Flyer"));
+        jumpday.setVideoflyer(new ArrayList<>());
         jumpday.setTandemmaster(new ArrayList<>());
 
         Slot slot = new Slot();
@@ -118,6 +118,17 @@ public class ModelMockHelper {
         tandemmaster.setFirstName(firstName);
         tandemmaster.setLastName(lastName);
         return tandemmaster;
+    }
+
+    public static Videoflyer createVideoflyer() {
+        return createVideoflyer("Max", "Mustermann");
+    }
+
+    public static Videoflyer createVideoflyer(String firstName, String lastName) {
+        Videoflyer videoflyer = new Videoflyer();
+        videoflyer.setFirstName(firstName);
+        videoflyer.setLastName(lastName);
+        return videoflyer;
     }
 
     public static List<Jumper> createJumpers(int tandemCount) {

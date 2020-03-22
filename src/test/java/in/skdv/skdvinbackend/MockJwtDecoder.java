@@ -23,6 +23,11 @@ public class MockJwtDecoder {
     private static final String SIMPLIFIED_READ_TANDEMMASTER = simplifyPermission(READ_TANDEMMASTER);
     private static final String SIMPLIFIED_DELETE_TANDEMMASTER = simplifyPermission(DELETE_TANDEMMASTER);
 
+    private static final String SIMPLIFIED_CREATE_VIDEOFLYER = simplifyPermission(CREATE_VIDEOFLYER);
+    private static final String SIMPLIFIED_UPDATE_VIDEOFLYER = simplifyPermission(UPDATE_VIDEOFLYER);
+    private static final String SIMPLIFIED_READ_VIDEOFLYER = simplifyPermission(READ_VIDEOFLYER);
+    private static final String SIMPLIFIED_DELETE_VIDEOFLYER = simplifyPermission(DELETE_VIDEOFLYER);
+
     public static Jwt decode(String permission) throws JwtException {
         return new Jwt(permission,
                 Instant.now(),
@@ -59,6 +64,18 @@ public class MockJwtDecoder {
         }
         if (SIMPLIFIED_DELETE_TANDEMMASTER.equals(permission)) {
             convertedPermission = DELETE_TANDEMMASTER;
+        }
+        if (SIMPLIFIED_CREATE_VIDEOFLYER.equals(permission)) {
+            convertedPermission = CREATE_VIDEOFLYER;
+        }
+        if (SIMPLIFIED_UPDATE_VIDEOFLYER.equals(permission)) {
+            convertedPermission = UPDATE_VIDEOFLYER;
+        }
+        if (SIMPLIFIED_READ_VIDEOFLYER.equals(permission)) {
+            convertedPermission = READ_VIDEOFLYER;
+        }
+        if (SIMPLIFIED_DELETE_VIDEOFLYER.equals(permission)) {
+            convertedPermission = DELETE_VIDEOFLYER;
         }
 
         return convertedPermission.replace("SCOPE_", "");
