@@ -20,7 +20,6 @@ import org.springframework.http.converter.json.MappingJackson2HttpMessageConvert
 import org.springframework.mock.http.MockHttpOutputMessage;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.web.context.WebApplicationContext;
 
 import java.io.IOException;
@@ -87,7 +86,6 @@ public class JumpdayControllerMockTest extends AbstractSkdvinTest {
                 .header("Accept-Language", "en-US")
                 .contentType(contentType)
                 .content(jumpdayJson))
-                .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isInternalServerError())
                 .andExpect(jsonPath("$.success", is(false)))
                 .andExpect(jsonPath("$.message", is("Internal Jumpday error")));

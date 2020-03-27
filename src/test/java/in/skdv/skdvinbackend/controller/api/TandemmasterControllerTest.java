@@ -31,7 +31,6 @@ import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders;
 import org.springframework.restdocs.mockmvc.RestDocumentationResultHandler;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.web.context.WebApplicationContext;
 
 import java.io.IOException;
@@ -120,7 +119,6 @@ public class TandemmasterControllerTest extends AbstractSkdvinTest {
                 .header("Authorization", MockJwtDecoder.addHeader(CREATE_TANDEMMASTER))
                 .contentType(contentType)
                 .content(tandemmasterJson))
-                .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.success", is(true)))
                 .andExpect(jsonPath("$.payload.firstName", is("Max")))
@@ -151,7 +149,6 @@ public class TandemmasterControllerTest extends AbstractSkdvinTest {
         mockMvc.perform(post("/api/tandemmaster/")
                 .contentType(contentType)
                 .content(tandemmasterJson))
-                .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isUnauthorized());
     }
 
@@ -163,7 +160,6 @@ public class TandemmasterControllerTest extends AbstractSkdvinTest {
         mockMvc.perform(get("/api/tandemmaster")
                 .header("Authorization", MockJwtDecoder.addHeader(READ_TANDEMMASTER))
                 .contentType(contentType))
-                .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success", is(true)))
                 .andExpect(jsonPath("$.payload", hasSize(2)))
@@ -188,7 +184,6 @@ public class TandemmasterControllerTest extends AbstractSkdvinTest {
 
         mockMvc.perform(get("/api/tandemmaster")
                 .contentType(contentType))
-                .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isUnauthorized());
     }
 
@@ -204,7 +199,6 @@ public class TandemmasterControllerTest extends AbstractSkdvinTest {
                 .header("Authorization", MockJwtDecoder.addHeader(UPDATE_TANDEMMASTER))
                 .contentType(contentType)
                 .content(tandemmasterJson))
-                .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success", is(true)))
                 .andExpect(jsonPath("$.payload.email", is("foo@example.com")))
@@ -257,7 +251,6 @@ public class TandemmasterControllerTest extends AbstractSkdvinTest {
                 .header("Accept-Language", "en-US")
                 .contentType(contentType)
                 .content(tandemmasterJson))
-                .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.success", is(false)))
                 .andExpect(jsonPath("$.message", is("Tandemmaster not found")));
@@ -271,7 +264,6 @@ public class TandemmasterControllerTest extends AbstractSkdvinTest {
         mockMvc.perform(RestDocumentationRequestBuilders.delete("/api/tandemmaster/{id}", tandemmaster.getId())
                 .header("Authorization", MockJwtDecoder.addHeader(DELETE_TANDEMMASTER))
                 .contentType(contentType))
-                .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success", is(true)))
                 .andDo(document("tandemmaster/delete-tandemmaster",
@@ -291,7 +283,6 @@ public class TandemmasterControllerTest extends AbstractSkdvinTest {
 
         mockMvc.perform(delete("/api/tandemmaster/{id}", tandemmaster.getId())
                 .contentType(contentType))
-                .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isUnauthorized());
     }
 
@@ -302,7 +293,6 @@ public class TandemmasterControllerTest extends AbstractSkdvinTest {
                 .header("Authorization", MockJwtDecoder.addHeader(DELETE_TANDEMMASTER))
                 .header("Accept-Language", "en-US")
                 .contentType(contentType))
-                .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.success", is(false)))
                 .andExpect(jsonPath("$.message", is("Tandemmaster not found")));
@@ -319,7 +309,6 @@ public class TandemmasterControllerTest extends AbstractSkdvinTest {
         mockMvc.perform(RestDocumentationRequestBuilders.get("/api/tandemmaster/{id}", tandemmaster.getId())
                 .header("Authorization", MockJwtDecoder.addHeader(READ_TANDEMMASTER))
                 .contentType(contentType))
-                .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success", is(true)))
                 .andExpect(jsonPath("$.payload.assignments." + LocalDate.now(), is(true)))
@@ -345,7 +334,6 @@ public class TandemmasterControllerTest extends AbstractSkdvinTest {
                 .header("Authorization", MockJwtDecoder.addHeader(READ_TANDEMMASTER))
                 .header("Accept-Language", "en-US")
                 .contentType(contentType))
-                .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.success", is(false)))
                 .andExpect(jsonPath("$.message", is("Tandemmaster not found")));
@@ -355,7 +343,6 @@ public class TandemmasterControllerTest extends AbstractSkdvinTest {
     public void testGetTandemmaster_Unauthorized() throws Exception {
         mockMvc.perform(get("/api/tandemmaster/{id}", "999999999")
                 .contentType(contentType))
-                .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isUnauthorized());
     }
 
@@ -373,7 +360,6 @@ public class TandemmasterControllerTest extends AbstractSkdvinTest {
                 .header("Authorization", MockJwtDecoder.addHeader(UPDATE_TANDEMMASTER))
                 .contentType(contentType)
                 .content(tandemmasterJson))
-                .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success", is(true)))
                 .andDo(document("tandemmaster/assign-tandemmaster",

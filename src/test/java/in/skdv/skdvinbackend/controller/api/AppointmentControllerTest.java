@@ -40,7 +40,6 @@ import org.springframework.restdocs.mockmvc.RestDocumentationResultHandler;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.web.context.WebApplicationContext;
 
 import javax.mail.internet.MimeMessage;
@@ -142,7 +141,6 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
 
         mockMvc.perform(RestDocumentationRequestBuilders.get("/api/appointment/{id}", appointment.getAppointmentId())
                 .header("Authorization", MockJwtDecoder.addHeader(READ_APPOINTMENTS)))
-                .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success", is(true)))
                 .andExpect(jsonPath("$.payload.appointmentId", is(appointment.getAppointmentId())))
@@ -205,7 +203,6 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
                 .header("Accept-Language", "en-US")
                 .contentType(contentType)
                 .content(appointmentJson))
-                .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.success", is(true)))
                 .andExpect(jsonPath("$.payload.customer.firstName", is("Max")))
@@ -276,7 +273,6 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
                 .header("Accept-Language", "de-DE")
                 .contentType(contentType)
                 .content(appointmentJson))
-                .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.message", is("Sprungtag hat nicht genügend freie Slots")));
     }
@@ -292,7 +288,6 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
                 .header("Accept-Language", "de-DE")
                 .contentType(contentType)
                 .content(appointmentJson))
-                .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.success", is(false)))
                 .andExpect(jsonPath("$.message", is("Sprungtag nicht gefunden")));
@@ -308,7 +303,6 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
                 .header("Accept-Language", "en-US")
                 .contentType(contentType)
                 .content(appointmentJson))
-                .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.success", is(false)))
                 .andExpect(jsonPath("$.message", is("The appointment has more video than tandem slots")));
@@ -324,7 +318,6 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
                 .header("Accept-Language", "en-US")
                 .contentType(contentType)
                 .content(appointmentJson))
-                .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.success", is(false)))
                 .andExpect(jsonPath("$.message", is("The appointment has more video than tandem slots")));
@@ -340,7 +333,6 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
                 .header("Accept-Language", "en-US")
                 .contentType(contentType)
                 .content(appointmentJson))
-                .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.success", is(false)))
                 .andExpect(jsonPath("$.message", is("The appointment has more video than tandem slots")));
@@ -356,7 +348,6 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
                 .header("Accept-Language", "en-US")
                 .contentType(contentType)
                 .content(appointmentJson))
-                .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.success", is(false)))
                 .andExpect(jsonPath("$.message", is("The appointment has more video than tandem slots")));
@@ -380,7 +371,6 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
                 .header("Authorization", MockJwtDecoder.addHeader(UPDATE_APPOINTMENTS))
                 .contentType(contentType)
                 .content(appointmentJson))
-                .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success", is(true)))
                 .andExpect(jsonPath("$.payload.tandem", is(newCount)))
@@ -472,7 +462,6 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
                 .header("Authorization", MockJwtDecoder.addHeader(UPDATE_APPOINTMENTS))
                 .contentType(contentType)
                 .content(appointmentJson))
-                .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.success", is(false)))
                 .andExpect(jsonPath("$.message", is("Sprungtag nicht gefunden")));
@@ -493,7 +482,6 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
                 .header("Authorization", MockJwtDecoder.addHeader(UPDATE_APPOINTMENTS))
                 .contentType(contentType)
                 .content(appointmentJson))
-                .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.success", is(false)))
                 .andExpect(jsonPath("$.message", is("The appointment has more video than tandem slots")));
@@ -514,7 +502,6 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
                 .header("Authorization", MockJwtDecoder.addHeader(UPDATE_APPOINTMENTS))
                 .contentType(contentType)
                 .content(appointmentJson))
-                .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.success", is(false)))
                 .andExpect(jsonPath("$.message", is("The appointment has more video than tandem slots")));
@@ -535,7 +522,6 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
                 .header("Authorization", MockJwtDecoder.addHeader(UPDATE_APPOINTMENTS))
                 .contentType(contentType)
                 .content(appointmentJson))
-                .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.success", is(false)))
                 .andExpect(jsonPath("$.message", is("The appointment has more video than tandem slots")));
@@ -557,7 +543,6 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
                 .header("Authorization", MockJwtDecoder.addHeader(UPDATE_APPOINTMENTS))
                 .contentType(contentType)
                 .content(appointmentJson))
-                .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.success", is(false)))
                 .andExpect(jsonPath("$.message", is("The appointment has more video than tandem slots")));
@@ -578,7 +563,6 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
                 .header("Authorization", MockJwtDecoder.addHeader(UPDATE_APPOINTMENTS))
                 .contentType(contentType)
                 .content(appointmentJson))
-                .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.success", is(false)))
                 .andExpect(jsonPath("$.message", is("Jumpday has not enough free slots")));
@@ -594,7 +578,6 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
                 .param("picOrVid", String.valueOf(query.getPicOrVid()))
                 .param("picAndVid", String.valueOf(query.getPicAndVid()))
                 .param("handcam", String.valueOf(query.getHandcam())))
-                .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success", is(true)))
                 .andExpect(jsonPath("$.payload[0].date", is(LocalDate.now().toString())))
@@ -627,7 +610,6 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
                 .param("picOrVid", String.valueOf(query.getPicOrVid()))
                 .param("picAndVid", String.valueOf(query.getPicAndVid()))
                 .param("handcam", String.valueOf(query.getHandcam())))
-                .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.success", is(false)))
                 .andExpect(jsonPath("$.message", is("Der Termin hat mehr gebuchte Video- als Tandem-Slots.")));
@@ -643,7 +625,6 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
                 .param("picOrVid", String.valueOf(query.getPicOrVid()))
                 .param("picAndVid", String.valueOf(query.getPicAndVid()))
                 .param("handcam", String.valueOf(query.getHandcam())))
-                .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.success", is(false)))
                 .andExpect(jsonPath("$.message", is("The appointment has more video than tandem slots")));
@@ -659,7 +640,6 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
                 .param("picOrVid", String.valueOf(query.getPicOrVid()))
                 .param("picAndVid", String.valueOf(query.getPicAndVid()))
                 .param("handcam", String.valueOf(query.getHandcam())))
-                .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success", is(false)))
                 .andExpect(jsonPath("$.message", is("No free appointments found")))
@@ -677,7 +657,6 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
                 appointment.getAppointmentId(), savedAppointment.getVerificationToken().getToken())
                 .header("Accept-Language", "en-US")
                 .contentType(contentType))
-                .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success", is(true)))
                 .andDo(document("appointment/confirm-appointment",
@@ -707,7 +686,6 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
                 appointment.getAppointmentId(), "foo")
                 .header("Accept-Language", "en-US")
                 .contentType(contentType))
-                .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.success", is(false)))
                 .andExpect(jsonPath("$.message", is("Confirmation Token invalid")));
@@ -724,7 +702,6 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
                 appointment.getAppointmentId(), appointment.getVerificationToken().getToken())
                 .header("Accept-Language", "en-US")
                 .contentType(contentType))
-                .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.success", is(false)))
                 .andExpect(jsonPath("$.message", is("Confirmation Token invalid")));
@@ -741,7 +718,6 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
                 appointment.getAppointmentId(), appointment.getVerificationToken().getToken())
                 .header("Accept-Language", "en-US")
                 .contentType(contentType))
-                .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.success", is(false)))
                 .andExpect(jsonPath("$.message", is("Appointment already confirmed")));
@@ -758,7 +734,6 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
                 9999999, appointment.getVerificationToken().getToken())
                 .header("Accept-Language", "en-US")
                 .contentType(contentType))
-                .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.success", is(false)))
                 .andExpect(jsonPath("$.message", is("Appointment not found")));
@@ -770,7 +745,6 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
                 LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE))
                 .header("Authorization", MockJwtDecoder.addHeader(READ_APPOINTMENTS))
                 .contentType(contentType))
-                .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success", is(true)))
                 .andExpect(jsonPath("$.payload", hasSize(2)))
@@ -814,7 +788,6 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
         mockMvc.perform(RestDocumentationRequestBuilders.get("/api/appointment/date/{date}",
                 appointment.getDate())
                 .contentType(contentType))
-                .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isUnauthorized());
     }
 
@@ -833,7 +806,6 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
                 .header("Authorization", MockJwtDecoder.addHeader(UPDATE_APPOINTMENTS))
                 .contentType(contentType)
                 .content(appointmentStateOnlyJson))
-                .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success", is(true)))
                 .andDo(document("appointment/update-appointment-state",
@@ -867,7 +839,6 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
                 savedAppointment.getAppointmentId())
                 .contentType(contentType)
                 .content(appointmentStateOnlyJson))
-                .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isUnauthorized());
     }
 
@@ -887,7 +858,6 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
                 .header("Authorization", MockJwtDecoder.addHeader(UPDATE_APPOINTMENTS))
                 .contentType(contentType)
                 .content(appointmentStateOnlyJson))
-                .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.success", is(false)))
                 .andExpect(jsonPath("$.message", is("Appointment not found")));
@@ -904,7 +874,6 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
                 .header("Accept-Language", "en-US")
                 .header("Authorization", MockJwtDecoder.addHeader(UPDATE_APPOINTMENTS))
                 .contentType(contentType))
-                .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success", is(true)))
                 .andDo(document("appointment/delete-appointment",
@@ -932,7 +901,6 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
 
         mockMvc.perform(delete("/api/appointment/{appointmentId}", appointmentId)
                 .contentType(contentType))
-                .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isUnauthorized());
     }
 
@@ -941,7 +909,6 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
         mockMvc.perform(delete("/api/appointment/{appointmentId}", 9999999)
                 .header("Authorization", MockJwtDecoder.addHeader(UPDATE_APPOINTMENTS))
                 .contentType(contentType))
-                .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.success", is(false)));
     }
