@@ -38,7 +38,6 @@ import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders;
 import org.springframework.restdocs.mockmvc.RestDocumentationResultHandler;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.web.context.WebApplicationContext;
 
 import java.io.IOException;
@@ -128,7 +127,6 @@ public class JumpdayControllerTest extends AbstractSkdvinTest {
                 .header("Authorization", MockJwtDecoder.addHeader(CREATE_JUMPDAYS))
                 .contentType(contentType)
                 .content(jumpdayJson))
-                .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.success", is(true)))
                 .andExpect(jsonPath("$.payload.date", is(LocalDate.now().toString())))
@@ -194,7 +192,6 @@ public class JumpdayControllerTest extends AbstractSkdvinTest {
                 .header("Authorization", MockJwtDecoder.addHeader(CREATE_JUMPDAYS))
                 .contentType(contentType)
                 .content(jumpdayJson))
-                .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isCreated());
 
         mockMvc.perform(RestDocumentationRequestBuilders.post("/api/jumpday")
@@ -202,7 +199,6 @@ public class JumpdayControllerTest extends AbstractSkdvinTest {
                 .header("Accept-Language", "de-DE")
                 .contentType(contentType)
                 .content(jumpdayJson))
-                .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.success", is(false)))
                 .andExpect(jsonPath("$.message", is("Sprungtag existiert bereits")));
@@ -216,7 +212,6 @@ public class JumpdayControllerTest extends AbstractSkdvinTest {
                 .header("Authorization", MockJwtDecoder.addHeader(CREATE_JUMPDAYS))
                 .contentType(contentType)
                 .content(jumpdayJson))
-                .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isCreated());
 
         mockMvc.perform(RestDocumentationRequestBuilders.post("/api/jumpday")
@@ -224,7 +219,6 @@ public class JumpdayControllerTest extends AbstractSkdvinTest {
                 .header("Accept-Language", "en-US")
                 .contentType(contentType)
                 .content(jumpdayJson))
-                .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.success", is(false)))
                 .andExpect(jsonPath("$.message", is("Jumpday already exists")));
@@ -241,7 +235,6 @@ public class JumpdayControllerTest extends AbstractSkdvinTest {
         mockMvc.perform(get("/api/jumpday/")
                 .header("Authorization", MockJwtDecoder.addHeader(READ_JUMPDAYS)))
                 .andExpect(status().isOk())
-                .andDo(MockMvcResultHandlers.print())
                 .andExpect(jsonPath("$.success", is(true)))
                 .andExpect(jsonPath("$.payload", hasSize(2)))
                 .andExpect(jsonPath("$.payload[0].date", is(result.getPayload().getDate().toString())))
@@ -257,7 +250,6 @@ public class JumpdayControllerTest extends AbstractSkdvinTest {
         mockMvc.perform(get("/api/jumpday/")
                 .header("Authorization", MockJwtDecoder.addHeader(READ_JUMPDAYS)))
                 .andExpect(status().isOk())
-                .andDo(MockMvcResultHandlers.print())
                 .andExpect(jsonPath("$.success", is(true)))
                 .andExpect(jsonPath("$.payload", hasSize(1)))
                 .andExpect(jsonPath("$.payload[0].date", is(jumpday.getDate().toString())))
@@ -302,7 +294,6 @@ public class JumpdayControllerTest extends AbstractSkdvinTest {
         mockMvc.perform(get("/api/jumpday/")
                 .header("Authorization", MockJwtDecoder.addHeader(READ_JUMPDAYS)))
                 .andExpect(status().isOk())
-                .andDo(MockMvcResultHandlers.print())
                 .andExpect(jsonPath("$.success", is(true)))
                 .andExpect(jsonPath("$.payload", hasSize(0)));
     }
@@ -315,7 +306,6 @@ public class JumpdayControllerTest extends AbstractSkdvinTest {
         mockMvc.perform(RestDocumentationRequestBuilders.get("/api/jumpday/{date}", jumpday.getDate().toString())
                 .header("Authorization", MockJwtDecoder.addHeader(READ_JUMPDAYS)))
                 .andExpect(status().isOk())
-                .andDo(MockMvcResultHandlers.print())
                 .andExpect(jsonPath("$.success", is(true)))
                 .andExpect(jsonPath("$.payload.date", is(jumpday.getDate().toString())))
                 .andExpect(jsonPath("$.payload.jumping", is(jumpday.isJumping())))
@@ -367,7 +357,6 @@ public class JumpdayControllerTest extends AbstractSkdvinTest {
         mockMvc.perform(RestDocumentationRequestBuilders.get("/api/jumpday/{date}", jumpday.getDate().toString())
                 .header("Authorization", MockJwtDecoder.addHeader(READ_JUMPDAYS)))
                 .andExpect(status().isOk())
-                .andDo(MockMvcResultHandlers.print())
                 .andExpect(jsonPath("$.success", is(true)))
                 .andExpect(jsonPath("$.payload.date", is(jumpday.getDate().toString())))
                 .andExpect(jsonPath("$.payload.jumping", is(jumpday.isJumping())))
@@ -425,7 +414,6 @@ public class JumpdayControllerTest extends AbstractSkdvinTest {
         mockMvc.perform(RestDocumentationRequestBuilders.get("/api/jumpday/{date}", jumpday.getDate().toString())
                 .header("Authorization", MockJwtDecoder.addHeader(READ_JUMPDAYS)))
                 .andExpect(status().isOk())
-                .andDo(MockMvcResultHandlers.print())
                 .andExpect(jsonPath("$.success", is(true)))
                 .andExpect(jsonPath("$.payload.date", is(jumpday.getDate().toString())))
                 .andExpect(jsonPath("$.payload.jumping", is(jumpday.isJumping())))
@@ -488,7 +476,6 @@ public class JumpdayControllerTest extends AbstractSkdvinTest {
         mockMvc.perform(get("/api/jumpday/{date}", jumpday.getDate().toString())
                 .header("Authorization", MockJwtDecoder.addHeader(READ_JUMPDAYS)))
                 .andExpect(status().isOk())
-                .andDo(MockMvcResultHandlers.print())
                 .andExpect(jsonPath("$.success", is(true)))
                 .andExpect(jsonPath("$.payload.date", is(jumpday.getDate().toString())))
                 .andExpect(jsonPath("$.payload.jumping", is(jumpday.isJumping())))
@@ -527,7 +514,6 @@ public class JumpdayControllerTest extends AbstractSkdvinTest {
                 .header("Authorization", MockJwtDecoder.addHeader(READ_JUMPDAYS))
                 .header("Accept-Language", "de-DE"))
                 .andExpect(status().isBadRequest())
-                .andDo(MockMvcResultHandlers.print())
                 .andExpect(jsonPath("$.success", is(false)))
                 .andExpect(jsonPath("$.message", is("Sprungtag nicht gefunden")));
     }
@@ -538,7 +524,6 @@ public class JumpdayControllerTest extends AbstractSkdvinTest {
                 .header("Authorization", MockJwtDecoder.addHeader(READ_JUMPDAYS))
                 .header("Accept-Language", "en-US"))
                 .andExpect(status().isBadRequest())
-                .andDo(MockMvcResultHandlers.print())
                 .andExpect(jsonPath("$.success", is(false)))
                 .andExpect(jsonPath("$.message", is("Jumpday not found")));
     }
@@ -558,7 +543,6 @@ public class JumpdayControllerTest extends AbstractSkdvinTest {
                 .header("Authorization", MockJwtDecoder.addHeader(UPDATE_JUMPDAYS))
                 .contentType(contentType)
                 .content(jumpdayJson))
-                .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success", is(true)))
                 .andExpect(jsonPath("$.payload.slots[0].tandemTotal", is(newCount)))
@@ -639,7 +623,6 @@ public class JumpdayControllerTest extends AbstractSkdvinTest {
                 .header("Authorization", MockJwtDecoder.addHeader(UPDATE_JUMPDAYS))
                 .contentType(contentType)
                 .content(jumpdayJson))
-                .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success", is(true)))
                 .andDo(document("jumpday/update-jumpday-with-tm",
@@ -733,7 +716,6 @@ public class JumpdayControllerTest extends AbstractSkdvinTest {
                 .header("Authorization", MockJwtDecoder.addHeader(UPDATE_JUMPDAYS))
                 .contentType(contentType)
                 .content(jumpdayJson))
-                .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success", is(true)))
                 .andDo(document("jumpday/update-jumpday-with-videoflyer",
@@ -808,7 +790,6 @@ public class JumpdayControllerTest extends AbstractSkdvinTest {
         mockMvc.perform(put("/api/jumpday/{date}", LocalDate.now().toString())
                 .contentType(contentType)
                 .content(jumpdayJson))
-                .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isUnauthorized());
     }
 
@@ -823,7 +804,6 @@ public class JumpdayControllerTest extends AbstractSkdvinTest {
                 .header("Authorization", MockJwtDecoder.addHeader(UPDATE_JUMPDAYS))
                 .contentType(contentType)
                 .content(jumpdayJson))
-                .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.success", is(false)))
                 .andExpect(jsonPath("$.message", is("Jumpday not found")));
@@ -843,7 +823,6 @@ public class JumpdayControllerTest extends AbstractSkdvinTest {
                 .header("Authorization", MockJwtDecoder.addHeader(UPDATE_JUMPDAYS))
                 .contentType(contentType)
                 .content(jumpdayJson))
-                .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.success", is(false)))
                 .andExpect(jsonPath("$.message", is("Jumpday invalid")));
@@ -864,7 +843,6 @@ public class JumpdayControllerTest extends AbstractSkdvinTest {
                 .header("Authorization", MockJwtDecoder.addHeader(UPDATE_JUMPDAYS))
                 .contentType(contentType)
                 .content(jumpdayJson))
-                .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.success", is(false)))
                 .andExpect(jsonPath("$.message", is("The changed slot has too many appointments")));
@@ -878,7 +856,6 @@ public class JumpdayControllerTest extends AbstractSkdvinTest {
         mockMvc.perform(RestDocumentationRequestBuilders.delete("/api/jumpday/{date}", savedJumpday.getDate())
                 .header("Authorization", MockJwtDecoder.addHeader(UPDATE_JUMPDAYS))
                 .contentType(contentType))
-                .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success", is(true)))
                 .andDo(document("jumpday/delete-jumpday",

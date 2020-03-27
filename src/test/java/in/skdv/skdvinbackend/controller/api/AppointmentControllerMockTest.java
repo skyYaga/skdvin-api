@@ -23,7 +23,6 @@ import org.springframework.http.converter.json.MappingJackson2HttpMessageConvert
 import org.springframework.mock.http.MockHttpOutputMessage;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.web.context.WebApplicationContext;
 
 import java.io.IOException;
@@ -87,7 +86,6 @@ public class AppointmentControllerMockTest extends AbstractSkdvinTest {
                 .header("Accept-Language", "en-US")
                 .contentType(contentType)
                 .content(appointmentJson))
-                .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isInternalServerError())
                 .andExpect(jsonPath("$.success", is(false)))
                 .andExpect(jsonPath("$.message", is("Internal appointment error")));
@@ -103,7 +101,6 @@ public class AppointmentControllerMockTest extends AbstractSkdvinTest {
                 .header("Authorization", MockJwtDecoder.addHeader(UPDATE_APPOINTMENTS))
                 .contentType(contentType)
                 .content(appointmentJson))
-                .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isInternalServerError())
                 .andExpect(jsonPath("$.success", is(false)))
                 .andExpect(jsonPath("$.message", is("Interner Termin Fehler")));
@@ -125,7 +122,6 @@ public class AppointmentControllerMockTest extends AbstractSkdvinTest {
                 .header("Authorization", MockJwtDecoder.addHeader(UPDATE_APPOINTMENTS))
                 .contentType(contentType)
                 .content(appointmentStateOnlyJson))
-                .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isInternalServerError())
                 .andExpect(jsonPath("$.success", is(false)))
                 .andExpect(jsonPath("$.message", is("Interner Termin Fehler")));
@@ -144,7 +140,6 @@ public class AppointmentControllerMockTest extends AbstractSkdvinTest {
                 .param("picOrVid", String.valueOf(query.getPicOrVid()))
                 .param("picAndVid", String.valueOf(query.getPicAndVid()))
                 .param("handcam", String.valueOf(query.getHandcam())))
-                .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isInternalServerError())
                 .andExpect(jsonPath("$.success", is(false)))
                 .andExpect(jsonPath("$.message", is("Internal appointment error")));
@@ -158,7 +153,6 @@ public class AppointmentControllerMockTest extends AbstractSkdvinTest {
         mockMvc.perform(get("/api/appointment/date/2020-01-01")
                 .queryParam("lang", "de")
                 .header("Authorization", MockJwtDecoder.addHeader(READ_APPOINTMENTS)))
-                .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isInternalServerError())
                 .andExpect(jsonPath("$.success", is(false)))
                 .andExpect(jsonPath("$.message", is("Interner Termin Fehler")));
