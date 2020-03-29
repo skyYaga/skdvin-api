@@ -1,11 +1,10 @@
 package in.skdv.skdvinbackend.model.dto;
 
-import in.skdv.skdvinbackend.model.common.AbstractFlyer;
+import in.skdv.skdvinbackend.model.common.AbstractTandemmaster;
 
-public class TandemmasterDTO extends AbstractFlyer implements ITandemmaster {
+public class TandemmasterDTO extends AbstractTandemmaster {
 
     private String id;
-    private boolean handcam;
 
     public String getId() {
         return id;
@@ -13,15 +12,5 @@ public class TandemmasterDTO extends AbstractFlyer implements ITandemmaster {
 
     public void setId(String id) {
         this.id = id;
-    }
-
-    @Override
-    public boolean isHandcam() {
-        return handcam;
-    }
-
-    @Override
-    public void setHandcam(boolean handcam) {
-        this.handcam = handcam;
     }
 }

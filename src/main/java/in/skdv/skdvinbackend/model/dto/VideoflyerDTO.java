@@ -1,11 +1,10 @@
 package in.skdv.skdvinbackend.model.dto;
 
-import in.skdv.skdvinbackend.model.common.AbstractFlyer;
+import in.skdv.skdvinbackend.model.common.AbstractVideoflyer;
 
-public class VideoflyerDTO extends AbstractFlyer implements IVideoflyer {
+public class VideoflyerDTO extends AbstractVideoflyer {
 
     private String id;
-    private boolean picAndVid;
 
     public String getId() {
         return id;
@@ -13,15 +12,5 @@ public class VideoflyerDTO extends AbstractFlyer implements IVideoflyer {
 
     public void setId(String id) {
         this.id = id;
-    }
-
-    @Override
-    public boolean isPicAndVid() {
-        return picAndVid;
-    }
-
-    @Override
-    public void setPicAndVid(boolean picAndVid) {
-        this.picAndVid = picAndVid;
     }
 }
