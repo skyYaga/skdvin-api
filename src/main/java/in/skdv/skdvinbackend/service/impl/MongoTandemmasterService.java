@@ -1,8 +1,11 @@
 package in.skdv.skdvinbackend.service.impl;
 
 import in.skdv.skdvinbackend.exception.ErrorMessage;
+import in.skdv.skdvinbackend.model.common.SimpleAssignment;
+import in.skdv.skdvinbackend.model.converter.AssignmentConverter;
 import in.skdv.skdvinbackend.model.converter.TandemmasterConverter;
 import in.skdv.skdvinbackend.model.dto.TandemmasterDetailsDTO;
+import in.skdv.skdvinbackend.model.entity.Assignment;
 import in.skdv.skdvinbackend.model.entity.Jumpday;
 import in.skdv.skdvinbackend.model.entity.Tandemmaster;
 import in.skdv.skdvinbackend.repository.JumpdayRepository;
@@ -20,7 +23,8 @@ public class MongoTandemmasterService implements ITandemmasterService {
 
     private JumpdayRepository jumpdayRepository;
     private TandemmasterRepository tandemmasterRepository;
-    private TandemmasterConverter converter = new TandemmasterConverter();
+    private TandemmasterConverter tandemmasterConverter = new TandemmasterConverter();
+    private AssignmentConverter assignmentConverter = new AssignmentConverter();
 
     @Autowired
     public MongoTandemmasterService(JumpdayRepository jumpdayRepository, TandemmasterRepository tandemmasterRepository) {
@@ -30,7 +34,7 @@ public class MongoTandemmasterService implements ITandemmasterService {
 
     @Override
     public TandemmasterDetailsDTO getById(String id) {
-        Map<LocalDate, Boolean> assignments = new HashMap<>();
+        Map<LocalDate, SimpleAssignment> assignments = new HashMap<>();
 
         Optional<Tandemmaster> tandemmaster = tandemmasterRepository.findById(id);
         if (tandemmaster.isEmpty()) {
@@ -38,25 +42,21 @@ public class MongoTandemmasterService implements ITandemmasterService {
         }
 
         jumpdayRepository.findAll().forEach(j -> {
-            Optional<Tandemmaster> localTandemmaster = j.getTandemmaster().stream().filter(t -> t.getId().equals(id)).findFirst();
-            assignments.put(j.getDate(), localTandemmaster.isPresent());
+            Optional<Assignment<Tandemmaster>> localAssignment = j.getTandemmaster().stream().filter(t -> t.getFlyer().getId().equals(id)).findFirst();
+            localAssignment.ifPresent(assignment -> assignments.put(j.getDate(), assignmentConverter.convertToSimpleAssignment(assignment)));
         });
 
-        TandemmasterDetailsDTO tandemmasterDetailsDTO = converter.convertToDetailsDto(tandemmaster.get());
-        tandemmasterDetailsDTO.setAssignments(assignments);
-
-        return tandemmasterDetailsDTO;
+        return tandemmasterConverter.convertToDetailsDto(tandemmaster.get(), assignments);
     }
 
-
     @Override
-    public GenericResult<Void> assignTandemmasterToJumpday(LocalDate date, String tandemmasterId, boolean isAddition) {
+    public GenericResult<Void> assignTandemmasterToJumpday(LocalDate date, String tandemmasterId, SimpleAssignment assignment) {
         Optional<Tandemmaster> tandemmaster = tandemmasterRepository.findById(tandemmasterId);
 
         if (tandemmaster.isPresent()) {
             Jumpday jumpday = jumpdayRepository.findByDate(date);
             if (jumpday != null) {
-                manageTandemmasterAssignment(jumpday, tandemmaster.get(), isAddition);
+                manageTandemmasterAssignment(jumpday, tandemmaster.get(), assignment);
                 return new GenericResult<>(true);
             }
             return new GenericResult<>(false, ErrorMessage.JUMPDAY_NOT_FOUND_MSG);
@@ -75,18 +75,26 @@ public class MongoTandemmasterService implements ITandemmasterService {
         return new GenericResult<>(true);
     }
 
-    private void manageTandemmasterAssignment(Jumpday jumpday, Tandemmaster tandemmaster, boolean isAddition) {
-        Optional<Tandemmaster> foundTandemmaster = jumpday.getTandemmaster().stream()
-                .filter(t -> t != null && t.getId().equals(tandemmaster.getId()))
+    private void manageTandemmasterAssignment(Jumpday jumpday, Tandemmaster tandemmaster, SimpleAssignment simpleAssignment) {
+        Optional<Assignment<Tandemmaster>> foundAssignment = jumpday.getTandemmaster().stream()
+                .filter(t -> t != null && t.getFlyer().getId().equals(tandemmaster.getId()))
                 .findFirst();
 
-        if (foundTandemmaster.isEmpty() && isAddition) {
-            jumpday.getTandemmaster().add(tandemmaster);
+        Assignment<Tandemmaster> assignment = assignmentConverter.convertToAssignment(simpleAssignment, tandemmaster);
+
+        if (foundAssignment.isEmpty() && assignment.isAssigned()) {
+            jumpday.getTandemmaster().add(assignment);
             jumpdayRepository.save(jumpday);
         }
 
-        if (foundTandemmaster.isPresent() && !isAddition) {
-            jumpday.getTandemmaster().remove(foundTandemmaster.get());
+        if (foundAssignment.isPresent() && !assignment.isAssigned()) {
+            jumpday.getTandemmaster().remove(foundAssignment.get());
+            jumpdayRepository.save(jumpday);
+        }
+
+        if (foundAssignment.isPresent() && assignment.isAssigned()) {
+            jumpday.getTandemmaster().remove(foundAssignment.get());
+            jumpday.getTandemmaster().add(assignment);
             jumpdayRepository.save(jumpday);
         }
     }

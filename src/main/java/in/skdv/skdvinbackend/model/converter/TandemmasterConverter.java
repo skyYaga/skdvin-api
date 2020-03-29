@@ -1,13 +1,16 @@
 package in.skdv.skdvinbackend.model.converter;
 
+import in.skdv.skdvinbackend.model.common.SimpleAssignment;
 import in.skdv.skdvinbackend.model.dto.TandemmasterDTO;
 import in.skdv.skdvinbackend.model.dto.TandemmasterDetailsDTO;
 import in.skdv.skdvinbackend.model.entity.Tandemmaster;
 import org.modelmapper.ModelMapper;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 public class TandemmasterConverter {
 
@@ -36,10 +39,12 @@ public class TandemmasterConverter {
         return modelMapper.map(tandemmasterDTO, Tandemmaster.class);
     }
 
-    public TandemmasterDetailsDTO convertToDetailsDto(Tandemmaster tandemmaster) {
+    public TandemmasterDetailsDTO convertToDetailsDto(Tandemmaster tandemmaster, Map<LocalDate, SimpleAssignment> assignments) {
         if (tandemmaster == null) {
             return null;
         }
-        return modelMapper.map(tandemmaster, TandemmasterDetailsDTO.class);
+        TandemmasterDetailsDTO tandemmasterDetailsDTO = modelMapper.map(tandemmaster, TandemmasterDetailsDTO.class);
+        tandemmasterDetailsDTO.setAssignments(assignments);
+        return tandemmasterDetailsDTO;
     }
 }

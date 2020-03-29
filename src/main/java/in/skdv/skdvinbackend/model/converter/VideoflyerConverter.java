@@ -1,13 +1,16 @@
 package in.skdv.skdvinbackend.model.converter;
 
+import in.skdv.skdvinbackend.model.common.SimpleAssignment;
 import in.skdv.skdvinbackend.model.dto.VideoflyerDTO;
 import in.skdv.skdvinbackend.model.dto.VideoflyerDetailsDTO;
 import in.skdv.skdvinbackend.model.entity.Videoflyer;
 import org.modelmapper.ModelMapper;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 public class VideoflyerConverter {
 
@@ -36,10 +39,12 @@ public class VideoflyerConverter {
         return modelMapper.map(videoflyerDTO, Videoflyer.class);
     }
 
-    public VideoflyerDetailsDTO convertToDetailsDto(Videoflyer videoflyer) {
+    public VideoflyerDetailsDTO convertToDetailsDto(Videoflyer videoflyer, Map<LocalDate, SimpleAssignment> assignments) {
         if (videoflyer == null) {
             return null;
         }
-        return modelMapper.map(videoflyer, VideoflyerDetailsDTO.class);
+        VideoflyerDetailsDTO videoflyerDetailsDTO = modelMapper.map(videoflyer, VideoflyerDetailsDTO.class);
+        videoflyerDetailsDTO.setAssignments(assignments);
+        return videoflyerDetailsDTO;
     }
 }

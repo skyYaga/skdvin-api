@@ -1,13 +1,16 @@
 package in.skdv.skdvinbackend.model.converter;
 
 import in.skdv.skdvinbackend.ModelMockHelper;
+import in.skdv.skdvinbackend.model.common.SimpleAssignment;
 import in.skdv.skdvinbackend.model.dto.TandemmasterDTO;
 import in.skdv.skdvinbackend.model.dto.TandemmasterDetailsDTO;
 import in.skdv.skdvinbackend.model.entity.Tandemmaster;
 import org.junit.Test;
 
+import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.Assert.*;
 
@@ -66,9 +69,11 @@ public class TandemmasterConverterTest {
     @Test
     public void convertToDetailsDto() {
         Tandemmaster tandemmaster = ModelMockHelper.createTandemmaster();
-        TandemmasterDetailsDTO tandemmasterDTO = converter.convertToDetailsDto(tandemmaster);
+        Map<LocalDate, SimpleAssignment> assignments = Map.of(LocalDate.now(), new SimpleAssignment(true));
+        TandemmasterDetailsDTO tandemmasterDTO = converter.convertToDetailsDto(tandemmaster, assignments);
         assertNotNull(tandemmasterDTO);
         assertEquals(tandemmaster.getFirstName(), tandemmasterDTO.getFirstName());
+        assertEquals(assignments, tandemmasterDTO.getAssignments());
     }
 
     @Test

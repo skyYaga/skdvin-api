@@ -3,7 +3,6 @@ package in.skdv.skdvinbackend.model.entity;
 import in.skdv.skdvinbackend.model.common.AbstractJumpday;
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.DBRef;
 
 import java.util.List;
 import java.util.Optional;
@@ -13,11 +12,9 @@ public class Jumpday extends AbstractJumpday {
     @Id
     private ObjectId objectId;
 
-    @DBRef
-    private List<Tandemmaster> tandemmaster;
+    private List<Assignment<Tandemmaster>> tandemmaster;
 
-    @DBRef
-    private List<Videoflyer> videoflyer;
+    private List<Assignment<Videoflyer>> videoflyer;
 
     public boolean addAppointment(Appointment appointment) {
         Optional<Slot> slot = getSlotForAppointment(appointment);
@@ -40,19 +37,19 @@ public class Jumpday extends AbstractJumpday {
         this.objectId = objectId;
     }
 
-    public List<Tandemmaster> getTandemmaster() {
+    public List<Assignment<Tandemmaster>> getTandemmaster() {
         return tandemmaster;
     }
 
-    public void setTandemmaster(List<Tandemmaster> tandemmaster) {
+    public void setTandemmaster(List<Assignment<Tandemmaster>> tandemmaster) {
         this.tandemmaster = tandemmaster;
     }
 
-    public List<Videoflyer> getVideoflyer() {
+    public List<Assignment<Videoflyer>> getVideoflyer() {
         return videoflyer;
     }
 
-    public void setVideoflyer(List<Videoflyer> videoflyer) {
+    public void setVideoflyer(List<Assignment<Videoflyer>> videoflyer) {
         this.videoflyer = videoflyer;
     }
 }

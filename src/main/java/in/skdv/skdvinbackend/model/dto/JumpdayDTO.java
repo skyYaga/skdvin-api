@@ -6,23 +6,23 @@ import java.util.List;
 
 public class JumpdayDTO extends AbstractJumpday {
 
-    private List<TandemmasterDTO> tandemmaster;
+    private List<AssignmentDTO<TandemmasterDTO>> tandemmaster;
 
-    private List<VideoflyerDTO> videoflyer;
+    private List<AssignmentDTO<VideoflyerDTO>> videoflyer;
 
-    public List<TandemmasterDTO> getTandemmaster() {
+    public List<AssignmentDTO<TandemmasterDTO>> getTandemmaster() {
         return tandemmaster;
     }
 
-    public void setTandemmaster(List<TandemmasterDTO> tandemmaster) {
+    public void setTandemmaster(List<AssignmentDTO<TandemmasterDTO>> tandemmaster) {
         this.tandemmaster = tandemmaster;
     }
 
-    public List<VideoflyerDTO> getVideoflyer() {
+    public List<AssignmentDTO<VideoflyerDTO>> getVideoflyer() {
         return videoflyer;
     }
 
-    public void setVideoflyer(List<VideoflyerDTO> videoflyer) {
+    public void setVideoflyer(List<AssignmentDTO<VideoflyerDTO>> videoflyer) {
         this.videoflyer = videoflyer;
     }
 }

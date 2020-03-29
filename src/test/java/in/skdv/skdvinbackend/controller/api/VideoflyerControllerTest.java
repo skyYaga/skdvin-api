@@ -3,6 +3,7 @@ package in.skdv.skdvinbackend.controller.api;
 import in.skdv.skdvinbackend.AbstractSkdvinTest;
 import in.skdv.skdvinbackend.MockJwtDecoder;
 import in.skdv.skdvinbackend.ModelMockHelper;
+import in.skdv.skdvinbackend.model.common.SimpleAssignment;
 import in.skdv.skdvinbackend.model.converter.VideoflyerConverter;
 import in.skdv.skdvinbackend.model.dto.VideoflyerDetailsDTO;
 import in.skdv.skdvinbackend.model.entity.Jumpday;
@@ -304,14 +305,14 @@ public class VideoflyerControllerTest extends AbstractSkdvinTest {
         Videoflyer videoflyer = videoflyerRepository.save(ModelMockHelper.createVideoflyer());
         Jumpday jumpday = ModelMockHelper.createJumpday();
         jumpdayService.saveJumpday(jumpday);
-        videoflyerService.assignVideoflyerToJumpday(jumpday.getDate(), videoflyer.getId(), true);
+        videoflyerService.assignVideoflyerToJumpday(jumpday.getDate(), videoflyer.getId(), new SimpleAssignment(true));
 
         mockMvc.perform(RestDocumentationRequestBuilders.get("/api/videoflyer/{id}", videoflyer.getId())
                 .header("Authorization", MockJwtDecoder.addHeader(READ_VIDEOFLYER))
                 .contentType(contentType))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success", is(true)))
-                .andExpect(jsonPath("$.payload.assignments." + LocalDate.now(), is(true)))
+                .andExpect(jsonPath("$.payload.assignments." + LocalDate.now() + ".assigned", is(true)))
                 .andDo(document("videoflyer/get-videoflyer",
                         responseFields(
                                 fieldWithPath("success").description("true when the request was successful"),
@@ -323,6 +324,16 @@ public class VideoflyerControllerTest extends AbstractSkdvinTest {
                                 fieldWithPath("payload.tel").description("Videoflyers phone number"),
                                 fieldWithPath("payload.picAndVid").description("true if the Videoflyer makes pictures and videos"),
                                 fieldWithPath("payload.assignments").description("key value pairs of date and the videoflyers assignment state as boolean"),
+                                fieldWithPath("payload.assignments." + LocalDate.now() + ".assigned").description("true if the flyer is assigned"),
+                                fieldWithPath("payload.assignments." + LocalDate.now() + ".allday").description("true if the flyer is assigned all day"),
+                                fieldWithPath("payload.assignments." + LocalDate.now() + ".from").description("from time if the flyer is not assigned all day"),
+                                fieldWithPath("payload.assignments." + LocalDate.now() + ".to").description("to time if the flyer is not assigned all day"),
+                                fieldWithPath("payload.assignments." + LocalDate.now() + ".flyer.firstName").description("videoflyer's first name"),
+                                fieldWithPath("payload.assignments." + LocalDate.now() + ".flyer.lastName").description("videoflyer's last name"),
+                                fieldWithPath("payload.assignments." + LocalDate.now() + ".flyer.email").description("videoflyer's email"),
+                                fieldWithPath("payload.assignments." + LocalDate.now() + ".flyer.tel").description("videoflyer's phone number"),
+                                fieldWithPath("payload.assignments." + LocalDate.now() + ".flyer.picAndVid").description("videoflyer's pic and video setting"),
+                                fieldWithPath("payload.assignments." + LocalDate.now() + ".flyer.id").description("videoflyer's id"),
                                 fieldWithPath("payload.assignments." + LocalDate.now()).ignored(),
                                 fieldWithPath("exception").ignored()
                         )));
@@ -351,8 +362,7 @@ public class VideoflyerControllerTest extends AbstractSkdvinTest {
         Videoflyer videoflyer = videoflyerRepository.save(ModelMockHelper.createVideoflyer());
         Jumpday jumpday = ModelMockHelper.createJumpday();
         jumpdayService.saveJumpday(jumpday);
-        VideoflyerDetailsDTO videoflyerDetailsDTO = converter.convertToDetailsDto(videoflyer);
-        videoflyerDetailsDTO.setAssignments(Map.of(LocalDate.now(), true));
+        VideoflyerDetailsDTO videoflyerDetailsDTO = converter.convertToDetailsDto(videoflyer, Map.of(LocalDate.now(), new SimpleAssignment(true)));
 
         String videoflyerJson = json(videoflyerDetailsDTO);
 
@@ -368,7 +378,11 @@ public class VideoflyerControllerTest extends AbstractSkdvinTest {
                         ),
                         requestFields(
                                 fieldWithPath("id").description("Videoflyers id"),
-                                fieldWithPath("assignments").description("key value pairs of date and the videoflyers assignment state as boolean"),
+                                fieldWithPath("assignments").description("details on the videoflyers assignment state"),
+                                fieldWithPath("assignments." + LocalDate.now() + ".assigned").description("true if the flyer is assigned"),
+                                fieldWithPath("assignments." + LocalDate.now() + ".allday").description("true if the flyer is assigned all day"),
+                                fieldWithPath("assignments." + LocalDate.now() + ".from").description("from time if the flyer is not assigned all day"),
+                                fieldWithPath("assignments." + LocalDate.now() + ".to").description("to time if the flyer is not assigned all day"),
                                 fieldWithPath("assignments." + LocalDate.now()).ignored(),
                                 fieldWithPath("firstName").ignored(),
                                 fieldWithPath("lastName").ignored(),
@@ -399,8 +413,7 @@ public class VideoflyerControllerTest extends AbstractSkdvinTest {
         Videoflyer videoflyer = videoflyerRepository.save(ModelMockHelper.createVideoflyer());
         Jumpday jumpday = ModelMockHelper.createJumpday();
         jumpdayService.saveJumpday(jumpday);
-        VideoflyerDetailsDTO videoflyerDetailsDTO = converter.convertToDetailsDto(videoflyer);
-        videoflyerDetailsDTO.setAssignments(Map.of(LocalDate.now(), true));
+        VideoflyerDetailsDTO videoflyerDetailsDTO = converter.convertToDetailsDto(videoflyer, Map.of(LocalDate.now(), new SimpleAssignment(true)));
 
         String videoflyerJson = json(videoflyerDetailsDTO);
 
@@ -415,8 +428,7 @@ public class VideoflyerControllerTest extends AbstractSkdvinTest {
     @Test
     public void testAssignVideoflyer_NotFound() throws Exception {
         Videoflyer videoflyer = videoflyerRepository.save(ModelMockHelper.createVideoflyer());
-        VideoflyerDetailsDTO videoflyerDetailsDTO = converter.convertToDetailsDto(videoflyer);
-        videoflyerDetailsDTO.setAssignments(Map.of(LocalDate.now(), true));
+        VideoflyerDetailsDTO videoflyerDetailsDTO = converter.convertToDetailsDto(videoflyer, Map.of(LocalDate.now(), new SimpleAssignment(true)));
 
         String videoflyerJson = json(videoflyerDetailsDTO);
 
