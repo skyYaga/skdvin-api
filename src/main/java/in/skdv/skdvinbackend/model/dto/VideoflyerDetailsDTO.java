@@ -6,6 +6,7 @@ import in.skdv.skdvinbackend.model.common.SimpleAssignment;
 import java.time.LocalDate;
 import java.util.Map;
 
+@SuppressWarnings("common-java:DuplicatedBlocks")
 public class VideoflyerDetailsDTO extends AbstractVideoflyer {
 
     private String id;
