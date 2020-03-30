@@ -1,5 +1,6 @@
 package in.skdv.skdvinbackend.service;
 
+import in.skdv.skdvinbackend.model.common.SimpleAssignment;
 import in.skdv.skdvinbackend.model.dto.TandemmasterDetailsDTO;
 import in.skdv.skdvinbackend.util.GenericResult;
 
@@ -9,8 +10,9 @@ public interface ITandemmasterService {
 
     TandemmasterDetailsDTO getById(String id);
 
-    GenericResult<Void> assignTandemmasterToJumpday(LocalDate date, String tandemmasterId, boolean isAddition);
+    GenericResult<Void> assignTandemmasterToJumpday(LocalDate date, String tandemmasterId, SimpleAssignment assignment);
 
     GenericResult<Void> assignTandemmaster(TandemmasterDetailsDTO tandemmasterDetails);
 
+    void delete(String id);
 }

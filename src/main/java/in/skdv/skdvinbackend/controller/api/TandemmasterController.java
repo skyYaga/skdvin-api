@@ -88,7 +88,7 @@ public class TandemmasterController {
         Optional<Tandemmaster> tandemmaster = tandemmasterRepository.findById(id);
 
         if (tandemmaster.isPresent()) {
-            tandemmasterRepository.deleteById(id);
+            tandemmasterService.delete(id);
             return ResponseEntity.ok(new GenericResult<>(true));
 
         }

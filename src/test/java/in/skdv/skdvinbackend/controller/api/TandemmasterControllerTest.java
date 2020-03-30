@@ -3,6 +3,7 @@ package in.skdv.skdvinbackend.controller.api;
 import in.skdv.skdvinbackend.AbstractSkdvinTest;
 import in.skdv.skdvinbackend.MockJwtDecoder;
 import in.skdv.skdvinbackend.ModelMockHelper;
+import in.skdv.skdvinbackend.model.common.SimpleAssignment;
 import in.skdv.skdvinbackend.model.converter.TandemmasterConverter;
 import in.skdv.skdvinbackend.model.dto.TandemmasterDetailsDTO;
 import in.skdv.skdvinbackend.model.entity.Jumpday;
@@ -304,14 +305,14 @@ public class TandemmasterControllerTest extends AbstractSkdvinTest {
         Tandemmaster tandemmaster = tandemmasterRepository.save(ModelMockHelper.createTandemmaster());
         Jumpday jumpday = ModelMockHelper.createJumpday();
         jumpdayService.saveJumpday(jumpday);
-        tandemmasterService.assignTandemmasterToJumpday(jumpday.getDate(), tandemmaster.getId(), true);
+        tandemmasterService.assignTandemmasterToJumpday(jumpday.getDate(), tandemmaster.getId(), new SimpleAssignment(true));
 
         mockMvc.perform(RestDocumentationRequestBuilders.get("/api/tandemmaster/{id}", tandemmaster.getId())
                 .header("Authorization", MockJwtDecoder.addHeader(READ_TANDEMMASTER))
                 .contentType(contentType))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success", is(true)))
-                .andExpect(jsonPath("$.payload.assignments." + LocalDate.now(), is(true)))
+                .andExpect(jsonPath("$.payload.assignments." + LocalDate.now() + ".assigned", is(true)))
                 .andDo(document("tandemmaster/get-tandemmaster",
                         responseFields(
                                 fieldWithPath("success").description("true when the request was successful"),
@@ -323,6 +324,16 @@ public class TandemmasterControllerTest extends AbstractSkdvinTest {
                                 fieldWithPath("payload.tel").description("Tandemmasters phone number"),
                                 fieldWithPath("payload.handcam").description("true if the Tandemmaster makes handcam videos"),
                                 fieldWithPath("payload.assignments").description("key value pairs of date and the tandemmasters assignment state as boolean"),
+                                fieldWithPath("payload.assignments." + LocalDate.now() + ".assigned").description("true if the flyer is assigned"),
+                                fieldWithPath("payload.assignments." + LocalDate.now() + ".allday").description("true if the flyer is assigned all day"),
+                                fieldWithPath("payload.assignments." + LocalDate.now() + ".from").description("from time if the flyer is not assigned all day"),
+                                fieldWithPath("payload.assignments." + LocalDate.now() + ".to").description("to time if the flyer is not assigned all day"),
+                                fieldWithPath("payload.assignments." + LocalDate.now() + ".flyer.firstName").description("Tandemmaster's first name"),
+                                fieldWithPath("payload.assignments." + LocalDate.now() + ".flyer.lastName").description("Tandemmaster's last name"),
+                                fieldWithPath("payload.assignments." + LocalDate.now() + ".flyer.email").description("Tandemmaster's email"),
+                                fieldWithPath("payload.assignments." + LocalDate.now() + ".flyer.tel").description("Tandemmaster's phone number"),
+                                fieldWithPath("payload.assignments." + LocalDate.now() + ".flyer.handcam").description("Tandemmaster's handcam"),
+                                fieldWithPath("payload.assignments." + LocalDate.now() + ".flyer.id").description("Tandemmaster's id"),
                                 fieldWithPath("payload.assignments." + LocalDate.now()).ignored(),
                                 fieldWithPath("exception").ignored()
                         )));
@@ -351,8 +362,8 @@ public class TandemmasterControllerTest extends AbstractSkdvinTest {
         Tandemmaster tandemmaster = tandemmasterRepository.save(ModelMockHelper.createTandemmaster());
         Jumpday jumpday = ModelMockHelper.createJumpday();
         jumpdayService.saveJumpday(jumpday);
-        TandemmasterDetailsDTO tandemmasterDetailsDTO = converter.convertToDetailsDto(tandemmaster);
-        tandemmasterDetailsDTO.setAssignments(Map.of(LocalDate.now(), true));
+
+        TandemmasterDetailsDTO tandemmasterDetailsDTO = converter.convertToDetailsDto(tandemmaster, Map.of(LocalDate.now(), new SimpleAssignment(true)));
 
         String tandemmasterJson = json(tandemmasterDetailsDTO);
 
@@ -369,6 +380,11 @@ public class TandemmasterControllerTest extends AbstractSkdvinTest {
                         requestFields(
                                 fieldWithPath("id").description("Tandemmasters id"),
                                 fieldWithPath("assignments").description("key value pairs of date and the tandemmasters assignment state as boolean"),
+                                fieldWithPath("assignments." + LocalDate.now() + ".assigned").description("true if the flyer is assigned"),
+                                fieldWithPath("assignments." + LocalDate.now() + ".allday").description("true if the flyer is assigned all day"),
+                                fieldWithPath("assignments." + LocalDate.now() + ".from").description("from time if the flyer is not assigned all day"),
+                                fieldWithPath("assignments." + LocalDate.now() + ".to").description("to time if the flyer is not assigned all day"),
+                                fieldWithPath("assignments." + LocalDate.now()).ignored(),
                                 fieldWithPath("assignments." + LocalDate.now()).ignored(),
                                 fieldWithPath("firstName").ignored(),
                                 fieldWithPath("lastName").ignored(),
@@ -399,8 +415,7 @@ public class TandemmasterControllerTest extends AbstractSkdvinTest {
         Tandemmaster tandemmaster = tandemmasterRepository.save(ModelMockHelper.createTandemmaster());
         Jumpday jumpday = ModelMockHelper.createJumpday();
         jumpdayService.saveJumpday(jumpday);
-        TandemmasterDetailsDTO tandemmasterDetailsDTO = converter.convertToDetailsDto(tandemmaster);
-        tandemmasterDetailsDTO.setAssignments(Map.of(LocalDate.now(), true));
+        TandemmasterDetailsDTO tandemmasterDetailsDTO = converter.convertToDetailsDto(tandemmaster, Map.of(LocalDate.now(), new SimpleAssignment(true)));
 
         String tandemmasterJson = json(tandemmasterDetailsDTO);
 
@@ -415,8 +430,7 @@ public class TandemmasterControllerTest extends AbstractSkdvinTest {
     @Test
     public void testAssignTandemmaster_NotFound() throws Exception {
         Tandemmaster tandemmaster = tandemmasterRepository.save(ModelMockHelper.createTandemmaster());
-        TandemmasterDetailsDTO tandemmasterDetailsDTO = converter.convertToDetailsDto(tandemmaster);
-        tandemmasterDetailsDTO.setAssignments(Map.of(LocalDate.now(), true));
+        TandemmasterDetailsDTO tandemmasterDetailsDTO = converter.convertToDetailsDto(tandemmaster, Map.of(LocalDate.now(), new SimpleAssignment(true)));
 
         String tandemmasterJson = json(tandemmasterDetailsDTO);
 

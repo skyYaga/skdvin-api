@@ -1,13 +1,16 @@
 package in.skdv.skdvinbackend.model.converter;
 
 import in.skdv.skdvinbackend.ModelMockHelper;
+import in.skdv.skdvinbackend.model.common.SimpleAssignment;
 import in.skdv.skdvinbackend.model.dto.VideoflyerDTO;
 import in.skdv.skdvinbackend.model.dto.VideoflyerDetailsDTO;
 import in.skdv.skdvinbackend.model.entity.Videoflyer;
 import org.junit.Test;
 
+import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.Assert.*;
 
@@ -66,9 +69,11 @@ public class VideoflyerConverterTest {
     @Test
     public void convertToDetailsDto() {
         Videoflyer videoflyer = ModelMockHelper.createVideoflyer();
-        VideoflyerDetailsDTO videoflyerDTO = converter.convertToDetailsDto(videoflyer);
+        Map<LocalDate, SimpleAssignment> assignments = Map.of(LocalDate.now(), new SimpleAssignment(true));
+        VideoflyerDetailsDTO videoflyerDTO = converter.convertToDetailsDto(videoflyer, assignments);
         assertNotNull(videoflyerDTO);
         assertEquals(videoflyer.getFirstName(), videoflyerDTO.getFirstName());
+        assertEquals(assignments, videoflyerDTO.getAssignments());
     }
 
     @Test

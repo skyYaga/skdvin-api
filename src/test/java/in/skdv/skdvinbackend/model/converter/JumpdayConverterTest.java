@@ -1,14 +1,20 @@
 package in.skdv.skdvinbackend.model.converter;
 
-import in.skdv.skdvinbackend.ModelMockHelper;
+import in.skdv.skdvinbackend.model.dto.AssignmentDTO;
 import in.skdv.skdvinbackend.model.dto.JumpdayDTO;
+import in.skdv.skdvinbackend.model.dto.TandemmasterDTO;
+import in.skdv.skdvinbackend.model.dto.VideoflyerDTO;
 import in.skdv.skdvinbackend.model.entity.Jumpday;
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
+import static in.skdv.skdvinbackend.ModelMockHelper.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
@@ -18,20 +24,18 @@ public class JumpdayConverterTest {
 
     @Test
     public void convertToDto() {
-        Jumpday jumpday = ModelMockHelper.createJumpday();
+        Jumpday jumpday = createJumpday();
 
         JumpdayDTO jumpdayDTO = converter.convertToDto(jumpday);
 
         assertEquals(jumpday.getDate(), jumpdayDTO.getDate());
         assertEquals(jumpday.getSlots(), jumpdayDTO.getSlots());
-        assertEquals(jumpday.getTandemmaster(), jumpdayDTO.getTandemmaster());
-        assertEquals(jumpday.getVideoflyer(), jumpdayDTO.getVideoflyer());
     }
 
     @Test
     public void convertToDtoList() {
-        Jumpday jumpday1 = ModelMockHelper.createJumpday(LocalDate.now());
-        Jumpday jumpday2 = ModelMockHelper.createJumpday(LocalDate.now().plusDays(1));
+        Jumpday jumpday1 = createJumpday(LocalDate.now());
+        Jumpday jumpday2 = createJumpday(LocalDate.now().plusDays(1));
         List<Jumpday> jumpdays = Arrays.asList(jumpday1, jumpday2);
 
         List<JumpdayDTO> jumpdayDTOList = converter.convertToDto(jumpdays);
@@ -43,16 +47,13 @@ public class JumpdayConverterTest {
 
     @Test
     public void convertToEntity() {
-        Jumpday jumpday = ModelMockHelper.createJumpday();
+        Jumpday jumpday = createJumpday();
         JumpdayDTO jumpdayDTO = converter.convertToDto(jumpday);
 
         jumpday = converter.convertToEntity(jumpdayDTO);
 
         assertEquals(jumpdayDTO.getDate(), jumpday.getDate());
         assertEquals(jumpdayDTO.getSlots(), jumpday.getSlots());
-        assertEquals(jumpdayDTO.getTandemmaster(), jumpday.getTandemmaster());
-        assertEquals(jumpdayDTO.getVideoflyer(), jumpday.getVideoflyer());
-
     }
 
     @Test
@@ -70,5 +71,21 @@ public class JumpdayConverterTest {
     @Test
     public void convertToEntity_Null() {
         assertNull(converter.convertToEntity(null));
+    }
+
+    @Test
+    public void testConvertToDto_withAssignments() {
+        Jumpday jumpday = createJumpday();
+        jumpday.setTandemmaster(new ArrayList<>(Collections.singletonList(createAssignment(createTandemmaster()))));
+        jumpday.setVideoflyer(new ArrayList<>(Collections.singletonList(createAssignment(createVideoflyer()))));
+
+        JumpdayDTO jumpdayDTO = converter.convertToDto(jumpday);
+
+        Assert.assertTrue(jumpdayDTO.getTandemmaster().get(0) instanceof AssignmentDTO);
+        Assert.assertTrue(jumpdayDTO.getTandemmaster().get(0).getFlyer() instanceof TandemmasterDTO);
+        Assert.assertTrue(jumpdayDTO.getVideoflyer().get(0) instanceof AssignmentDTO);
+        Assert.assertTrue(jumpdayDTO.getVideoflyer().get(0).getFlyer() instanceof VideoflyerDTO);
+        Assert.assertEquals(jumpday.getTandemmaster().size(), jumpdayDTO.getTandemmaster().size());
+        Assert.assertEquals(jumpday.getVideoflyer().size(), jumpdayDTO.getVideoflyer().size());
     }
 }

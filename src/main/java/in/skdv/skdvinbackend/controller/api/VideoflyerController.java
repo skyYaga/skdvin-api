@@ -88,7 +88,7 @@ public class VideoflyerController {
         Optional<Videoflyer> videoflyer = videoflyerRepository.findById(id);
 
         if (videoflyer.isPresent()) {
-            videoflyerRepository.deleteById(id);
+            videoflyerService.delete(id);
             return ResponseEntity.ok(new GenericResult<>(true));
 
         }

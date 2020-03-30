@@ -1,5 +1,6 @@
 package in.skdv.skdvinbackend;
 
+import in.skdv.skdvinbackend.model.common.AbstractFlyer;
 import in.skdv.skdvinbackend.model.entity.*;
 
 import java.time.LocalDate;
@@ -141,5 +142,12 @@ public class ModelMockHelper {
             ));
         }
         return jumpers;
+    }
+
+    public static <T extends AbstractFlyer> Assignment<T> createAssignment(T flyer) {
+        Assignment<T> assignment = new Assignment<>();
+        assignment.setAssigned(true);
+        assignment.setFlyer(flyer);
+        return assignment;
     }
 }
