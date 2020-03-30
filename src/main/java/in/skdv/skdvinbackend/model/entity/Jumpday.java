@@ -3,10 +3,12 @@ package in.skdv.skdvinbackend.model.entity;
 import in.skdv.skdvinbackend.model.common.AbstractJumpday;
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.List;
 import java.util.Optional;
 
+@Document
 public class Jumpday extends AbstractJumpday {
 
     @Id

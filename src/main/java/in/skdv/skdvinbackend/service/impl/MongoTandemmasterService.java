@@ -42,8 +42,11 @@ public class MongoTandemmasterService implements ITandemmasterService {
         }
 
         jumpdayRepository.findAll().forEach(j -> {
-            Optional<Assignment<Tandemmaster>> localAssignment = j.getTandemmaster().stream().filter(t -> t.getFlyer().getId().equals(id)).findFirst();
-            localAssignment.ifPresent(assignment -> assignments.put(j.getDate(), assignmentConverter.convertToSimpleAssignment(assignment)));
+            Optional<Assignment<Tandemmaster>> localAssignment = j.getTandemmaster().stream()
+                    .filter(t -> t != null && t.getFlyer() != null && t.getFlyer().getId().equals(id)).findFirst();
+            localAssignment
+                    .ifPresentOrElse(assignment -> assignments.put(j.getDate(), assignmentConverter.convertToSimpleAssignment(assignment)),
+                            () -> assignments.put(j.getDate(), new SimpleAssignment(false)));
         });
 
         return tandemmasterConverter.convertToDetailsDto(tandemmaster.get(), assignments);
@@ -75,9 +78,20 @@ public class MongoTandemmasterService implements ITandemmasterService {
         return new GenericResult<>(true);
     }
 
+    @Override
+    public void delete(String id) {
+        // Unassign Tandemmaster
+        TandemmasterDetailsDTO detailsDTO = getById(id);
+        detailsDTO.getAssignments().forEach((key, value) -> value.setAssigned(false));
+        assignTandemmaster(detailsDTO);
+
+        // Delete Tandemmaster
+        tandemmasterRepository.deleteById(id);
+    }
+
     private void manageTandemmasterAssignment(Jumpday jumpday, Tandemmaster tandemmaster, SimpleAssignment simpleAssignment) {
         Optional<Assignment<Tandemmaster>> foundAssignment = jumpday.getTandemmaster().stream()
-                .filter(t -> t != null && t.getFlyer().getId().equals(tandemmaster.getId()))
+                .filter(t -> t != null && t.getFlyer() != null && t.getFlyer().getId().equals(tandemmaster.getId()))
                 .findFirst();
 
         Assignment<Tandemmaster> assignment = assignmentConverter.convertToAssignment(simpleAssignment, tandemmaster);

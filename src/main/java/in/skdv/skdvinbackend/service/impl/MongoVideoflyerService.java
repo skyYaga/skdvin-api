@@ -42,8 +42,11 @@ public class MongoVideoflyerService implements IVideoflyerService {
         }
 
         jumpdayRepository.findAll().forEach(j -> {
-            Optional<Assignment<Videoflyer>> localAssignment = j.getVideoflyer().stream().filter(t -> t.getFlyer().getId().equals(id)).findFirst();
-            localAssignment.ifPresent(assignment -> assignments.put(j.getDate(), assignmentConverter.convertToSimpleAssignment(assignment)));
+            Optional<Assignment<Videoflyer>> localAssignment = j.getVideoflyer().stream()
+                    .filter(t -> t != null && t.getFlyer() != null && t.getFlyer().getId().equals(id)).findFirst();
+            localAssignment
+                    .ifPresentOrElse(assignment -> assignments.put(j.getDate(), assignmentConverter.convertToSimpleAssignment(assignment)),
+                            () -> assignments.put(j.getDate(), new SimpleAssignment(false)));
         });
 
         return videoflyerConverter.convertToDetailsDto(videoflyer.get(), assignments);
@@ -75,9 +78,20 @@ public class MongoVideoflyerService implements IVideoflyerService {
         return new GenericResult<>(true);
     }
 
+    @Override
+    public void delete(String id) {
+        // Unassign Videoflyer
+        VideoflyerDetailsDTO detailsDTO = getById(id);
+        detailsDTO.getAssignments().forEach((key, value) -> value.setAssigned(false));
+        assignVideoflyer(detailsDTO);
+
+        // Delete Videoflyer
+        videoflyerRepository.deleteById(id);
+    }
+
     private void manageVideoflyerAssignment(Jumpday jumpday, Videoflyer tandemmaster, SimpleAssignment simpleAssignment) {
         Optional<Assignment<Videoflyer>> foundAssignment = jumpday.getVideoflyer().stream()
-                .filter(t -> t != null && t.getFlyer().getId().equals(tandemmaster.getId()))
+                .filter(t -> t != null && t.getFlyer() != null && t.getFlyer().getId().equals(tandemmaster.getId()))
                 .findFirst();
 
         Assignment<Videoflyer> assignment = assignmentConverter.convertToAssignment(simpleAssignment, tandemmaster);

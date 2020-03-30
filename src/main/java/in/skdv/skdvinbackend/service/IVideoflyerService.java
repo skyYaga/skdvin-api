@@ -14,4 +14,5 @@ public interface IVideoflyerService {
 
     GenericResult<Void> assignVideoflyer(VideoflyerDetailsDTO videoflyerDetails);
 
+    void delete(String id);
 }

@@ -14,4 +14,5 @@ public interface ITandemmasterService {
 
     GenericResult<Void> assignTandemmaster(TandemmasterDetailsDTO tandemmasterDetails);
 
+    void delete(String id);
 }

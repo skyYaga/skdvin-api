@@ -1,12 +1,18 @@
 package in.skdv.skdvinbackend.model.common;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 import java.time.LocalTime;
 
 public class SimpleAssignment {
 
     private boolean assigned = false;
     private boolean allday = true;
+
+    @JsonFormat(pattern = "HH:mm")
     private LocalTime from;
+
+    @JsonFormat(pattern = "HH:mm")
     private LocalTime to;
 
     public SimpleAssignment() {
