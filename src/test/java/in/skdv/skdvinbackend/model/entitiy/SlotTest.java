@@ -1,7 +1,9 @@
 package in.skdv.skdvinbackend.model.entitiy;
 
 import in.skdv.skdvinbackend.model.common.SlotQuery;
+import in.skdv.skdvinbackend.model.entity.Appointment;
 import in.skdv.skdvinbackend.model.entity.Slot;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -49,5 +51,33 @@ public class SlotTest {
     public void testIsValidForQuery_InvalidHandcam() {
         SlotQuery query = new SlotQuery(2, 1, 1, 2);
         assertFalse(slot.isValidForQuery(query));
+    }
+
+    @Test
+    public void testPicOrVid_IsReducedWhenPicAndVidBooked() {
+        Appointment appointment = new Appointment();
+        appointment.setPicAndVid(1);
+        appointment.setPicOrVid(0);
+
+        slot.getAppointments().add(appointment);
+
+        Assert.assertEquals(1, slot.getPicAndVidBooked());
+        Assert.assertEquals(0, slot.getPicAndVidAvailable());
+        Assert.assertEquals(0, slot.getPicOrVidBooked());
+        Assert.assertEquals(1, slot.getPicOrVidAvailable());
+    }
+
+    @Test
+    public void testPicAndVid_IsLessOrEqualsPicOrVidAvailable() {
+        Appointment appointment = new Appointment();
+        appointment.setPicAndVid(0);
+        appointment.setPicOrVid(2);
+
+        slot.getAppointments().add(appointment);
+
+        Assert.assertEquals(2, slot.getPicOrVidBooked());
+        Assert.assertEquals(0, slot.getPicOrVidAvailable());
+        Assert.assertEquals(0, slot.getPicAndVidBooked());
+        Assert.assertEquals(0, slot.getPicAndVidAvailable());
     }
 }
