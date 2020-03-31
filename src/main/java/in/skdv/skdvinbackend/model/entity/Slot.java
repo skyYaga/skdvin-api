@@ -73,11 +73,12 @@ public class Slot {
     }
 
     public int getPicOrVidAvailable() {
-        return getPicOrVidTotal() - getPicOrVidBooked();
+        return getPicOrVidTotal() - getPicOrVidBooked() - getPicAndVidBooked();
     }
 
     public int getPicAndVidAvailable() {
-        return getPicAndVidTotal() - getPicAndVidBooked();
+        int picAndVidAvailable = getPicAndVidTotal() - getPicAndVidBooked();
+        return Math.min(picAndVidAvailable, getPicOrVidAvailable());
     }
 
     public int getHandcamAvailable() {
