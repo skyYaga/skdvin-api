@@ -37,6 +37,7 @@ public abstract class AbstractAppointment {
     private String createdBy;
 
     private String clientId;
+    private String note = "";
 
 
     public Customer getCustomer() {
@@ -117,5 +118,13 @@ public abstract class AbstractAppointment {
 
     public void setHandcam(int handcam) {
         this.handcam = handcam;
+    }
+
+    public void setNote(String note) {
+        this.note = note;
+    }
+
+    public String getNote() {
+        return note;
     }
 }

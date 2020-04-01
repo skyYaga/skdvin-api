@@ -63,6 +63,18 @@ public class MongoAppointmentServiceTest extends AbstractSkdvinTest {
     }
 
     @Test
+    public void testSaveAppointment_WithNote() {
+        String note = "Price is 10% off";
+        Appointment appointment = ModelMockHelper.createSingleAppointment();
+        appointment.setNote(note);
+
+        GenericResult<Appointment> savedAppointment = appointmentService.saveAppointment(appointment);
+
+        assertTrue(savedAppointment.isSuccess());
+        assertEquals(note, savedAppointment.getPayload().getNote());
+    }
+
+    @Test
     public void testSaveAppointment_NoJumpday() {
         Appointment appointment = ModelMockHelper.createSingleAppointment();
         appointment.setDate(LocalDateTime.now().plusDays(1));
@@ -215,6 +227,21 @@ public class MongoAppointmentServiceTest extends AbstractSkdvinTest {
         assertTrue(updatedAppointment.isSuccess());
         assertEquals(appointmentId, updatedAppointment.getPayload().getAppointmentId());
         assertEquals("Unitbob", updatedAppointment.getPayload().getCustomer().getFirstName());
+    }
+
+    @Test
+    public void testUpdateAppointment_WithNote() {
+        String note = "Price is 10% off";
+
+        GenericResult<Appointment> savedAppointment = appointmentService.saveAppointment(ModelMockHelper.createSingleAppointment());
+        assertTrue(savedAppointment.isSuccess());
+        assertTrue(savedAppointment.getPayload().getNote().isEmpty());
+        savedAppointment.getPayload().setNote(note);
+
+        GenericResult<Appointment> updatedAppointment = appointmentService.updateAppointment(savedAppointment.getPayload());
+
+        assertTrue(updatedAppointment.isSuccess());
+        assertEquals(note, updatedAppointment.getPayload().getNote());
     }
 
     @Test
