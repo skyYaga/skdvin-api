@@ -49,9 +49,9 @@ import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
+import java.util.Collections;
 
-import static in.skdv.skdvinbackend.config.Authorities.READ_APPOINTMENTS;
-import static in.skdv.skdvinbackend.config.Authorities.UPDATE_APPOINTMENTS;
+import static in.skdv.skdvinbackend.config.Authorities.*;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.doReturn;
@@ -357,6 +357,70 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
+    public void testAddAdminAppointment() throws Exception {
+        Appointment appointment = ModelMockHelper.createSingleAppointment();
+        appointment.getCustomer().setJumpers(Collections.emptyList());
+        String appointmentJson = json(appointment);
+
+        mockMvc.perform(RestDocumentationRequestBuilders.post("/api/appointment/admin")
+                .header("Accept-Language", "en-US")
+                .header("Authorization", MockJwtDecoder.addHeader(CREATE_APPOINTMENTS))
+                .contentType(contentType)
+                .content(appointmentJson))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.success", is(true)))
+                .andExpect(jsonPath("$.payload.customer.firstName", is("Max")))
+                .andDo(document("appointment/add-admin-appointment",
+                        requestFields(
+                                fieldWithPath("customer").description("Customer Details"),
+                                fieldWithPath("customer.firstName").description("Customer's first name"),
+                                fieldWithPath("customer.lastName").description("Customer's last name"),
+                                fieldWithPath("customer.tel").description("Customer's phone number"),
+                                fieldWithPath("customer.email").description("Customer's email address"),
+                                fieldWithPath("customer.zip").description("Customer's zip code"),
+                                fieldWithPath("customer.city").description("Customer's city"),
+                                fieldWithPath("customer.jumpers[]").description("Jumpers for this appointment"),
+                                fieldWithPath("date").description("Appointments date/time"),
+                                fieldWithPath("tandem").description("Tandem count"),
+                                fieldWithPath("picOrVid").description("picture or video count"),
+                                fieldWithPath("picAndVid").description("picture and video count"),
+                                fieldWithPath("handcam").description("handcam count"),
+                                fieldWithPath("note").description("An optional note for the appointment"),
+                                fieldWithPath("state").ignored(),
+                                fieldWithPath("createdOn").ignored(),
+                                fieldWithPath("createdBy").ignored(),
+                                fieldWithPath("clientId").ignored(),
+                                fieldWithPath("verificationToken").ignored()
+                        ),
+                        responseFields(
+                                fieldWithPath("success").description("true, if the request was successful"),
+                                fieldWithPath("message").description("Message in case of error"),
+                                fieldWithPath("exception").description("Exception if any"),
+                                fieldWithPath("payload").description("The request's actual payload"),
+                                fieldWithPath("payload.appointmentId").description("The created appointment's id"),
+                                fieldWithPath("payload.customer").description("Customer Details"),
+                                fieldWithPath("payload.customer.firstName").description("Customer's first name"),
+                                fieldWithPath("payload.customer.lastName").description("Customer's last name"),
+                                fieldWithPath("payload.customer.tel").description("Customer's phone number"),
+                                fieldWithPath("payload.customer.email").description("Customer's email address"),
+                                fieldWithPath("payload.customer.zip").description("Customer's zip code"),
+                                fieldWithPath("payload.customer.city").description("Customer's city"),
+                                fieldWithPath("payload.customer.jumpers[]").description("Jumpers for this appointment"),
+                                fieldWithPath("payload.date").description("Appointments date/time"),
+                                fieldWithPath("payload.tandem").description("Tandem count"),
+                                fieldWithPath("payload.picOrVid").description("picture or video count"),
+                                fieldWithPath("payload.picAndVid").description("picture and video count"),
+                                fieldWithPath("payload.handcam").description("handcam count"),
+                                fieldWithPath("payload.note").description("An optional note for the appointment"),
+                                fieldWithPath("payload.state").ignored(),
+                                fieldWithPath("payload.createdOn").ignored(),
+                                fieldWithPath("payload.createdBy").ignored(),
+                                fieldWithPath("payload.clientId").ignored()
+                        )));
+    }
+
+
+    @Test
     public void testUpdateAppointment() throws Exception {
         AppointmentConverter appointmentConverter = new AppointmentConverter();
         AppointmentDTO appointment = appointmentConverter.convertToDto(appointmentService.findAppointmentsByDay(LocalDate.now()).get(0));
@@ -436,6 +500,77 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
         ArgumentCaptor<MimeMessage> argument = ArgumentCaptor.forClass(MimeMessage.class);
         verify(mailSender).send(argument.capture());
         assertTrue(argument.getValue().getSubject().startsWith("Your booking has been updated"));
+    }
+
+    @Test
+    public void testUpdateAdminAppointment() throws Exception {
+        AppointmentConverter appointmentConverter = new AppointmentConverter();
+        AppointmentDTO appointment = appointmentConverter.convertToDto(appointmentService.findAppointmentsByDay(LocalDate.now()).get(0));
+
+        int newCount = appointment.getTandem() + 1;
+
+        appointment.setTandem(newCount);
+        appointment.getCustomer().setJumpers(Collections.emptyList());
+
+        String appointmentJson = json(appointment);
+
+        mockMvc.perform(RestDocumentationRequestBuilders.put("/api/appointment/admin")
+                .header("Accept-Language", "en-US")
+                .header("Authorization", MockJwtDecoder.addHeader(UPDATE_APPOINTMENTS))
+                .contentType(contentType)
+                .content(appointmentJson))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success", is(true)))
+                .andExpect(jsonPath("$.payload.tandem", is(newCount)))
+                .andExpect(jsonPath("$.payload.customer.firstName", is("Max")))
+                .andExpect(jsonPath("$.payload.customer.jumpers", hasSize(0)))
+                .andDo(document("appointment/update-appointment",
+                        requestFields(
+                                fieldWithPath("appointmentId").description("The appointment's id"),
+                                fieldWithPath("customer").description("Customer Details"),
+                                fieldWithPath("customer.firstName").description("Customer's first name"),
+                                fieldWithPath("customer.lastName").description("Customer's last name"),
+                                fieldWithPath("customer.tel").description("Customer's phone number"),
+                                fieldWithPath("customer.email").description("Customer's email address"),
+                                fieldWithPath("customer.zip").description("Customer's zip code"),
+                                fieldWithPath("customer.city").description("Customer's city"),
+                                fieldWithPath("customer.jumpers[]").description("Jumpers for this appointment"),
+                                fieldWithPath("date").description("Appointments date/time"),
+                                fieldWithPath("tandem").description("Tandem count"),
+                                fieldWithPath("picOrVid").description("picture or video count"),
+                                fieldWithPath("picAndVid").description("picture and video count"),
+                                fieldWithPath("handcam").description("handcam count"),
+                                fieldWithPath("note").description("An optional note for the appointment"),
+                                fieldWithPath("state").ignored(),
+                                fieldWithPath("createdOn").ignored(),
+                                fieldWithPath("createdBy").ignored(),
+                                fieldWithPath("clientId").ignored()
+                        ),
+                        responseFields(
+                                fieldWithPath("success").description("true, if the request was successful"),
+                                fieldWithPath("message").description("Message in case of error"),
+                                fieldWithPath("exception").description("Exception if any"),
+                                fieldWithPath("payload").description("The request's actual payload"),
+                                fieldWithPath("payload.appointmentId").description("The appointment's id"),
+                                fieldWithPath("payload.customer").description("Customer Details"),
+                                fieldWithPath("payload.customer.firstName").description("Customer's first name"),
+                                fieldWithPath("payload.customer.lastName").description("Customer's last name"),
+                                fieldWithPath("payload.customer.tel").description("Customer's phone number"),
+                                fieldWithPath("payload.customer.email").description("Customer's email address"),
+                                fieldWithPath("payload.customer.zip").description("Customer's zip code"),
+                                fieldWithPath("payload.customer.city").description("Customer's city"),
+                                fieldWithPath("payload.customer.jumpers[]").description("Jumpers for this appointment"),
+                                fieldWithPath("payload.date").description("Appointments date/time"),
+                                fieldWithPath("payload.tandem").description("Tandem count"),
+                                fieldWithPath("payload.picOrVid").description("picture or video count"),
+                                fieldWithPath("payload.picAndVid").description("picture and video count"),
+                                fieldWithPath("payload.handcam").description("handcam count"),
+                                fieldWithPath("payload.note").description("An optional note for the appointment"),
+                                fieldWithPath("payload.state").ignored(),
+                                fieldWithPath("payload.createdOn").ignored(),
+                                fieldWithPath("payload.createdBy").ignored(),
+                                fieldWithPath("payload.clientId").ignored()
+                        )));
     }
 
     @Test

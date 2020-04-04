@@ -79,6 +79,21 @@ public class AppointmentController {
         return sendSaveOrUpdateErrorResponse(result);
     }
 
+    @PostMapping("/admin")
+    @PreAuthorize("hasAuthority('SCOPE_create:appointments')")
+    public ResponseEntity<GenericResult> addAdminAppointment(@RequestBody @Valid AppointmentDTO input) {
+        Appointment appointment = appointmentConverter.convertToEntity(input);
+
+        GenericResult<Appointment> result = appointmentService.saveAdminAppointment(appointment);
+
+        if (result.isSuccess()) {
+            return ResponseEntity.status(HttpStatus.CREATED)
+                .body(new GenericResult<>(true, appointmentConverter.convertToDto(result.getPayload())));
+        }
+
+        return sendSaveOrUpdateErrorResponse(result);
+    }
+
     @PutMapping
     @PreAuthorize("hasAuthority('SCOPE_update:appointments')")
     public ResponseEntity<GenericResult> updateAppointment(@RequestBody @Valid AppointmentDTO input) {
@@ -90,6 +105,18 @@ public class AppointmentController {
             } catch (MessagingException e) {
                 LOGGER.error("Error sending appointment update mail", e);
             }
+            return ResponseEntity.ok(new GenericResult<>(true, appointmentConverter.convertToDto(result.getPayload())));
+        }
+
+        return sendSaveOrUpdateErrorResponse(result);
+    }
+
+    @PutMapping("/admin")
+    @PreAuthorize("hasAuthority('SCOPE_update:appointments')")
+    public ResponseEntity<GenericResult> updateAdminAppointment(@RequestBody @Valid AppointmentDTO input) {
+        GenericResult<Appointment> result = appointmentService.updateAdminAppointment(appointmentConverter.convertToEntity(input));
+
+        if (result.isSuccess()) {
             return ResponseEntity.ok(new GenericResult<>(true, appointmentConverter.convertToDto(result.getPayload())));
         }
 

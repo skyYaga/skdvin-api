@@ -13,7 +13,11 @@ public interface IAppointmentService {
 
     GenericResult<Appointment> saveAppointment(Appointment appointment);
 
+    GenericResult<Appointment> saveAdminAppointment(Appointment appointment);
+
     GenericResult<Appointment> updateAppointment(Appointment appointment);
+
+    GenericResult<Appointment> updateAdminAppointment(Appointment appointment);
 
     Appointment findAppointment(int id);
 

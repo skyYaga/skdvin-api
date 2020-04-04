@@ -44,12 +44,27 @@ public class MongoAppointmentService implements IAppointmentService {
     @Override
     public GenericResult<Appointment> saveAppointment(Appointment appointment) {
         Jumpday jumpday = jumpdayRepository.findByDate(appointment.getDate().toLocalDate());
-        return saveAppointmentInternal(jumpday, appointment);
+        return saveAppointmentInternal(jumpday, appointment, false);
     }
 
+    @Override
+    public GenericResult<Appointment> saveAdminAppointment(Appointment appointment) {
+        Jumpday jumpday = jumpdayRepository.findByDate(appointment.getDate().toLocalDate());
+        return saveAppointmentInternal(jumpday, appointment, true);
+    }
 
     @Override
     public GenericResult<Appointment> updateAppointment(Appointment newAppointment) {
+        return updateAppointment(newAppointment, false);
+    }
+
+    @Override
+    public GenericResult<Appointment> updateAdminAppointment(Appointment appointment) {
+        return updateAppointment(appointment, true);
+    }
+
+
+    private GenericResult<Appointment> updateAppointment(Appointment newAppointment, boolean isAdminBooking) {
         Appointment oldAppointment = findAppointment(newAppointment.getAppointmentId());
 
         if (oldAppointment == null) {
@@ -58,11 +73,16 @@ public class MongoAppointmentService implements IAppointmentService {
 
         if (isAtSameDateAndTime(newAppointment, oldAppointment)) {
             // Delete Appointment in this jumpday and create a new one, then save
-            return replaceAppointment(newAppointment);
+            return replaceAppointment(newAppointment, isAdminBooking);
         }
 
         // Create new Appointment and save it and then delete old one and save
-        GenericResult<Appointment> appointmentGenericResult = saveAppointment(newAppointment);
+        GenericResult<Appointment> appointmentGenericResult;
+        if (isAdminBooking) {
+            appointmentGenericResult = saveAdminAppointment(newAppointment);
+        } else {
+            appointmentGenericResult = saveAppointment(newAppointment);
+        }
         if (appointmentGenericResult.isSuccess()) {
             deleteOldAppointment(newAppointment, oldAppointment);
         }
@@ -84,14 +104,14 @@ public class MongoAppointmentService implements IAppointmentService {
         }
     }
 
-    private GenericResult<Appointment> replaceAppointment(Appointment newAppointment) {
+    private GenericResult<Appointment> replaceAppointment(Appointment newAppointment, boolean isAdminBooking) {
         Jumpday jumpday = jumpdayRepository.findByDate(newAppointment.getDate().toLocalDate());
         for (Slot slot : jumpday.getSlots()) {
             slot.getAppointments().removeIf(appointment -> appointment != null
                     && appointment.getAppointmentId() == newAppointment.getAppointmentId());
         }
 
-        return saveAppointmentInternal(jumpday, newAppointment);
+        return saveAppointmentInternal(jumpday, newAppointment, isAdminBooking);
     }
 
     private boolean isAtSameDateAndTime(Appointment newAppointment, Appointment oldAppointment) {
@@ -193,7 +213,7 @@ public class MongoAppointmentService implements IAppointmentService {
         return jumpday.getDate().isEqual(LocalDate.now()) && slot.getTime().isAfter(LocalTime.now(clock));
     }
 
-    private GenericResult<Appointment> saveAppointmentInternal(Jumpday jumpday, Appointment appointment) {
+    private GenericResult<Appointment> saveAppointmentInternal(Jumpday jumpday, Appointment appointment, boolean isAdminBooking) {
         if (jumpday == null) {
             return new GenericResult<>(false, ErrorMessage.JUMPDAY_NOT_FOUND_MSG);
         }
@@ -203,8 +223,12 @@ public class MongoAppointmentService implements IAppointmentService {
             return new GenericResult<>(false, ErrorMessage.APPOINTMENT_MORE_VIDEO_THAN_TAMDEM_SLOTS);
         }
 
-        if (appointment.getTandem() != appointment.getCustomer().getJumpers().size()) {
+        if (!isAdminBooking && appointment.getTandem() != appointment.getCustomer().getJumpers().size()) {
             return new GenericResult<>(false, ErrorMessage.APPOINTMENT_MISSING_JUMPER_INFO);
+        }
+
+        if (isAdminBooking) {
+            appointment.setState(AppointmentState.CONFIRMED);
         }
 
         if (hasSlotsAvailable(jumpday, appointment)) {
