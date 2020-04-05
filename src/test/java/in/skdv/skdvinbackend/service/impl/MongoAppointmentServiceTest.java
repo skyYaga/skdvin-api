@@ -23,6 +23,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.*;
 import java.time.temporal.ChronoUnit;
+import java.util.Collections;
 import java.util.List;
 
 import static org.junit.Assert.*;
@@ -60,6 +61,21 @@ public class MongoAppointmentServiceTest extends AbstractSkdvinTest {
         assertTrue(savedAppointment.isSuccess());
         assertNotNull(savedAppointment.getPayload().getCreatedOn());
         assertNotEquals(0, savedAppointment.getPayload().getAppointmentId());
+    }
+
+
+    @Test
+    public void testSaveAdminAppointment() {
+        Appointment appointment = ModelMockHelper.createSingleAppointment();
+        appointment.getCustomer().setJumpers(Collections.emptyList());
+
+        assertNull(appointment.getCreatedOn());
+        assertEquals(0, appointment.getAppointmentId());
+
+        GenericResult<Appointment> savedAppointment = appointmentService.saveAdminAppointment(appointment);
+
+        assertTrue(savedAppointment.isSuccess());
+        assertEquals(AppointmentState.CONFIRMED, savedAppointment.getPayload().getState());
     }
 
     @Test
@@ -294,6 +310,40 @@ public class MongoAppointmentServiceTest extends AbstractSkdvinTest {
         assertTrue(updatedAppointment.isSuccess());
         assertEquals(appointmentId, updatedAppointment.getPayload().getAppointmentId());
             assertEquals("Jane", updatedAppointment.getPayload().getCustomer().getFirstName());
+        assertEquals(newDate, updatedAppointment.getPayload().getDate());
+    }
+
+    @Test
+    public void testUpdateAdminAppointment() {
+        GenericResult<Appointment> appointment = appointmentService.saveAppointment(ModelMockHelper.createSecondAppointment());
+        assertTrue(appointment.isSuccess());
+        int appointmentId = appointment.getPayload().getAppointmentId();
+        appointment.getPayload().getCustomer().setJumpers(Collections.emptyList());
+        appointment.getPayload().setTandem(3);
+
+        GenericResult<Appointment> updatedAppointment = appointmentService.updateAdminAppointment(appointment.getPayload());
+
+        assertTrue(updatedAppointment.isSuccess());
+        assertEquals(appointmentId, updatedAppointment.getPayload().getAppointmentId());
+        assertEquals(0, updatedAppointment.getPayload().getCustomer().getJumpers().size());
+        assertEquals(3, updatedAppointment.getPayload().getTandem());
+    }
+
+    @Test
+    public void testUpdateAdminAppointment_ChangeDate() {
+        jumpdayRepository.save(ModelMockHelper.createJumpday(LocalDate.now().plusDays(1)));
+        GenericResult<Appointment> appointment = appointmentService.saveAppointment(ModelMockHelper.createSecondAppointment());
+        assertTrue(appointment.isSuccess());
+        int appointmentId = appointment.getPayload().getAppointmentId();
+        appointment.getPayload().getCustomer().setJumpers(Collections.emptyList());
+        LocalDateTime newDate = appointment.getPayload().getDate().plusDays(1);
+        appointment.getPayload().setDate(newDate);
+
+        GenericResult<Appointment> updatedAppointment = appointmentService.updateAdminAppointment(appointment.getPayload());
+
+        assertTrue(updatedAppointment.isSuccess());
+        assertEquals(appointmentId, updatedAppointment.getPayload().getAppointmentId());
+        assertEquals(0, updatedAppointment.getPayload().getCustomer().getJumpers().size());
         assertEquals(newDate, updatedAppointment.getPayload().getDate());
     }
 
