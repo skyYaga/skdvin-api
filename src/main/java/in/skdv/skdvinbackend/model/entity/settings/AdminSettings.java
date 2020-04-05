@@ -1,15 +1,17 @@
-package in.skdv.skdvinbackend.model.entity;
+package in.skdv.skdvinbackend.model.entity.settings;
 
 import java.time.Duration;
 import java.time.LocalTime;
 
-public class Settings {
+public class AdminSettings {
 
     private LocalTime tandemsFrom;
     private LocalTime tandemsTo;
     private Duration interval;
     private int tandemCount;
-    private int videoCount;
+    private int picOrVidCount;
+    private int picAndVidCount;
+    private int handcamCount;
 
     public LocalTime getTandemsFrom() {
         return tandemsFrom;
@@ -43,22 +45,27 @@ public class Settings {
         this.tandemCount = tandemCount;
     }
 
-    public int getVideoCount() {
-        return videoCount;
+    public int getPicOrVidCount() {
+        return picOrVidCount;
     }
 
-    public void setVideoCount(int videoCount) {
-        this.videoCount = videoCount;
+    public void setPicOrVidCount(int picOrVidCount) {
+        this.picOrVidCount = picOrVidCount;
     }
 
-    @Override
-    public String toString() {
-        return "Settings{" +
-                "tandemsFrom=" + tandemsFrom +
-                ", tandemsTo=" + tandemsTo +
-                ", interval=" + interval +
-                ", tandemCount=" + tandemCount +
-                ", videoCount=" + videoCount +
-                '}';
+    public int getPicAndVidCount() {
+        return picAndVidCount;
+    }
+
+    public void setPicAndVidCount(int picAndVidCount) {
+        this.picAndVidCount = picAndVidCount;
+    }
+
+    public int getHandcamCount() {
+        return handcamCount;
+    }
+
+    public void setHandcamCount(int handcamCount) {
+        this.handcamCount = handcamCount;
     }
 }
