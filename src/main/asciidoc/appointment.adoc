@@ -35,7 +35,7 @@ operation::appointment/update-appointment[snippets='http-request,request-fields,
 == Update Admin Appointment
 A `PUT` request is used to update an appointment. Admin appointments don't need Jumper details.
 
-operation::appointment/update-appointment[snippets='http-request,request-fields,http-response,response-fields']
+operation::appointment/update-admin-appointment[snippets='http-request,request-fields,http-response,response-fields']
 
 
 == Delete Appointment
