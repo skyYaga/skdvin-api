@@ -22,7 +22,7 @@
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<java.version>11</java.version>
 		<modelmapper.version>2.3.7</modelmapper.version>
-		<nimbus-jose-jwt.version>8.12</nimbus-jose-jwt.version>
+		<nimbus-jose-jwt.version>8.14</nimbus-jose-jwt.version>
 	</properties>
 
 	<dependencies>
