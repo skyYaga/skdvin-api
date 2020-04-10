@@ -1,11 +1,15 @@
 package in.skdv.skdvinbackend.model.entity.settings;
 
+import javax.validation.constraints.NotNull;
+
 public class Faq {
 
+    @NotNull
     private int id;
+    @NotNull
     private String question;
+    @NotNull
     private String answer;
-    private String language;
 
     public int getId() {
         return id;
@@ -31,11 +35,4 @@ public class Faq {
         this.answer = answer;
     }
 
-    public String getLanguage() {
-        return language;
-    }
-
-    public void setLanguage(String language) {
-        this.language = language;
-    }
 }

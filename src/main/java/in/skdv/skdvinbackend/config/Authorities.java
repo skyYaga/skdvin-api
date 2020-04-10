@@ -26,4 +26,8 @@ public final class Authorities {
     public static final String UPDATE_VIDEOFLYER = "SCOPE_update:videoflyer";
     public static final String READ_VIDEOFLYER = "SCOPE_read:videoflyer";
     public static final String DELETE_VIDEOFLYER = "SCOPE_delete:videoflyer";
+
+    public static final String CREATE_SETTINGS = "SCOPE_create:settings";
+    public static final String READ_SETTINGS = "SCOPE_read:settings";
+    public static final String UPDATE_SETTINGS = "SCOPE_update:settings";
 }

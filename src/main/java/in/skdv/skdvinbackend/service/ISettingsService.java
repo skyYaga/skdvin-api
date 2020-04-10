@@ -4,22 +4,18 @@ import in.skdv.skdvinbackend.model.entity.settings.AdminSettings;
 import in.skdv.skdvinbackend.model.entity.settings.CommonSettings;
 import in.skdv.skdvinbackend.model.entity.settings.Settings;
 
-import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 public interface ISettingsService {
 
-    List<Settings> saveSettings(List<Settings> settings);
+    Settings saveSettings(Settings settings);
 
-    List<Settings> getSettings();
+    Settings getSettings();
 
-    Settings getSettingsByLocale(Locale locale);
+    AdminSettings getAdminSettings();
 
-    List<AdminSettings> getAdminSettings();
-
-    List<CommonSettings> getCommonSettings();
+    Map<Locale, CommonSettings> getCommonSettings();
 
     CommonSettings getCommonSettingsByLocale(Locale locale);
-
-    AdminSettings getAdminSettingsByLocale(Locale locale);
 }

@@ -7,9 +7,9 @@ import in.skdv.skdvinbackend.repository.SettingsRepository;
 import in.skdv.skdvinbackend.service.ISettingsService;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 
 public class MongoSettingsService implements ISettingsService {
 
@@ -22,51 +22,52 @@ public class MongoSettingsService implements ISettingsService {
     }
 
     @Override
-    public List<Settings> saveSettings(List<Settings> settings) {
-        return settingsRepository.saveAll(settings);
-    }
-
-    @Override
-    public List<Settings> getSettings() {
-        return settingsRepository.findAll();
-    }
-
-    @Override
-    public Settings getSettingsByLocale(Locale locale) {
-        Settings settings = settingsRepository.findByLocale(locale);
-        if (settings == null) {
-            settings = settingsRepository.findByLocale(DEFAULT_LOCALE);
+    public Settings saveSettings(Settings settings) {
+        Settings existingSettings = getSettings();
+        if (existingSettings != null) {
+            settings.setId(existingSettings.getId());
         }
-        return settings;
+        return settingsRepository.save(settings);
     }
 
     @Override
-    public List<AdminSettings> getAdminSettings() {
-        List<Settings> settings = getSettings();
-        List<AdminSettings> adminSettings = new ArrayList<>();
-
-        settings.forEach(s -> adminSettings.add(s.getAdminSettings()));
-
-        return adminSettings;
+    public Settings getSettings() {
+        return settingsRepository.findAll().stream().findFirst().orElse(null);
     }
 
     @Override
-    public List<CommonSettings> getCommonSettings() {
-        List<Settings> settings = getSettings();
-        List<CommonSettings> commonSettings = new ArrayList<>();
+    public AdminSettings getAdminSettings() {
+        Settings settings = getSettings();
+        if (settings != null) {
+            return settings.getAdminSettings();
+        }
+        return null;
+    }
 
-        settings.forEach(s -> commonSettings.add(s.getCommonSettings()));
-
-        return commonSettings;
+    @Override
+    public Map<Locale, CommonSettings> getCommonSettings() {
+        Settings settings = getSettings();
+        if (settings != null) {
+            return settings.getCommonSettings();
+        }
+        return new HashMap<>();
     }
 
     @Override
     public CommonSettings getCommonSettingsByLocale(Locale locale) {
-        return getSettingsByLocale(locale).getCommonSettings();
+        Map<Locale, CommonSettings> commonSettings = getSettings().getCommonSettings();
+        return getCommonSettingsByLocaleOrDefault(commonSettings, locale);
     }
 
-    @Override
-    public AdminSettings getAdminSettingsByLocale(Locale locale) {
-        return getSettingsByLocale(locale).getAdminSettings();
+    private CommonSettings getCommonSettingsByLocaleOrDefault(Map<Locale, CommonSettings> commonSettings, Locale locale) {
+        if (commonSettings != null) {
+            CommonSettings localeCommonSettings = commonSettings.get(locale);
+            if (localeCommonSettings == null) {
+                localeCommonSettings = commonSettings.get(DEFAULT_LOCALE);
+            }
+            return localeCommonSettings;
+        }
+        return null;
     }
+
 }

@@ -1,13 +1,16 @@
 package in.skdv.skdvinbackend.model.entity.settings;
 
-import java.time.Duration;
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 import java.time.LocalTime;
 
 public class AdminSettings {
 
+    @JsonFormat(pattern = "HH:mm")
     private LocalTime tandemsFrom;
+    @JsonFormat(pattern = "HH:mm")
     private LocalTime tandemsTo;
-    private Duration interval;
+    private String interval;
     private int tandemCount;
     private int picOrVidCount;
     private int picAndVidCount;
@@ -29,11 +32,11 @@ public class AdminSettings {
         this.tandemsTo = tandemsTo;
     }
 
-    public Duration getInterval() {
+    public String getInterval() {
         return interval;
     }
 
-    public void setInterval(Duration interval) {
+    public void setInterval(String interval) {
         this.interval = interval;
     }
 

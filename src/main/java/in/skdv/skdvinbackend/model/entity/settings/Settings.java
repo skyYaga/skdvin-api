@@ -1,22 +1,25 @@
 package in.skdv.skdvinbackend.model.entity.settings;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.Locale;
+import java.util.Map;
 
+@Document
 public class Settings {
 
     @Id
-    private Locale locale = Locale.GERMAN;
+    private String id;
     private AdminSettings adminSettings;
-    private CommonSettings commonSettings;
+    private Map<Locale, CommonSettings> commonSettings;
 
-    public Locale getLocale() {
-        return locale;
+    public String getId() {
+        return id;
     }
 
-    public void setLocale(Locale locale) {
-        this.locale = locale;
+    public void setId(String id) {
+        this.id = id;
     }
 
     public AdminSettings getAdminSettings() {
@@ -27,11 +30,11 @@ public class Settings {
         this.adminSettings = adminSettings;
     }
 
-    public CommonSettings getCommonSettings() {
+    public Map<Locale, CommonSettings> getCommonSettings() {
         return commonSettings;
     }
 
-    public void setCommonSettings(CommonSettings commonSettings) {
+    public void setCommonSettings(Map<Locale, CommonSettings> commonSettings) {
         this.commonSettings = commonSettings;
     }
 }

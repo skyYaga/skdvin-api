@@ -15,3 +15,5 @@ include::appointment.adoc[]
 include::tandemmaster.adoc[]
 
 include::videoflyer.adoc[]
+
+include::settings.adoc[]
