@@ -3,7 +3,6 @@ package in.skdv.skdvinbackend.model.entity.settings;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.util.Locale;
 import java.util.Map;
 
 @Document
@@ -12,7 +11,7 @@ public class Settings {
     @Id
     private String id;
     private AdminSettings adminSettings;
-    private Map<Locale, CommonSettings> commonSettings;
+    private Map<String, CommonSettings> commonSettings;
 
     public String getId() {
         return id;
@@ -30,11 +29,11 @@ public class Settings {
         this.adminSettings = adminSettings;
     }
 
-    public Map<Locale, CommonSettings> getCommonSettings() {
+    public Map<String, CommonSettings> getCommonSettings() {
         return commonSettings;
     }
 
-    public void setCommonSettings(Map<Locale, CommonSettings> commonSettings) {
+    public void setCommonSettings(Map<String, CommonSettings> commonSettings) {
         this.commonSettings = commonSettings;
     }
 }

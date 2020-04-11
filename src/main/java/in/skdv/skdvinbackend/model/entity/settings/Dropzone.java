@@ -3,6 +3,7 @@ package in.skdv.skdvinbackend.model.entity.settings;
 public class Dropzone {
 
     private String name;
+    private String email;
     private String priceListUrl;
 
     public String getName() {
@@ -11,6 +12,14 @@ public class Dropzone {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 
     public String getPriceListUrl() {

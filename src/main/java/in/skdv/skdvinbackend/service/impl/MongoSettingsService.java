@@ -45,7 +45,7 @@ public class MongoSettingsService implements ISettingsService {
     }
 
     @Override
-    public Map<Locale, CommonSettings> getCommonSettings() {
+    public Map<String, CommonSettings> getCommonSettings() {
         Settings settings = getSettings();
         if (settings != null) {
             return settings.getCommonSettings();
@@ -54,16 +54,16 @@ public class MongoSettingsService implements ISettingsService {
     }
 
     @Override
-    public CommonSettings getCommonSettingsByLocale(Locale locale) {
-        Map<Locale, CommonSettings> commonSettings = getSettings().getCommonSettings();
-        return getCommonSettingsByLocaleOrDefault(commonSettings, locale);
+    public CommonSettings getCommonSettingsByLanguage(String language) {
+        Map<String, CommonSettings> commonSettings = getSettings().getCommonSettings();
+        return getCommonSettingsByLocaleOrDefault(commonSettings, language);
     }
 
-    private CommonSettings getCommonSettingsByLocaleOrDefault(Map<Locale, CommonSettings> commonSettings, Locale locale) {
+    private CommonSettings getCommonSettingsByLocaleOrDefault(Map<String, CommonSettings> commonSettings, String language) {
         if (commonSettings != null) {
-            CommonSettings localeCommonSettings = commonSettings.get(locale);
+            CommonSettings localeCommonSettings = commonSettings.get(language);
             if (localeCommonSettings == null) {
-                localeCommonSettings = commonSettings.get(DEFAULT_LOCALE);
+                localeCommonSettings = commonSettings.get(DEFAULT_LOCALE.getLanguage());
             }
             return localeCommonSettings;
         }

@@ -4,7 +4,6 @@ import in.skdv.skdvinbackend.model.entity.settings.AdminSettings;
 import in.skdv.skdvinbackend.model.entity.settings.CommonSettings;
 import in.skdv.skdvinbackend.model.entity.settings.Settings;
 
-import java.util.Locale;
 import java.util.Map;
 
 public interface ISettingsService {
@@ -15,7 +14,7 @@ public interface ISettingsService {
 
     AdminSettings getAdminSettings();
 
-    Map<Locale, CommonSettings> getCommonSettings();
+    Map<String, CommonSettings> getCommonSettings();
 
-    CommonSettings getCommonSettingsByLocale(Locale locale);
+    CommonSettings getCommonSettingsByLanguage(String language);
 }

@@ -15,6 +15,12 @@ operation::settings/update-settings[snippets='http-request,path-parameters,reque
 
 
 == Get Settings
-A `GET` request is used to get all settings.
+A `GET` request is used to get all settings (including admin settings).
 
 operation::settings/get-settings[snippets='http-request,http-response,response-fields']
+
+
+== Get Common Settings
+A `GET` request is used to get common settings (excluding admin settings).
+
+operation::settings/get-common-settings[snippets='http-request,http-response,response-fields']

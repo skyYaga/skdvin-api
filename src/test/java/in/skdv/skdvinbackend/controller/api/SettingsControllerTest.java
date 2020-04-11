@@ -3,6 +3,7 @@ package in.skdv.skdvinbackend.controller.api;
 import in.skdv.skdvinbackend.AbstractSkdvinTest;
 import in.skdv.skdvinbackend.MockJwtDecoder;
 import in.skdv.skdvinbackend.ModelMockHelper;
+import in.skdv.skdvinbackend.model.entity.settings.CommonSettings;
 import in.skdv.skdvinbackend.model.entity.settings.Settings;
 import in.skdv.skdvinbackend.repository.SettingsRepository;
 import org.junit.Before;
@@ -115,6 +116,7 @@ public class SettingsControllerTest extends AbstractSkdvinTest {
                         fieldWithPath("commonSettings").description("Object with common settings"),
                         fieldWithPath("commonSettings.de.dropzone").description("Object with dropzone details"),
                         fieldWithPath("commonSettings.de.dropzone.name").description("Dropzone name"),
+                        fieldWithPath("commonSettings.de.dropzone.email").description("Dropzone email"),
                         fieldWithPath("commonSettings.de.dropzone.priceListUrl").description("URL to price list"),
                         fieldWithPath("commonSettings.de.faq[].question").description("FAQ question"),
                         fieldWithPath("commonSettings.de.faq[].answer").description("FAQ answer")
@@ -130,6 +132,7 @@ public class SettingsControllerTest extends AbstractSkdvinTest {
                         fieldWithPath("payload.commonSettings").description("Object with common settings"),
                         fieldWithPath("payload.commonSettings.de.dropzone").description("Object with dropzone details"),
                         fieldWithPath("payload.commonSettings.de.dropzone.name").description("Dropzone name"),
+                        fieldWithPath("payload.commonSettings.de.dropzone.email").description("Dropzone email"),
                         fieldWithPath("payload.commonSettings.de.dropzone.priceListUrl").description("URL to price list"),
                         fieldWithPath("payload.commonSettings.de.faq[].id").description("FAQ entry id"),
                         fieldWithPath("payload.commonSettings.de.faq[].question").description("FAQ question"),
@@ -155,7 +158,7 @@ public class SettingsControllerTest extends AbstractSkdvinTest {
     public void testUpdateSettings() throws Exception {
         Settings settings = settingsRepository.save(ModelMockHelper.createSettings());
         settings.getAdminSettings().setTandemCount(2);
-        settings.getCommonSettings().get(Locale.GERMAN).getDropzone().setName("Renamed DZ");
+        settings.getCommonSettings().get(Locale.GERMAN.getLanguage()).getDropzone().setName("Renamed DZ");
         String settingsJson = json(settings);
 
         mockMvc.perform(RestDocumentationRequestBuilders.put("/api/settings/{id}", settings.getId())
@@ -180,6 +183,7 @@ public class SettingsControllerTest extends AbstractSkdvinTest {
                         fieldWithPath("commonSettings").description("Object with common settings"),
                         fieldWithPath("commonSettings.de.dropzone").description("Object with dropzone details"),
                         fieldWithPath("commonSettings.de.dropzone.name").description("Dropzone name"),
+                        fieldWithPath("commonSettings.de.dropzone.email").description("Dropzone email"),
                         fieldWithPath("commonSettings.de.dropzone.priceListUrl").description("URL to price list"),
                         fieldWithPath("commonSettings.de.faq[].question").description("FAQ question"),
                         fieldWithPath("commonSettings.de.faq[].answer").description("FAQ answer")
@@ -196,6 +200,7 @@ public class SettingsControllerTest extends AbstractSkdvinTest {
                         fieldWithPath("payload.commonSettings").description("Object with common settings"),
                         fieldWithPath("payload.commonSettings.de.dropzone").description("Object with dropzone details"),
                         fieldWithPath("payload.commonSettings.de.dropzone.name").description("Dropzone name"),
+                        fieldWithPath("payload.commonSettings.de.dropzone.email").description("Dropzone email"),
                         fieldWithPath("payload.commonSettings.de.dropzone.priceListUrl").description("URL to price list"),
                         fieldWithPath("payload.commonSettings.de.faq[].id").description("FAQ entry id"),
                         fieldWithPath("payload.commonSettings.de.faq[].question").description("FAQ question"),
@@ -255,6 +260,7 @@ public class SettingsControllerTest extends AbstractSkdvinTest {
                         fieldWithPath("payload.commonSettings").description("Object with common settings by locale"),
                         fieldWithPath("payload.commonSettings.de.dropzone").description("Object with dropzone details"),
                         fieldWithPath("payload.commonSettings.de.dropzone.name").description("Dropzone name"),
+                        fieldWithPath("payload.commonSettings.de.dropzone.email").description("Dropzone email"),
                         fieldWithPath("payload.commonSettings.de.dropzone.priceListUrl").description("URL to price list"),
                         fieldWithPath("payload.commonSettings.de.faq[].id").description("FAQ entry id"),
                         fieldWithPath("payload.commonSettings.de.faq[].question").description("FAQ question"),
@@ -274,6 +280,63 @@ public class SettingsControllerTest extends AbstractSkdvinTest {
                 .contentType(contentType)
                 .content(settingsJson))
                 .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    public void testGetCommonSettings_EN() throws Exception {
+        Settings settings = ModelMockHelper.createSettings();
+        CommonSettings commonSettingsEN = ModelMockHelper.createCommonSettings();
+        commonSettingsEN.getDropzone().setName("Example DZ EN");
+        settings.getCommonSettings().put(Locale.ENGLISH.getLanguage(), commonSettingsEN);
+        settingsRepository.save(settings);
+
+        mockMvc.perform(RestDocumentationRequestBuilders.get("/api/settings/common/")
+                .header("Accept-Language", "en-US")
+                .contentType(contentType))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success", is(true)))
+                .andExpect(jsonPath("$.payload.dropzone.name", is("Example DZ EN")))
+                .andDo(document("settings/get-common-settings", responseFields(
+                        fieldWithPath("payload").description("Object with common settings by locale"),
+                        fieldWithPath("payload.dropzone").description("Object with dropzone details"),
+                        fieldWithPath("payload.dropzone.name").description("Dropzone name"),
+                        fieldWithPath("payload.dropzone.email").description("Dropzone email"),
+                        fieldWithPath("payload.dropzone.priceListUrl").description("URL to price list"),
+                        fieldWithPath("payload.faq[].id").description("FAQ entry id"),
+                        fieldWithPath("payload.faq[].question").description("FAQ question"),
+                        fieldWithPath("payload.faq[].answer").description("FAQ answer"),
+                        fieldWithPath("success").description("true when the request was successful"),
+                        fieldWithPath("message").description("message if there was an error"),
+                        fieldWithPath("exception").ignored()
+                )));
+    }
+
+    @Test
+    public void testGetCommonSettings_DE() throws Exception {
+        Settings settings = ModelMockHelper.createSettings();
+        CommonSettings commonSettingsEN = ModelMockHelper.createCommonSettings();
+        commonSettingsEN.getDropzone().setName("Example DZ EN");
+        settings.getCommonSettings().put(Locale.ENGLISH.getLanguage(), commonSettingsEN);
+        settingsRepository.save(settings);
+
+        mockMvc.perform(RestDocumentationRequestBuilders.get("/api/settings/common/")
+                .header("Accept-Language", "de")
+                .contentType(contentType))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success", is(true)))
+                .andExpect(jsonPath("$.payload.dropzone.name", is("Example DZ")))
+                .andDo(document("settings/get-common-settings", responseFields(
+                        fieldWithPath("payload.dropzone").description("Object with dropzone details"),
+                        fieldWithPath("payload.dropzone.name").description("Dropzone name"),
+                        fieldWithPath("payload.dropzone.email").description("Dropzone email"),
+                        fieldWithPath("payload.dropzone.priceListUrl").description("URL to price list"),
+                        fieldWithPath("payload.faq[].id").description("FAQ entry id"),
+                        fieldWithPath("payload.faq[].question").description("FAQ question"),
+                        fieldWithPath("payload.faq[].answer").description("FAQ answer"),
+                        fieldWithPath("success").description("true when the request was successful"),
+                        fieldWithPath("message").description("message if there was an error"),
+                        fieldWithPath("exception").ignored()
+                )));
     }
 
 

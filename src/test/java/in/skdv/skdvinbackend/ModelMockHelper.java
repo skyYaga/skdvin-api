@@ -166,7 +166,7 @@ public class ModelMockHelper {
         adminSettings.setPicAndVidCount(0);
         adminSettings.setHandcamCount(0);
 
-        Map<Locale, CommonSettings> commonSettingsMap = new HashMap<>(Map.of(locale, createCommonSettings()));
+        Map<String, CommonSettings> commonSettingsMap = new HashMap<>(Map.of(locale.getLanguage(), createCommonSettings()));
 
         Settings settings = new Settings();
         settings.setAdminSettings(adminSettings);

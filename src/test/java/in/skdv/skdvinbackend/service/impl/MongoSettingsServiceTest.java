@@ -42,7 +42,7 @@ public class MongoSettingsServiceTest extends AbstractSkdvinTest {
 
         Assert.assertNotNull(saved.getId());
         Assert.assertEquals(5, saved.getAdminSettings().getTandemCount());
-        Assert.assertEquals("Example DZ", saved.getCommonSettings().get(Locale.GERMAN).getDropzone().getName());
+        Assert.assertEquals("Example DZ", saved.getCommonSettings().get(Locale.GERMAN.getLanguage()).getDropzone().getName());
     }
 
     @Test
@@ -56,7 +56,7 @@ public class MongoSettingsServiceTest extends AbstractSkdvinTest {
     @Test
     public void testAddSettings_secondLocale() {
         Settings settings = settingsService.saveSettings(ModelMockHelper.createSettings());
-        settings.getCommonSettings().put(Locale.ENGLISH, ModelMockHelper.createCommonSettings());
+        settings.getCommonSettings().put(Locale.ENGLISH.getLanguage(), ModelMockHelper.createCommonSettings());
         settingsService.saveSettings(settings);
 
         List<Settings> savedSettings = settingsRepository.findAll();
@@ -96,11 +96,11 @@ public class MongoSettingsServiceTest extends AbstractSkdvinTest {
     public void testGetCommonSettings() {
         Settings settings = saveExampleSettings();
 
-        Map<Locale, CommonSettings> commonSettings = settingsService.getCommonSettings();
+        Map<String, CommonSettings> commonSettings = settingsService.getCommonSettings();
 
         Assert.assertEquals(1, commonSettings.size());
-        Assert.assertEquals(settings.getCommonSettings().get(Locale.GERMAN).getDropzone().getPriceListUrl(),
-                commonSettings.get(Locale.GERMAN).getDropzone().getPriceListUrl());
+        Assert.assertEquals(settings.getCommonSettings().get(Locale.GERMAN.getLanguage()).getDropzone().getPriceListUrl(),
+                commonSettings.get(Locale.GERMAN.getLanguage()).getDropzone().getPriceListUrl());
     }
 
     @Test
@@ -112,7 +112,7 @@ public class MongoSettingsServiceTest extends AbstractSkdvinTest {
 
     @Test
     public void testGetCommonSettings_Empty() {
-        Map<Locale, CommonSettings> commonSettings = settingsService.getCommonSettings();
+        Map<String, CommonSettings> commonSettings = settingsService.getCommonSettings();
 
         Assert.assertEquals(0, commonSettings.size());
     }
@@ -121,19 +121,19 @@ public class MongoSettingsServiceTest extends AbstractSkdvinTest {
     public void testGetCommonSettingsByLocale() {
         Settings settings = saveExampleSettings();
 
-        CommonSettings commonSettings = settingsService.getCommonSettingsByLocale(Locale.GERMAN);
+        CommonSettings commonSettings = settingsService.getCommonSettingsByLanguage(Locale.GERMAN.getLanguage());
 
-        Assert.assertEquals(settings.getCommonSettings().get(Locale.GERMAN).getDropzone().getPriceListUrl(), commonSettings.getDropzone().getPriceListUrl());
+        Assert.assertEquals(settings.getCommonSettings().get(Locale.GERMAN.getLanguage()).getDropzone().getPriceListUrl(), commonSettings.getDropzone().getPriceListUrl());
     }
 
     @Test
     public void testGetCommonSettingsByLocale_DefaultIfNotFound() {
         Settings settings = saveExampleSettings();
 
-        CommonSettings commonSettings = settingsService.getCommonSettingsByLocale(Locale.ENGLISH);
+        CommonSettings commonSettings = settingsService.getCommonSettingsByLanguage(Locale.ENGLISH.getLanguage());
 
         Assert.assertNotNull(commonSettings);
-        Assert.assertEquals(settings.getCommonSettings().get(Locale.GERMAN).getDropzone().getPriceListUrl(), commonSettings.getDropzone().getPriceListUrl());
+        Assert.assertEquals(settings.getCommonSettings().get(Locale.GERMAN.getLanguage()).getDropzone().getPriceListUrl(), commonSettings.getDropzone().getPriceListUrl());
     }
 
     private Settings saveExampleSettings() {

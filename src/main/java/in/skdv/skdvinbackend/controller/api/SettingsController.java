@@ -1,6 +1,7 @@
 package in.skdv.skdvinbackend.controller.api;
 
 import in.skdv.skdvinbackend.exception.ErrorMessage;
+import in.skdv.skdvinbackend.model.entity.settings.CommonSettings;
 import in.skdv.skdvinbackend.model.entity.settings.Settings;
 import in.skdv.skdvinbackend.repository.SettingsRepository;
 import in.skdv.skdvinbackend.service.ISettingsService;
@@ -43,6 +44,12 @@ public class SettingsController {
     public ResponseEntity<GenericResult<Settings>> getSettings() {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(new GenericResult<>(true, settingsService.getSettings()));
+    }
+
+    @GetMapping("/common")
+    public ResponseEntity<GenericResult<CommonSettings>> getCommonSettings() {
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(new GenericResult<>(true, settingsService.getCommonSettingsByLanguage(LocaleContextHolder.getLocale().getLanguage())));
     }
 
     @PutMapping("/{id}")
