@@ -1,9 +1,6 @@
 package in.skdv.skdvinbackend.config;
 
-import in.skdv.skdvinbackend.repository.AppointmentRepository;
-import in.skdv.skdvinbackend.repository.JumpdayRepository;
-import in.skdv.skdvinbackend.repository.TandemmasterRepository;
-import in.skdv.skdvinbackend.repository.VideoflyerRepository;
+import in.skdv.skdvinbackend.repository.*;
 import in.skdv.skdvinbackend.service.*;
 import in.skdv.skdvinbackend.service.impl.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,6 +38,9 @@ public class ApplicationConfig implements WebMvcConfigurer {
     private VideoflyerRepository videoflyerRepository;
 
     @Autowired
+    private SettingsRepository settingsRepository;
+
+    @Autowired
     private MongoTemplate mongoTemplate;
 
     @Bean
@@ -67,6 +67,11 @@ public class ApplicationConfig implements WebMvcConfigurer {
     @Bean
     public ITandemmasterService getTandemmasterService() {
         return new MongoTandemmasterService(jumpdayRepository, tandemmasterRepository);
+    }
+
+    @Bean
+    public ISettingsService getSettingsService() {
+        return new MongoSettingsService(settingsRepository);
     }
 
     @Bean

@@ -23,7 +23,9 @@ public enum ErrorMessage {
 
     TANDEMMASTER_NOT_FOUND("tandemmaster.not.found"),
 
-    VIDEOFLYER_NOT_FOUND("videoflyer.not.found");
+    VIDEOFLYER_NOT_FOUND("videoflyer.not.found"),
+
+    SETTINGS_NOT_FOUND("settings.not.found");
 
     private final String message;
 

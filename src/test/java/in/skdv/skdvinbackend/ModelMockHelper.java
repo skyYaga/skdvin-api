@@ -2,6 +2,7 @@ package in.skdv.skdvinbackend;
 
 import in.skdv.skdvinbackend.model.common.AbstractFlyer;
 import in.skdv.skdvinbackend.model.entity.*;
+import in.skdv.skdvinbackend.model.entity.settings.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -150,4 +151,51 @@ public class ModelMockHelper {
         assignment.setFlyer(flyer);
         return assignment;
     }
+
+    public static Settings createSettings() {
+        return createSettings(Locale.GERMAN);
+    }
+
+    public static Settings createSettings(Locale locale) {
+        AdminSettings adminSettings = new AdminSettings();
+        adminSettings.setTandemsFrom(LocalTime.of(10, 0));
+        adminSettings.setTandemsTo(LocalTime.of(18, 0));
+        adminSettings.setInterval("1:30");
+        adminSettings.setTandemCount(5);
+        adminSettings.setPicOrVidCount(2);
+        adminSettings.setPicAndVidCount(0);
+        adminSettings.setHandcamCount(0);
+
+        Map<String, CommonSettings> commonSettingsMap = new HashMap<>(Map.of(locale.getLanguage(), createCommonSettings()));
+
+        Settings settings = new Settings();
+        settings.setAdminSettings(adminSettings);
+        settings.setCommonSettings(commonSettingsMap);
+
+        return settings;
+    }
+
+    public static CommonSettings createCommonSettings() {
+        Dropzone dropzone = new Dropzone();
+        dropzone.setName("Example DZ");
+        dropzone.setPriceListUrl("https://example.com");
+
+        Faq faq1 = new Faq();
+        faq1.setId(1);
+        faq1.setQuestion("Foo?");
+        faq1.setAnswer("Bar");
+        Faq faq2 = new Faq();
+        faq2.setId(2);
+        faq2.setQuestion("Question?");
+        faq2.setAnswer("Answer!");
+
+        List<Faq> faqList = Arrays.asList(faq1, faq2);
+
+        CommonSettings commonSettings = new CommonSettings();
+        commonSettings.setDropzone(dropzone);
+        commonSettings.setFaq(faqList);
+
+        return commonSettings;
+    }
+
 }
