@@ -34,22 +34,36 @@ public class MongoVideoflyerService implements IVideoflyerService {
 
     @Override
     public VideoflyerDetailsDTO getById(String id) {
-        Map<LocalDate, SimpleAssignment> assignments = new HashMap<>();
-
         Optional<Videoflyer> videoflyer = videoflyerRepository.findById(id);
         if (videoflyer.isEmpty()) {
             return null;
         }
 
+        return getDetails(videoflyer.get());
+    }
+
+    @Override
+    public VideoflyerDetailsDTO getByEmail(String email) {
+        Optional<Videoflyer> videoflyer = videoflyerRepository.findByEmail(email);
+        if (videoflyer.isEmpty()) {
+            return null;
+        }
+
+        return getDetails(videoflyer.get());
+    }
+
+    private VideoflyerDetailsDTO getDetails(Videoflyer videoflyer) {
+        Map<LocalDate, SimpleAssignment> assignments = new HashMap<>();
+
         jumpdayRepository.findAll().forEach(j -> {
             Optional<Assignment<Videoflyer>> localAssignment = j.getVideoflyer().stream()
-                    .filter(t -> t != null && t.getFlyer() != null && t.getFlyer().getId().equals(id)).findFirst();
+                    .filter(t -> t != null && t.getFlyer() != null && t.getFlyer().getId().equals(videoflyer.getId())).findFirst();
             localAssignment
                     .ifPresentOrElse(assignment -> assignments.put(j.getDate(), assignmentConverter.convertToSimpleAssignment(assignment)),
                             () -> assignments.put(j.getDate(), new SimpleAssignment(false)));
         });
 
-        return videoflyerConverter.convertToDetailsDto(videoflyer.get(), assignments);
+        return videoflyerConverter.convertToDetailsDto(videoflyer, assignments);
     }
 
     @Override

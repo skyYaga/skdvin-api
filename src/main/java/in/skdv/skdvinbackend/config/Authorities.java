@@ -30,4 +30,7 @@ public final class Authorities {
     public static final String CREATE_SETTINGS = "SCOPE_create:settings";
     public static final String READ_SETTINGS = "SCOPE_read:settings";
     public static final String UPDATE_SETTINGS = "SCOPE_update:settings";
+
+    public static final String TANDEMMASTER = "SCOPE_tandemmaster";
+    public static final String VIDEOFLYER = "SCOPE_videoflyer";
 }

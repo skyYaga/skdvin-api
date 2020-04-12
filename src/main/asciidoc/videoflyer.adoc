@@ -17,7 +17,13 @@ operation::videoflyer/get-videoflyers[snippets='http-request,http-response,respo
 == Get Videoflyer
 A `GET` request is used to get one videoflyers.
 
-operation::videoflyer/get-videoflyers[snippets='http-request,path-parameters,http-response,response-fields']
+operation::videoflyer/get-videoflyer[snippets='http-request,path-parameters,http-response,response-fields']
+
+
+== Get Me Videoflyer
+A `GET` request is used by a videoflyer to get his own data
+
+operation::tandemmaster/get-me-videoflyer[snippets='http-request,path-parameters,http-response,response-fields']
 
 
 == Update Videoflyer
@@ -36,3 +42,9 @@ operation::videoflyer/delete-videoflyer[snippets='http-request,path-parameters,h
 A `PATCH` request is used to assign a videoflyer to jumpdays.
 
 operation::videoflyer/assign-videoflyer[snippets='http-request,path-parameters,request-fields,http-response,response-fields']
+
+
+== Assign Videoflyer to jumpdays (self-assign)
+A `PATCH` request is used for a videoflyer to assign himself to jumpdays.
+
+operation::videoflyer/self-assign-videoflyer[snippets='http-request,path-parameters,request-fields,http-response,response-fields']

@@ -442,6 +442,135 @@ public class VideoflyerControllerTest extends AbstractSkdvinTest {
                 .andExpect(jsonPath("$.message", is("Jumpday not found")));
     }
 
+
+    @Test
+    public void testSelfAssignVideoflyer() throws Exception {
+        Videoflyer videoflyer = videoflyerRepository.save(ModelMockHelper.createVideoflyer());
+        videoflyer.setEmail(MockJwtDecoder.EXAMPLE_EMAIL);
+        Jumpday jumpday = ModelMockHelper.createJumpday();
+        jumpdayService.saveJumpday(jumpday);
+
+        VideoflyerDetailsDTO videoflyerDetailsDTO = converter.convertToDetailsDto(videoflyer, Map.of(LocalDate.now(), new SimpleAssignment(true)));
+
+        String videoflyerJson = json(videoflyerDetailsDTO);
+
+        mockMvc.perform(RestDocumentationRequestBuilders.patch("/api/videoflyer/me/assign")
+                .header("Authorization", MockJwtDecoder.addHeader(VIDEOFLYER))
+                .contentType(contentType)
+                .content(videoflyerJson))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success", is(true)))
+                .andDo(document("videoflyer/self-assign-videoflyer",
+                        requestFields(
+                                fieldWithPath("id").description("Videoflyers id"),
+                                fieldWithPath("email").description("Videoflyers email"),
+                                fieldWithPath("assignments").description("key value pairs of date and the videoflyers assignment state as boolean"),
+                                fieldWithPath("assignments." + LocalDate.now() + ".assigned").description("true if the flyer is assigned"),
+                                fieldWithPath("assignments." + LocalDate.now() + ".allday").description("true if the flyer is assigned all day"),
+                                fieldWithPath("assignments." + LocalDate.now() + ".from").description("from time if the flyer is not assigned all day"),
+                                fieldWithPath("assignments." + LocalDate.now() + ".to").description("to time if the flyer is not assigned all day"),
+                                fieldWithPath("assignments." + LocalDate.now()).ignored(),
+                                fieldWithPath("assignments." + LocalDate.now()).ignored(),
+                                fieldWithPath("firstName").ignored(),
+                                fieldWithPath("lastName").ignored(),
+                                fieldWithPath("tel").ignored(),
+                                fieldWithPath("picAndVid").ignored()
+                        ),
+                        responseFields(
+                                fieldWithPath("success").description("true when the request was successful"),
+                                fieldWithPath("message").description("message if there was an error"),
+                                fieldWithPath("exception").ignored(),
+                                fieldWithPath("payload").ignored()
+                        )));
+    }
+
+    @Test
+    public void testSelfAssignVideoflyer_Unauthorized() throws Exception {
+        String videoflyerJson = json(ModelMockHelper.createVideoflyer());
+
+        mockMvc.perform(patch("/api/videoflyer/me/assign")
+                .contentType(contentType)
+                .content(videoflyerJson))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    public void testSelfAssignVideoflyer_NoEmailSet() throws Exception {
+        Videoflyer videoflyer = videoflyerRepository.save(ModelMockHelper.createVideoflyer());
+        Jumpday jumpday = ModelMockHelper.createJumpday();
+        jumpdayService.saveJumpday(jumpday);
+        VideoflyerDetailsDTO videoflyerDetailsDTO = converter.convertToDetailsDto(videoflyer, Map.of(LocalDate.now(), new SimpleAssignment(true)));
+
+        String videoflyerJson = json(videoflyerDetailsDTO);
+
+        mockMvc.perform(patch("/api/videoflyer/me/assign")
+                .header("Authorization", MockJwtDecoder.addHeader(VIDEOFLYER))
+                .contentType(contentType)
+                .content(videoflyerJson))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success", is(false)));
+    }
+
+
+    @Test
+    public void testGetMeVideoflyer() throws Exception {
+        Videoflyer videoflyer1 = ModelMockHelper.createVideoflyer();
+        videoflyer1.setEmail(MockJwtDecoder.EXAMPLE_EMAIL);
+        Videoflyer videoflyer = videoflyerRepository.save(videoflyer1);
+        Jumpday jumpday = ModelMockHelper.createJumpday();
+        jumpdayService.saveJumpday(jumpday);
+        videoflyerService.assignVideoflyerToJumpday(jumpday.getDate(), videoflyer.getId(), new SimpleAssignment(true));
+
+        mockMvc.perform(RestDocumentationRequestBuilders.get("/api/videoflyer/me")
+                .header("Authorization", MockJwtDecoder.addHeader(VIDEOFLYER))
+                .contentType(contentType))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success", is(true)))
+                .andExpect(jsonPath("$.payload.assignments." + LocalDate.now() + ".assigned", is(true)))
+                .andDo(document("videoflyer/get-me-videoflyer",
+                        responseFields(
+                                fieldWithPath("success").description("true when the request was successful"),
+                                fieldWithPath("message").description("message if there was an error"),
+                                fieldWithPath("payload.id").description("Videoflyers id"),
+                                fieldWithPath("payload.firstName").description("Videoflyers first name"),
+                                fieldWithPath("payload.lastName").description("Videoflyers last name"),
+                                fieldWithPath("payload.email").description("Videoflyers email"),
+                                fieldWithPath("payload.tel").description("Videoflyers phone number"),
+                                fieldWithPath("payload.picAndVid").description("true if the Videoflyer makes handcam videos"),
+                                fieldWithPath("payload.assignments").description("key value pairs of date and the videoflyers assignment state as boolean"),
+                                fieldWithPath("payload.assignments." + LocalDate.now() + ".assigned").description("true if the flyer is assigned"),
+                                fieldWithPath("payload.assignments." + LocalDate.now() + ".allday").description("true if the flyer is assigned all day"),
+                                fieldWithPath("payload.assignments." + LocalDate.now() + ".from").description("from time if the flyer is not assigned all day"),
+                                fieldWithPath("payload.assignments." + LocalDate.now() + ".to").description("to time if the flyer is not assigned all day"),
+                                fieldWithPath("payload.assignments." + LocalDate.now() + ".flyer.firstName").description("Videoflyer's first name"),
+                                fieldWithPath("payload.assignments." + LocalDate.now() + ".flyer.lastName").description("Videoflyer's last name"),
+                                fieldWithPath("payload.assignments." + LocalDate.now() + ".flyer.email").description("Videoflyer's email"),
+                                fieldWithPath("payload.assignments." + LocalDate.now() + ".flyer.tel").description("Videoflyer's phone number"),
+                                fieldWithPath("payload.assignments." + LocalDate.now() + ".flyer.picAndVid").description("Videoflyer's handcam"),
+                                fieldWithPath("payload.assignments." + LocalDate.now() + ".flyer.id").description("Videoflyer's id"),
+                                fieldWithPath("payload.assignments." + LocalDate.now()).ignored(),
+                                fieldWithPath("exception").ignored()
+                        )));
+    }
+
+    @Test
+    public void testGetMeVideoflyer_NotFound() throws Exception {
+        mockMvc.perform(get("/api/videoflyer/me")
+                .header("Authorization", MockJwtDecoder.addHeader(VIDEOFLYER))
+                .header("Accept-Language", "en-US")
+                .contentType(contentType))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.message", is("Videoflyer not found")));
+    }
+
+    @Test
+    public void testGetMeVideoflyer_Unauthorized() throws Exception {
+        mockMvc.perform(get("/api/videoflyer/me")
+                .contentType(contentType))
+                .andExpect(status().isUnauthorized());
+    }
+
     private String json(Object o) throws IOException {
         MockHttpOutputMessage mockHttpOutputMessage = new MockHttpOutputMessage();
         this.mappingJackson2HttpMessageConverter.write(

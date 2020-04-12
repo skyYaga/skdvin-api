@@ -10,9 +10,12 @@ public interface IVideoflyerService {
 
     VideoflyerDetailsDTO getById(String id);
 
+    VideoflyerDetailsDTO getByEmail(String email);
+
     GenericResult<Void> assignVideoflyerToJumpday(LocalDate date, String videoflyerId, SimpleAssignment simpleAssignment);
 
     GenericResult<Void> assignVideoflyer(VideoflyerDetailsDTO videoflyerDetails);
 
     void delete(String id);
+
 }

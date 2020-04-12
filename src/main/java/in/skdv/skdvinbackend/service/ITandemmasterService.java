@@ -10,9 +10,12 @@ public interface ITandemmasterService {
 
     TandemmasterDetailsDTO getById(String id);
 
+    TandemmasterDetailsDTO getByEmail(String email);
+
     GenericResult<Void> assignTandemmasterToJumpday(LocalDate date, String tandemmasterId, SimpleAssignment assignment);
 
     GenericResult<Void> assignTandemmaster(TandemmasterDetailsDTO tandemmasterDetails);
 
     void delete(String id);
+
 }

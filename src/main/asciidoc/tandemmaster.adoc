@@ -15,9 +15,15 @@ operation::tandemmaster/get-tandemmasters[snippets='http-request,http-response,r
 
 
 == Get Tandemmaster
-A `GET` request is used to get one tandemmasters.
+A `GET` request is used to get one tandemmaster.
 
-operation::tandemmaster/get-tandemmasters[snippets='http-request,path-parameters,http-response,response-fields']
+operation::tandemmaster/get-tandemmaster[snippets='http-request,path-parameters,http-response,response-fields']
+
+
+== Get Me Tandemmaster
+A `GET` request is used by a tandemmaster to get his own data
+
+operation::tandemmaster/get-me-tandemmasters[snippets='http-request,path-parameters,http-response,response-fields']
 
 
 == Update Tandemmaster
@@ -36,3 +42,9 @@ operation::tandemmaster/delete-tandemmaster[snippets='http-request,path-paramete
 A `PATCH` request is used to assign a tandemmaster to jumpdays.
 
 operation::tandemmaster/assign-tandemmaster[snippets='http-request,path-parameters,request-fields,http-response,response-fields']
+
+
+== Assign Tandemmaster to jumpdays (self-assign)
+A `PATCH` request is used for a tandemmaster to assign himself to jumpdays.
+
+operation::tandemmaster/self-assign-tandemmaster[snippets='http-request,path-parameters,request-fields,http-response,response-fields']
