@@ -34,22 +34,36 @@ public class MongoTandemmasterService implements ITandemmasterService {
 
     @Override
     public TandemmasterDetailsDTO getById(String id) {
-        Map<LocalDate, SimpleAssignment> assignments = new HashMap<>();
-
         Optional<Tandemmaster> tandemmaster = tandemmasterRepository.findById(id);
         if (tandemmaster.isEmpty()) {
             return null;
         }
 
+        return getDetails(tandemmaster.get());
+    }
+
+    @Override
+    public TandemmasterDetailsDTO getByEmail(String email) {
+        Optional<Tandemmaster> tandemmaster = tandemmasterRepository.findByEmail(email);
+        if (tandemmaster.isEmpty()) {
+            return null;
+        }
+
+        return getDetails(tandemmaster.get());
+    }
+
+    private TandemmasterDetailsDTO getDetails(Tandemmaster tandemmaster) {
+        Map<LocalDate, SimpleAssignment> assignments = new HashMap<>();
+
         jumpdayRepository.findAll().forEach(j -> {
             Optional<Assignment<Tandemmaster>> localAssignment = j.getTandemmaster().stream()
-                    .filter(t -> t != null && t.getFlyer() != null && t.getFlyer().getId().equals(id)).findFirst();
+                    .filter(t -> t != null && t.getFlyer() != null && t.getFlyer().getId().equals(tandemmaster.getId())).findFirst();
             localAssignment
                     .ifPresentOrElse(assignment -> assignments.put(j.getDate(), assignmentConverter.convertToSimpleAssignment(assignment)),
                             () -> assignments.put(j.getDate(), new SimpleAssignment(false)));
         });
 
-        return tandemmasterConverter.convertToDetailsDto(tandemmaster.get(), assignments);
+        return tandemmasterConverter.convertToDetailsDto(tandemmaster, assignments);
     }
 
     @Override

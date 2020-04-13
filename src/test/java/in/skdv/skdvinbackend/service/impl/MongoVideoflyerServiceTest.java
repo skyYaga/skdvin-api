@@ -1,6 +1,7 @@
 package in.skdv.skdvinbackend.service.impl;
 
 import in.skdv.skdvinbackend.AbstractSkdvinTest;
+import in.skdv.skdvinbackend.MockJwtDecoder;
 import in.skdv.skdvinbackend.ModelMockHelper;
 import in.skdv.skdvinbackend.exception.ErrorMessage;
 import in.skdv.skdvinbackend.model.common.SimpleAssignment;
@@ -72,6 +73,31 @@ public class MongoVideoflyerServiceTest extends AbstractSkdvinTest {
         Assert.assertFalse(videoflyerDetails.getAssignments().get(nowPlus1).isAssigned());
     }
 
+
+    @Test
+    public void testGetVideoflyerByEmail() {
+        Videoflyer videoflyer1 = ModelMockHelper.createVideoflyer();
+        videoflyer1.setEmail(MockJwtDecoder.EXAMPLE_EMAIL);
+
+        Videoflyer videoflyer = videoflyerRepository.save(videoflyer1);
+        LocalDate nowPlus1 = LocalDate.now().plus(1, ChronoUnit.DAYS);
+
+        Jumpday jumpday1 = ModelMockHelper.createJumpday();
+        Jumpday jumpday2 = ModelMockHelper.createJumpday(nowPlus1);
+        jumpday1.getVideoflyer().add(createAssignment(videoflyer));
+        jumpday2.getVideoflyer().add(createAssignment(videoflyer, false));
+        jumpdayRepository.save(jumpday1);
+        jumpdayRepository.save(jumpday2);
+
+        VideoflyerDetailsDTO videoflyerDetails = videoflyerService.getByEmail(videoflyer.getEmail());
+
+        Assert.assertNotNull(videoflyerDetails);
+        Assert.assertEquals(2, videoflyerDetails.getAssignments().size());
+        Assert.assertTrue(videoflyerDetails.getAssignments().get(LocalDate.now()).isAssigned());
+        Assert.assertFalse(videoflyerDetails.getAssignments().get(nowPlus1).isAssigned());
+    }
+
+
     private Assignment<Videoflyer> createAssignment(Videoflyer videoflyer, boolean assigned) {
         Assignment<Videoflyer> assignment = new Assignment<>();
         assignment.setFlyer(videoflyer);
@@ -89,6 +115,11 @@ public class MongoVideoflyerServiceTest extends AbstractSkdvinTest {
         Assert.assertNull(videoflyerDetails);
     }
 
+    @Test
+    public void testGetVideoflyerByEmail_NotFound() {
+        VideoflyerDetailsDTO videoflyerDetails = videoflyerService.getByEmail("foo@example.com");
+        Assert.assertNull(videoflyerDetails);
+    }
 
     @Test
     public void testAssignVideoflyerToJumpday() {

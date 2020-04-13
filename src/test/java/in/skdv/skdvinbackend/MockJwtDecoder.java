@@ -1,15 +1,19 @@
 package in.skdv.skdvinbackend;
 
+import in.skdv.skdvinbackend.config.Claims;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtException;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Collections;
+import java.util.Map;
 
 import static in.skdv.skdvinbackend.config.Authorities.*;
 
 public class MockJwtDecoder {
+
+    public static final String EXAMPLE_EMAIL = "user@example.com";
 
     private static final String SIMPLIFIED_CREATE_JUMPDAYS = simplifyPermission(CREATE_JUMPDAYS);
     private static final String SIMPLIFIED_READ_JUMPDAYS = simplifyPermission(READ_JUMPDAYS);
@@ -33,12 +37,16 @@ public class MockJwtDecoder {
     private static final String SIMPLIFIED_READ_SETTINGS = simplifyPermission(READ_SETTINGS);
     private static final String SIMPLIFIED_UPDATE_SETTINGS = simplifyPermission(UPDATE_SETTINGS);
 
+    private static final String SIMPLIFIED_TANDEMMASTER = simplifyPermission(TANDEMMASTER);
+    private static final String SIMPLIFIED_VIDEOFLYER = simplifyPermission(VIDEOFLYER);
+
     public static Jwt decode(String permission) throws JwtException {
         return new Jwt(permission,
                 Instant.now(),
                 Instant.now().plus(1, ChronoUnit.MINUTES),
                 Collections.singletonMap("foo", "bar"),
-                Collections.singletonMap("permissions", convertPermission(permission)));
+                Map.of("permissions", convertPermission(permission),
+                        Claims.EMAIL, EXAMPLE_EMAIL));
     }
 
     private static String convertPermission(String permission) {
@@ -93,6 +101,12 @@ public class MockJwtDecoder {
         }
         if (SIMPLIFIED_UPDATE_SETTINGS.equals(permission)) {
             convertedPermission = UPDATE_SETTINGS;
+        }
+        if (SIMPLIFIED_TANDEMMASTER.equals(permission)) {
+            convertedPermission = TANDEMMASTER;
+        }
+        if (SIMPLIFIED_VIDEOFLYER.equals(permission)) {
+            convertedPermission = VIDEOFLYER;
         }
 
         return convertedPermission.replace("SCOPE_", "");

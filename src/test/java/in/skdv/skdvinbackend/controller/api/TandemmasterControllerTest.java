@@ -299,7 +299,6 @@ public class TandemmasterControllerTest extends AbstractSkdvinTest {
                 .andExpect(jsonPath("$.message", is("Tandemmaster not found")));
     }
 
-
     @Test
     public void testGetTandemmaster() throws Exception {
         Tandemmaster tandemmaster = tandemmasterRepository.save(ModelMockHelper.createTandemmaster());
@@ -442,6 +441,134 @@ public class TandemmasterControllerTest extends AbstractSkdvinTest {
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.success", is(false)))
                 .andExpect(jsonPath("$.message", is("Jumpday not found")));
+    }
+
+    @Test
+    public void testSelfAssignTandemmaster() throws Exception {
+        Tandemmaster tandemmaster = tandemmasterRepository.save(ModelMockHelper.createTandemmaster());
+        tandemmaster.setEmail(MockJwtDecoder.EXAMPLE_EMAIL);
+        Jumpday jumpday = ModelMockHelper.createJumpday();
+        jumpdayService.saveJumpday(jumpday);
+
+        TandemmasterDetailsDTO tandemmasterDetailsDTO = converter.convertToDetailsDto(tandemmaster, Map.of(LocalDate.now(), new SimpleAssignment(true)));
+
+        String tandemmasterJson = json(tandemmasterDetailsDTO);
+
+        mockMvc.perform(RestDocumentationRequestBuilders.patch("/api/tandemmaster/me/assign")
+                .header("Authorization", MockJwtDecoder.addHeader(TANDEMMASTER))
+                .contentType(contentType)
+                .content(tandemmasterJson))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success", is(true)))
+                .andDo(document("tandemmaster/self-assign-tandemmaster",
+                        requestFields(
+                                fieldWithPath("id").description("Tandemmasters id"),
+                                fieldWithPath("email").description("Tandemmasters email"),
+                                fieldWithPath("assignments").description("key value pairs of date and the tandemmasters assignment state as boolean"),
+                                fieldWithPath("assignments." + LocalDate.now() + ".assigned").description("true if the flyer is assigned"),
+                                fieldWithPath("assignments." + LocalDate.now() + ".allday").description("true if the flyer is assigned all day"),
+                                fieldWithPath("assignments." + LocalDate.now() + ".from").description("from time if the flyer is not assigned all day"),
+                                fieldWithPath("assignments." + LocalDate.now() + ".to").description("to time if the flyer is not assigned all day"),
+                                fieldWithPath("assignments." + LocalDate.now()).ignored(),
+                                fieldWithPath("assignments." + LocalDate.now()).ignored(),
+                                fieldWithPath("firstName").ignored(),
+                                fieldWithPath("lastName").ignored(),
+                                fieldWithPath("tel").ignored(),
+                                fieldWithPath("handcam").ignored()
+                        ),
+                        responseFields(
+                                fieldWithPath("success").description("true when the request was successful"),
+                                fieldWithPath("message").description("message if there was an error"),
+                                fieldWithPath("exception").ignored(),
+                                fieldWithPath("payload").ignored()
+                        )));
+    }
+
+    @Test
+    public void testSelfAssignTandemmaster_Unauthorized() throws Exception {
+        String tandemmasterJson = json(ModelMockHelper.createTandemmaster());
+
+        mockMvc.perform(patch("/api/tandemmaster/me/assign")
+                .contentType(contentType)
+                .content(tandemmasterJson))
+                .andExpect(status().isUnauthorized());
+    }
+
+
+    @Test
+    public void testSelfAssignTandemmaster_NoEmailSet() throws Exception {
+        Tandemmaster tandemmaster = tandemmasterRepository.save(ModelMockHelper.createTandemmaster());
+        Jumpday jumpday = ModelMockHelper.createJumpday();
+        jumpdayService.saveJumpday(jumpday);
+        TandemmasterDetailsDTO tandemmasterDetailsDTO = converter.convertToDetailsDto(tandemmaster, Map.of(LocalDate.now(), new SimpleAssignment(true)));
+
+        String tandemmasterJson = json(tandemmasterDetailsDTO);
+
+        mockMvc.perform(patch("/api/tandemmaster/me/assign")
+                .header("Authorization", MockJwtDecoder.addHeader(TANDEMMASTER))
+                .contentType(contentType)
+                .content(tandemmasterJson))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success", is(false)));
+    }
+
+    @Test
+    public void testGetMeTandemmaster() throws Exception {
+        Tandemmaster tandemmaster1 = ModelMockHelper.createTandemmaster();
+        tandemmaster1.setEmail(MockJwtDecoder.EXAMPLE_EMAIL);
+        Tandemmaster tandemmaster = tandemmasterRepository.save(tandemmaster1);
+        Jumpday jumpday = ModelMockHelper.createJumpday();
+        jumpdayService.saveJumpday(jumpday);
+        tandemmasterService.assignTandemmasterToJumpday(jumpday.getDate(), tandemmaster.getId(), new SimpleAssignment(true));
+
+        mockMvc.perform(RestDocumentationRequestBuilders.get("/api/tandemmaster/me")
+                .header("Authorization", MockJwtDecoder.addHeader(TANDEMMASTER))
+                .contentType(contentType))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success", is(true)))
+                .andExpect(jsonPath("$.payload.assignments." + LocalDate.now() + ".assigned", is(true)))
+                .andDo(document("tandemmaster/get-me-tandemmaster",
+                        responseFields(
+                                fieldWithPath("success").description("true when the request was successful"),
+                                fieldWithPath("message").description("message if there was an error"),
+                                fieldWithPath("payload.id").description("Tandemmasters id"),
+                                fieldWithPath("payload.firstName").description("Tandemmasters first name"),
+                                fieldWithPath("payload.lastName").description("Tandemmasters last name"),
+                                fieldWithPath("payload.email").description("Tandemmasters email"),
+                                fieldWithPath("payload.tel").description("Tandemmasters phone number"),
+                                fieldWithPath("payload.handcam").description("true if the Tandemmaster makes handcam videos"),
+                                fieldWithPath("payload.assignments").description("key value pairs of date and the tandemmasters assignment state as boolean"),
+                                fieldWithPath("payload.assignments." + LocalDate.now() + ".assigned").description("true if the flyer is assigned"),
+                                fieldWithPath("payload.assignments." + LocalDate.now() + ".allday").description("true if the flyer is assigned all day"),
+                                fieldWithPath("payload.assignments." + LocalDate.now() + ".from").description("from time if the flyer is not assigned all day"),
+                                fieldWithPath("payload.assignments." + LocalDate.now() + ".to").description("to time if the flyer is not assigned all day"),
+                                fieldWithPath("payload.assignments." + LocalDate.now() + ".flyer.firstName").description("Tandemmaster's first name"),
+                                fieldWithPath("payload.assignments." + LocalDate.now() + ".flyer.lastName").description("Tandemmaster's last name"),
+                                fieldWithPath("payload.assignments." + LocalDate.now() + ".flyer.email").description("Tandemmaster's email"),
+                                fieldWithPath("payload.assignments." + LocalDate.now() + ".flyer.tel").description("Tandemmaster's phone number"),
+                                fieldWithPath("payload.assignments." + LocalDate.now() + ".flyer.handcam").description("Tandemmaster's handcam"),
+                                fieldWithPath("payload.assignments." + LocalDate.now() + ".flyer.id").description("Tandemmaster's id"),
+                                fieldWithPath("payload.assignments." + LocalDate.now()).ignored(),
+                                fieldWithPath("exception").ignored()
+                        )));
+    }
+
+    @Test
+    public void testGetMeTandemmaster_NotFound() throws Exception {
+        mockMvc.perform(get("/api/tandemmaster/me")
+                .header("Authorization", MockJwtDecoder.addHeader(TANDEMMASTER))
+                .header("Accept-Language", "en-US")
+                .contentType(contentType))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.message", is("Tandemmaster not found")));
+    }
+
+    @Test
+    public void testGetMeTandemmaster_Unauthorized() throws Exception {
+        mockMvc.perform(get("/api/tandemmaster/me")
+                .contentType(contentType))
+                .andExpect(status().isUnauthorized());
     }
 
     private String json(Object o) throws IOException {

@@ -1,6 +1,7 @@
 package in.skdv.skdvinbackend.service.impl;
 
 import in.skdv.skdvinbackend.AbstractSkdvinTest;
+import in.skdv.skdvinbackend.MockJwtDecoder;
 import in.skdv.skdvinbackend.ModelMockHelper;
 import in.skdv.skdvinbackend.exception.ErrorMessage;
 import in.skdv.skdvinbackend.model.common.SimpleAssignment;
@@ -72,6 +73,29 @@ public class MongoTandemmasterServiceTest extends AbstractSkdvinTest {
         Assert.assertFalse(tandemmasterDetails.getAssignments().get(nowPlus1).isAssigned());
     }
 
+    @Test
+    public void testGetTandemmasterByEmail() {
+        Tandemmaster tandemmaster1 = ModelMockHelper.createTandemmaster();
+        tandemmaster1.setEmail(MockJwtDecoder.EXAMPLE_EMAIL);
+
+        Tandemmaster tandemmaster = tandemmasterRepository.save(tandemmaster1);
+        LocalDate nowPlus1 = LocalDate.now().plus(1, ChronoUnit.DAYS);
+
+        Jumpday jumpday1 = ModelMockHelper.createJumpday();
+        Jumpday jumpday2 = ModelMockHelper.createJumpday(nowPlus1);
+        jumpday1.getTandemmaster().add(createAssignment(tandemmaster));
+        jumpday2.getTandemmaster().add(createAssignment(tandemmaster, false));
+        jumpdayRepository.save(jumpday1);
+        jumpdayRepository.save(jumpday2);
+
+        TandemmasterDetailsDTO tandemmasterDetails = tandemmasterService.getByEmail(tandemmaster.getEmail());
+
+        Assert.assertNotNull(tandemmasterDetails);
+        Assert.assertEquals(2, tandemmasterDetails.getAssignments().size());
+        Assert.assertTrue(tandemmasterDetails.getAssignments().get(LocalDate.now()).isAssigned());
+        Assert.assertFalse(tandemmasterDetails.getAssignments().get(nowPlus1).isAssigned());
+    }
+
     private Assignment<Tandemmaster> createAssignment(Tandemmaster tandemmaster, boolean assigned) {
         Assignment<Tandemmaster> assignment = new Assignment<>();
         assignment.setFlyer(tandemmaster);
@@ -86,6 +110,12 @@ public class MongoTandemmasterServiceTest extends AbstractSkdvinTest {
     @Test
     public void testGetTandemmasterById_NotFound() {
         TandemmasterDetailsDTO tandemmasterDetails = tandemmasterService.getById("99999999999");
+        Assert.assertNull(tandemmasterDetails);
+    }
+
+    @Test
+    public void testGetTandemmasterByEmail_NotFound() {
+        TandemmasterDetailsDTO tandemmasterDetails = tandemmasterService.getByEmail("foo@example.com");
         Assert.assertNull(tandemmasterDetails);
     }
 

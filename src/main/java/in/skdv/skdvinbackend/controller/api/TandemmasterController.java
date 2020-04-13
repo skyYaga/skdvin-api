@@ -1,5 +1,6 @@
 package in.skdv.skdvinbackend.controller.api;
 
+import in.skdv.skdvinbackend.config.Claims;
 import in.skdv.skdvinbackend.exception.ErrorMessage;
 import in.skdv.skdvinbackend.model.converter.TandemmasterConverter;
 import in.skdv.skdvinbackend.model.dto.TandemmasterDTO;
@@ -14,6 +15,7 @@ import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -23,6 +25,9 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/api/tandemmaster")
 public class TandemmasterController {
+
+    @Autowired
+    private JwtDecoder jwtDecoder;
 
     private final TandemmasterRepository tandemmasterRepository;
     private TandemmasterConverter tandemmasterConverter = new TandemmasterConverter();
@@ -58,6 +63,20 @@ public class TandemmasterController {
     @PreAuthorize("hasAuthority('SCOPE_read:tandemmaster')")
     public ResponseEntity<GenericResult<TandemmasterDetailsDTO>> getTandemmaster(@PathVariable String id) {
         TandemmasterDetailsDTO tandemmaster = tandemmasterService.getById(id);
+
+        if (tandemmaster == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new GenericResult<>(false, messageSource.getMessage(ErrorMessage.TANDEMMASTER_NOT_FOUND.toString(), null, LocaleContextHolder.getLocale())));
+        }
+
+        return ResponseEntity.ok(new GenericResult<>(true, tandemmaster));
+    }
+
+    @GetMapping(value = "/me")
+    @PreAuthorize("hasAuthority('SCOPE_tandemmaster')")
+    public ResponseEntity<GenericResult<TandemmasterDetailsDTO>> getMeTandemmaster() {
+
+        TandemmasterDetailsDTO tandemmaster = tandemmasterService.getByEmail(Claims.getEmail());
 
         if (tandemmaster == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -105,7 +124,23 @@ public class TandemmasterController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new GenericResult<>(false));
         }
 
-        GenericResult<Void> result = tandemmasterService.assignTandemmaster(input);
+        return assignTandemmaster(input);
+
+    }
+
+    @PatchMapping(value = "/me/assign")
+    @PreAuthorize("hasAuthority('SCOPE_tandemmaster')")
+    public ResponseEntity<GenericResult<Void>> selfAssignTandemmasterToJumpdays(@RequestBody @Valid TandemmasterDetailsDTO input) {
+        if (input.getEmail() == null || !input.getEmail().equals(Claims.getEmail())) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new GenericResult<>(false));
+        }
+
+        return assignTandemmaster(input);
+    }
+
+
+    private ResponseEntity<GenericResult<Void>> assignTandemmaster(TandemmasterDetailsDTO tandemmaster) {
+        GenericResult<Void> result = tandemmasterService.assignTandemmaster(tandemmaster);
 
         if (result.isSuccess()) {
             return ResponseEntity.ok(new GenericResult<>(true));

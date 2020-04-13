@@ -1,5 +1,6 @@
 package in.skdv.skdvinbackend.controller.api;
 
+import in.skdv.skdvinbackend.config.Claims;
 import in.skdv.skdvinbackend.exception.ErrorMessage;
 import in.skdv.skdvinbackend.model.converter.VideoflyerConverter;
 import in.skdv.skdvinbackend.model.dto.VideoflyerDTO;
@@ -67,6 +68,19 @@ public class VideoflyerController {
         return ResponseEntity.ok(new GenericResult<>(true, videoflyer));
     }
 
+    @GetMapping(value = "/me")
+    @PreAuthorize("hasAuthority('SCOPE_videoflyer')")
+    public ResponseEntity<GenericResult<VideoflyerDetailsDTO>> getMeVideoflyer() {
+        VideoflyerDetailsDTO videoflyer = videoflyerService.getByEmail(Claims.getEmail());
+
+        if (videoflyer == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new GenericResult<>(false, messageSource.getMessage(ErrorMessage.VIDEOFLYER_NOT_FOUND.toString(), null, LocaleContextHolder.getLocale())));
+        }
+
+        return ResponseEntity.ok(new GenericResult<>(true, videoflyer));
+    }
+
     @PutMapping(value = "/{id}")
     @PreAuthorize("hasAuthority('SCOPE_update:videoflyer')")
     public ResponseEntity<GenericResult<VideoflyerDTO>> updateVideoflyer(@PathVariable String id, @RequestBody @Valid VideoflyerDTO input) {
@@ -105,7 +119,22 @@ public class VideoflyerController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new GenericResult<>(false));
         }
 
-        GenericResult<Void> result = videoflyerService.assignVideoflyer(input);
+        return assignVideoflyer(input);
+    }
+
+
+    @PatchMapping(value = "/me/assign")
+    @PreAuthorize("hasAuthority('SCOPE_videoflyer')")
+    public ResponseEntity<GenericResult<Void>> selfAssignVideoflyerToJumpdays(@RequestBody @Valid VideoflyerDetailsDTO input) {
+        if (input.getEmail() == null || !input.getEmail().equals(Claims.getEmail())) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new GenericResult<>(false));
+        }
+
+        return assignVideoflyer(input);
+    }
+
+    private ResponseEntity<GenericResult<Void>> assignVideoflyer(VideoflyerDetailsDTO videoflyer) {
+        GenericResult<Void> result = videoflyerService.assignVideoflyer(videoflyer);
 
         if (result.isSuccess()) {
             return ResponseEntity.ok(new GenericResult<>(true));
