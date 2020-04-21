@@ -23,6 +23,7 @@
 		<java.version>11</java.version>
 		<modelmapper.version>2.3.7</modelmapper.version>
 		<nimbus-jose-jwt.version>8.15</nimbus-jose-jwt.version>
+		<sentry-logback.version>1.7.30</sentry-logback.version>
 	</properties>
 
 	<dependencies>
@@ -82,6 +83,12 @@
 		<dependency>
 			<groupId>com.jayway.jsonpath</groupId>
 			<artifactId>json-path</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>io.sentry</groupId>
+			<artifactId>sentry-logback</artifactId>
+			<version>${sentry-logback.version}</version>
 		</dependency>
 
 		<dependency>
