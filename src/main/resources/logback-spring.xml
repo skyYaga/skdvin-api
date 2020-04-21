@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <!-- Spring Boot default Console appender -->
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+    <include resource="org/springframework/boot/logging/logback/console-appender.xml"/>
+
+    <!-- Sentry appender if not on localdev -->
+    <springProfile name="!localdev">
+        <!-- Configure the Sentry appender, overriding the logging threshold to the WARN level -->
+        <appender name="SENTRY" class="io.sentry.logback.SentryAppender">
+            <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+                <level>WARN</level>
+            </filter>
+            <encoder>
+                <pattern>${CONSOLE_LOG_PATTERN}</pattern>
+            </encoder>
+        </appender>
+    </springProfile>
+
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+        <springProfile name="!localdev">
+            <appender-ref ref="SENTRY"/>
+        </springProfile>
+    </root>
+
+</configuration>
