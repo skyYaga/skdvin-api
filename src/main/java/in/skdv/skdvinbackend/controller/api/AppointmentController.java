@@ -249,7 +249,7 @@ public class AppointmentController {
 
     @GetMapping(value = "/groupslots")
     @PreAuthorize("hasAuthority('SCOPE_read:appointments')")
-    public ResponseEntity<GenericResult> findGroupSlots(@RequestParam("tandem") Integer tandemCount) {
+    public ResponseEntity<GenericResult<List<GroupSlot>>> findGroupSlots(@RequestParam("tandem") Integer tandemCount) {
         SlotQuery slotQuery = new SlotQuery(tandemCount, 0, 0, 0);
         List<GroupSlot> result = appointmentService.findGroupSlots(slotQuery);
         return ResponseEntity.ok(new GenericResult<>(true, result));
