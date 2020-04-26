@@ -1,6 +1,7 @@
 package in.skdv.skdvinbackend.service;
 
 import in.skdv.skdvinbackend.model.common.FreeSlot;
+import in.skdv.skdvinbackend.model.common.GroupSlot;
 import in.skdv.skdvinbackend.model.common.SlotQuery;
 import in.skdv.skdvinbackend.model.entity.Appointment;
 import in.skdv.skdvinbackend.model.entity.AppointmentState;
@@ -30,4 +31,6 @@ public interface IAppointmentService {
     List<Appointment> findUnconfirmedAppointments();
 
     void deleteAppointment(int appointmentId);
+
+    List<GroupSlot> findGroupSlots(SlotQuery slotQuery);
 }

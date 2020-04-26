@@ -50,13 +50,19 @@ A `PATCH` request is used to update an appointment's state.
 operation::appointment/update-appointment-state[snippets='http-request,path-parameters,request-fields,http-response,response-fields']
 
 
+== Confirm Appointment
+A `GET` request is used to confirm appointments.
+
+operation::appointment/confirm-appointment[snippets='http-request,path-parameters,http-response,response-fields']
+
+
 == Find free Slots
 A `GET` request is used to find free appointment slots.
 
 operation::appointment/find-slots[snippets='http-request,request-parameters,http-response,response-fields']
 
 
-== Confirm Appointment
-A `GET` request is used to confirm appointments.
+== Find group Slots
+A `GET` request is used to find free group slots.
 
-operation::appointment/confirm-appointment[snippets='http-request,path-parameters,http-response,response-fields']
+operation::appointment/group-slots[snippets='http-request,request-parameters,http-response,response-fields']

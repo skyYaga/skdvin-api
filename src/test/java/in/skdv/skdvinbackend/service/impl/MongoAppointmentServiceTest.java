@@ -4,10 +4,9 @@ import in.skdv.skdvinbackend.AbstractSkdvinTest;
 import in.skdv.skdvinbackend.ModelMockHelper;
 import in.skdv.skdvinbackend.exception.ErrorMessage;
 import in.skdv.skdvinbackend.model.common.FreeSlot;
+import in.skdv.skdvinbackend.model.common.GroupSlot;
 import in.skdv.skdvinbackend.model.common.SlotQuery;
-import in.skdv.skdvinbackend.model.entity.Appointment;
-import in.skdv.skdvinbackend.model.entity.AppointmentState;
-import in.skdv.skdvinbackend.model.entity.VerificationToken;
+import in.skdv.skdvinbackend.model.entity.*;
 import in.skdv.skdvinbackend.repository.JumpdayRepository;
 import in.skdv.skdvinbackend.service.IAppointmentService;
 import in.skdv.skdvinbackend.util.GenericResult;
@@ -449,6 +448,66 @@ public class MongoAppointmentServiceTest extends AbstractSkdvinTest {
         appointmentService.deleteAppointment(appointment.getAppointmentId());
 
         Assert.assertNull(appointmentService.findAppointment(appointment.getAppointmentId()));
+    }
+
+    @Test
+    public void testFindGroupSlots() {
+        SlotQuery slotQuery = new SlotQuery(6, 0, 0, 0);
+
+        List<GroupSlot> groupSlots = appointmentService.findGroupSlots(slotQuery);
+
+        assertNotNull(groupSlots);
+        assertEquals(1, groupSlots.size());
+        assertEquals(LocalDate.now(), groupSlots.get(0).getDate());
+        assertEquals(LocalTime.of(10, 0), groupSlots.get(0).getFirstTime());
+        assertEquals(LocalTime.of(11, 30), groupSlots.get(0).getLastTime());
+        assertEquals(2, groupSlots.get(0).getTimeCount());
+        assertEquals(8, groupSlots.get(0).getTandemAvailable());
+        assertEquals(4, groupSlots.get(0).getPicOrVidAvailable());
+        assertEquals(2, groupSlots.get(0).getPicAndVidAvailable());
+        assertEquals(2, groupSlots.get(0).getHandcamAvailable());
+        assertEquals(2, groupSlots.get(0).getSlots().size());
+        assertEquals(LocalTime.of(10, 0), groupSlots.get(0).getSlots().get(0).getTime());
+        assertEquals(LocalTime.of(11, 30), groupSlots.get(0).getSlots().get(1).getTime());
+        assertEquals(4, groupSlots.get(0).getSlots().get(0).getTandemAvailable());
+        assertEquals(2, groupSlots.get(0).getSlots().get(0).getPicOrVidAvailable());
+        assertEquals(1, groupSlots.get(0).getSlots().get(0).getPicAndVidAvailable());
+        assertEquals(1, groupSlots.get(0).getSlots().get(0).getHandcamAvailable());
+    }
+
+    @Test
+    public void testFindGroupSlots_MultipleDays() {
+        Jumpday jumpday = ModelMockHelper.createJumpday(LocalDate.now().plus(1, ChronoUnit.DAYS));
+        Slot slot = new Slot();
+        slot.setTime(LocalTime.of(13, 0));
+        slot.setTandemTotal(4);
+        slot.setPicOrVidTotal(2);
+        slot.setPicAndVidTotal(1);
+        slot.setHandcamTotal(1);
+        jumpday.getSlots().add(slot);
+        jumpdayRepository.save(jumpday);
+
+        SlotQuery slotQuery = new SlotQuery(6, 0, 0, 0);
+
+        List<GroupSlot> groupSlots = appointmentService.findGroupSlots(slotQuery);
+
+        assertNotNull(groupSlots);
+        assertEquals(3, groupSlots.size());
+    }
+
+    @Test
+    public void testFindGroupSlots_NoFreeSlots() {
+        Jumpday jumpday = ModelMockHelper.createJumpday();
+        jumpday.getSlots().forEach(s -> s.setTandemTotal(0));
+        jumpdayRepository.deleteAll();
+        jumpdayRepository.save(jumpday);
+
+        SlotQuery slotQuery = new SlotQuery(6, 0, 0, 0);
+
+        List<GroupSlot> groupSlots = appointmentService.findGroupSlots(slotQuery);
+
+        assertNotNull(groupSlots);
+        assertEquals(0, groupSlots.size());
     }
 
 }
