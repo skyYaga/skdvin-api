@@ -13,6 +13,7 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -54,8 +55,7 @@ public class EmailServiceTest extends AbstractSkdvinTest {
 
     @Test
     public void testAppointmentVerificationMail() throws MessagingException, IOException {
-        Locale defaultLocale = Locale.getDefault();
-        Locale.setDefault(Locale.GERMAN);
+        LocaleContextHolder.setLocale(Locale.GERMAN);
         doNothing().when(mailSender).send(Mockito.any(MimeMessage.class));
 
         Appointment appointment = ModelMockHelper.createSingleAppointment();
@@ -71,8 +71,6 @@ public class EmailServiceTest extends AbstractSkdvinTest {
 
         Pattern pattern = Pattern.compile(".*" + BASE_URL + "/de/appointment/verify\\?id=[0-9]+&token=[A-Za-z0-9-]{36}.*", Pattern.DOTALL);
         assertTrue(pattern.matcher(argument.getValue().getContent().toString()).matches());
-
-        Locale.setDefault(defaultLocale);
     }
 
     @Test
