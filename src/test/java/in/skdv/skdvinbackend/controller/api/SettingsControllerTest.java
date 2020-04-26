@@ -118,6 +118,8 @@ public class SettingsControllerTest extends AbstractSkdvinTest {
                         fieldWithPath("commonSettings.de.dropzone.name").description("Dropzone name"),
                         fieldWithPath("commonSettings.de.dropzone.email").description("Dropzone email"),
                         fieldWithPath("commonSettings.de.dropzone.priceListUrl").description("URL to price list"),
+                        fieldWithPath("commonSettings.de.dropzone.transportationAgreementUrl")
+                                .description("URL to transportation and liability agreement"),
                         fieldWithPath("commonSettings.de.faq[].question").description("FAQ question"),
                         fieldWithPath("commonSettings.de.faq[].answer").description("FAQ answer")
                 ), responseFields(
@@ -134,6 +136,8 @@ public class SettingsControllerTest extends AbstractSkdvinTest {
                         fieldWithPath("payload.commonSettings.de.dropzone.name").description("Dropzone name"),
                         fieldWithPath("payload.commonSettings.de.dropzone.email").description("Dropzone email"),
                         fieldWithPath("payload.commonSettings.de.dropzone.priceListUrl").description("URL to price list"),
+                        fieldWithPath("payload.commonSettings.de.dropzone.transportationAgreementUrl")
+                                .description("URL to transportation and liability agreement"),
                         fieldWithPath("payload.commonSettings.de.faq[].id").description("FAQ entry id"),
                         fieldWithPath("payload.commonSettings.de.faq[].question").description("FAQ question"),
                         fieldWithPath("payload.commonSettings.de.faq[].answer").description("FAQ answer"),
@@ -185,6 +189,8 @@ public class SettingsControllerTest extends AbstractSkdvinTest {
                         fieldWithPath("commonSettings.de.dropzone.name").description("Dropzone name"),
                         fieldWithPath("commonSettings.de.dropzone.email").description("Dropzone email"),
                         fieldWithPath("commonSettings.de.dropzone.priceListUrl").description("URL to price list"),
+                        fieldWithPath("commonSettings.de.dropzone.transportationAgreementUrl")
+                                .description("URL to transportation and liability agreement"),
                         fieldWithPath("commonSettings.de.faq[].question").description("FAQ question"),
                         fieldWithPath("commonSettings.de.faq[].answer").description("FAQ answer")
                 ), responseFields(
@@ -202,6 +208,8 @@ public class SettingsControllerTest extends AbstractSkdvinTest {
                         fieldWithPath("payload.commonSettings.de.dropzone.name").description("Dropzone name"),
                         fieldWithPath("payload.commonSettings.de.dropzone.email").description("Dropzone email"),
                         fieldWithPath("payload.commonSettings.de.dropzone.priceListUrl").description("URL to price list"),
+                        fieldWithPath("payload.commonSettings.de.dropzone.transportationAgreementUrl")
+                                .description("URL to transportation and liability agreement"),
                         fieldWithPath("payload.commonSettings.de.faq[].id").description("FAQ entry id"),
                         fieldWithPath("payload.commonSettings.de.faq[].question").description("FAQ question"),
                         fieldWithPath("payload.commonSettings.de.faq[].answer").description("FAQ answer"),
@@ -262,6 +270,8 @@ public class SettingsControllerTest extends AbstractSkdvinTest {
                         fieldWithPath("payload.commonSettings.de.dropzone.name").description("Dropzone name"),
                         fieldWithPath("payload.commonSettings.de.dropzone.email").description("Dropzone email"),
                         fieldWithPath("payload.commonSettings.de.dropzone.priceListUrl").description("URL to price list"),
+                        fieldWithPath("payload.commonSettings.de.dropzone.transportationAgreementUrl")
+                                .description("URL to transportation and liability agreement"),
                         fieldWithPath("payload.commonSettings.de.faq[].id").description("FAQ entry id"),
                         fieldWithPath("payload.commonSettings.de.faq[].question").description("FAQ question"),
                         fieldWithPath("payload.commonSettings.de.faq[].answer").description("FAQ answer"),
@@ -302,6 +312,7 @@ public class SettingsControllerTest extends AbstractSkdvinTest {
                         fieldWithPath("payload.dropzone.name").description("Dropzone name"),
                         fieldWithPath("payload.dropzone.email").description("Dropzone email"),
                         fieldWithPath("payload.dropzone.priceListUrl").description("URL to price list"),
+                        fieldWithPath("payload.dropzone.transportationAgreementUrl").description("URL to transportation and liability agreement"),
                         fieldWithPath("payload.faq[].id").description("FAQ entry id"),
                         fieldWithPath("payload.faq[].question").description("FAQ question"),
                         fieldWithPath("payload.faq[].answer").description("FAQ answer"),
@@ -330,6 +341,8 @@ public class SettingsControllerTest extends AbstractSkdvinTest {
                         fieldWithPath("payload.dropzone.name").description("Dropzone name"),
                         fieldWithPath("payload.dropzone.email").description("Dropzone email"),
                         fieldWithPath("payload.dropzone.priceListUrl").description("URL to price list"),
+                        fieldWithPath("payload.dropzone.transportationAgreementUrl")
+                                .description("URL to transportation and liability agreement"),
                         fieldWithPath("payload.faq[].id").description("FAQ entry id"),
                         fieldWithPath("payload.faq[].question").description("FAQ question"),
                         fieldWithPath("payload.faq[].answer").description("FAQ answer"),
