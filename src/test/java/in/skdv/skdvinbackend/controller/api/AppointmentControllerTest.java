@@ -40,6 +40,7 @@ import org.springframework.restdocs.mockmvc.RestDocumentationResultHandler;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.web.context.WebApplicationContext;
 
 import javax.mail.internet.MimeMessage;
@@ -1085,6 +1086,56 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
                 .contentType(contentType))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.success", is(false)));
+    }
+
+
+    @Test
+    public void testFindGroupSlots() throws Exception {
+        SlotQuery query = new SlotQuery(5, 0, 0, 0);
+
+        mockMvc.perform(RestDocumentationRequestBuilders.get("/api/appointment/groupslots")
+                .header("Authorization", MockJwtDecoder.addHeader(READ_APPOINTMENTS))
+                .param("tandem", String.valueOf(query.getTandem())))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success", is(true)))
+                .andExpect(jsonPath("$.payload", hasSize(1)))
+                .andExpect(jsonPath("$.payload[0].date", is(LocalDate.now().toString())))
+                .andExpect(jsonPath("$.payload[0].slots", hasSize(2)))
+                .andDo(document("appointment/group-slots",
+                        requestParameters(
+                                parameterWithName("tandem").description("number of tandem jumps")
+                        ),
+                        responseFields(
+                                fieldWithPath("success").description("true when the request was successful"),
+                                fieldWithPath("exception").description("exception message"),
+                                fieldWithPath("message").description("optional return code message"),
+                                fieldWithPath("payload[]").description("an array of group slots"),
+                                fieldWithPath("payload[].date").description("date of this group slot"),
+                                fieldWithPath("payload[].firstTime").description("first slot time of this group slot"),
+                                fieldWithPath("payload[].lastTime").description("last slot time of this group slot"),
+                                fieldWithPath("payload[].timeCount").description("number of slots for this group slot"),
+                                fieldWithPath("payload[].tandemAvailable").description("available tandems for this slot"),
+                                fieldWithPath("payload[].picOrVidAvailable").description("available picOrVid for this slot"),
+                                fieldWithPath("payload[].picAndVidAvailable").description("available picAndVid for this slot"),
+                                fieldWithPath("payload[].handcamAvailable").description("available handcam for this slot"),
+                                fieldWithPath("payload[].slots[]").description("array of slots for this group slot"),
+                                fieldWithPath("payload[].slots[].time").description("time of this slot"),
+                                fieldWithPath("payload[].slots[].tandemAvailable").description("available tandems for this slot"),
+                                fieldWithPath("payload[].slots[].picOrVidAvailable").description("available picOrVid for this slot"),
+                                fieldWithPath("payload[].slots[].picAndVidAvailable").description("available picAndVid for this slot"),
+                                fieldWithPath("payload[].slots[].handcamAvailable").description("available handcam for this slot")
+                        )
+                ));
+    }
+
+    @Test
+    public void testFindGroupSlots_Unauthorized() throws Exception {
+        SlotQuery query = new SlotQuery(5, 0, 0, 0);
+
+        mockMvc.perform(RestDocumentationRequestBuilders.get("/api/appointment/groupslots")
+                .param("tandem", String.valueOf(query.getTandem())))
+                .andExpect(status().isUnauthorized());
     }
 
     private String json(Object o) throws IOException {

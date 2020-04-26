@@ -2,6 +2,8 @@ package in.skdv.skdvinbackend.service.impl;
 
 import in.skdv.skdvinbackend.exception.ErrorMessage;
 import in.skdv.skdvinbackend.model.common.FreeSlot;
+import in.skdv.skdvinbackend.model.common.GroupSlot;
+import in.skdv.skdvinbackend.model.common.SimpleSlot;
 import in.skdv.skdvinbackend.model.common.SlotQuery;
 import in.skdv.skdvinbackend.model.entity.Appointment;
 import in.skdv.skdvinbackend.model.entity.AppointmentState;
@@ -205,8 +207,51 @@ public class MongoAppointmentService implements IAppointmentService {
         jumpdayRepository.saveAll(jumpdays);
     }
 
+    @Override
+    public List<GroupSlot> findGroupSlots(SlotQuery slotQuery) {
+        List<Jumpday> jumpdayList = jumpdayRepository.findAll();
+        List<GroupSlot> groupSlots = new ArrayList<>();
+
+        jumpdayList.stream().filter(j -> !isInPast(j)).forEach(jumpday -> {
+            int slotCount = jumpday.getSlots().size();
+            for (int i = 0; i < slotCount; i++) {
+                GroupSlot groupSlot = calculateGroupSlot(jumpday, i, slotQuery.getTandem());
+                if (groupSlot != null) {
+                    groupSlots.add(groupSlot);
+                }
+            }
+        });
+
+        return groupSlots;
+    }
+
+    private GroupSlot calculateGroupSlot(Jumpday jumpday, int slotIndex, int minTandemAvailable) {
+        GroupSlot groupSlot = new GroupSlot();
+        groupSlot.setDate(jumpday.getDate());
+
+        for (int i = slotIndex; i < jumpday.getSlots().size(); i++) {
+            Slot slot = jumpday.getSlots().get(i);
+            if (slot.getTandemAvailable() == 0) {
+                return null;
+            }
+
+            SimpleSlot simpleSlot = SimpleSlot.fromSlot(slot);
+            groupSlot.getSlots().add(simpleSlot);
+
+            if (groupSlot.getTandemAvailable() >= minTandemAvailable) {
+                return groupSlot;
+            }
+        }
+
+        return null;
+    }
+
     private boolean isInFuture(Jumpday jumpday) {
         return jumpday.getDate().isAfter(LocalDate.now());
+    }
+
+    private boolean isInPast(Jumpday jumpday) {
+        return jumpday.getDate().isBefore(LocalDate.now());
     }
 
     private boolean isTodayButTimeInFuture(Jumpday jumpday, Slot slot) {

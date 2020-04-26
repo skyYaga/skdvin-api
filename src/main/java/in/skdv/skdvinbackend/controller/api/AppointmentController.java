@@ -2,6 +2,7 @@ package in.skdv.skdvinbackend.controller.api;
 
 import in.skdv.skdvinbackend.exception.ErrorMessage;
 import in.skdv.skdvinbackend.model.common.FreeSlot;
+import in.skdv.skdvinbackend.model.common.GroupSlot;
 import in.skdv.skdvinbackend.model.common.SlotQuery;
 import in.skdv.skdvinbackend.model.converter.AppointmentConverter;
 import in.skdv.skdvinbackend.model.dto.AppointmentDTO;
@@ -243,5 +244,14 @@ public class AppointmentController {
         return ResponseEntity.status(HttpServletResponse.SC_NOT_FOUND)
                 .body(new GenericResult<>(false, messageSource.getMessage(
                         ErrorMessage.APPOINTMENT_NOT_FOUND.toString(), null, LocaleContextHolder.getLocale())));
+    }
+
+
+    @GetMapping(value = "/groupslots")
+    @PreAuthorize("hasAuthority('SCOPE_read:appointments')")
+    public ResponseEntity<GenericResult<List<GroupSlot>>> findGroupSlots(@RequestParam("tandem") Integer tandemCount) {
+        SlotQuery slotQuery = new SlotQuery(tandemCount, 0, 0, 0);
+        List<GroupSlot> result = appointmentService.findGroupSlots(slotQuery);
+        return ResponseEntity.ok(new GenericResult<>(true, result));
     }
 }
