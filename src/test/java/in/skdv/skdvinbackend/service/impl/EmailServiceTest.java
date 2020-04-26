@@ -13,6 +13,7 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -22,6 +23,7 @@ import org.thymeleaf.TemplateEngine;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 import java.io.IOException;
+import java.util.Locale;
 import java.util.regex.Pattern;
 
 import static org.junit.Assert.*;
@@ -53,6 +55,7 @@ public class EmailServiceTest extends AbstractSkdvinTest {
 
     @Test
     public void testAppointmentVerificationMail() throws MessagingException, IOException {
+        LocaleContextHolder.setLocale(Locale.GERMAN);
         doNothing().when(mailSender).send(Mockito.any(MimeMessage.class));
 
         Appointment appointment = ModelMockHelper.createSingleAppointment();
@@ -66,7 +69,7 @@ public class EmailServiceTest extends AbstractSkdvinTest {
         assertEquals(FROM_EMAIL, argument.getValue().getFrom()[0].toString());
         assertEquals(appointment.getCustomer().getEmail(), argument.getValue().getAllRecipients()[0].toString());
 
-        Pattern pattern = Pattern.compile(".*" + BASE_URL + "/appointment/verify\\?id=[0-9]+&token=[A-Za-z0-9-]{36}.*", Pattern.DOTALL);
+        Pattern pattern = Pattern.compile(".*" + BASE_URL + "/de/appointment/verify\\?id=[0-9]+&token=[A-Za-z0-9-]{36}.*", Pattern.DOTALL);
         assertTrue(pattern.matcher(argument.getValue().getContent().toString()).matches());
     }
 

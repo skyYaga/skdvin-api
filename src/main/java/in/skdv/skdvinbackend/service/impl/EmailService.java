@@ -23,7 +23,7 @@ import java.util.Map;
 public class EmailService implements IEmailService {
 
     private static final Logger LOG = LoggerFactory.getLogger(EmailService.class);
-    private static final String APPOINTMENT_CONFIRMATION_ENDPOINT = "/appointment/verify?id=%d&token=%s";
+    private static final String APPOINTMENT_CONFIRMATION_ENDPOINT = "/%s/appointment/verify?id=%d&token=%s";
 
     private JavaMailSender mailSender;
     private TemplateEngine emailTemplateEngine;
@@ -52,7 +52,9 @@ public class EmailService implements IEmailService {
 
         Map<String, Object> contextVariables = new HashMap<>();
         contextVariables.put("tokenurl", baseurl + String.format(APPOINTMENT_CONFIRMATION_ENDPOINT,
-                        appointment.getAppointmentId(), appointment.getVerificationToken().getToken()));
+                LocaleContextHolder.getLocale().getLanguage(),
+                appointment.getAppointmentId(),
+                appointment.getVerificationToken().getToken()));
 
         prepareAppointmentMessage(mimeMessage, appointment, subject, template, contextVariables);
 
