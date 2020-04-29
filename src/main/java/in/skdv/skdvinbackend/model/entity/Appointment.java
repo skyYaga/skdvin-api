@@ -2,12 +2,10 @@ package in.skdv.skdvinbackend.model.entity;
 
 import in.skdv.skdvinbackend.model.common.AbstractAppointment;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Field;
 
 public class Appointment extends AbstractAppointment {
 
     @Id
-    @Field("id")
     private int appointmentId;
 
     private VerificationToken verificationToken;

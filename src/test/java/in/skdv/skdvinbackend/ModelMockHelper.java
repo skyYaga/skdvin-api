@@ -7,7 +7,6 @@ import in.skdv.skdvinbackend.model.entity.settings.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 public class ModelMockHelper {
@@ -58,28 +57,6 @@ public class ModelMockHelper {
         appointment.setHandcam(0);
 
         return appointment;
-    }
-
-    private static User createUser() {
-        return new User("max", "s3cr3t$!", "max@example.com", Collections.singletonList(Role.ROLE_USER));
-    }
-
-    public static User createUserWithVerificationToken() {
-        User user = createUser();
-        VerificationToken verificationToken = new VerificationToken();
-        verificationToken.setToken(UUID.randomUUID().toString());
-        verificationToken.setExpiryDate(LocalDateTime.now().plus(24, ChronoUnit.HOURS));
-        user.setVerificationToken(verificationToken);
-        return user;
-    }
-
-    public static User createUserWithPasswordResetToken() {
-        User user = createUser();
-        VerificationToken verificationToken = new VerificationToken();
-        verificationToken.setToken(UUID.randomUUID().toString());
-        verificationToken.setExpiryDate(LocalDateTime.now().plus(24, ChronoUnit.HOURS));
-        user.setPasswordResetToken(verificationToken);
-        return user;
     }
 
     public static Jumpday createJumpday(LocalDate date) {
