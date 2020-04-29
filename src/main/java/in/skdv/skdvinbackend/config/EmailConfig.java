@@ -60,7 +60,7 @@ public class EmailConfig {
         final ClassLoaderTemplateResolver templateResolver = new ClassLoaderTemplateResolver();
         templateResolver.setOrder(1);
         templateResolver.setResolvablePatterns(Collections.singleton("text/*"));
-        templateResolver.setPrefix("/mail/");
+        templateResolver.setPrefix("/templates/mail/");
         templateResolver.setSuffix(".txt");
         templateResolver.setTemplateMode(TemplateMode.TEXT);
         templateResolver.setCharacterEncoding(EMAIL_TEMPLATE_ENCODING);
@@ -72,7 +72,7 @@ public class EmailConfig {
         final ClassLoaderTemplateResolver templateResolver = new ClassLoaderTemplateResolver();
         templateResolver.setOrder(2);
         templateResolver.setResolvablePatterns(Collections.singleton("html/*"));
-        templateResolver.setPrefix("/mail/");
+        templateResolver.setPrefix("/templates/mail/");
         templateResolver.setSuffix(".html");
         templateResolver.setTemplateMode(TemplateMode.HTML);
         templateResolver.setCharacterEncoding(EMAIL_TEMPLATE_ENCODING);
