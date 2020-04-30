@@ -1,9 +1,22 @@
+logging:
+  level:
+    org.springframework.security: INFO
+    com.auth0: INFO
+
 spring:
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${AUTH0_ISSUER:}
+  data:
+    mongodb:
+      uri: ${MONGODB_URI:mongodb://localhost/test}
   mail:
     default-encoding: UTF-8
-    host:
-    username:
-    password:
+    host: ${MAIL_HOST:}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
     port: 587
     properties:
       mail:
@@ -12,7 +25,15 @@ spring:
           starttls:
             enable: true
     protocol: smtp
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+
+auth0:
+  audience: ${AUTH0_AUDIENCE:}
 
 skdvin:
-  baseurl:
-  from:
+  baseurl: ${SKDVIN_BASEURL:}
+  from: ${SKDVIN_FROM:}
+  cors:
+    enabled: ${SKDVIN_CORS_ENABLED:false}

@@ -1,80 +1,57 @@
 package in.skdv.skdvinbackend.model.entity;
 
+import in.skdv.skdvinbackend.model.common.AbstractJumpday;
+import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 
-import javax.validation.constraints.NotNull;
-import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
-public class Jumpday {
+@Document
+public class Jumpday extends AbstractJumpday {
 
     @Id
-    private LocalDate date;
-    private boolean jumping;
-    private boolean freeTimes;
-    private List<Slot> slots;
-    private List<String> tandemmaster;
-    private List<String> videoflyer;
-    @NotNull
-    public String clientId;
+    private ObjectId objectId;
 
-    public LocalDate getDate() {
-        return date;
+    private List<Assignment<Tandemmaster>> tandemmaster;
+
+    private List<Assignment<Videoflyer>> videoflyer;
+
+    public boolean addAppointment(Appointment appointment) {
+        Optional<Slot> slot = getSlotForAppointment(appointment);
+        if (slot.isPresent()) {
+            slot.get().getAppointments().add(appointment);
+            return true;
+        }
+        return false;
     }
 
-    public void setDate(LocalDate date) {
-        this.date = date;
+    public Optional<Slot> getSlotForAppointment(Appointment appointment) {
+        return getSlots().stream().filter(s -> s.getTime().equals(appointment.getDate().toLocalTime())).findFirst();
     }
 
-    public boolean isJumping() {
-        return jumping;
+    public ObjectId getObjectId() {
+        return objectId;
     }
 
-    public void setJumping(boolean jumping) {
-        this.jumping = jumping;
+    public void setObjectId(ObjectId objectId) {
+        this.objectId = objectId;
     }
 
-    public boolean isFreeTimes() {
-        return freeTimes;
-    }
-
-    public void setFreeTimes(boolean freeTimes) {
-        this.freeTimes = freeTimes;
-    }
-
-    public List<Slot> getSlots() {
-        return slots;
-    }
-
-    public void setSlots(List<Slot> slots) {
-        this.slots = slots;
-    }
-
-    public List<String> getTandemmaster() {
+    public List<Assignment<Tandemmaster>> getTandemmaster() {
         return tandemmaster;
     }
 
-    public void setTandemmaster(List<String> tandemmaster) {
+    public void setTandemmaster(List<Assignment<Tandemmaster>> tandemmaster) {
         this.tandemmaster = tandemmaster;
     }
 
-    public List<String> getVideoflyer() {
+    public List<Assignment<Videoflyer>> getVideoflyer() {
         return videoflyer;
     }
 
-    public void setVideoflyer(List<String> videoflyer) {
+    public void setVideoflyer(List<Assignment<Videoflyer>> videoflyer) {
         this.videoflyer = videoflyer;
-    }
-
-    @Override
-    public String toString() {
-        return "Jumpday{" +
-                "date=" + date +
-                ", jumping=" + jumping +
-                ", freeTimes=" + freeTimes +
-                ", slots=" + slots +
-                ", tandemmaster=" + tandemmaster +
-                ", videoflyer=" + videoflyer +
-                '}';
     }
 }

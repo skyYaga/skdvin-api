@@ -1,14 +1,27 @@
 package in.skdv.skdvinbackend.model.entity;
 
+import in.skdv.skdvinbackend.util.ValidEmail;
+
+import javax.validation.constraints.NotNull;
+import java.util.List;
+
 public class Customer {
 
+    @NotNull
     private String firstName;
+    @NotNull
     private String lastName;
+    @NotNull
     private String tel;
-    private String mobile;
+    @NotNull
+    @ValidEmail
     private String email;
-    private String plz;
+    @NotNull
+    private String zip;
+    @NotNull
     private String city;
+    @NotNull
+    private List<Jumper> jumpers;
 
     public String getFirstName() {
         return firstName;
@@ -34,14 +47,6 @@ public class Customer {
         this.tel = tel;
     }
 
-    public String getMobile() {
-        return mobile;
-    }
-
-    public void setMobile(String mobile) {
-        this.mobile = mobile;
-    }
-
     public String getEmail() {
         return email;
     }
@@ -50,12 +55,12 @@ public class Customer {
         this.email = email;
     }
 
-    public String getPlz() {
-        return plz;
+    public String getZip() {
+        return zip;
     }
 
-    public void setPlz(String plz) {
-        this.plz = plz;
+    public void setZip(String zip) {
+        this.zip = zip;
     }
 
     public String getCity() {
@@ -66,15 +71,22 @@ public class Customer {
         this.city = city;
     }
 
+    public List<Jumper> getJumpers() {
+        return jumpers;
+    }
+
+    public void setJumpers(List<Jumper> jumpers) {
+        this.jumpers = jumpers;
+    }
+
     @Override
     public String toString() {
         return "Customer{" +
                 "firstName='" + firstName + '\'' +
                 ", lastName='" + lastName + '\'' +
                 ", tel='" + tel + '\'' +
-                ", mobile='" + mobile + '\'' +
                 ", email='" + email + '\'' +
-                ", plz='" + plz + '\'' +
+                ", zip='" + zip + '\'' +
                 ", city='" + city + '\'' +
                 '}';
     }

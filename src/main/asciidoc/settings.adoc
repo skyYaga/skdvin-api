@@ -1,0 +1,26 @@
+= Settings
+API Endpoint to manage Settings
+
+
+== Create/Add Settings
+A `POST` request is used to add a new settings.
+
+operation::settings/create-settings[snippets='http-request,request-fields,http-response,response-fields']
+
+
+== Update Settings
+A `PUT` request is used to update a settings.
+
+operation::settings/update-settings[snippets='http-request,path-parameters,request-fields,http-response,response-fields']
+
+
+== Get Settings
+A `GET` request is used to get all settings (including admin settings).
+
+operation::settings/get-settings[snippets='http-request,http-response,response-fields']
+
+
+== Get Common Settings
+A `GET` request is used to get common settings (excluding admin settings).
+
+operation::settings/get-common-settings[snippets='http-request,http-response,response-fields']

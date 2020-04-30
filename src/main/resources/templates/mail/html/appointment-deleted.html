@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title th:remove="all">Template for HTML email when appointment is deleted</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+</head>
+<body>
+<h1 th:text="#{appointment.heading(${appointment.appointmentId})}">Appointment 123</h1>
+<p th:text="#{greeting(${appointment.customer.firstName}, ${appointment.customer.lastName})}">
+    Hello, User!
+</p>
+<p th:text="#{appointment.deleted.description}">
+    Ihre Buchung wurde gelöscht. Nachfolgend alle Details:
+</p>
+<span th:text="#{date(${#temporals.format(appointment.date, 'dd.MM.yyyy / HH:mm')})}">
+    Datum: 01.01.2020 / 10:00 Uhr
+</span><br/>
+<span th:text="#{tandem(${appointment.tandem})}">
+    1 x Tandem
+</span><br/>
+<span th:text="#{picorvid(${appointment.picOrVid})}">
+    1 x Foto oder Video
+</span><br/>
+<span th:text="#{picandvid(${appointment.picAndVid})}">
+    1 x Foto und Video
+</span><br/>
+<span th:text="#{handcam(${appointment.handcam})}">
+    1 x Handcam
+</span>
+<p th:text="#{yourdata}">
+    Ihre Daten:
+</p>
+<span th:text="#{firstlast(${appointment.customer.firstName}, ${appointment.customer.lastName})}">
+    Max Mustermann
+</span><br/>
+<span th:text="#{email(${appointment.customer.email})}">
+    E-Mail: max.mustermann@example.com
+</span><br/>
+<span th:text="#{phone(${appointment.customer.tel})}">
+    Telefon: 0123456789
+</span><br/>
+<span th:text="#{zipcity(${appointment.customer.zip}, ${appointment.customer.city})}">
+    PLZ / Wohnort: 12345 Musterstadt
+</span>
+<p th:text="#{jumperdata}">
+    Springerdaten
+</p>
+<ul th:each="jumper: ${appointment.customer.jumpers}">
+    <li th:text="#{appointment.customer.jumper(
+        ${jumper.firstName}, ${jumper.lastName},
+        ${#temporals.format(jumper.dateOfBirth, 'dd.MM.yyyy')})}"></li>
+</ul>
+<p th:text="#{goodbye}">
+    Ihr Fallschirm-Sport-Zentrum Haßfurt e.V.
+</p>
+</body>
+</html>

@@ -6,10 +6,14 @@
 = Introduction
 This is the documentation of the skdv.in REST-API.
 
-You can find this project on GitHub: https://github.com/skyYaga/skdvin-backend
+You can find this project on GitHub: https://github.com/skyYaga/skdvin-api
 
-include::user.adoc[]
+include::jumpday.adoc[]
 
+include::appointment.adoc[]
 
-= Appointment
-API Endpoint to manage Appointments
+include::tandemmaster.adoc[]
+
+include::videoflyer.adoc[]
+
+include::settings.adoc[]

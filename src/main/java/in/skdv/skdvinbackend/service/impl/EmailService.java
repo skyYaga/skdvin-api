@@ -1,6 +1,6 @@
 package in.skdv.skdvinbackend.service.impl;
 
-import in.skdv.skdvinbackend.model.entity.User;
+import in.skdv.skdvinbackend.model.entity.Appointment;
 import in.skdv.skdvinbackend.service.IEmailService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,20 +11,19 @@ import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
-import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 
-@Service
 public class EmailService implements IEmailService {
 
     private static final Logger LOG = LoggerFactory.getLogger(EmailService.class);
-    private static final String USER_REGISTRATION_ENDPOINT = "/api/user/confirm/";
-    private static final String USER_PASSWORD_RESET_ENDPOINT = "/api/user/resetpassword/";
+    private static final String APPOINTMENT_CONFIRMATION_ENDPOINT = "/%s/appointment/verify?id=%d&token=%s";
 
     private JavaMailSender mailSender;
     private TemplateEngine emailTemplateEngine;
@@ -45,50 +44,99 @@ public class EmailService implements IEmailService {
     }
 
     @Override
-    public void sendUserRegistrationToken(User user) throws MessagingException {
-        Locale locale = LocaleContextHolder.getLocale();
-        String toEmail = user.getEmail();
-
-        Context ctx = new Context(locale);
-        ctx.setVariable("username", user.getUsername());
-        ctx.setVariable("tokenurl", baseurl + USER_REGISTRATION_ENDPOINT + user.getVerificationToken().getToken());
-
+    public void sendAppointmentVerification(Appointment appointment) throws MessagingException {
         MimeMessage mimeMessage = mailSender.createMimeMessage();
-        MimeMessageHelper message = new MimeMessageHelper(mimeMessage, "UTF-8");
 
-        message.setSubject(emailMessageSource.getMessage("user.registration.subject", null, locale));
-        message.setFrom(fromEmail);
-        message.setTo(toEmail);
+        String subject = "appointment.verification.subject";
+        String template = "html/appointment-verification";
 
-        String htmlContent = emailTemplateEngine.process("html/user-registration", ctx);
-        message.setText(htmlContent, true);
+        Map<String, Object> contextVariables = new HashMap<>();
+        contextVariables.put("tokenurl", baseurl + String.format(APPOINTMENT_CONFIRMATION_ENDPOINT,
+                LocaleContextHolder.getLocale().getLanguage(),
+                appointment.getAppointmentId(),
+                appointment.getVerificationToken().getToken()));
 
-        LOG.info("Sending user registration mail to {0}", toEmail);
+        prepareAppointmentMessage(mimeMessage, appointment, subject, template, contextVariables);
+
+        LOG.info("Sending appointment verification mail to {}", appointment.getCustomer().getEmail());
 
         mailSender.send(mimeMessage);
     }
 
     @Override
-    public void sendPasswordResetToken(User user) throws MessagingException {
-        Locale locale = LocaleContextHolder.getLocale();
-        String toEmail = user.getEmail();
-
-        Context ctx = new Context(locale);
-        ctx.setVariable("username", user.getUsername());
-        ctx.setVariable("tokenurl", baseurl + USER_PASSWORD_RESET_ENDPOINT + user.getPasswordResetToken().getToken());
-
+    public void sendAppointmentConfirmation(Appointment appointment) throws MessagingException {
         MimeMessage mimeMessage = mailSender.createMimeMessage();
-        MimeMessageHelper message = new MimeMessageHelper(mimeMessage, "UTF-8");
 
-        message.setSubject(emailMessageSource.getMessage("user.passwordreset.subject", null, locale));
-        message.setFrom(fromEmail);
-        message.setTo(toEmail);
+        String subject = "appointment.confirmation.subject";
+        String template = "html/appointment-confirmation";
 
-        String htmlContent = emailTemplateEngine.process("html/user-password-reset", ctx);
-        message.setText(htmlContent, true);
+        prepareAppointmentMessage(mimeMessage, appointment, subject, template, null);
 
-        LOG.info("Sending password reset mail to {}", toEmail);
+        LOG.info("Sending appointment confirmation mail to {}", appointment.getCustomer().getEmail());
 
         mailSender.send(mimeMessage);
     }
+
+    @Override
+    public void sendAppointmentUnconfirmedCancellation(Appointment appointment) throws MessagingException {
+        MimeMessage mimeMessage = mailSender.createMimeMessage();
+
+        String subject = "appointment.unconfirmed.cancellation.subject";
+        String template = "html/appointment-unconfirmed-cancellation";
+
+        prepareAppointmentMessage(mimeMessage, appointment, subject, template, null);
+
+        LOG.info("Sending appointment unconfirmed cancellation mail to {}", appointment.getCustomer().getEmail());
+
+        mailSender.send(mimeMessage);
+    }
+
+    @Override
+    public void sendAppointmentUpdated(Appointment appointment) throws MessagingException {
+        MimeMessage mimeMessage = mailSender.createMimeMessage();
+
+        String subject = "appointment.updated.subject";
+        String template = "html/appointment-updated";
+
+        prepareAppointmentMessage(mimeMessage, appointment, subject, template, null);
+
+        LOG.info("Sending appointment updated mail to {}", appointment.getCustomer().getEmail());
+
+        mailSender.send(mimeMessage);
+    }
+
+    @Override
+    public void sendAppointmentDeleted(Appointment appointment) throws MessagingException {
+        MimeMessage mimeMessage = mailSender.createMimeMessage();
+
+        String subject = "appointment.deleted.subject";
+        String template = "html/appointment-deleted";
+
+        prepareAppointmentMessage(mimeMessage, appointment, subject, template, null);
+
+        LOG.info("Sending appointment deleted mail to {}", appointment.getCustomer().getEmail());
+
+        mailSender.send(mimeMessage);
+    }
+
+    private void prepareAppointmentMessage(MimeMessage mimeMessage, Appointment appointment, String subject, String template, Map<String, Object> contextVariables) throws MessagingException {
+        Locale locale = LocaleContextHolder.getLocale();
+
+        Context ctx = new Context(locale);
+        ctx.setVariable("appointment", appointment);
+
+        if (contextVariables != null) {
+            contextVariables.forEach(ctx::setVariable);
+        }
+
+        String toEmail = appointment.getCustomer().getEmail();
+        String htmlContent = emailTemplateEngine.process(template, ctx);
+
+        MimeMessageHelper message = new MimeMessageHelper(mimeMessage, "UTF-8");
+        message.setSubject(emailMessageSource.getMessage(subject, new Object[]{appointment.getAppointmentId()}, locale));
+        message.setFrom(fromEmail);
+        message.setTo(toEmail);
+        message.setText(htmlContent, true);
+    }
+
 }
