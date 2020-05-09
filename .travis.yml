@@ -9,10 +9,3 @@ addons:
 script:
   # the following command line builds the project, runs the tests with coverage and then execute the SonarCloud analysis
   - mvn clean verify sonar:sonar -Pcoverage -Dsonar.projectKey=in.skdv:skdvin-api
-deploy:
-  provider: heroku
-  api_key:
-    secure: km5nOCIiE4KmPurqSkuN3y2akL5sgixttwY0hz4PBxcXFHmbZrZb9nbVTkS0mDHxa9WvwrR3mUV+dhp9FjHrsnFSWrn0qWctIRyiUgleCSi7mZkGvXsDhNnE1vKblCZqjewRoNlS7lsT/kqHPPs0rzGLtfjoEzaQN0qsGVsqFT1+uol6TMoAjfZezoMYPs4U29Ieer+MvuyqsRrqQE6Doww399g8UxtiCwPbt3jxXpBoxYhhRGaeZ1/PHangjKZUGRqVPPQ42ZWDHew7qpwN965yILETJDKFtUfyIAiiFqvEt2l8DcpYgNJ1J3sLezf3kElidRx1RZnGiK4TPTLcV109s73iBBcex20ZqyrerQoNXNNQyc4DqUsUUIk3hqSpscEDLegvIfdWaHyWcTjpGwiF8ArDWSKHSKHSM1eRORw7WzyhneCUbBuSuASLgbs0Ng0JL7roWZTTOxJKwN91g1St6xfTMnkOx/As6HJyTQxiNJt2sC8vR0iXHE9h0Za9pfo1jIG6xlbigKF7n8fB/lQfPtlBW+AwX8bCaXnVq9Rz8FBWEno1/KU0FAH1DMAtOAz5S+spNDHZ4Yklr2HNmpup7b4PAqJ6E5CYjsCl6uRscHjC2eSfjM8BrTloe6a4WtnWQ8noctJ1uKel0gPpIjO4GDBPvj7eVVBIFVmoqHM=
-  app:
-    develop: skdvin-api-acc
-  on: develop

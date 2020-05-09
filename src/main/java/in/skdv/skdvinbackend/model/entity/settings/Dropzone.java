@@ -2,10 +2,12 @@ package in.skdv.skdvinbackend.model.entity.settings;
 
 public class Dropzone {
 
-    private String name;
-    private String email;
-    private String priceListUrl;
-    private String transportationAgreementUrl;
+    private String name = "";
+    private String email = "";
+    private String phone = "";
+    private String mobile = "";
+    private String priceListUrl = "";
+    private String transportationAgreementUrl = "";
 
     public String getName() {
         return name;
@@ -37,5 +39,21 @@ public class Dropzone {
 
     public void setTransportationAgreementUrl(String transportationAgreementUrl) {
         this.transportationAgreementUrl = transportationAgreementUrl;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
+    public String getMobile() {
+        return mobile;
+    }
+
+    public void setMobile(String mobile) {
+        this.mobile = mobile;
     }
 }

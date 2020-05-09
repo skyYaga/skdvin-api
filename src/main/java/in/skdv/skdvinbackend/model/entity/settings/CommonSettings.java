@@ -9,6 +9,8 @@ public class CommonSettings {
 
     private Dropzone dropzone;
     private List<Faq> faq = new ArrayList<>();
+    private String homepageHint = "";
+    private String homepageHintTitle = "";
 
     public Dropzone getDropzone() {
         return dropzone;
@@ -24,5 +26,21 @@ public class CommonSettings {
 
     public void setFaq(List<Faq> faq) {
         this.faq = faq;
+    }
+
+    public String getHomepageHint() {
+        return homepageHint;
+    }
+
+    public void setHomepageHint(String homepageHint) {
+        this.homepageHint = homepageHint;
+    }
+
+    public String getHomepageHintTitle() {
+        return homepageHintTitle;
+    }
+
+    public void setHomepageHintTitle(String homepageHintTitle) {
+        this.homepageHintTitle = homepageHintTitle;
     }
 }
