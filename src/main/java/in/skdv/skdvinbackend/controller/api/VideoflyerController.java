@@ -119,7 +119,7 @@ public class VideoflyerController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new GenericResult<>(false));
         }
 
-        return assignVideoflyer(input);
+        return assignVideoflyer(input, false);
     }
 
 
@@ -130,11 +130,11 @@ public class VideoflyerController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new GenericResult<>(false));
         }
 
-        return assignVideoflyer(input);
+        return assignVideoflyer(input, true);
     }
 
-    private ResponseEntity<GenericResult<Void>> assignVideoflyer(VideoflyerDetailsDTO videoflyer) {
-        GenericResult<Void> result = videoflyerService.assignVideoflyer(videoflyer);
+    private ResponseEntity<GenericResult<Void>> assignVideoflyer(VideoflyerDetailsDTO videoflyer, boolean selfAssign) {
+        GenericResult<Void> result = videoflyerService.assignVideoflyer(videoflyer, selfAssign);
 
         if (result.isSuccess()) {
             return ResponseEntity.ok(new GenericResult<>(true));

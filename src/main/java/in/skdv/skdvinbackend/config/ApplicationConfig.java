@@ -55,8 +55,9 @@ public class ApplicationConfig implements WebMvcConfigurer {
     }
 
     @Bean
-    public IVideoflyerService getVideoflyerService() {
-        return new MongoVideoflyerService(jumpdayRepository, videoflyerRepository);
+    @Autowired
+    public IVideoflyerService getVideoflyerService(ISettingsService settingsService) {
+        return new MongoVideoflyerService(jumpdayRepository, videoflyerRepository, settingsService);
     }
 
     @Bean
@@ -65,8 +66,9 @@ public class ApplicationConfig implements WebMvcConfigurer {
     }
 
     @Bean
-    public ITandemmasterService getTandemmasterService() {
-        return new MongoTandemmasterService(jumpdayRepository, tandemmasterRepository);
+    @Autowired
+    public ITandemmasterService getTandemmasterService(ISettingsService settingsService) {
+        return new MongoTandemmasterService(jumpdayRepository, tandemmasterRepository, settingsService);
     }
 
     @Bean

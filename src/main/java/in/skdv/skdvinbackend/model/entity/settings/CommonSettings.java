@@ -12,6 +12,7 @@ public class CommonSettings {
     private String homepageHint = "";
     private String homepageHintTitle = "";
     private String bccMail = "";
+    private SelfAssignmentMode selfAssignmentMode = SelfAssignmentMode.WRITE_DELETE;
 
     public Dropzone getDropzone() {
         return dropzone;
@@ -51,5 +52,13 @@ public class CommonSettings {
 
     public void setBccMail(String bccMail) {
         this.bccMail = bccMail;
+    }
+
+    public SelfAssignmentMode getSelfAssignmentMode() {
+        return selfAssignmentMode;
+    }
+
+    public void setSelfAssignmentMode(SelfAssignmentMode selfAssignmentMode) {
+        this.selfAssignmentMode = selfAssignmentMode;
     }
 }
