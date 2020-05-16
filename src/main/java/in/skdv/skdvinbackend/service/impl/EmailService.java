@@ -1,7 +1,9 @@
 package in.skdv.skdvinbackend.service.impl;
 
 import in.skdv.skdvinbackend.model.entity.Appointment;
+import in.skdv.skdvinbackend.model.entity.settings.CommonSettings;
 import in.skdv.skdvinbackend.service.IEmailService;
+import in.skdv.skdvinbackend.service.ISettingsService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +27,7 @@ public class EmailService implements IEmailService {
     private static final Logger LOG = LoggerFactory.getLogger(EmailService.class);
     private static final String APPOINTMENT_CONFIRMATION_ENDPOINT = "/%s/appointment/verify?id=%d&token=%s";
 
+    private ISettingsService settingsService;
     private JavaMailSender mailSender;
     private TemplateEngine emailTemplateEngine;
     private MessageSource emailMessageSource;
@@ -37,7 +40,8 @@ public class EmailService implements IEmailService {
 
 
     @Autowired
-    public EmailService(JavaMailSender mailSender, TemplateEngine emailTemplateEngine, @Qualifier("emailMessageSource") MessageSource emailMessageSource) {
+    public EmailService(ISettingsService settingsService, JavaMailSender mailSender, TemplateEngine emailTemplateEngine, @Qualifier("emailMessageSource") MessageSource emailMessageSource) {
+        this.settingsService = settingsService;
         this.mailSender = mailSender;
         this.emailTemplateEngine = emailTemplateEngine;
         this.emailMessageSource = emailMessageSource;
@@ -137,6 +141,14 @@ public class EmailService implements IEmailService {
         message.setFrom(fromEmail);
         message.setTo(toEmail);
         message.setText(htmlContent, true);
+
+        CommonSettings settings = settingsService.getCommonSettingsByLanguage(locale.getLanguage());
+        if (settings != null && settings.getDropzone() != null && !settings.getDropzone().getEmail().isBlank()) {
+            message.setReplyTo(settings.getDropzone().getEmail());
+        }
+        if (settings != null && !settings.getBccMail().isBlank()) {
+            message.setBcc(settings.getBccMail());
+        }
     }
 
 }

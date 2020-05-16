@@ -9,9 +9,11 @@ import in.skdv.skdvinbackend.model.dto.AppointmentDTO;
 import in.skdv.skdvinbackend.model.dto.AppointmentStateOnlyDTO;
 import in.skdv.skdvinbackend.model.entity.Appointment;
 import in.skdv.skdvinbackend.model.entity.AppointmentState;
+import in.skdv.skdvinbackend.model.entity.settings.CommonSettings;
 import in.skdv.skdvinbackend.repository.JumpdayRepository;
 import in.skdv.skdvinbackend.service.IAppointmentService;
 import in.skdv.skdvinbackend.service.IEmailService;
+import in.skdv.skdvinbackend.service.ISettingsService;
 import in.skdv.skdvinbackend.util.GenericResult;
 import in.skdv.skdvinbackend.util.VerificationTokenUtil;
 import org.junit.Assert;
@@ -20,6 +22,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.restdocs.RestDocsMockMvcConfigurationCustomizer;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -55,8 +58,7 @@ import java.util.Collections;
 import static in.skdv.skdvinbackend.config.Authorities.*;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
@@ -88,6 +90,9 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
 
     @MockBean
     private JavaMailSender mailSender;
+
+    @MockBean
+    private ISettingsService settingsService;
 
     @Autowired
     private IEmailService emailService;
@@ -133,6 +138,7 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
         ReflectionTestUtils.setField(emailService, "fromEmail", FROM_EMAIL);
         ReflectionTestUtils.setField(emailService, "baseurl", BASE_URL);
         doReturn(new JavaMailSenderImpl().createMimeMessage()).when(mailSender).createMimeMessage();
+        when(settingsService.getCommonSettingsByLanguage(Mockito.anyString())).thenReturn(new CommonSettings());
     }
 
     @Test
