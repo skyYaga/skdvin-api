@@ -8,6 +8,7 @@ import in.skdv.skdvinbackend.model.dto.TandemmasterDetailsDTO;
 import in.skdv.skdvinbackend.model.entity.Tandemmaster;
 import in.skdv.skdvinbackend.repository.TandemmasterRepository;
 import in.skdv.skdvinbackend.service.ITandemmasterService;
+import in.skdv.skdvinbackend.util.ControllerUtil;
 import in.skdv.skdvinbackend.util.GenericResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
@@ -48,7 +49,7 @@ public class TandemmasterController {
         Tandemmaster tandemmaster = tandemmasterRepository.save(convertedInput);
 
         return ResponseEntity.status(HttpStatus.CREATED)
-                    .body(new GenericResult<>(true, tandemmasterConverter.convertToDto(tandemmaster)));
+                .body(new GenericResult<>(true, tandemmasterConverter.convertToDto(tandemmaster)));
     }
 
     @GetMapping
@@ -84,6 +85,16 @@ public class TandemmasterController {
         }
 
         return ResponseEntity.ok(new GenericResult<>(true, tandemmaster));
+    }
+
+    @PatchMapping(value = "/me/assign")
+    @PreAuthorize("hasAuthority('SCOPE_tandemmaster')")
+    public ResponseEntity<GenericResult<Void>> selfAssignTandemmasterToJumpdays(@RequestBody @Valid TandemmasterDetailsDTO input) {
+        if (input.getEmail() == null || !input.getEmail().equals(Claims.getEmail())) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new GenericResult<>(false));
+        }
+
+        return assignTandemmaster(input, true);
     }
 
     @PutMapping(value = "/{id}")
@@ -128,25 +139,9 @@ public class TandemmasterController {
 
     }
 
-    @PatchMapping(value = "/me/assign")
-    @PreAuthorize("hasAuthority('SCOPE_tandemmaster')")
-    public ResponseEntity<GenericResult<Void>> selfAssignTandemmasterToJumpdays(@RequestBody @Valid TandemmasterDetailsDTO input) {
-        if (input.getEmail() == null || !input.getEmail().equals(Claims.getEmail())) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new GenericResult<>(false));
-        }
-
-        return assignTandemmaster(input, true);
-    }
-
-
     private ResponseEntity<GenericResult<Void>> assignTandemmaster(TandemmasterDetailsDTO tandemmaster, boolean selfAssign) {
         GenericResult<Void> result = tandemmasterService.assignTandemmaster(tandemmaster, selfAssign);
 
-        if (result.isSuccess()) {
-            return ResponseEntity.ok(new GenericResult<>(true));
-        }
-
-        return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(new GenericResult<>(false, messageSource.getMessage(result.getMessage(), null, LocaleContextHolder.getLocale())));
+        return ControllerUtil.parseAssignmentResult(result, messageSource);
     }
 }

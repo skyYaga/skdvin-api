@@ -111,8 +111,9 @@ public class MongoVideoflyerService implements IVideoflyerService {
         if (SelfAssignmentMode.NODELETE.equals(selfAssignmentMode)) {
             VideoflyerDetailsDTO currentDetails = getById(newVideoflyerDetails.getId());
             for (Map.Entry<LocalDate, SimpleAssignment> currentEntry : currentDetails.getAssignments().entrySet()) {
-                SimpleAssignment existingAssignment = newVideoflyerDetails.getAssignments().get(currentEntry.getKey());
-                if (existingAssignment == null || !existingAssignment.equals(currentEntry.getValue())) {
+                SimpleAssignment newAssignment = newVideoflyerDetails.getAssignments().get(currentEntry.getKey());
+                if (currentEntry.getValue().isAssigned() && (newAssignment == null || !newAssignment.isAssigned())
+                        || currentEntry.getValue().isAssigned() && newAssignment.isAllday() != currentEntry.getValue().isAllday()) {
                     return ErrorMessage.SELFASSIGNMENT_NODELETE;
                 }
             }
