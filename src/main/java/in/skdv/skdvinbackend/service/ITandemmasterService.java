@@ -14,7 +14,7 @@ public interface ITandemmasterService {
 
     GenericResult<Void> assignTandemmasterToJumpday(LocalDate date, String tandemmasterId, SimpleAssignment assignment);
 
-    GenericResult<Void> assignTandemmaster(TandemmasterDetailsDTO tandemmasterDetails);
+    GenericResult<Void> assignTandemmaster(TandemmasterDetailsDTO tandemmasterDetails, boolean selfAssign);
 
     void delete(String id);
 

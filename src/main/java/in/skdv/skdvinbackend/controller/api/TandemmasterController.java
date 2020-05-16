@@ -124,7 +124,7 @@ public class TandemmasterController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new GenericResult<>(false));
         }
 
-        return assignTandemmaster(input);
+        return assignTandemmaster(input, false);
 
     }
 
@@ -135,12 +135,12 @@ public class TandemmasterController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new GenericResult<>(false));
         }
 
-        return assignTandemmaster(input);
+        return assignTandemmaster(input, true);
     }
 
 
-    private ResponseEntity<GenericResult<Void>> assignTandemmaster(TandemmasterDetailsDTO tandemmaster) {
-        GenericResult<Void> result = tandemmasterService.assignTandemmaster(tandemmaster);
+    private ResponseEntity<GenericResult<Void>> assignTandemmaster(TandemmasterDetailsDTO tandemmaster, boolean selfAssign) {
+        GenericResult<Void> result = tandemmasterService.assignTandemmaster(tandemmaster, selfAssign);
 
         if (result.isSuccess()) {
             return ResponseEntity.ok(new GenericResult<>(true));

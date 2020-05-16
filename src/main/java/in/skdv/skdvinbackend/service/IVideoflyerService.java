@@ -14,7 +14,7 @@ public interface IVideoflyerService {
 
     GenericResult<Void> assignVideoflyerToJumpday(LocalDate date, String videoflyerId, SimpleAssignment simpleAssignment);
 
-    GenericResult<Void> assignVideoflyer(VideoflyerDetailsDTO videoflyerDetails);
+    GenericResult<Void> assignVideoflyer(VideoflyerDetailsDTO videoflyerDetails, boolean selfAssign);
 
     void delete(String id);
 

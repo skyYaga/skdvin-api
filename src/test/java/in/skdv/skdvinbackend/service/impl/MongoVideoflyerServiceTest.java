@@ -10,9 +10,12 @@ import in.skdv.skdvinbackend.model.dto.VideoflyerDetailsDTO;
 import in.skdv.skdvinbackend.model.entity.Assignment;
 import in.skdv.skdvinbackend.model.entity.Jumpday;
 import in.skdv.skdvinbackend.model.entity.Videoflyer;
+import in.skdv.skdvinbackend.model.entity.settings.CommonSettings;
+import in.skdv.skdvinbackend.model.entity.settings.SelfAssignmentMode;
 import in.skdv.skdvinbackend.repository.JumpdayRepository;
 import in.skdv.skdvinbackend.repository.VideoflyerRepository;
 import in.skdv.skdvinbackend.service.IJumpdayService;
+import in.skdv.skdvinbackend.service.ISettingsService;
 import in.skdv.skdvinbackend.service.IVideoflyerService;
 import in.skdv.skdvinbackend.util.GenericResult;
 import org.junit.Assert;
@@ -21,19 +24,25 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.when;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
 public class MongoVideoflyerServiceTest extends AbstractSkdvinTest {
+
+    @MockBean
+    ISettingsService settingsService;
 
     @Autowired
     JumpdayRepository jumpdayRepository;
@@ -273,7 +282,7 @@ public class MongoVideoflyerServiceTest extends AbstractSkdvinTest {
     }
 
     private void saveAssignment(VideoflyerDetailsDTO videoflyerDetails) {
-        GenericResult<Void> result = videoflyerService.assignVideoflyer(videoflyerDetails);
+        GenericResult<Void> result = videoflyerService.assignVideoflyer(videoflyerDetails, false);
         Assert.assertTrue(result.isSuccess());
     }
 
@@ -342,7 +351,7 @@ public class MongoVideoflyerServiceTest extends AbstractSkdvinTest {
 
 
         videoflyerDetails.setAssignments(Map.of(LocalDate.now(), new SimpleAssignment(false), LocalDate.now().plus(1, ChronoUnit.DAYS), new SimpleAssignment(false)));
-        GenericResult<Void> result = videoflyerService.assignVideoflyer(videoflyerDetails);
+        GenericResult<Void> result = videoflyerService.assignVideoflyer(videoflyerDetails, false);
 
         assignedResult1 = jumpdayService.findJumpday(LocalDate.now());
         assignedResult2 = jumpdayService.findJumpday(LocalDate.now().plus(1, ChronoUnit.DAYS));
@@ -359,7 +368,7 @@ public class MongoVideoflyerServiceTest extends AbstractSkdvinTest {
         VideoflyerDetailsDTO videoflyerDetails = converter.convertToDetailsDto(videoflyer, Map.of());
         videoflyerDetails.setAssignments(Map.of(LocalDate.now(), new SimpleAssignment(false), LocalDate.now().plus(1, ChronoUnit.DAYS), new SimpleAssignment(false)));
 
-        GenericResult<Void> result = videoflyerService.assignVideoflyer(videoflyerDetails);
+        GenericResult<Void> result = videoflyerService.assignVideoflyer(videoflyerDetails, false);
 
         Assert.assertFalse(result.isSuccess());
         Assert.assertEquals(ErrorMessage.JUMPDAY_NOT_FOUND_MSG.toString(), result.getMessage());
@@ -391,5 +400,37 @@ public class MongoVideoflyerServiceTest extends AbstractSkdvinTest {
 
         Assert.assertNull(videoflyerService.getById(videoflyerDetails.getId()));
         Assert.assertEquals(0, assignedResult.getPayload().getVideoflyer().size());
+    }
+
+    @Test
+    public void testAssignVideoflyer_READONLY() {
+        CommonSettings commonSettings = new CommonSettings();
+        commonSettings.setSelfAssignmentMode(SelfAssignmentMode.READONLY);
+        when(settingsService.getCommonSettingsByLanguage(Locale.GERMAN.getLanguage())).thenReturn(commonSettings);
+
+        VideoflyerDetailsDTO videoflyerDetails = prepareJumpdaysAndVideoflyer();
+        SimpleAssignment assignmentDTO = new SimpleAssignment(true);
+        videoflyerDetails.setAssignments(Map.of(LocalDate.now(), assignmentDTO, LocalDate.now().plus(1, ChronoUnit.DAYS), assignmentDTO));
+
+        GenericResult<Void> result = videoflyerService.assignVideoflyer(videoflyerDetails, true);
+        Assert.assertFalse(result.isSuccess());
+        Assert.assertEquals(ErrorMessage.SELFASSIGNMENT_READONLY.toString(), result.getMessage());
+    }
+
+    @Test
+    public void testAssignVideoflyer_Removal_NODELETE() {
+        CommonSettings commonSettings = new CommonSettings();
+        commonSettings.setSelfAssignmentMode(SelfAssignmentMode.NODELETE);
+        when(settingsService.getCommonSettingsByLanguage(Locale.GERMAN.getLanguage())).thenReturn(commonSettings);
+
+        VideoflyerDetailsDTO videoflyerDetails = prepareJumpdaysAndVideoflyer();
+        videoflyerService.assignVideoflyerToJumpday(LocalDate.now(), videoflyerDetails.getId(), new SimpleAssignment(true));
+        videoflyerService.assignVideoflyerToJumpday(LocalDate.now().plus(1, ChronoUnit.DAYS), videoflyerDetails.getId(), new SimpleAssignment(true));
+
+        videoflyerDetails.setAssignments(Map.of(LocalDate.now(), new SimpleAssignment(false), LocalDate.now().plus(1, ChronoUnit.DAYS), new SimpleAssignment(false)));
+
+        GenericResult<Void> result = videoflyerService.assignVideoflyer(videoflyerDetails, true);
+        Assert.assertFalse(result.isSuccess());
+        Assert.assertEquals(ErrorMessage.SELFASSIGNMENT_NODELETE.toString(), result.getMessage());
     }
 }

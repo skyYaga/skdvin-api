@@ -8,14 +8,17 @@ import in.skdv.skdvinbackend.model.dto.VideoflyerDetailsDTO;
 import in.skdv.skdvinbackend.model.entity.Assignment;
 import in.skdv.skdvinbackend.model.entity.Jumpday;
 import in.skdv.skdvinbackend.model.entity.Videoflyer;
+import in.skdv.skdvinbackend.model.entity.settings.SelfAssignmentMode;
 import in.skdv.skdvinbackend.repository.JumpdayRepository;
 import in.skdv.skdvinbackend.repository.VideoflyerRepository;
+import in.skdv.skdvinbackend.service.ISettingsService;
 import in.skdv.skdvinbackend.service.IVideoflyerService;
 import in.skdv.skdvinbackend.util.GenericResult;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.LocalDate;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 
@@ -23,13 +26,15 @@ public class MongoVideoflyerService implements IVideoflyerService {
 
     private JumpdayRepository jumpdayRepository;
     private VideoflyerRepository videoflyerRepository;
+    private ISettingsService settingsService;
     private VideoflyerConverter videoflyerConverter = new VideoflyerConverter();
     private AssignmentConverter assignmentConverter = new AssignmentConverter();
 
     @Autowired
-    public MongoVideoflyerService(JumpdayRepository jumpdayRepository, VideoflyerRepository videoflyerRepository) {
+    public MongoVideoflyerService(JumpdayRepository jumpdayRepository, VideoflyerRepository videoflyerRepository, ISettingsService settingsService) {
         this.jumpdayRepository = jumpdayRepository;
         this.videoflyerRepository = videoflyerRepository;
+        this.settingsService = settingsService;
     }
 
     @Override
@@ -82,7 +87,13 @@ public class MongoVideoflyerService implements IVideoflyerService {
     }
 
     @Override
-    public GenericResult<Void> assignVideoflyer(VideoflyerDetailsDTO videoflyerDetails) {
+    public GenericResult<Void> assignVideoflyer(VideoflyerDetailsDTO videoflyerDetails, boolean selfAssign) {
+        if (selfAssign) {
+            ErrorMessage errorMessage = checkSelfAssignPrerequisites(videoflyerDetails);
+            if (errorMessage != null) {
+                return new GenericResult<>(false, errorMessage);
+            }
+        }
         for (LocalDate date : videoflyerDetails.getAssignments().keySet()) {
             GenericResult<Void> result = assignVideoflyerToJumpday(date, videoflyerDetails.getId(), videoflyerDetails.getAssignments().get(date));
             if (!result.isSuccess()) {
@@ -92,23 +103,40 @@ public class MongoVideoflyerService implements IVideoflyerService {
         return new GenericResult<>(true);
     }
 
+    private ErrorMessage checkSelfAssignPrerequisites(VideoflyerDetailsDTO newVideoflyerDetails) {
+        SelfAssignmentMode selfAssignmentMode = settingsService.getCommonSettingsByLanguage(Locale.GERMAN.getLanguage()).getSelfAssignmentMode();
+        if (SelfAssignmentMode.READONLY.equals(selfAssignmentMode)) {
+            return ErrorMessage.SELFASSIGNMENT_READONLY;
+        }
+        if (SelfAssignmentMode.NODELETE.equals(selfAssignmentMode)) {
+            VideoflyerDetailsDTO currentDetails = getById(newVideoflyerDetails.getId());
+            for (Map.Entry<LocalDate, SimpleAssignment> currentEntry : currentDetails.getAssignments().entrySet()) {
+                SimpleAssignment existingAssignment = newVideoflyerDetails.getAssignments().get(currentEntry.getKey());
+                if (existingAssignment == null || !existingAssignment.equals(currentEntry.getValue())) {
+                    return ErrorMessage.SELFASSIGNMENT_NODELETE;
+                }
+            }
+        }
+        return null;
+    }
+
     @Override
     public void delete(String id) {
         // Unassign Videoflyer
         VideoflyerDetailsDTO detailsDTO = getById(id);
         detailsDTO.getAssignments().forEach((key, value) -> value.setAssigned(false));
-        assignVideoflyer(detailsDTO);
+        assignVideoflyer(detailsDTO, false);
 
         // Delete Videoflyer
         videoflyerRepository.deleteById(id);
     }
 
-    private void manageVideoflyerAssignment(Jumpday jumpday, Videoflyer tandemmaster, SimpleAssignment simpleAssignment) {
+    private void manageVideoflyerAssignment(Jumpday jumpday, Videoflyer videoflyer, SimpleAssignment simpleAssignment) {
         Optional<Assignment<Videoflyer>> foundAssignment = jumpday.getVideoflyer().stream()
-                .filter(t -> t != null && t.getFlyer() != null && t.getFlyer().getId().equals(tandemmaster.getId()))
+                .filter(t -> t != null && t.getFlyer() != null && t.getFlyer().getId().equals(videoflyer.getId()))
                 .findFirst();
 
-        Assignment<Videoflyer> assignment = assignmentConverter.convertToAssignment(simpleAssignment, tandemmaster);
+        Assignment<Videoflyer> assignment = assignmentConverter.convertToAssignment(simpleAssignment, videoflyer);
 
         if (foundAssignment.isEmpty() && assignment.isAssigned()) {
             jumpday.getVideoflyer().add(assignment);
