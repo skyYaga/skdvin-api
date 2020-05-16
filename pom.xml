@@ -4,7 +4,7 @@
 
 	<groupId>in.skdv</groupId>
 	<artifactId>skdvin-api</artifactId>
-	<version>1.0.2-SNAPSHOT</version>
+	<version>1.0.3-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<name>skdvin-api</name>
@@ -26,7 +26,7 @@
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<java.version>11</java.version>
 		<modelmapper.version>2.3.7</modelmapper.version>
-		<nimbus-jose-jwt.version>8.16</nimbus-jose-jwt.version>
+		<nimbus-jose-jwt.version>8.17</nimbus-jose-jwt.version>
 		<sentry-logback.version>1.7.30</sentry-logback.version>
 	</properties>
 

@@ -25,7 +25,10 @@ public enum ErrorMessage {
 
     VIDEOFLYER_NOT_FOUND("videoflyer.not.found"),
 
-    SETTINGS_NOT_FOUND("settings.not.found");
+    SETTINGS_NOT_FOUND("settings.not.found"),
+
+    SELFASSIGNMENT_READONLY("selfassignment.readonly"),
+    SELFASSIGNMENT_NODELETE("selfassignment.nodelete");
 
     private final String message;
 

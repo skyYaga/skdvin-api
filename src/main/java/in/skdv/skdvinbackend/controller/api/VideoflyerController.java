@@ -8,6 +8,7 @@ import in.skdv.skdvinbackend.model.dto.VideoflyerDetailsDTO;
 import in.skdv.skdvinbackend.model.entity.Videoflyer;
 import in.skdv.skdvinbackend.repository.VideoflyerRepository;
 import in.skdv.skdvinbackend.service.IVideoflyerService;
+import in.skdv.skdvinbackend.util.ControllerUtil;
 import in.skdv.skdvinbackend.util.GenericResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
@@ -81,6 +82,16 @@ public class VideoflyerController {
         return ResponseEntity.ok(new GenericResult<>(true, videoflyer));
     }
 
+    @PatchMapping(value = "/me/assign")
+    @PreAuthorize("hasAuthority('SCOPE_videoflyer')")
+    public ResponseEntity<GenericResult<Void>> selfAssignVideoflyerToJumpdays(@RequestBody @Valid VideoflyerDetailsDTO input) {
+        if (input.getEmail() == null || !input.getEmail().equals(Claims.getEmail())) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new GenericResult<>(false));
+        }
+
+        return assignVideoflyer(input, true);
+    }
+
     @PutMapping(value = "/{id}")
     @PreAuthorize("hasAuthority('SCOPE_update:videoflyer')")
     public ResponseEntity<GenericResult<VideoflyerDTO>> updateVideoflyer(@PathVariable String id, @RequestBody @Valid VideoflyerDTO input) {
@@ -119,28 +130,13 @@ public class VideoflyerController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new GenericResult<>(false));
         }
 
-        return assignVideoflyer(input);
+        return assignVideoflyer(input, false);
     }
 
+    private ResponseEntity<GenericResult<Void>> assignVideoflyer(VideoflyerDetailsDTO videoflyer, boolean selfAssign) {
+        GenericResult<Void> result = videoflyerService.assignVideoflyer(videoflyer, selfAssign);
 
-    @PatchMapping(value = "/me/assign")
-    @PreAuthorize("hasAuthority('SCOPE_videoflyer')")
-    public ResponseEntity<GenericResult<Void>> selfAssignVideoflyerToJumpdays(@RequestBody @Valid VideoflyerDetailsDTO input) {
-        if (input.getEmail() == null || !input.getEmail().equals(Claims.getEmail())) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new GenericResult<>(false));
-        }
-
-        return assignVideoflyer(input);
+        return ControllerUtil.parseAssignmentResult(result, messageSource);
     }
 
-    private ResponseEntity<GenericResult<Void>> assignVideoflyer(VideoflyerDetailsDTO videoflyer) {
-        GenericResult<Void> result = videoflyerService.assignVideoflyer(videoflyer);
-
-        if (result.isSuccess()) {
-            return ResponseEntity.ok(new GenericResult<>(true));
-        }
-
-        return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(new GenericResult<>(false, messageSource.getMessage(result.getMessage(), null, LocaleContextHolder.getLocale())));
-    }
 }

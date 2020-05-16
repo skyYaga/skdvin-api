@@ -8,9 +8,12 @@ import in.skdv.skdvinbackend.model.converter.TandemmasterConverter;
 import in.skdv.skdvinbackend.model.dto.TandemmasterDetailsDTO;
 import in.skdv.skdvinbackend.model.entity.Jumpday;
 import in.skdv.skdvinbackend.model.entity.Tandemmaster;
+import in.skdv.skdvinbackend.model.entity.settings.CommonSettings;
+import in.skdv.skdvinbackend.model.entity.settings.SelfAssignmentMode;
 import in.skdv.skdvinbackend.repository.JumpdayRepository;
 import in.skdv.skdvinbackend.repository.TandemmasterRepository;
 import in.skdv.skdvinbackend.service.IJumpdayService;
+import in.skdv.skdvinbackend.service.ISettingsService;
 import in.skdv.skdvinbackend.service.ITandemmasterService;
 import org.junit.Before;
 import org.junit.Rule;
@@ -20,6 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.restdocs.RestDocsMockMvcConfigurationCustomizer;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
@@ -38,12 +42,14 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.util.Arrays;
+import java.util.Locale;
 import java.util.Map;
 
 import static in.skdv.skdvinbackend.config.Authorities.*;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertNotNull;
+import static org.mockito.Mockito.when;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
@@ -73,6 +79,9 @@ public class TandemmasterControllerTest extends AbstractSkdvinTest {
     private TandemmasterConverter converter = new TandemmasterConverter();
 
     private MockMvc mockMvc;
+
+    @MockBean
+    ISettingsService settingsService;
 
     @Autowired
     private TandemmasterRepository tandemmasterRepository;
@@ -110,6 +119,8 @@ public class TandemmasterControllerTest extends AbstractSkdvinTest {
 
         tandemmasterRepository.deleteAll();
         jumpdayRepository.deleteAll();
+
+        when(settingsService.getCommonSettingsByLanguage(Locale.GERMAN.getLanguage())).thenReturn(new CommonSettings());
     }
 
     @Test
@@ -482,6 +493,30 @@ public class TandemmasterControllerTest extends AbstractSkdvinTest {
                                 fieldWithPath("exception").ignored(),
                                 fieldWithPath("payload").ignored()
                         )));
+    }
+
+    @Test
+    public void testSelfAssignTandemmaster_READONLY() throws Exception {
+        CommonSettings commonSettings = new CommonSettings();
+        commonSettings.setSelfAssignmentMode(SelfAssignmentMode.READONLY);
+        when(settingsService.getCommonSettingsByLanguage(Locale.GERMAN.getLanguage())).thenReturn(commonSettings);
+
+        Tandemmaster tandemmaster = tandemmasterRepository.save(ModelMockHelper.createTandemmaster());
+        tandemmaster.setEmail(MockJwtDecoder.EXAMPLE_EMAIL);
+        Jumpday jumpday = ModelMockHelper.createJumpday();
+        jumpdayService.saveJumpday(jumpday);
+
+        TandemmasterDetailsDTO tandemmasterDetailsDTO = converter.convertToDetailsDto(tandemmaster, Map.of(LocalDate.now(), new SimpleAssignment(true)));
+
+        String tandemmasterJson = json(tandemmasterDetailsDTO);
+
+        mockMvc.perform(RestDocumentationRequestBuilders.patch("/api/tandemmaster/me/assign")
+                .header("Authorization", MockJwtDecoder.addHeader(TANDEMMASTER))
+                .contentType(contentType)
+                .content(tandemmasterJson))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.message", is("Eigenzuordnung ist im read-only Modus")));
     }
 
     @Test

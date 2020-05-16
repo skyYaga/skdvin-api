@@ -3,15 +3,18 @@ package in.skdv.skdvinbackend.task;
 import in.skdv.skdvinbackend.AbstractSkdvinTest;
 import in.skdv.skdvinbackend.ModelMockHelper;
 import in.skdv.skdvinbackend.model.entity.Appointment;
+import in.skdv.skdvinbackend.model.entity.settings.CommonSettings;
 import in.skdv.skdvinbackend.repository.JumpdayRepository;
 import in.skdv.skdvinbackend.service.IAppointmentService;
 import in.skdv.skdvinbackend.service.IEmailService;
+import in.skdv.skdvinbackend.service.ISettingsService;
 import in.skdv.skdvinbackend.util.VerificationTokenUtil;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -30,14 +33,16 @@ import java.util.List;
 import java.util.Locale;
 
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
 public class CancelUnconfirmedAppointmentsTaskTest extends AbstractSkdvinTest {
     private static final String FROM_EMAIL = "skdvin@example.com";
     private static final String BASE_URL = "https://example.com";
+
+    @MockBean
+    private ISettingsService settingsService;
 
     @Autowired
     private CancelUnconfirmedAppointmentsTask task;
@@ -62,6 +67,8 @@ public class CancelUnconfirmedAppointmentsTaskTest extends AbstractSkdvinTest {
         ReflectionTestUtils.setField(emailService, "fromEmail", FROM_EMAIL);
         ReflectionTestUtils.setField(emailService, "baseurl", BASE_URL);
         doReturn(new JavaMailSenderImpl().createMimeMessage()).when(mailSender).createMimeMessage();
+
+        when(settingsService.getCommonSettingsByLanguage(Mockito.anyString())).thenReturn(new CommonSettings());
     }
 
     @Test

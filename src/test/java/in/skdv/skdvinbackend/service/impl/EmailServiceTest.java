@@ -3,12 +3,16 @@ package in.skdv.skdvinbackend.service.impl;
 import in.skdv.skdvinbackend.AbstractSkdvinTest;
 import in.skdv.skdvinbackend.ModelMockHelper;
 import in.skdv.skdvinbackend.model.entity.Appointment;
+import in.skdv.skdvinbackend.model.entity.settings.CommonSettings;
+import in.skdv.skdvinbackend.model.entity.settings.Dropzone;
 import in.skdv.skdvinbackend.service.IEmailService;
+import in.skdv.skdvinbackend.service.ISettingsService;
 import in.skdv.skdvinbackend.util.VerificationTokenUtil;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -34,10 +38,15 @@ import static org.mockito.Mockito.*;
 public class EmailServiceTest extends AbstractSkdvinTest {
 
     private static final String FROM_EMAIL = "skdvin@example.com";
+    private static final String BCC_EMAIL = "dz@example.com";
+    private static final String REPLYTO_EMAIL = "reply@example.com";
     private static final String BASE_URL = "https://example.com";
 
     private IEmailService emailService;
     private JavaMailSender mailSender;
+
+    @Mock
+    private ISettingsService settingsService;
 
     @Autowired
     private TemplateEngine emailTemplateEngine;
@@ -47,10 +56,15 @@ public class EmailServiceTest extends AbstractSkdvinTest {
 
     @Before
     public void setup() {
+        Mockito.reset(settingsService);
+
         mailSender = spy(new JavaMailSenderImpl());
-        emailService = new EmailService(mailSender, emailTemplateEngine, emailMessageSource);
+        emailService = new EmailService(settingsService, mailSender, emailTemplateEngine, emailMessageSource);
         ReflectionTestUtils.setField(emailService, "fromEmail", FROM_EMAIL);
         ReflectionTestUtils.setField(emailService, "baseurl", BASE_URL);
+
+        when(settingsService.getCommonSettingsByLanguage(Locale.GERMAN.getLanguage())).
+                thenReturn(new CommonSettings());
     }
 
     @Test
@@ -140,5 +154,48 @@ public class EmailServiceTest extends AbstractSkdvinTest {
         assertEquals(appointment.getCustomer().getEmail(), argument.getValue().getAllRecipients()[0].toString());
 
         assertFalse(argument.getValue().getContent().toString().isEmpty());
+    }
+
+    @Test
+    public void testBccAndReplyToMail() throws MessagingException {
+        CommonSettings commonSettings = new CommonSettings();
+        commonSettings.setBccMail(BCC_EMAIL);
+        Dropzone dropzone = new Dropzone();
+        dropzone.setEmail(REPLYTO_EMAIL);
+        commonSettings.setDropzone(dropzone);
+        LocaleContextHolder.setLocale(Locale.GERMAN);
+        doNothing().when(mailSender).send(Mockito.any(MimeMessage.class));
+        when(settingsService.getCommonSettingsByLanguage(Locale.GERMAN.getLanguage())).
+                thenReturn(commonSettings);
+
+        Appointment appointment = ModelMockHelper.createSingleAppointment();
+        appointment.setVerificationToken(VerificationTokenUtil.generate());
+
+        emailService.sendAppointmentVerification(appointment);
+
+        ArgumentCaptor<MimeMessage> argument = ArgumentCaptor.forClass(MimeMessage.class);
+        verify(mailSender).send(argument.capture());
+
+        MimeMessage mimeMessage = argument.getValue();
+        assertEquals(REPLYTO_EMAIL, mimeMessage.getReplyTo()[0].toString());
+        assertEquals(BCC_EMAIL, mimeMessage.getHeader("Bcc")[0]);
+    }
+
+    @Test
+    public void testNoBccAndReplyToMail() throws MessagingException {
+        LocaleContextHolder.setLocale(Locale.GERMAN);
+        doNothing().when(mailSender).send(Mockito.any(MimeMessage.class));
+
+        Appointment appointment = ModelMockHelper.createSingleAppointment();
+        appointment.setVerificationToken(VerificationTokenUtil.generate());
+
+        emailService.sendAppointmentVerification(appointment);
+
+        ArgumentCaptor<MimeMessage> argument = ArgumentCaptor.forClass(MimeMessage.class);
+        verify(mailSender).send(argument.capture());
+
+        MimeMessage mimeMessage = argument.getValue();
+        assertEquals(FROM_EMAIL, mimeMessage.getReplyTo()[0].toString());
+        assertEquals(null, mimeMessage.getHeader("Bcc"));
     }
 }

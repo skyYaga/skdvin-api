@@ -8,14 +8,17 @@ import in.skdv.skdvinbackend.model.dto.TandemmasterDetailsDTO;
 import in.skdv.skdvinbackend.model.entity.Assignment;
 import in.skdv.skdvinbackend.model.entity.Jumpday;
 import in.skdv.skdvinbackend.model.entity.Tandemmaster;
+import in.skdv.skdvinbackend.model.entity.settings.SelfAssignmentMode;
 import in.skdv.skdvinbackend.repository.JumpdayRepository;
 import in.skdv.skdvinbackend.repository.TandemmasterRepository;
+import in.skdv.skdvinbackend.service.ISettingsService;
 import in.skdv.skdvinbackend.service.ITandemmasterService;
 import in.skdv.skdvinbackend.util.GenericResult;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.LocalDate;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 
@@ -23,13 +26,17 @@ public class MongoTandemmasterService implements ITandemmasterService {
 
     private JumpdayRepository jumpdayRepository;
     private TandemmasterRepository tandemmasterRepository;
+    private ISettingsService settingsService;
     private TandemmasterConverter tandemmasterConverter = new TandemmasterConverter();
     private AssignmentConverter assignmentConverter = new AssignmentConverter();
 
+
     @Autowired
-    public MongoTandemmasterService(JumpdayRepository jumpdayRepository, TandemmasterRepository tandemmasterRepository) {
+    public MongoTandemmasterService(JumpdayRepository jumpdayRepository, TandemmasterRepository tandemmasterRepository,
+                                    ISettingsService settingsService) {
         this.jumpdayRepository = jumpdayRepository;
         this.tandemmasterRepository = tandemmasterRepository;
+        this.settingsService = settingsService;
     }
 
     @Override
@@ -82,7 +89,13 @@ public class MongoTandemmasterService implements ITandemmasterService {
     }
 
     @Override
-    public GenericResult<Void> assignTandemmaster(TandemmasterDetailsDTO tandemmasterDetails) {
+    public GenericResult<Void> assignTandemmaster(TandemmasterDetailsDTO tandemmasterDetails, boolean selfAssign) {
+        if (selfAssign) {
+            ErrorMessage errorMessage = checkSelfAssignPrerequisites(tandemmasterDetails);
+            if (errorMessage != null) {
+                return new GenericResult<>(false, errorMessage);
+            }
+        }
         for (LocalDate date : tandemmasterDetails.getAssignments().keySet()) {
             GenericResult<Void> result = assignTandemmasterToJumpday(date, tandemmasterDetails.getId(), tandemmasterDetails.getAssignments().get(date));
             if (!result.isSuccess()) {
@@ -92,12 +105,30 @@ public class MongoTandemmasterService implements ITandemmasterService {
         return new GenericResult<>(true);
     }
 
+    private ErrorMessage checkSelfAssignPrerequisites(TandemmasterDetailsDTO newTandemmasterDetails) {
+        SelfAssignmentMode selfAssignmentMode = settingsService.getCommonSettingsByLanguage(Locale.GERMAN.getLanguage()).getSelfAssignmentMode();
+        if (SelfAssignmentMode.READONLY.equals(selfAssignmentMode)) {
+            return ErrorMessage.SELFASSIGNMENT_READONLY;
+        }
+        if (SelfAssignmentMode.NODELETE.equals(selfAssignmentMode)) {
+            TandemmasterDetailsDTO currentDetails = getById(newTandemmasterDetails.getId());
+            for (Map.Entry<LocalDate, SimpleAssignment> currentEntry : currentDetails.getAssignments().entrySet()) {
+                SimpleAssignment newAssignment = newTandemmasterDetails.getAssignments().get(currentEntry.getKey());
+                if (currentEntry.getValue().isAssigned() && (newAssignment == null || !newAssignment.isAssigned())
+                        || currentEntry.getValue().isAssigned() && newAssignment.isAllday() != currentEntry.getValue().isAllday()) {
+                    return ErrorMessage.SELFASSIGNMENT_NODELETE;
+                }
+            }
+        }
+        return null;
+    }
+
     @Override
     public void delete(String id) {
         // Unassign Tandemmaster
         TandemmasterDetailsDTO detailsDTO = getById(id);
         detailsDTO.getAssignments().forEach((key, value) -> value.setAssigned(false));
-        assignTandemmaster(detailsDTO);
+        assignTandemmaster(detailsDTO, false);
 
         // Delete Tandemmaster
         tandemmasterRepository.deleteById(id);

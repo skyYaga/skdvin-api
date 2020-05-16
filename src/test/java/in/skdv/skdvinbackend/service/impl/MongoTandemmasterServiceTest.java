@@ -10,9 +10,12 @@ import in.skdv.skdvinbackend.model.dto.TandemmasterDetailsDTO;
 import in.skdv.skdvinbackend.model.entity.Assignment;
 import in.skdv.skdvinbackend.model.entity.Jumpday;
 import in.skdv.skdvinbackend.model.entity.Tandemmaster;
+import in.skdv.skdvinbackend.model.entity.settings.CommonSettings;
+import in.skdv.skdvinbackend.model.entity.settings.SelfAssignmentMode;
 import in.skdv.skdvinbackend.repository.JumpdayRepository;
 import in.skdv.skdvinbackend.repository.TandemmasterRepository;
 import in.skdv.skdvinbackend.service.IJumpdayService;
+import in.skdv.skdvinbackend.service.ISettingsService;
 import in.skdv.skdvinbackend.service.ITandemmasterService;
 import in.skdv.skdvinbackend.util.GenericResult;
 import org.junit.Assert;
@@ -21,19 +24,26 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
+import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.when;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
 public class MongoTandemmasterServiceTest extends AbstractSkdvinTest {
+
+    @MockBean
+    ISettingsService settingsService;
 
     @Autowired
     JumpdayRepository jumpdayRepository;
@@ -271,7 +281,7 @@ public class MongoTandemmasterServiceTest extends AbstractSkdvinTest {
     }
 
     private void saveAssignment(TandemmasterDetailsDTO tandemmasterDetails) {
-        GenericResult<Void> result = tandemmasterService.assignTandemmaster(tandemmasterDetails);
+        GenericResult<Void> result = tandemmasterService.assignTandemmaster(tandemmasterDetails, false);
         Assert.assertTrue(result.isSuccess());
     }
 
@@ -340,7 +350,7 @@ public class MongoTandemmasterServiceTest extends AbstractSkdvinTest {
 
 
         tandemmasterDetails.setAssignments(Map.of(LocalDate.now(), new SimpleAssignment(false), LocalDate.now().plus(1, ChronoUnit.DAYS), new SimpleAssignment(false)));
-        GenericResult<Void> result = tandemmasterService.assignTandemmaster(tandemmasterDetails);
+        GenericResult<Void> result = tandemmasterService.assignTandemmaster(tandemmasterDetails, false);
 
         assignedResult1 = jumpdayService.findJumpday(LocalDate.now());
         assignedResult2 = jumpdayService.findJumpday(LocalDate.now().plus(1, ChronoUnit.DAYS));
@@ -357,7 +367,7 @@ public class MongoTandemmasterServiceTest extends AbstractSkdvinTest {
         TandemmasterDetailsDTO tandemmasterDetails = converter.convertToDetailsDto(tandemmaster, Map.of());
         tandemmasterDetails.setAssignments(Map.of(LocalDate.now(), new SimpleAssignment(false), LocalDate.now().plus(1, ChronoUnit.DAYS), new SimpleAssignment(false)));
 
-        GenericResult<Void> result = tandemmasterService.assignTandemmaster(tandemmasterDetails);
+        GenericResult<Void> result = tandemmasterService.assignTandemmaster(tandemmasterDetails, false);
 
         Assert.assertFalse(result.isSuccess());
         Assert.assertEquals(ErrorMessage.JUMPDAY_NOT_FOUND_MSG.toString(), result.getMessage());
@@ -389,4 +399,70 @@ public class MongoTandemmasterServiceTest extends AbstractSkdvinTest {
         Assert.assertNull(tandemmasterService.getById(tandemmasterDetails.getId()));
         Assert.assertEquals(0, assignedResult.getPayload().getTandemmaster().size());
     }
+
+
+    @Test
+    public void testAssignTandemmaster_READONLY() {
+        CommonSettings commonSettings = new CommonSettings();
+        commonSettings.setSelfAssignmentMode(SelfAssignmentMode.READONLY);
+        when(settingsService.getCommonSettingsByLanguage(Locale.GERMAN.getLanguage())).thenReturn(commonSettings);
+
+        TandemmasterDetailsDTO tandemmasterDetails = prepareJumpdaysAndTandemmaster();
+        SimpleAssignment assignmentDTO = new SimpleAssignment(true);
+        tandemmasterDetails.setAssignments(Map.of(LocalDate.now(), assignmentDTO, LocalDate.now().plus(1, ChronoUnit.DAYS), assignmentDTO));
+
+        GenericResult<Void> result = tandemmasterService.assignTandemmaster(tandemmasterDetails, true);
+        Assert.assertFalse(result.isSuccess());
+        Assert.assertEquals(ErrorMessage.SELFASSIGNMENT_READONLY.toString(), result.getMessage());
+    }
+
+    @Test
+    public void testAssignTandemmaster_Removal_NODELETE() {
+        CommonSettings commonSettings = new CommonSettings();
+        commonSettings.setSelfAssignmentMode(SelfAssignmentMode.NODELETE);
+        when(settingsService.getCommonSettingsByLanguage(Locale.GERMAN.getLanguage())).thenReturn(commonSettings);
+
+        TandemmasterDetailsDTO tandemmasterDetails = prepareJumpdaysAndTandemmaster();
+        tandemmasterService.assignTandemmasterToJumpday(LocalDate.now(), tandemmasterDetails.getId(), new SimpleAssignment(true));
+
+        tandemmasterDetails.setAssignments(Map.of(LocalDate.now(), new SimpleAssignment(false), LocalDate.now().plus(1, ChronoUnit.DAYS), new SimpleAssignment(false)));
+
+        GenericResult<Void> result = tandemmasterService.assignTandemmaster(tandemmasterDetails, true);
+        Assert.assertFalse(result.isSuccess());
+        Assert.assertEquals(ErrorMessage.SELFASSIGNMENT_NODELETE.toString(), result.getMessage());
+    }
+
+    @Test
+    public void testAssignTandemmaster_RemovalNotAllday_NODELETE() {
+        CommonSettings commonSettings = new CommonSettings();
+        commonSettings.setSelfAssignmentMode(SelfAssignmentMode.NODELETE);
+        when(settingsService.getCommonSettingsByLanguage(Locale.GERMAN.getLanguage())).thenReturn(commonSettings);
+
+        TandemmasterDetailsDTO tandemmasterDetails = prepareJumpdaysAndTandemmaster();
+        tandemmasterService.assignTandemmasterToJumpday(LocalDate.now(), tandemmasterDetails.getId(), new SimpleAssignment(true));
+
+        tandemmasterDetails.setAssignments(Map.of(LocalDate.now(),
+                new SimpleAssignment(true, false, LocalTime.of(12, 0), LocalTime.of(20, 0))));
+
+        GenericResult<Void> result = tandemmasterService.assignTandemmaster(tandemmasterDetails, true);
+        Assert.assertFalse(result.isSuccess());
+        Assert.assertEquals(ErrorMessage.SELFASSIGNMENT_NODELETE.toString(), result.getMessage());
+    }
+
+    @Test
+    public void testAssignTandemmaster_RemovalNotAssigned_NODELETE() {
+        CommonSettings commonSettings = new CommonSettings();
+        commonSettings.setSelfAssignmentMode(SelfAssignmentMode.NODELETE);
+        when(settingsService.getCommonSettingsByLanguage(Locale.GERMAN.getLanguage())).thenReturn(commonSettings);
+
+        TandemmasterDetailsDTO tandemmasterDetails = prepareJumpdaysAndTandemmaster();
+        tandemmasterService.assignTandemmasterToJumpday(LocalDate.now(), tandemmasterDetails.getId(), new SimpleAssignment(true));
+
+        tandemmasterDetails.setAssignments(new HashMap<>());
+
+        GenericResult<Void> result = tandemmasterService.assignTandemmaster(tandemmasterDetails, true);
+        Assert.assertFalse(result.isSuccess());
+        Assert.assertEquals(ErrorMessage.SELFASSIGNMENT_NODELETE.toString(), result.getMessage());
+    }
+
 }
