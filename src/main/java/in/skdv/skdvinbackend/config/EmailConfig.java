@@ -1,6 +1,7 @@
 package in.skdv.skdvinbackend.config;
 
 import in.skdv.skdvinbackend.service.IEmailService;
+import in.skdv.skdvinbackend.service.ISettingsService;
 import in.skdv.skdvinbackend.service.impl.EmailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -27,8 +28,8 @@ public class EmailConfig {
 
     @Bean
     @Autowired
-    public IEmailService emailService(JavaMailSender mailSender, TemplateEngine emailTemplateEngine, @Qualifier("emailMessageSource") MessageSource emailMessageSource) {
-        return new EmailService(mailSender, emailTemplateEngine, emailMessageSource);
+    public IEmailService emailService(ISettingsService settingsService, JavaMailSender mailSender, TemplateEngine emailTemplateEngine, @Qualifier("emailMessageSource") MessageSource emailMessageSource) {
+        return new EmailService(settingsService, mailSender, emailTemplateEngine, emailMessageSource);
     }
 
     @Bean(name = "emailMessageSource")

@@ -11,6 +11,7 @@ public class CommonSettings {
     private List<Faq> faq = new ArrayList<>();
     private String homepageHint = "";
     private String homepageHintTitle = "";
+    private String bccMail = "";
 
     public Dropzone getDropzone() {
         return dropzone;
@@ -42,5 +43,13 @@ public class CommonSettings {
 
     public void setHomepageHintTitle(String homepageHintTitle) {
         this.homepageHintTitle = homepageHintTitle;
+    }
+
+    public String getBccMail() {
+        return bccMail;
+    }
+
+    public void setBccMail(String bccMail) {
+        this.bccMail = bccMail;
     }
 }
