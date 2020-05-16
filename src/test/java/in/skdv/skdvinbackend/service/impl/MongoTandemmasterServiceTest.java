@@ -423,7 +423,6 @@ public class MongoTandemmasterServiceTest extends AbstractSkdvinTest {
 
         TandemmasterDetailsDTO tandemmasterDetails = prepareJumpdaysAndTandemmaster();
         tandemmasterService.assignTandemmasterToJumpday(LocalDate.now(), tandemmasterDetails.getId(), new SimpleAssignment(true));
-        tandemmasterService.assignTandemmasterToJumpday(LocalDate.now().plus(1, ChronoUnit.DAYS), tandemmasterDetails.getId(), new SimpleAssignment(true));
 
         tandemmasterDetails.setAssignments(Map.of(LocalDate.now(), new SimpleAssignment(false), LocalDate.now().plus(1, ChronoUnit.DAYS), new SimpleAssignment(false)));
 
@@ -431,4 +430,5 @@ public class MongoTandemmasterServiceTest extends AbstractSkdvinTest {
         Assert.assertFalse(result.isSuccess());
         Assert.assertEquals(ErrorMessage.SELFASSIGNMENT_NODELETE.toString(), result.getMessage());
     }
+
 }

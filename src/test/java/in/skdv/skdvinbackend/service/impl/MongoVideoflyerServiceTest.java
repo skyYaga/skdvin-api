@@ -425,7 +425,6 @@ public class MongoVideoflyerServiceTest extends AbstractSkdvinTest {
 
         VideoflyerDetailsDTO videoflyerDetails = prepareJumpdaysAndVideoflyer();
         videoflyerService.assignVideoflyerToJumpday(LocalDate.now(), videoflyerDetails.getId(), new SimpleAssignment(true));
-        videoflyerService.assignVideoflyerToJumpday(LocalDate.now().plus(1, ChronoUnit.DAYS), videoflyerDetails.getId(), new SimpleAssignment(true));
 
         videoflyerDetails.setAssignments(Map.of(LocalDate.now(), new SimpleAssignment(false), LocalDate.now().plus(1, ChronoUnit.DAYS), new SimpleAssignment(false)));
 

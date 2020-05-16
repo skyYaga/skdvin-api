@@ -19,7 +19,8 @@ public class ControllerUtil {
 
         if (result.getMessage().equals(ErrorMessage.SELFASSIGNMENT_NODELETE.toString()) ||
                 result.getMessage().equals(ErrorMessage.SELFASSIGNMENT_READONLY.toString())) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new GenericResult<>(false, result.getMessage()));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new GenericResult<>(false, messageSource.getMessage(result.getMessage(), null, LocaleContextHolder.getLocale())));
         }
 
         return ResponseEntity.status(HttpStatus.NOT_FOUND)

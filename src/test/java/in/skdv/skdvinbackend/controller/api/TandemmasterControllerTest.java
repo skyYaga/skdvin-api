@@ -9,6 +9,7 @@ import in.skdv.skdvinbackend.model.dto.TandemmasterDetailsDTO;
 import in.skdv.skdvinbackend.model.entity.Jumpday;
 import in.skdv.skdvinbackend.model.entity.Tandemmaster;
 import in.skdv.skdvinbackend.model.entity.settings.CommonSettings;
+import in.skdv.skdvinbackend.model.entity.settings.SelfAssignmentMode;
 import in.skdv.skdvinbackend.repository.JumpdayRepository;
 import in.skdv.skdvinbackend.repository.TandemmasterRepository;
 import in.skdv.skdvinbackend.service.IJumpdayService;
@@ -492,6 +493,30 @@ public class TandemmasterControllerTest extends AbstractSkdvinTest {
                                 fieldWithPath("exception").ignored(),
                                 fieldWithPath("payload").ignored()
                         )));
+    }
+
+    @Test
+    public void testSelfAssignTandemmaster_READONLY() throws Exception {
+        CommonSettings commonSettings = new CommonSettings();
+        commonSettings.setSelfAssignmentMode(SelfAssignmentMode.READONLY);
+        when(settingsService.getCommonSettingsByLanguage(Locale.GERMAN.getLanguage())).thenReturn(commonSettings);
+
+        Tandemmaster tandemmaster = tandemmasterRepository.save(ModelMockHelper.createTandemmaster());
+        tandemmaster.setEmail(MockJwtDecoder.EXAMPLE_EMAIL);
+        Jumpday jumpday = ModelMockHelper.createJumpday();
+        jumpdayService.saveJumpday(jumpday);
+
+        TandemmasterDetailsDTO tandemmasterDetailsDTO = converter.convertToDetailsDto(tandemmaster, Map.of(LocalDate.now(), new SimpleAssignment(true)));
+
+        String tandemmasterJson = json(tandemmasterDetailsDTO);
+
+        mockMvc.perform(RestDocumentationRequestBuilders.patch("/api/tandemmaster/me/assign")
+                .header("Authorization", MockJwtDecoder.addHeader(TANDEMMASTER))
+                .contentType(contentType)
+                .content(tandemmasterJson))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.message", is("Eigenzuordnung ist im read-only Modus")));
     }
 
     @Test

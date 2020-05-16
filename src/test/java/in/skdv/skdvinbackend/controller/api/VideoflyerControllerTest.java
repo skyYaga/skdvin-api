@@ -9,6 +9,7 @@ import in.skdv.skdvinbackend.model.dto.VideoflyerDetailsDTO;
 import in.skdv.skdvinbackend.model.entity.Jumpday;
 import in.skdv.skdvinbackend.model.entity.Videoflyer;
 import in.skdv.skdvinbackend.model.entity.settings.CommonSettings;
+import in.skdv.skdvinbackend.model.entity.settings.SelfAssignmentMode;
 import in.skdv.skdvinbackend.repository.JumpdayRepository;
 import in.skdv.skdvinbackend.repository.VideoflyerRepository;
 import in.skdv.skdvinbackend.service.IJumpdayService;
@@ -452,7 +453,6 @@ public class VideoflyerControllerTest extends AbstractSkdvinTest {
                 .andExpect(jsonPath("$.message", is("Jumpday not found")));
     }
 
-
     @Test
     public void testSelfAssignVideoflyer() throws Exception {
         Videoflyer videoflyer = videoflyerRepository.save(ModelMockHelper.createVideoflyer());
@@ -492,6 +492,31 @@ public class VideoflyerControllerTest extends AbstractSkdvinTest {
                                 fieldWithPath("exception").ignored(),
                                 fieldWithPath("payload").ignored()
                         )));
+    }
+
+    @Test
+    public void testSelfAssignVideoflyer_READONLY() throws Exception {
+        CommonSettings commonSettings = new CommonSettings();
+        commonSettings.setSelfAssignmentMode(SelfAssignmentMode.READONLY);
+        when(settingsService.getCommonSettingsByLanguage(Locale.GERMAN.getLanguage())).thenReturn(commonSettings);
+
+        Videoflyer videoflyer = videoflyerRepository.save(ModelMockHelper.createVideoflyer());
+        videoflyer.setEmail(MockJwtDecoder.EXAMPLE_EMAIL);
+        Jumpday jumpday = ModelMockHelper.createJumpday();
+        jumpdayService.saveJumpday(jumpday);
+
+        VideoflyerDetailsDTO videoflyerDetailsDTO = converter.convertToDetailsDto(videoflyer, Map.of(LocalDate.now(), new SimpleAssignment(true)));
+
+        String videoflyerJson = json(videoflyerDetailsDTO);
+
+        mockMvc.perform(patch("/api/videoflyer/me/assign")
+                .header("Accept-Language", "en-EN")
+                .header("Authorization", MockJwtDecoder.addHeader(VIDEOFLYER))
+                .contentType(contentType)
+                .content(videoflyerJson))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.message", is("Selfassignment is in read-only mode")));
     }
 
     @Test
