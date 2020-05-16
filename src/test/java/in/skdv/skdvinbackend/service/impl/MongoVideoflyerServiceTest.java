@@ -30,6 +30,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
+import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
@@ -427,6 +428,39 @@ public class MongoVideoflyerServiceTest extends AbstractSkdvinTest {
         videoflyerService.assignVideoflyerToJumpday(LocalDate.now(), videoflyerDetails.getId(), new SimpleAssignment(true));
 
         videoflyerDetails.setAssignments(Map.of(LocalDate.now(), new SimpleAssignment(false), LocalDate.now().plus(1, ChronoUnit.DAYS), new SimpleAssignment(false)));
+
+        GenericResult<Void> result = videoflyerService.assignVideoflyer(videoflyerDetails, true);
+        Assert.assertFalse(result.isSuccess());
+        Assert.assertEquals(ErrorMessage.SELFASSIGNMENT_NODELETE.toString(), result.getMessage());
+    }
+
+    @Test
+    public void testAssignVideoflyer_RemovalNotAllday_NODELETE() {
+        CommonSettings commonSettings = new CommonSettings();
+        commonSettings.setSelfAssignmentMode(SelfAssignmentMode.NODELETE);
+        when(settingsService.getCommonSettingsByLanguage(Locale.GERMAN.getLanguage())).thenReturn(commonSettings);
+
+        VideoflyerDetailsDTO videoflyerDetails = prepareJumpdaysAndVideoflyer();
+        videoflyerService.assignVideoflyerToJumpday(LocalDate.now(), videoflyerDetails.getId(), new SimpleAssignment(true));
+
+        videoflyerDetails.setAssignments(Map.of(LocalDate.now(),
+                new SimpleAssignment(true, false, LocalTime.of(12, 0), LocalTime.of(20, 0))));
+
+        GenericResult<Void> result = videoflyerService.assignVideoflyer(videoflyerDetails, true);
+        Assert.assertFalse(result.isSuccess());
+        Assert.assertEquals(ErrorMessage.SELFASSIGNMENT_NODELETE.toString(), result.getMessage());
+    }
+
+    @Test
+    public void testAssignVideoflyer_RemovalNotAssigned_NODELETE() {
+        CommonSettings commonSettings = new CommonSettings();
+        commonSettings.setSelfAssignmentMode(SelfAssignmentMode.NODELETE);
+        when(settingsService.getCommonSettingsByLanguage(Locale.GERMAN.getLanguage())).thenReturn(commonSettings);
+
+        VideoflyerDetailsDTO videoflyerDetails = prepareJumpdaysAndVideoflyer();
+        videoflyerService.assignVideoflyerToJumpday(LocalDate.now(), videoflyerDetails.getId(), new SimpleAssignment(true));
+
+        videoflyerDetails.setAssignments(new HashMap<>());
 
         GenericResult<Void> result = videoflyerService.assignVideoflyer(videoflyerDetails, true);
         Assert.assertFalse(result.isSuccess());

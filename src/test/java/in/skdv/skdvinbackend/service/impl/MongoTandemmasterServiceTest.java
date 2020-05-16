@@ -30,6 +30,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
+import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
@@ -425,6 +426,39 @@ public class MongoTandemmasterServiceTest extends AbstractSkdvinTest {
         tandemmasterService.assignTandemmasterToJumpday(LocalDate.now(), tandemmasterDetails.getId(), new SimpleAssignment(true));
 
         tandemmasterDetails.setAssignments(Map.of(LocalDate.now(), new SimpleAssignment(false), LocalDate.now().plus(1, ChronoUnit.DAYS), new SimpleAssignment(false)));
+
+        GenericResult<Void> result = tandemmasterService.assignTandemmaster(tandemmasterDetails, true);
+        Assert.assertFalse(result.isSuccess());
+        Assert.assertEquals(ErrorMessage.SELFASSIGNMENT_NODELETE.toString(), result.getMessage());
+    }
+
+    @Test
+    public void testAssignTandemmaster_RemovalNotAllday_NODELETE() {
+        CommonSettings commonSettings = new CommonSettings();
+        commonSettings.setSelfAssignmentMode(SelfAssignmentMode.NODELETE);
+        when(settingsService.getCommonSettingsByLanguage(Locale.GERMAN.getLanguage())).thenReturn(commonSettings);
+
+        TandemmasterDetailsDTO tandemmasterDetails = prepareJumpdaysAndTandemmaster();
+        tandemmasterService.assignTandemmasterToJumpday(LocalDate.now(), tandemmasterDetails.getId(), new SimpleAssignment(true));
+
+        tandemmasterDetails.setAssignments(Map.of(LocalDate.now(),
+                new SimpleAssignment(true, false, LocalTime.of(12, 0), LocalTime.of(20, 0))));
+
+        GenericResult<Void> result = tandemmasterService.assignTandemmaster(tandemmasterDetails, true);
+        Assert.assertFalse(result.isSuccess());
+        Assert.assertEquals(ErrorMessage.SELFASSIGNMENT_NODELETE.toString(), result.getMessage());
+    }
+
+    @Test
+    public void testAssignTandemmaster_RemovalNotAssigned_NODELETE() {
+        CommonSettings commonSettings = new CommonSettings();
+        commonSettings.setSelfAssignmentMode(SelfAssignmentMode.NODELETE);
+        when(settingsService.getCommonSettingsByLanguage(Locale.GERMAN.getLanguage())).thenReturn(commonSettings);
+
+        TandemmasterDetailsDTO tandemmasterDetails = prepareJumpdaysAndTandemmaster();
+        tandemmasterService.assignTandemmasterToJumpday(LocalDate.now(), tandemmasterDetails.getId(), new SimpleAssignment(true));
+
+        tandemmasterDetails.setAssignments(new HashMap<>());
 
         GenericResult<Void> result = tandemmasterService.assignTandemmaster(tandemmasterDetails, true);
         Assert.assertFalse(result.isSuccess());
