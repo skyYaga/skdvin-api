@@ -113,8 +113,9 @@ public class MongoTandemmasterService implements ITandemmasterService {
         if (SelfAssignmentMode.NODELETE.equals(selfAssignmentMode)) {
             TandemmasterDetailsDTO currentDetails = getById(newTandemmasterDetails.getId());
             for (Map.Entry<LocalDate, SimpleAssignment> currentEntry : currentDetails.getAssignments().entrySet()) {
-                SimpleAssignment existingAssignment = newTandemmasterDetails.getAssignments().get(currentEntry.getKey());
-                if (existingAssignment == null || !existingAssignment.equals(currentEntry.getValue())) {
+                SimpleAssignment newAssignment = newTandemmasterDetails.getAssignments().get(currentEntry.getKey());
+                if (currentEntry.getValue().isAssigned() && (newAssignment == null || !newAssignment.isAssigned())
+                        || currentEntry.getValue().isAssigned() && newAssignment.isAllday() != currentEntry.getValue().isAllday()) {
                     return ErrorMessage.SELFASSIGNMENT_NODELETE;
                 }
             }
