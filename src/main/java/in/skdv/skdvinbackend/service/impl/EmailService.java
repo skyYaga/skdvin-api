@@ -125,9 +125,11 @@ public class EmailService implements IEmailService {
 
     private void prepareAppointmentMessage(MimeMessage mimeMessage, Appointment appointment, String subject, String template, Map<String, Object> contextVariables) throws MessagingException {
         Locale locale = LocaleContextHolder.getLocale();
+        CommonSettings settings = settingsService.getCommonSettingsByLanguage(locale.getLanguage());
 
         Context ctx = new Context(locale);
         ctx.setVariable("appointment", appointment);
+        ctx.setVariable("settings", settings);
 
         if (contextVariables != null) {
             contextVariables.forEach(ctx::setVariable);
@@ -142,7 +144,6 @@ public class EmailService implements IEmailService {
         message.setTo(toEmail);
         message.setText(htmlContent, true);
 
-        CommonSettings settings = settingsService.getCommonSettingsByLanguage(locale.getLanguage());
         if (settings != null && settings.getDropzone() != null && !settings.getDropzone().getEmail().isBlank()) {
             message.setReplyTo(settings.getDropzone().getEmail());
         }

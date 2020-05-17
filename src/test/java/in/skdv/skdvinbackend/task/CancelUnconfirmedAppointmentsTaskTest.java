@@ -3,7 +3,6 @@ package in.skdv.skdvinbackend.task;
 import in.skdv.skdvinbackend.AbstractSkdvinTest;
 import in.skdv.skdvinbackend.ModelMockHelper;
 import in.skdv.skdvinbackend.model.entity.Appointment;
-import in.skdv.skdvinbackend.model.entity.settings.CommonSettings;
 import in.skdv.skdvinbackend.repository.JumpdayRepository;
 import in.skdv.skdvinbackend.service.IAppointmentService;
 import in.skdv.skdvinbackend.service.IEmailService;
@@ -68,7 +67,8 @@ public class CancelUnconfirmedAppointmentsTaskTest extends AbstractSkdvinTest {
         ReflectionTestUtils.setField(emailService, "baseurl", BASE_URL);
         doReturn(new JavaMailSenderImpl().createMimeMessage()).when(mailSender).createMimeMessage();
 
-        when(settingsService.getCommonSettingsByLanguage(Mockito.anyString())).thenReturn(new CommonSettings());
+        when(settingsService.getCommonSettingsByLanguage(Mockito.anyString())).
+                thenReturn(ModelMockHelper.createCommonSettings());
     }
 
     @Test

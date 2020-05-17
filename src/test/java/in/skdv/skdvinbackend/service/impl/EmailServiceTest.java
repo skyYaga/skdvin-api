@@ -64,7 +64,7 @@ public class EmailServiceTest extends AbstractSkdvinTest {
         ReflectionTestUtils.setField(emailService, "baseurl", BASE_URL);
 
         when(settingsService.getCommonSettingsByLanguage(Locale.GERMAN.getLanguage())).
-                thenReturn(new CommonSettings());
+                thenReturn(ModelMockHelper.createCommonSettings());
     }
 
     @Test
@@ -183,6 +183,12 @@ public class EmailServiceTest extends AbstractSkdvinTest {
 
     @Test
     public void testNoBccAndReplyToMail() throws MessagingException {
+        CommonSettings settings = ModelMockHelper.createCommonSettings();
+        settings.getDropzone().setEmail("");
+        settings.setBccMail("");
+        when(settingsService.getCommonSettingsByLanguage(Locale.GERMAN.getLanguage())).
+                thenReturn(settings);
+
         LocaleContextHolder.setLocale(Locale.GERMAN);
         doNothing().when(mailSender).send(Mockito.any(MimeMessage.class));
 
@@ -196,6 +202,6 @@ public class EmailServiceTest extends AbstractSkdvinTest {
 
         MimeMessage mimeMessage = argument.getValue();
         assertEquals(FROM_EMAIL, mimeMessage.getReplyTo()[0].toString());
-        assertEquals(null, mimeMessage.getHeader("Bcc"));
+        assertNull(mimeMessage.getHeader("Bcc"));
     }
 }
