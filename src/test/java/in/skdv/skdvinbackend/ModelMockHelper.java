@@ -156,6 +156,9 @@ public class ModelMockHelper {
         Dropzone dropzone = new Dropzone();
         dropzone.setName("Example DZ");
         dropzone.setPriceListUrl("https://example.com");
+        dropzone.setMobile("015112345678");
+        dropzone.setPhone("0987654321");
+        dropzone.setEmail("dz@example.com");
 
         Faq faq1 = new Faq();
         faq1.setId(1);

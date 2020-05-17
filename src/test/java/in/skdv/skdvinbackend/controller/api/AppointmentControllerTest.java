@@ -9,7 +9,6 @@ import in.skdv.skdvinbackend.model.dto.AppointmentDTO;
 import in.skdv.skdvinbackend.model.dto.AppointmentStateOnlyDTO;
 import in.skdv.skdvinbackend.model.entity.Appointment;
 import in.skdv.skdvinbackend.model.entity.AppointmentState;
-import in.skdv.skdvinbackend.model.entity.settings.CommonSettings;
 import in.skdv.skdvinbackend.repository.JumpdayRepository;
 import in.skdv.skdvinbackend.service.IAppointmentService;
 import in.skdv.skdvinbackend.service.IEmailService;
@@ -138,7 +137,8 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
         ReflectionTestUtils.setField(emailService, "fromEmail", FROM_EMAIL);
         ReflectionTestUtils.setField(emailService, "baseurl", BASE_URL);
         doReturn(new JavaMailSenderImpl().createMimeMessage()).when(mailSender).createMimeMessage();
-        when(settingsService.getCommonSettingsByLanguage(Mockito.anyString())).thenReturn(new CommonSettings());
+        when(settingsService.getCommonSettingsByLanguage(Mockito.anyString())).
+                thenReturn(ModelMockHelper.createCommonSettings());
     }
 
     @Test
