@@ -25,8 +25,8 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<java.version>11</java.version>
-		<modelmapper.version>2.3.7</modelmapper.version>
-		<nimbus-jose-jwt.version>8.17.1</nimbus-jose-jwt.version>
+		<modelmapper.version>2.3.8</modelmapper.version>
+		<nimbus-jose-jwt.version>8.19</nimbus-jose-jwt.version>
 		<sentry-logback.version>1.7.30</sentry-logback.version>
 	</properties>
 
