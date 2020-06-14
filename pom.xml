@@ -211,4 +211,12 @@
 		</profile>
 	</profiles>
 
+	<distributionManagement>
+		<repository>
+			<id>github</id>
+			<name>GitHub skyYaga Apache Maven Packages</name>
+			<url>https://maven.pkg.github.com/skyYaga/skdvin-api</url>
+		</repository>
+	</distributionManagement>
+
 </project>
