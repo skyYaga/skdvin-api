@@ -50,15 +50,16 @@
         ${jumper.firstName}, ${jumper.lastName},
         ${#temporals.format(jumper.dateOfBirth, 'dd.MM.yyyy')})}"></li>
 </ul>
-<p th:utext="#{appointment.confirmation.details(${#temporals.format(appointment.date, 'HH:mm')})}">
+<p th:utext="#{appointment.confirmation.details(${#temporals.format(appointment.date, 'HH:mm')},
+    ${settings.dropzone.email}, ${settings.dropzone.mobile}, ${settings.dropzone.phone})}">
     Melden Sie sich zum gebuchten Zeitpunkt (HH:mm Uhr) einfach vor Ort bei uns am Manifest.
     Die angegebenen Zeiten sind lediglich Richtzeiten, es besteht keine Garantie zur gebuchten Uhrzeit in die Luft zu
     kommen. Bitte bringen Sie ein paar Stunden Zeit mit.
-    Falls Sie noch Fragen haben oder Ihren Termin nicht wahrnehmen können, senden Sie eine Mail an mail@fsz-hassfurt.de
-    oder melden Sie sich telefonisch (am Wochenende) unter 09521-3375.
+    Falls Sie noch Fragen haben oder Ihren Termin nicht wahrnehmen können, senden Sie eine Mail an dzmail@example.com
+    oder melden Sie sich telefonisch mobile + phone.
 </p>
-<p th:text="#{goodbye}">
-    Ihr Fallschirm-Sport-Zentrum Haßfurt e.V.
+<p th:text="#{goodbye(${settings.dropzone.name})}">
+    Ihr DZ-Name
 </p>
 </body>
 </html>

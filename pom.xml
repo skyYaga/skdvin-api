@@ -4,7 +4,7 @@
 
 	<groupId>in.skdv</groupId>
 	<artifactId>skdvin-api</artifactId>
-	<version>1.0.3-SNAPSHOT</version>
+	<version>1.0.6</version>
 	<packaging>jar</packaging>
 
 	<name>skdvin-api</name>
@@ -13,7 +13,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>2.2.7.RELEASE</version>
+		<version>2.3.1.RELEASE</version>
 	</parent>
 
 	<scm>
@@ -25,8 +25,8 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<java.version>11</java.version>
-		<modelmapper.version>2.3.7</modelmapper.version>
-		<nimbus-jose-jwt.version>8.17</nimbus-jose-jwt.version>
+		<modelmapper.version>2.3.8</modelmapper.version>
+		<nimbus-jose-jwt.version>8.19</nimbus-jose-jwt.version>
 		<sentry-logback.version>1.7.30</sentry-logback.version>
 	</properties>
 
@@ -42,6 +42,10 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-validation</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -206,5 +210,13 @@
 			</build>
 		</profile>
 	</profiles>
+
+	<distributionManagement>
+		<repository>
+			<id>github</id>
+			<name>GitHub skyYaga Apache Maven Packages</name>
+			<url>https://maven.pkg.github.com/skyYaga/skdvin-api</url>
+		</repository>
+	</distributionManagement>
 
 </project>

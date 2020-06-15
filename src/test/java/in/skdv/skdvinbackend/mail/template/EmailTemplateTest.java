@@ -3,6 +3,7 @@ package in.skdv.skdvinbackend.mail.template;
 import in.skdv.skdvinbackend.AbstractSkdvinTest;
 import in.skdv.skdvinbackend.ModelMockHelper;
 import in.skdv.skdvinbackend.model.entity.Appointment;
+import in.skdv.skdvinbackend.model.entity.settings.CommonSettings;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,16 +22,16 @@ import static org.junit.Assert.assertEquals;
 public class EmailTemplateTest extends AbstractSkdvinTest {
 
     private static final String BASE_URL = "https://example.com";
-    private DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+    private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
 
     @Autowired
     private TemplateEngine emailTemplateEngine;
+    private final Appointment appointment = ModelMockHelper.createSingleAppointment();
+    private final CommonSettings settings = ModelMockHelper.createCommonSettings();
 
     @Test
     public void testAppointmentVerificationMail_US() {
-        Context ctx = new Context(Locale.US);
-        Appointment appointment = ModelMockHelper.createSingleAppointment();
-        ctx.setVariable("appointment", appointment);
+        Context ctx = createContext(Locale.US);
         ctx.setVariable("tokenurl", BASE_URL);
         String htmlMail = emailTemplateEngine.process("html/appointment-verification", ctx);
         assertEquals("<!DOCTYPE html>\n" +
@@ -60,16 +61,14 @@ public class EmailTemplateTest extends AbstractSkdvinTest {
                 "<ul>\n" +
                 "    <li>first0 last0 (01.01.1980)</li>\n" +
                 "</ul>\n" +
-                "<p>Your Fallschirm-Sport-Zentrum Haßfurt e.V.</p>\n" +
+                "<p>Your Example DZ</p>\n" +
                 "</body>\n" +
                 "</html>", htmlMail);
     }
 
     @Test
     public void testAppointmentVerificationMail_DE() {
-        Context ctx = new Context(Locale.GERMANY);
-        Appointment appointment = ModelMockHelper.createSingleAppointment();
-        ctx.setVariable("appointment", appointment);
+        Context ctx = createContext(Locale.GERMANY);
         ctx.setVariable("tokenurl", BASE_URL);
         String htmlMail = emailTemplateEngine.process("html/appointment-verification", ctx);
         assertEquals("<!DOCTYPE html>\n" +
@@ -99,16 +98,14 @@ public class EmailTemplateTest extends AbstractSkdvinTest {
                 "<ul>\n" +
                 "    <li>first0 last0 (01.01.1980)</li>\n" +
                 "</ul>\n" +
-                "<p>Ihr Fallschirm-Sport-Zentrum Haßfurt e.V.</p>\n" +
+                "<p>Ihr Example DZ</p>\n" +
                 "</body>\n" +
                 "</html>", htmlMail);
     }
 
     @Test
     public void testAppointmentConfirmationMail_US() {
-        Context ctx = new Context(Locale.US);
-        Appointment appointment = ModelMockHelper.createSingleAppointment();
-        ctx.setVariable("appointment", appointment);
+        Context ctx = createContext(Locale.US);
         String htmlMail = emailTemplateEngine.process("html/appointment-confirmation", ctx);
         assertEquals("<!DOCTYPE html>\n" +
                 "<html>\n" +
@@ -134,17 +131,15 @@ public class EmailTemplateTest extends AbstractSkdvinTest {
                 "<ul>\n" +
                 "    <li>first0 last0 (01.01.1980)</li>\n" +
                 "</ul>\n" +
-                "<p>Please come to our manifest at the time of your reservation (10:00).<br/>Your booked times are just an indication, there is no guarantee to get in the air at the time ouf your booking. Please bring a few hours of your time.<br/>If you have any further questions or if you have to cancel your booking, send an email to mail@fsz-hassfurt.de or call us (during the weekend): +49(0)9521-3375.</p>\n" +
-                "<p>Your Fallschirm-Sport-Zentrum Haßfurt e.V.</p>\n" +
+                "<p>Please come to our manifest at the time of your reservation (10:00).<br/>Your booked times are just an indication, there is no guarantee to get in the air at the time ouf your booking. Please bring a few hours of your time.<br/>If you have any further questions or if you have to cancel your booking, send an email to dz@example.com or call us on 015112345678 or during operation on 0987654321.</p>\n" +
+                "<p>Your Example DZ</p>\n" +
                 "</body>\n" +
                 "</html>", htmlMail);
     }
 
     @Test
     public void testAppointmentConfirmationMail_DE() {
-        Context ctx = new Context(Locale.GERMANY);
-        Appointment appointment = ModelMockHelper.createSingleAppointment();
-        ctx.setVariable("appointment", appointment);
+        Context ctx = createContext(Locale.GERMANY);
         String htmlMail = emailTemplateEngine.process("html/appointment-confirmation", ctx);
         assertEquals("<!DOCTYPE html>\n" +
                 "<html>\n" +
@@ -170,17 +165,15 @@ public class EmailTemplateTest extends AbstractSkdvinTest {
                 "<ul>\n" +
                 "    <li>first0 last0 (01.01.1980)</li>\n" +
                 "</ul>\n" +
-                "<p>Melden Sie sich zum gebuchten Zeitpunkt (10:00 Uhr) einfach vor Ort bei uns am Manifest.<br/>Die angegebenen Zeiten sind lediglich Richtzeiten, es besteht keine Garantie zur gebuchten Uhrzeit in die Luft zu kommen. Bitte bringen Sie ein paar Stunden Zeit mit.<br/>Falls Sie noch Fragen haben oder Ihren Termin nicht wahrnehmen können, senden Sie eine Mail an mail@fsz-hassfurt.de oder melden Sie sich telefonisch (am Wochenende) unter 09521-3375.</p>\n" +
-                "<p>Ihr Fallschirm-Sport-Zentrum Haßfurt e.V.</p>\n" +
+                "<p>Melden Sie sich zum gebuchten Zeitpunkt (10:00 Uhr) einfach vor Ort bei uns am Manifest.<br/>Die angegebenen Zeiten sind lediglich Richtzeiten, es besteht keine Garantie zur gebuchten Uhrzeit in die Luft zu kommen. Bitte bringen Sie ein paar Stunden Zeit mit.<br/>Falls Sie noch Fragen haben oder Ihren Termin nicht wahrnehmen können, senden Sie eine Mail an dz@example.com oder melden Sie sich telefonisch unter 015112345678 oder bei Sprungbetrieb unter 0987654321.</p>\n" +
+                "<p>Ihr Example DZ</p>\n" +
                 "</body>\n" +
                 "</html>", htmlMail);
     }
 
     @Test
     public void testAppointmentUnconfirmedCancellationMail_EN() {
-        Context ctx = new Context(Locale.US);
-        Appointment appointment = ModelMockHelper.createSingleAppointment();
-        ctx.setVariable("appointment", appointment);
+        Context ctx = createContext(Locale.US);
         String htmlMail = emailTemplateEngine.process("html/appointment-unconfirmed-cancellation", ctx);
         assertEquals("<!DOCTYPE html>\n" +
                 "<html>\n" +
@@ -206,16 +199,14 @@ public class EmailTemplateTest extends AbstractSkdvinTest {
                 "<ul>\n" +
                 "    <li>first0 last0 (01.01.1980)</li>\n" +
                 "</ul>\n" +
-                "<p>Your Fallschirm-Sport-Zentrum Haßfurt e.V.</p>\n" +
+                "<p>Your Example DZ</p>\n" +
                 "</body>\n" +
                 "</html>", htmlMail);
     }
 
     @Test
     public void testAppointmentUnconfirmedCancellationMail_DE() {
-        Context ctx = new Context(Locale.GERMANY);
-        Appointment appointment = ModelMockHelper.createSingleAppointment();
-        ctx.setVariable("appointment", appointment);
+        Context ctx = createContext(Locale.GERMANY);
         String htmlMail = emailTemplateEngine.process("html/appointment-unconfirmed-cancellation", ctx);
         assertEquals("<!DOCTYPE html>\n" +
                 "<html>\n" +
@@ -241,16 +232,14 @@ public class EmailTemplateTest extends AbstractSkdvinTest {
                 "<ul>\n" +
                 "    <li>first0 last0 (01.01.1980)</li>\n" +
                 "</ul>\n" +
-                "<p>Ihr Fallschirm-Sport-Zentrum Haßfurt e.V.</p>\n" +
+                "<p>Ihr Example DZ</p>\n" +
                 "</body>\n" +
                 "</html>", htmlMail);
     }
 
     @Test
     public void testAppointmentUpdatedMail_EN() {
-        Context ctx = new Context(Locale.US);
-        Appointment appointment = ModelMockHelper.createSingleAppointment();
-        ctx.setVariable("appointment", appointment);
+        Context ctx = createContext(Locale.US);
         String htmlMail = emailTemplateEngine.process("html/appointment-updated", ctx);
         assertEquals("<!DOCTYPE html>\n" +
                 "<html>\n" +
@@ -276,17 +265,15 @@ public class EmailTemplateTest extends AbstractSkdvinTest {
                 "<ul>\n" +
                 "    <li>first0 last0 (01.01.1980)</li>\n" +
                 "</ul>\n" +
-                "<p>Please come to our manifest at the time of your reservation (10:00).<br/>Your booked times are just an indication, there is no guarantee to get in the air at the time ouf your booking. Please bring a few hours of your time.<br/>If you have any further questions or if you have to cancel your booking, send an email to mail@fsz-hassfurt.de or call us (during the weekend): +49(0)9521-3375.</p>\n" +
-                "<p>Your Fallschirm-Sport-Zentrum Haßfurt e.V.</p>\n" +
+                "<p>Please come to our manifest at the time of your reservation (10:00).<br/>Your booked times are just an indication, there is no guarantee to get in the air at the time ouf your booking. Please bring a few hours of your time.<br/>If you have any further questions or if you have to cancel your booking, send an email to dz@example.com or call us on 015112345678 or during operation on 0987654321.</p>\n" +
+                "<p>Your Example DZ</p>\n" +
                 "</body>\n" +
                 "</html>", htmlMail);
     }
 
     @Test
     public void testAppointmentUpdatedMail_DE() {
-        Context ctx = new Context(Locale.GERMANY);
-        Appointment appointment = ModelMockHelper.createSingleAppointment();
-        ctx.setVariable("appointment", appointment);
+        Context ctx = createContext(Locale.GERMANY);
         String htmlMail = emailTemplateEngine.process("html/appointment-updated", ctx);
         assertEquals("<!DOCTYPE html>\n" +
                 "<html>\n" +
@@ -312,17 +299,15 @@ public class EmailTemplateTest extends AbstractSkdvinTest {
                 "<ul>\n" +
                 "    <li>first0 last0 (01.01.1980)</li>\n" +
                 "</ul>\n" +
-                "<p>Melden Sie sich zum gebuchten Zeitpunkt (10:00 Uhr) einfach vor Ort bei uns am Manifest.<br/>Die angegebenen Zeiten sind lediglich Richtzeiten, es besteht keine Garantie zur gebuchten Uhrzeit in die Luft zu kommen. Bitte bringen Sie ein paar Stunden Zeit mit.<br/>Falls Sie noch Fragen haben oder Ihren Termin nicht wahrnehmen können, senden Sie eine Mail an mail@fsz-hassfurt.de oder melden Sie sich telefonisch (am Wochenende) unter 09521-3375.</p>\n" +
-                "<p>Ihr Fallschirm-Sport-Zentrum Haßfurt e.V.</p>\n" +
+                "<p>Melden Sie sich zum gebuchten Zeitpunkt (10:00 Uhr) einfach vor Ort bei uns am Manifest.<br/>Die angegebenen Zeiten sind lediglich Richtzeiten, es besteht keine Garantie zur gebuchten Uhrzeit in die Luft zu kommen. Bitte bringen Sie ein paar Stunden Zeit mit.<br/>Falls Sie noch Fragen haben oder Ihren Termin nicht wahrnehmen können, senden Sie eine Mail an dz@example.com oder melden Sie sich telefonisch unter 015112345678 oder bei Sprungbetrieb unter 0987654321.</p>\n" +
+                "<p>Ihr Example DZ</p>\n" +
                 "</body>\n" +
                 "</html>", htmlMail);
     }
 
     @Test
     public void testAppointmentDeletedMail_EN() {
-        Context ctx = new Context(Locale.US);
-        Appointment appointment = ModelMockHelper.createSingleAppointment();
-        ctx.setVariable("appointment", appointment);
+        Context ctx = createContext(Locale.US);
         String htmlMail = emailTemplateEngine.process("html/appointment-deleted", ctx);
         assertEquals("<!DOCTYPE html>\n" +
                 "<html>\n" +
@@ -348,16 +333,14 @@ public class EmailTemplateTest extends AbstractSkdvinTest {
                 "<ul>\n" +
                 "    <li>first0 last0 (01.01.1980)</li>\n" +
                 "</ul>\n" +
-                "<p>Your Fallschirm-Sport-Zentrum Haßfurt e.V.</p>\n" +
+                "<p>Your Example DZ</p>\n" +
                 "</body>\n" +
                 "</html>", htmlMail);
     }
 
     @Test
     public void testAppointmentDeletedMail_DE() {
-        Context ctx = new Context(Locale.GERMANY);
-        Appointment appointment = ModelMockHelper.createSingleAppointment();
-        ctx.setVariable("appointment", appointment);
+        Context ctx = createContext(Locale.GERMANY);
         String htmlMail = emailTemplateEngine.process("html/appointment-deleted", ctx);
         assertEquals("<!DOCTYPE html>\n" +
                 "<html>\n" +
@@ -383,8 +366,15 @@ public class EmailTemplateTest extends AbstractSkdvinTest {
                 "<ul>\n" +
                 "    <li>first0 last0 (01.01.1980)</li>\n" +
                 "</ul>\n" +
-                "<p>Ihr Fallschirm-Sport-Zentrum Haßfurt e.V.</p>\n" +
+                "<p>Ihr Example DZ</p>\n" +
                 "</body>\n" +
                 "</html>", htmlMail);
+    }
+
+    private Context createContext(Locale locale) {
+        Context ctx = new Context(locale);
+        ctx.setVariable("appointment", appointment);
+        ctx.setVariable("settings", settings);
+        return ctx;
     }
 }
