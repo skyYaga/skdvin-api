@@ -23,6 +23,6 @@ jobs:
         run: mvn -B package --file pom.xml
 
       - name: Publish to GitHub Packages Apache Maven
-        run: mvn -B -DskipTests release:prepare release:perform
+        run: mvn -B deploy
         env:
           GITHUB_TOKEN: ${{ github.token }}
