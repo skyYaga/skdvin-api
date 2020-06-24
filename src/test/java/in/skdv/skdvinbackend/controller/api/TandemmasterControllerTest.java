@@ -324,6 +324,9 @@ public class TandemmasterControllerTest extends AbstractSkdvinTest {
                 .andExpect(jsonPath("$.success", is(true)))
                 .andExpect(jsonPath("$.payload.assignments." + LocalDate.now() + ".assigned", is(true)))
                 .andDo(document("tandemmaster/get-tandemmaster",
+                        pathParameters(
+                                parameterWithName("id").description("The id of the requested tandemmaster")
+                        ),
                         responseFields(
                                 fieldWithPath("success").description("true when the request was successful"),
                                 fieldWithPath("message").description("message if there was an error"),
