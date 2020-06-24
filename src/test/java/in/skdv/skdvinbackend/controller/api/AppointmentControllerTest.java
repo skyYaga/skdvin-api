@@ -237,6 +237,7 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
                                 fieldWithPath("createdOn").ignored(),
                                 fieldWithPath("createdBy").ignored(),
                                 fieldWithPath("clientId").ignored(),
+                                fieldWithPath("reminderSent").ignored(),
                                 fieldWithPath("verificationToken").ignored()
                         ),
                         responseFields(
@@ -397,6 +398,7 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
                                 fieldWithPath("createdOn").ignored(),
                                 fieldWithPath("createdBy").ignored(),
                                 fieldWithPath("clientId").ignored(),
+                                fieldWithPath("reminderSent").ignored(),
                                 fieldWithPath("verificationToken").ignored()
                         ),
                         responseFields(

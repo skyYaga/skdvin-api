@@ -174,6 +174,7 @@ public class ModelMockHelper {
         CommonSettings commonSettings = new CommonSettings();
         commonSettings.setDropzone(dropzone);
         commonSettings.setFaq(faqList);
+        commonSettings.setAdditionalReminderHint("<p>This is a additional hint</p><ul><li>Hint 1</li><li>Hint 2</li></ul>");
 
         return commonSettings;
     }

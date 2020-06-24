@@ -15,4 +15,6 @@ public interface IEmailService {
     void sendAppointmentUpdated(Appointment appointment) throws MessagingException;
 
     void sendAppointmentDeleted(Appointment appointment) throws MessagingException;
+
+    void sendAppointmentReminder(Appointment appointment) throws MessagingException;
 }

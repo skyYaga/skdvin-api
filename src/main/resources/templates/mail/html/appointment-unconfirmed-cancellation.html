@@ -7,10 +7,10 @@
 </head>
 <body>
 <h1><span th:text="#{cancellation}">STORNIERUNG</span> <span th:text="#{appointment.heading(${appointment.appointmentId})}">Appointment 123</span></h1>
-<p th:text="#{greeting(${appointment.customer.firstName}, ${appointment.customer.lastName})}">
+<p th:text="#{greeting(${appointment.customer.firstName})}">
     Hello, User!
 </p>
-<p th:utext="#{appointment.unconfirmed.cancellation.details}">
+<p th:utext="#{appointment.unconfirmed.cancellation.details(${baseurl})}">
     Da Sie Ihren Termin nicht bestätigt haben, wurde dieser soeben automatisch storniert.
     Wenn Sie einfach vergessen haben diesen zu bestätigen, können Sie auf skdv.in einfach einen neuen Termin buchen.
     Folgender Termin wurde gelöscht:
