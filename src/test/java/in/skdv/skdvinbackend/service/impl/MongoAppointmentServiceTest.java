@@ -537,10 +537,22 @@ public class MongoAppointmentServiceTest extends AbstractSkdvinTest {
         assertEquals(LocalDateTime.of(LocalDate.now().plusDays(5), LocalTime.of(10, 0)), appointmentsWithinNextWeek.get(1).getDate());
     }
 
-
     @Test
     public void testReminderSent() {
         GenericResult<Appointment> savedAppointment = appointmentService.saveAppointment(ModelMockHelper.createSingleAppointment());
+
+        appointmentService.reminderSent(savedAppointment.getPayload());
+
+        Appointment appointment = appointmentService.findAppointment(savedAppointment.getPayload().getAppointmentId());
+
+        assertTrue(appointment.isReminderSent());
+    }
+
+    @Test
+    public void testReminderSent_AdminAppointment() {
+        Appointment singleAppointment = ModelMockHelper.createSingleAppointment();
+        singleAppointment.getCustomer().setJumpers(Collections.emptyList());
+        GenericResult<Appointment> savedAppointment = appointmentService.saveAdminAppointment(singleAppointment);
 
         appointmentService.reminderSent(savedAppointment.getPayload());
 
