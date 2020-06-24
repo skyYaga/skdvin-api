@@ -10,7 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.MessageSource;
-import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.thymeleaf.TemplateEngine;
@@ -56,7 +55,7 @@ public class EmailService implements IEmailService {
 
         Map<String, Object> contextVariables = new HashMap<>();
         contextVariables.put("tokenurl", baseurl + String.format(APPOINTMENT_CONFIRMATION_ENDPOINT,
-                LocaleContextHolder.getLocale().getLanguage(),
+                appointment.getLang(),
                 appointment.getAppointmentId(),
                 appointment.getVerificationToken().getToken()));
 
@@ -138,7 +137,7 @@ public class EmailService implements IEmailService {
     }
 
     private void prepareAppointmentMessage(MimeMessage mimeMessage, Appointment appointment, String subject, String template, Map<String, Object> contextVariables) throws MessagingException {
-        Locale locale = LocaleContextHolder.getLocale();
+        Locale locale = new Locale(appointment.getLang());
         CommonSettings settings = settingsService.getCommonSettingsByLanguage(locale.getLanguage());
 
         Context ctx = new Context(locale);
