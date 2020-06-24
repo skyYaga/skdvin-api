@@ -64,6 +64,7 @@ public class AppointmentController {
     public ResponseEntity<GenericResult> addAppointment(@RequestBody @Valid AppointmentDTO input) {
         Appointment appointment = appointmentConverter.convertToEntity(input);
         appointment.setVerificationToken(VerificationTokenUtil.generate());
+        appointment.setLang(LocaleContextHolder.getLocale().getLanguage());
 
         GenericResult<Appointment> result = appointmentService.saveAppointment(appointment);
 

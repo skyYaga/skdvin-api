@@ -237,6 +237,7 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
                                 fieldWithPath("createdOn").ignored(),
                                 fieldWithPath("createdBy").ignored(),
                                 fieldWithPath("clientId").ignored(),
+                                fieldWithPath("lang").ignored(),
                                 fieldWithPath("reminderSent").ignored(),
                                 fieldWithPath("verificationToken").ignored()
                         ),
@@ -398,6 +399,7 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
                                 fieldWithPath("createdOn").ignored(),
                                 fieldWithPath("createdBy").ignored(),
                                 fieldWithPath("clientId").ignored(),
+                                fieldWithPath("lang").ignored(),
                                 fieldWithPath("reminderSent").ignored(),
                                 fieldWithPath("verificationToken").ignored()
                         ),
@@ -525,7 +527,8 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
 
         ArgumentCaptor<MimeMessage> argument = ArgumentCaptor.forClass(MimeMessage.class);
         verify(mailSender).send(argument.capture());
-        assertTrue(argument.getValue().getSubject().startsWith("Your booking has been updated"));
+        // Appointment was initially created in german
+        assertTrue(argument.getValue().getSubject().startsWith("Deine Buchung wurde aktualisiert (#"));
     }
 
     @Test
@@ -855,7 +858,8 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
 
         ArgumentCaptor<MimeMessage> argument = ArgumentCaptor.forClass(MimeMessage.class);
         verify(mailSender).send(argument.capture());
-        assertEquals("Your booking #" + savedAppointment.getAppointmentId() + " is confirmed", argument.getValue().getSubject());
+        // Appointment was initially created in german
+        assertEquals("Buchungsbestätigung #" + savedAppointment.getAppointmentId(), argument.getValue().getSubject());
     }
 
     @Test
@@ -1072,7 +1076,8 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
 
         ArgumentCaptor<MimeMessage> argument = ArgumentCaptor.forClass(MimeMessage.class);
         verify(mailSender).send(argument.capture());
-        assertTrue(argument.getValue().getSubject().startsWith("Your booking was deleted"));
+        // Appointment was initially created in german
+        assertTrue(argument.getValue().getSubject().startsWith("Dein Termin wurde gelöscht (#"));
     }
 
     @Test
