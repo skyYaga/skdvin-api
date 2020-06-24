@@ -240,7 +240,7 @@ public class MongoAppointmentService implements IAppointmentService {
     @Override
     public void reminderSent(Appointment appointment) {
         appointment.setReminderSent(true);
-        updateAppointment(appointment);
+        updateAppointment(appointment, true);
     }
 
     private GroupSlot calculateGroupSlot(Jumpday jumpday, int slotIndex, int minTandemAvailable) {
