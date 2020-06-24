@@ -6,7 +6,7 @@
 </head>
 <body>
 <h1 th:text="#{appointment.heading(${appointment.appointmentId})}">Appointment 123</h1>
-<p th:text="#{greeting(${appointment.customer.firstName}, ${appointment.customer.lastName})}">
+<p th:text="#{greeting(${appointment.customer.firstName})}">
     Hello, User!
 </p>
 <p th:text="#{appointment.deleted.description}">

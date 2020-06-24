@@ -262,7 +262,7 @@ public class JumpdayControllerTest extends AbstractSkdvinTest {
                 .andExpect(jsonPath("$.payload[0].slots[0].picOrVidTotal", is(jumpday.getSlots().get(0).getPicOrVidTotal())))
                 .andExpect(jsonPath("$.payload[0].slots[0].picAndVidTotal", is(jumpday.getSlots().get(0).getPicAndVidTotal())))
                 .andExpect(jsonPath("$.payload[0].slots[0].handcamTotal", is(jumpday.getSlots().get(0).getHandcamTotal())))
-                .andDo(document("jumpday/get-jumpday", responseFields(
+                .andDo(document("jumpday/get-jumpdays", responseFields(
                         fieldWithPath("success").description("true when the request was successful"),
                         fieldWithPath("payload[]").description("The list of jumpdays"),
                         fieldWithPath("payload[].date").description("The date of the jumpday"),
@@ -317,7 +317,7 @@ public class JumpdayControllerTest extends AbstractSkdvinTest {
                 .andExpect(jsonPath("$.payload.slots[0].picOrVidTotal", is(jumpday.getSlots().get(0).getPicOrVidTotal())))
                 .andExpect(jsonPath("$.payload.slots[0].picAndVidTotal", is(jumpday.getSlots().get(0).getPicAndVidTotal())))
                 .andExpect(jsonPath("$.payload.slots[0].handcamTotal", is(jumpday.getSlots().get(0).getHandcamTotal())))
-                .andDo(document("jumpday/get-jumpdays", pathParameters(
+                .andDo(document("jumpday/get-jumpday", pathParameters(
                         parameterWithName("date").description("The date of the requested jumpday")
                 ), responseFields(
                         fieldWithPath("success").description("true when the request was successful"),

@@ -225,6 +225,24 @@ public class MongoAppointmentService implements IAppointmentService {
         return groupSlots;
     }
 
+    @Override
+    public List<Appointment> findAppointmentsWithinNextWeek() {
+        List<Appointment> appointments = new ArrayList<>();
+        LocalDate date = LocalDate.now();
+        LocalDate endDate = LocalDate.now().plusDays(7);
+        while (date.isBefore(endDate)) {
+            appointments.addAll(findAppointmentsByDay(date));
+            date = date.plusDays(1);
+        }
+        return appointments;
+    }
+
+    @Override
+    public void reminderSent(Appointment appointment) {
+        appointment.setReminderSent(true);
+        updateAppointment(appointment);
+    }
+
     private GroupSlot calculateGroupSlot(Jumpday jumpday, int slotIndex, int minTandemAvailable) {
         GroupSlot groupSlot = new GroupSlot();
         groupSlot.setDate(jumpday.getDate());

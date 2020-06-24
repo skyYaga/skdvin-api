@@ -33,4 +33,8 @@ public interface IAppointmentService {
     void deleteAppointment(int appointmentId);
 
     List<GroupSlot> findGroupSlots(SlotQuery slotQuery);
+
+    List<Appointment> findAppointmentsWithinNextWeek();
+
+    void reminderSent(Appointment appointment);
 }

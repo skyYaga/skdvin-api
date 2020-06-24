@@ -3,12 +3,11 @@ package in.skdv.skdvinbackend.task;
 import in.skdv.skdvinbackend.AbstractSkdvinTest;
 import in.skdv.skdvinbackend.ModelMockHelper;
 import in.skdv.skdvinbackend.model.entity.Appointment;
+import in.skdv.skdvinbackend.model.entity.AppointmentState;
 import in.skdv.skdvinbackend.repository.JumpdayRepository;
 import in.skdv.skdvinbackend.service.IAppointmentService;
 import in.skdv.skdvinbackend.service.IEmailService;
 import in.skdv.skdvinbackend.service.ISettingsService;
-import in.skdv.skdvinbackend.util.VerificationTokenUtil;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -24,18 +23,14 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
-import java.util.List;
 import java.util.Locale;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
-public class CancelUnconfirmedAppointmentsTaskTest extends AbstractSkdvinTest {
+public class SendAppointmentReminderTaskTest extends AbstractSkdvinTest {
     private static final String FROM_EMAIL = "skdvin@example.com";
     private static final String BASE_URL = "https://example.com";
 
@@ -43,7 +38,7 @@ public class CancelUnconfirmedAppointmentsTaskTest extends AbstractSkdvinTest {
     private ISettingsService settingsService;
 
     @Autowired
-    private CancelUnconfirmedAppointmentsTask task;
+    private SendAppointmentReminderTask task;
 
     @Autowired
     private JumpdayRepository jumpdayRepository;
@@ -71,47 +66,44 @@ public class CancelUnconfirmedAppointmentsTaskTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testAppointmentIsCanceled() {
+    public void testNoReminderIfNotConfirmedOrAlreadySent() {
         Appointment appointment1 = ModelMockHelper.createSingleAppointment();
         Appointment appointment2 = ModelMockHelper.createSecondAppointment();
-        appointment1.setVerificationToken(VerificationTokenUtil.generate());
-        appointment1.getVerificationToken().setExpiryDate(LocalDateTime.now().minus(25, ChronoUnit.HOURS));
+        appointment2.setState(AppointmentState.CONFIRMED);
+        appointment2.setReminderSent(true);
         appointmentService.saveAppointment(appointment1);
         appointmentService.saveAppointment(appointment2);
 
-        task.cancelAppointments();
+        task.sendReminder();
 
-        List<Appointment> result = appointmentService.findAppointmentsByDay(LocalDate.now());
-        Assert.assertEquals(1, result.size());
+        verifyNoInteractions(mailSender);
     }
 
     @Test
     public void testEmailIsSend_EN() throws MessagingException {
         Appointment appointment = ModelMockHelper.createSingleAppointment();
         appointment.setLang(Locale.ENGLISH.getLanguage());
-        appointment.setVerificationToken(VerificationTokenUtil.generate());
-        appointment.getVerificationToken().setExpiryDate(LocalDateTime.now().minus(25, ChronoUnit.HOURS));
+        appointment.setState(AppointmentState.CONFIRMED);
         appointmentService.saveAppointment(appointment);
 
-        task.cancelAppointments();
+        task.sendReminder();
 
         ArgumentCaptor<MimeMessage> argument = ArgumentCaptor.forClass(MimeMessage.class);
         verify(mailSender).send(argument.capture());
-        assertEquals(argument.getValue().getSubject(), "CANCELLATION of booking #" + appointment.getAppointmentId());
+        assertEquals(argument.getValue().getSubject(), "Appointment reminder (#" + appointment.getAppointmentId() + ")");
     }
 
     @Test
     public void testEmailIsSend_DE() throws MessagingException {
         Appointment appointment = ModelMockHelper.createSingleAppointment();
         appointment.setLang(Locale.GERMAN.getLanguage());
-        appointment.setVerificationToken(VerificationTokenUtil.generate());
-        appointment.getVerificationToken().setExpiryDate(LocalDateTime.now().minus(25, ChronoUnit.HOURS));
+        appointment.setState(AppointmentState.CONFIRMED);
         appointmentService.saveAppointment(appointment);
 
-        task.cancelAppointments();
+        task.sendReminder();
 
         ArgumentCaptor<MimeMessage> argument = ArgumentCaptor.forClass(MimeMessage.class);
         verify(mailSender).send(argument.capture());
-        assertEquals(argument.getValue().getSubject(), "STORNIERUNG Termin #" + appointment.getAppointmentId());
+        assertEquals(argument.getValue().getSubject(), "Terminerinnerung (#" + appointment.getAppointmentId() + ")");
     }
 }

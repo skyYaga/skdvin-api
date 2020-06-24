@@ -126,6 +126,7 @@ public class SettingsControllerTest extends AbstractSkdvinTest {
                         fieldWithPath("commonSettings.de.homepageHintTitle").description("Homepage hint title"),
                         fieldWithPath("commonSettings.de.bccMail").description("Mail address for bcc mails"),
                         fieldWithPath("commonSettings.de.selfAssignmentMode").description("Self assignment mode"),
+                        fieldWithPath("commonSettings.de.additionalReminderHint").description("Additional hint text for appointment reminder mail"),
                         fieldWithPath("commonSettings.de.faq[].question").description("FAQ question"),
                         fieldWithPath("commonSettings.de.faq[].answer").description("FAQ answer")
                 ), responseFields(
@@ -150,6 +151,7 @@ public class SettingsControllerTest extends AbstractSkdvinTest {
                         fieldWithPath("payload.commonSettings.de.homepageHintTitle").description("Homepage hint title"),
                         fieldWithPath("payload.commonSettings.de.bccMail").description("Mail address for bcc mails"),
                         fieldWithPath("payload.commonSettings.de.selfAssignmentMode").description("Self assignment mode"),
+                        fieldWithPath("payload.commonSettings.de.additionalReminderHint").description("Additional hint text for appointment reminder mail"),
                         fieldWithPath("payload.commonSettings.de.faq[].id").description("FAQ entry id"),
                         fieldWithPath("payload.commonSettings.de.faq[].question").description("FAQ question"),
                         fieldWithPath("payload.commonSettings.de.faq[].answer").description("FAQ answer"),
@@ -209,6 +211,7 @@ public class SettingsControllerTest extends AbstractSkdvinTest {
                         fieldWithPath("commonSettings.de.homepageHintTitle").description("Homepage hint title"),
                         fieldWithPath("commonSettings.de.bccMail").description("Mail address for bcc mails"),
                         fieldWithPath("commonSettings.de.selfAssignmentMode").description("Self assignment mode"),
+                        fieldWithPath("commonSettings.de.additionalReminderHint").description("Additional hint text for appointment reminder mail"),
                         fieldWithPath("commonSettings.de.faq[].question").description("FAQ question"),
                         fieldWithPath("commonSettings.de.faq[].answer").description("FAQ answer")
                 ), responseFields(
@@ -234,6 +237,7 @@ public class SettingsControllerTest extends AbstractSkdvinTest {
                         fieldWithPath("payload.commonSettings.de.homepageHintTitle").description("Homepage hint title"),
                         fieldWithPath("payload.commonSettings.de.bccMail").description("Mail address for bcc mails"),
                         fieldWithPath("payload.commonSettings.de.selfAssignmentMode").description("Self assignment mode"),
+                        fieldWithPath("payload.commonSettings.de.additionalReminderHint").description("Additional hint text for appointment reminder mail"),
                         fieldWithPath("payload.commonSettings.de.faq[].id").description("FAQ entry id"),
                         fieldWithPath("payload.commonSettings.de.faq[].question").description("FAQ question"),
                         fieldWithPath("payload.commonSettings.de.faq[].answer").description("FAQ answer"),
@@ -302,6 +306,7 @@ public class SettingsControllerTest extends AbstractSkdvinTest {
                         fieldWithPath("payload.commonSettings.de.homepageHintTitle").description("Homepage hint title"),
                         fieldWithPath("payload.commonSettings.de.bccMail").description("Mail address for bcc mails"),
                         fieldWithPath("payload.commonSettings.de.selfAssignmentMode").description("Self assignment mode"),
+                        fieldWithPath("payload.commonSettings.de.additionalReminderHint").description("Additional hint text for appointment reminder mail"),
                         fieldWithPath("payload.commonSettings.de.faq[].id").description("FAQ entry id"),
                         fieldWithPath("payload.commonSettings.de.faq[].question").description("FAQ question"),
                         fieldWithPath("payload.commonSettings.de.faq[].answer").description("FAQ answer"),
@@ -349,6 +354,7 @@ public class SettingsControllerTest extends AbstractSkdvinTest {
                         fieldWithPath("payload.homepageHintTitle").description("Homepage hint title"),
                         fieldWithPath("payload.bccMail").description("Mail address for bcc mails"),
                         fieldWithPath("payload.selfAssignmentMode").description("Self assignment mode"),
+                        fieldWithPath("payload.additionalReminderHint").description("Additional hint text for appointment reminder mail"),
                         fieldWithPath("payload.faq[].id").description("FAQ entry id"),
                         fieldWithPath("payload.faq[].question").description("FAQ question"),
                         fieldWithPath("payload.faq[].answer").description("FAQ answer"),
@@ -385,6 +391,7 @@ public class SettingsControllerTest extends AbstractSkdvinTest {
                         fieldWithPath("payload.homepageHintTitle").description("Homepage hint title"),
                         fieldWithPath("payload.bccMail").description("Mail address for bcc mails"),
                         fieldWithPath("payload.selfAssignmentMode").description("Self assignment mode"),
+                        fieldWithPath("payload.additionalReminderHint").description("Additional hint text for appointment reminder mail"),
                         fieldWithPath("payload.faq[].id").description("FAQ entry id"),
                         fieldWithPath("payload.faq[].question").description("FAQ question"),
                         fieldWithPath("payload.faq[].answer").description("FAQ answer"),

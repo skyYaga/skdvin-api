@@ -10,7 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.MessageSource;
-import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.thymeleaf.TemplateEngine;
@@ -56,7 +55,7 @@ public class EmailService implements IEmailService {
 
         Map<String, Object> contextVariables = new HashMap<>();
         contextVariables.put("tokenurl", baseurl + String.format(APPOINTMENT_CONFIRMATION_ENDPOINT,
-                LocaleContextHolder.getLocale().getLanguage(),
+                appointment.getLang(),
                 appointment.getAppointmentId(),
                 appointment.getVerificationToken().getToken()));
 
@@ -123,13 +122,28 @@ public class EmailService implements IEmailService {
         mailSender.send(mimeMessage);
     }
 
+    @Override
+    public void sendAppointmentReminder(Appointment appointment) throws MessagingException {
+        MimeMessage mimeMessage = mailSender.createMimeMessage();
+
+        String subject = "appointment.reminder.subject";
+        String template = "html/appointment-reminder";
+
+        prepareAppointmentMessage(mimeMessage, appointment, subject, template, null);
+
+        LOG.info("Sending appointment reminder mail to {}", appointment.getCustomer().getEmail());
+
+        mailSender.send(mimeMessage);
+    }
+
     private void prepareAppointmentMessage(MimeMessage mimeMessage, Appointment appointment, String subject, String template, Map<String, Object> contextVariables) throws MessagingException {
-        Locale locale = LocaleContextHolder.getLocale();
+        Locale locale = new Locale(appointment.getLang());
         CommonSettings settings = settingsService.getCommonSettingsByLanguage(locale.getLanguage());
 
         Context ctx = new Context(locale);
         ctx.setVariable("appointment", appointment);
         ctx.setVariable("settings", settings);
+        ctx.setVariable("baseurl", baseurl);
 
         if (contextVariables != null) {
             contextVariables.forEach(ctx::setVariable);
