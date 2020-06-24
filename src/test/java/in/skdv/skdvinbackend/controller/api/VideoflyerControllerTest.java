@@ -325,6 +325,9 @@ public class VideoflyerControllerTest extends AbstractSkdvinTest {
                 .andExpect(jsonPath("$.success", is(true)))
                 .andExpect(jsonPath("$.payload.assignments." + LocalDate.now() + ".assigned", is(true)))
                 .andDo(document("videoflyer/get-videoflyer",
+                        pathParameters(
+                                parameterWithName("id").description("The id of the requested videoflyer")
+                        ),
                         responseFields(
                                 fieldWithPath("success").description("true when the request was successful"),
                                 fieldWithPath("message").description("message if there was an error"),

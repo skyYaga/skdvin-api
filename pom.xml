@@ -139,8 +139,6 @@
 							<goal>process-asciidoc</goal>
 						</goals>
 						<configuration>
-							<backend>html</backend>
-							<doctype>book</doctype>
 							<attributes>
 								<project-version>${project.version}</project-version>
 							</attributes>
