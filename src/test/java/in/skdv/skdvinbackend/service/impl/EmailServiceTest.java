@@ -157,6 +157,23 @@ public class EmailServiceTest extends AbstractSkdvinTest {
     }
 
     @Test
+    public void testAppointmentReminderMail() throws MessagingException, IOException {
+        doNothing().when(mailSender).send(Mockito.any(MimeMessage.class));
+
+        Appointment appointment = ModelMockHelper.createSingleAppointment();
+
+        emailService.sendAppointmentReminder(appointment);
+
+        ArgumentCaptor<MimeMessage> argument = ArgumentCaptor.forClass(MimeMessage.class);
+        verify(mailSender).send(argument.capture());
+
+        assertEquals(FROM_EMAIL, argument.getValue().getFrom()[0].toString());
+        assertEquals(appointment.getCustomer().getEmail(), argument.getValue().getAllRecipients()[0].toString());
+
+        assertFalse(argument.getValue().getContent().toString().isEmpty());
+    }
+
+    @Test
     public void testBccAndReplyToMail() throws MessagingException {
         CommonSettings commonSettings = new CommonSettings();
         commonSettings.setBccMail(BCC_EMAIL);

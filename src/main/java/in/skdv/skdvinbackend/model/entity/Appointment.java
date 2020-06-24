@@ -7,8 +7,8 @@ public class Appointment extends AbstractAppointment {
 
     @Id
     private int appointmentId;
-
     private VerificationToken verificationToken;
+    private boolean reminderSent = false;
 
 
     public int getAppointmentId() {
@@ -25,5 +25,13 @@ public class Appointment extends AbstractAppointment {
 
     public void setVerificationToken(VerificationToken verificationToken) {
         this.verificationToken = verificationToken;
+    }
+
+    public boolean isReminderSent() {
+        return reminderSent;
+    }
+
+    public void setReminderSent(boolean reminderSent) {
+        this.reminderSent = reminderSent;
     }
 }

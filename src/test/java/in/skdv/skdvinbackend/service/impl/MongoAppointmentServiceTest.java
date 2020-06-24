@@ -509,5 +509,43 @@ public class MongoAppointmentServiceTest extends AbstractSkdvinTest {
         assertNotNull(groupSlots);
         assertEquals(0, groupSlots.size());
     }
+    
+    @Test
+    public void testFindAppointmentsWithinNextWeek() {
+        jumpdayRepository.save(ModelMockHelper.createJumpday(LocalDate.now().minusDays(1)));
+        jumpdayRepository.save(ModelMockHelper.createJumpday(LocalDate.now().plusDays(5)));
+        jumpdayRepository.save(ModelMockHelper.createJumpday(LocalDate.now().plusDays(10)));
 
+        Appointment pastAppointment = ModelMockHelper.createSingleAppointment();
+        Appointment todayAppointment = ModelMockHelper.createSingleAppointment();
+        Appointment thisWeekAppointment = ModelMockHelper.createSingleAppointment();
+        Appointment futureAppointment = ModelMockHelper.createSingleAppointment();
+
+        pastAppointment.setDate(LocalDateTime.of(LocalDate.now().minusDays(1), LocalTime.of(10, 0)));
+        thisWeekAppointment.setDate(LocalDateTime.of(LocalDate.now().plusDays(5), LocalTime.of(10, 0)));
+        futureAppointment.setDate(LocalDateTime.of(LocalDate.now().plusDays(10), LocalTime.of(10, 0)));
+
+        appointmentService.saveAppointment(pastAppointment);
+        appointmentService.saveAppointment(todayAppointment);
+        appointmentService.saveAppointment(thisWeekAppointment);
+        appointmentService.saveAppointment(futureAppointment);
+
+        List<Appointment> appointmentsWithinNextWeek = appointmentService.findAppointmentsWithinNextWeek();
+
+        assertEquals(2, appointmentsWithinNextWeek.size());
+        assertEquals(LocalDateTime.of(LocalDate.now(), LocalTime.of(10, 0)), appointmentsWithinNextWeek.get(0).getDate());
+        assertEquals(LocalDateTime.of(LocalDate.now().plusDays(5), LocalTime.of(10, 0)), appointmentsWithinNextWeek.get(1).getDate());
+    }
+
+
+    @Test
+    public void testReminderSent() {
+        GenericResult<Appointment> savedAppointment = appointmentService.saveAppointment(ModelMockHelper.createSingleAppointment());
+
+        appointmentService.reminderSent(savedAppointment.getPayload());
+
+        Appointment appointment = appointmentService.findAppointment(savedAppointment.getPayload().getAppointmentId());
+
+        assertTrue(appointment.isReminderSent());
+    }
 }

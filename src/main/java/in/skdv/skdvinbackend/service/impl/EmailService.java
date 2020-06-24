@@ -123,6 +123,20 @@ public class EmailService implements IEmailService {
         mailSender.send(mimeMessage);
     }
 
+    @Override
+    public void sendAppointmentReminder(Appointment appointment) throws MessagingException {
+        MimeMessage mimeMessage = mailSender.createMimeMessage();
+
+        String subject = "appointment.reminder.subject";
+        String template = "html/appointment-reminder";
+
+        prepareAppointmentMessage(mimeMessage, appointment, subject, template, null);
+
+        LOG.info("Sending appointment reminder mail to {}", appointment.getCustomer().getEmail());
+
+        mailSender.send(mimeMessage);
+    }
+
     private void prepareAppointmentMessage(MimeMessage mimeMessage, Appointment appointment, String subject, String template, Map<String, Object> contextVariables) throws MessagingException {
         Locale locale = LocaleContextHolder.getLocale();
         CommonSettings settings = settingsService.getCommonSettingsByLanguage(locale.getLanguage());
@@ -130,6 +144,7 @@ public class EmailService implements IEmailService {
         Context ctx = new Context(locale);
         ctx.setVariable("appointment", appointment);
         ctx.setVariable("settings", settings);
+        ctx.setVariable("baseurl", baseurl);
 
         if (contextVariables != null) {
             contextVariables.forEach(ctx::setVariable);
