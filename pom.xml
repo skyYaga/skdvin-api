@@ -4,7 +4,7 @@
 
 	<groupId>in.skdv</groupId>
 	<artifactId>skdvin-api</artifactId>
-	<version>1.0.8</version>
+	<version>1.0.9</version>
 	<packaging>jar</packaging>
 
 	<name>skdvin-api</name>
