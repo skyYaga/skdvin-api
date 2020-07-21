@@ -11,7 +11,7 @@ spring:
           issuer-uri: ${AUTH0_ISSUER:}
   data:
     mongodb:
-      uri: ${MONGODB_URI:mongodb://localhost/test}
+      uri: ${DB_URI:mongodb://localhost/test}
   mail:
     default-encoding: UTF-8
     host: ${MAIL_HOST:}
