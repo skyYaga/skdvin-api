@@ -182,6 +182,7 @@ public class MongoJumpdayService implements IJumpdayService {
         for (Slot slot : jumpday.getSlots()) {
             if (slot.getTandemTotal() < slot.getPicOrVidTotal() ||
                     slot.getTandemTotal() < slot.getPicAndVidTotal() ||
+                    slot.getPicOrVidTotal() < slot.getPicAndVidTotal() ||
                     slot.getTandemTotal() < slot.getHandcamTotal()) {
                 return true;
             }
