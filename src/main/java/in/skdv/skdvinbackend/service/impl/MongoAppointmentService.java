@@ -315,8 +315,13 @@ public class MongoAppointmentService implements IAppointmentService {
             return slot.getTandemAvailable() >= appointment.getTandem()
                     && slot.getPicOrVidAvailable() >= appointment.getPicOrVid()
                     && slot.getPicAndVidAvailable() >= appointment.getPicAndVid()
-                    && slot.getHandcamAvailable() >= appointment.getHandcam();
+                    && slot.getHandcamAvailable() >= appointment.getHandcam()
+                    && enoughCombinedSlotsAvailable(slot, appointment);
         }
         return false;
+    }
+
+    private boolean enoughCombinedSlotsAvailable(Slot slot, Appointment appointment) {
+        return slot.getPicOrVidAvailable() >= appointment.getPicAndVid() + appointment.getPicOrVid();
     }
 }

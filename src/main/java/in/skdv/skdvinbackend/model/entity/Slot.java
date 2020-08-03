@@ -117,6 +117,11 @@ public class Slot {
         return slotQuery.getTandem() <= getTandemAvailable() &&
                 slotQuery.getPicAndVid() <= getPicAndVidAvailable() &&
                 slotQuery.getPicOrVid() <= getPicOrVidAvailable() &&
-                slotQuery.getHandcam() <= getHandcamAvailable();
+                slotQuery.getHandcam() <= getHandcamAvailable() &&
+                enoughCombinedSlotsAvailable(slotQuery);
+    }
+
+    private boolean enoughCombinedSlotsAvailable(SlotQuery slotQuery) {
+        return slotQuery.getPicAndVid() + slotQuery.getPicOrVid() <= getPicOrVidAvailable();
     }
 }
