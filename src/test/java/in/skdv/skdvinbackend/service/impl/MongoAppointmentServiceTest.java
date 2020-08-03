@@ -191,6 +191,16 @@ public class MongoAppointmentServiceTest extends AbstractSkdvinTest {
     }
 
     @Test
+    public void testSaveAppointment_PicAndVid_MoreCombinedVideoSlotsThanAvailable() {
+        Appointment appointment = ModelMockHelper.createAppointment(4, 2, 1, 0);
+
+        GenericResult<Appointment> savedAppointment = appointmentService.saveAppointment(appointment);
+
+        assertFalse(savedAppointment.isSuccess());
+        assertEquals(ErrorMessage.JUMPDAY_NO_FREE_SLOTS.toString(), savedAppointment.getMessage());
+    }
+
+    @Test
     public void testFindAppointment() {
         GenericResult<Appointment> appointment = appointmentService.saveAppointment(ModelMockHelper.createSecondAppointment());
         appointmentService.saveAppointment(ModelMockHelper.createSingleAppointment());
@@ -375,6 +385,17 @@ public class MongoAppointmentServiceTest extends AbstractSkdvinTest {
     @Test
     public void testFindFreeSlots_TooManyVids() {
         SlotQuery slotQuery = new SlotQuery(4, 4, 0, 0);
+
+        GenericResult<List<FreeSlot>> freeSlots = appointmentService.findFreeSlots(slotQuery);
+
+        assertFalse(freeSlots.isSuccess());
+        assertNull(freeSlots.getPayload());
+        assertEquals(ErrorMessage.APPOINTMENT_NO_FREE_SLOTS.toString(), freeSlots.getMessage());
+    }
+
+    @Test
+    public void testFindFreeSlots_TooManyCombinedPicVids() {
+        SlotQuery slotQuery = new SlotQuery(4, 2, 1, 0);
 
         GenericResult<List<FreeSlot>> freeSlots = appointmentService.findFreeSlots(slotQuery);
 
