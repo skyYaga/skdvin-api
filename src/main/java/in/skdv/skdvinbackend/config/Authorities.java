@@ -33,4 +33,7 @@ public final class Authorities {
 
     public static final String TANDEMMASTER = "SCOPE_tandemmaster";
     public static final String VIDEOFLYER = "SCOPE_videoflyer";
+
+    public static final String READ_USERS = "SCOPE_read:users";
+
 }

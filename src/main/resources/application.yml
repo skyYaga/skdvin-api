@@ -31,6 +31,10 @@ spring:
 
 auth0:
   audience: ${AUTH0_AUDIENCE:}
+  management:
+    domain: ${AUTH0_MANAGEMENT_DOMAIN:}
+    client-id: ${AUTH0_MANAGEMENT_CLIENT_ID:}
+    client-secret: ${AUTH0_MANAGEMENT_CLIENT_SECRET:}
 
 skdvin:
   baseurl: ${SKDVIN_BASEURL:}

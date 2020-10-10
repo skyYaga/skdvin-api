@@ -26,8 +26,8 @@
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<java.version>11</java.version>
 		<modelmapper.version>2.3.8</modelmapper.version>
-		<nimbus-jose-jwt.version>9.0.1</nimbus-jose-jwt.version>
 		<sentry-logback.version>1.7.30</sentry-logback.version>
+		<auth0.version>1.22.0</auth0.version>
 	</properties>
 
 	<dependencies>
@@ -73,12 +73,6 @@
 		</dependency>
 
 		<dependency>
-			<groupId>com.nimbusds</groupId>
-			<artifactId>nimbus-jose-jwt</artifactId>
-			<version>${nimbus-jose-jwt.version}</version>
-		</dependency>
-
-		<dependency>
 			<groupId>org.modelmapper</groupId>
 			<artifactId>modelmapper</artifactId>
 			<version>${modelmapper.version}</version>
@@ -97,6 +91,13 @@
 			<groupId>io.sentry</groupId>
 			<artifactId>sentry-logback</artifactId>
 			<version>${sentry-logback.version}</version>
+		</dependency>
+
+
+		<dependency>
+			<groupId>com.auth0</groupId>
+			<artifactId>auth0</artifactId>
+			<version>${auth0.version}</version>
 		</dependency>
 
 		<dependency>
