@@ -38,7 +38,6 @@ public class Auth0UserService implements IUserService {
             returnList.forEach(this::retrieveRoles);
             return returnList;
         } catch (Auth0Exception e) {
-            LOG.error("Error retrieving users from auth0", e);
             throw new AuthConnectionException("Error retrieving users from auth0", e);
         }
     }
@@ -60,7 +59,6 @@ public class Auth0UserService implements IUserService {
             RolesPage rolesPage = managementAPI.users().listRoles(user.getUserId(), new PageFilter()).execute();
             user.setRoles(rolesPage.getItems().stream().map(Role::getName).collect(Collectors.toList()));
         } catch (Auth0Exception e) {
-            LOG.error("Error retrieving roles from auth0", e);
             throw new AuthConnectionException("Error retrieving roles from auth0", e);
         }
     }
