@@ -1,5 +1,6 @@
 package in.skdv.skdvinbackend;
 
+import com.auth0.client.mgmt.ManagementAPI;
 import org.junit.Before;
 import org.mockito.Mockito;
 import org.mockito.stubbing.Answer;
@@ -19,6 +20,9 @@ public abstract class AbstractSkdvinTest {
 
     @MockBean
     protected JwtDecoder jwtDecoder;
+
+    @MockBean
+    public ManagementAPI managementAPI;
 
     @Before
     public void initJwtMock() {
