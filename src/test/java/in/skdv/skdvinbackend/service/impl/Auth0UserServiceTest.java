@@ -93,7 +93,7 @@ public class Auth0UserServiceTest {
         RuntimeException exception = assertThrows(RuntimeException.class, () -> auth0UserService.getUsers());
 
         // Assert
-        assertEquals("com.auth0.exception.Auth0Exception: Auth0 not available", exception.getMessage());
+        assertEquals("Error retrieving roles from auth0", exception.getMessage());
     }
 
     @Test
@@ -112,7 +112,7 @@ public class Auth0UserServiceTest {
         RuntimeException exception = assertThrows(RuntimeException.class, () -> auth0UserService.getUsers());
 
         // Assert
-        assertEquals("com.auth0.exception.Auth0Exception: Auth0 not available", exception.getMessage());
+        assertEquals("Error retrieving users from auth0", exception.getMessage());
     }
 
 

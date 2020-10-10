@@ -8,6 +8,7 @@ import com.auth0.json.mgmt.Role;
 import com.auth0.json.mgmt.RolesPage;
 import com.auth0.json.mgmt.users.User;
 import com.auth0.json.mgmt.users.UsersPage;
+import in.skdv.skdvinbackend.exception.AuthConnectionException;
 import in.skdv.skdvinbackend.model.dto.UserDTO;
 import in.skdv.skdvinbackend.service.IUserService;
 import org.slf4j.Logger;
@@ -38,7 +39,7 @@ public class Auth0UserService implements IUserService {
             return returnList;
         } catch (Auth0Exception e) {
             LOG.error("Error retrieving users from auth0", e);
-            throw new RuntimeException(e);
+            throw new AuthConnectionException("Error retrieving users from auth0", e);
         }
     }
 
@@ -60,7 +61,7 @@ public class Auth0UserService implements IUserService {
             user.setRoles(rolesPage.getItems().stream().map(Role::getName).collect(Collectors.toList()));
         } catch (Auth0Exception e) {
             LOG.error("Error retrieving roles from auth0", e);
-            throw new RuntimeException(e);
+            throw new AuthConnectionException("Error retrieving roles from auth0", e);
         }
     }
 }
