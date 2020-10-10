@@ -26,7 +26,7 @@
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<java.version>11</java.version>
 		<modelmapper.version>2.3.8</modelmapper.version>
-		<sentry-logback.version>1.7.30</sentry-logback.version>
+		<sentry-logback.version>3.0.0</sentry-logback.version>
 		<auth0.version>1.22.0</auth0.version>
 	</properties>
 
