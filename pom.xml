@@ -27,7 +27,7 @@
 		<java.version>11</java.version>
 		<modelmapper.version>2.3.8</modelmapper.version>
 		<sentry-logback.version>1.7.30</sentry-logback.version>
-		<auth0.version>1.23.0</auth0.version>
+		<auth0.version>1.24.0</auth0.version>
 	</properties>
 
 	<dependencies>
