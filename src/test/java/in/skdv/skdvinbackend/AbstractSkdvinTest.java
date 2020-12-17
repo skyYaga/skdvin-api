@@ -4,7 +4,7 @@ import com.auth0.client.auth.AuthAPI;
 import com.auth0.client.mgmt.ManagementAPI;
 import com.auth0.exception.Auth0Exception;
 import com.auth0.json.auth.TokenHolder;
-import com.auth0.net.AuthRequest;
+import com.auth0.net.TokenRequest;
 import org.junit.Before;
 import org.mockito.Mockito;
 import org.mockito.stubbing.Answer;
@@ -37,7 +37,7 @@ public abstract class AbstractSkdvinTest {
 
     @Before
     public void setupMocks() throws Auth0Exception {
-        AuthRequest authRequest = Mockito.mock(AuthRequest.class);
+        TokenRequest authRequest = Mockito.mock(TokenRequest.class);
         TokenHolder tokenHolder = new TokenHolder();
         ReflectionTestUtils.setField(tokenHolder, "accessToken", "foo");
         Mockito.when(authAPI.requestToken(Mockito.anyString())).thenReturn(authRequest);
