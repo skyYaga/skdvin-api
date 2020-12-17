@@ -52,7 +52,7 @@ import static org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppC
 
 @ExtendWith(RestDocumentationExtension.class)
 @SpringBootTest
-public class UserControllerTest extends AbstractSkdvinTest {
+class UserControllerTest extends AbstractSkdvinTest {
 
     private MediaType contentType = new MediaType(MediaType.APPLICATION_JSON.getType(),
             MediaType.APPLICATION_JSON.getSubtype(),
@@ -81,7 +81,7 @@ public class UserControllerTest extends AbstractSkdvinTest {
     }
 
     @BeforeEach
-    public void setup(RestDocumentationContextProvider restDocumentation) {
+    void setup(RestDocumentationContextProvider restDocumentation) {
         this.mockMvc = webAppContextSetup(webApplicationContext)
                 .apply(springSecurity())
                 .apply(documentationConfiguration(restDocumentation))
@@ -96,7 +96,7 @@ public class UserControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testGetAllUsers() throws Exception {
+    void testGetAllUsers() throws Exception {
         UserDTO userDTO1 = new UserDTO("1", "foo@bar.com", Arrays.asList(
                 new RoleDTO("1", "TANDEMMASTER"),
                 new RoleDTO("2", "VIDEOFLYER"))
@@ -128,14 +128,14 @@ public class UserControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testGetAllUsers_Unauthorized() throws Exception {
+    void testGetAllUsers_Unauthorized() throws Exception {
         mockMvc.perform(get("/api/users")
                 .contentType(contentType))
                 .andExpect(status().isUnauthorized());
     }
 
     @Test
-    public void testGetRoles() throws Exception {
+    void testGetRoles() throws Exception {
         RoleDTO roleDTO1 = new RoleDTO("1", "ROLE_ADMIN");
         RoleDTO roleDTO2 = new RoleDTO("2", "ROLE_TANDEMMASTER");
         List<RoleDTO> roleList = Arrays.asList(roleDTO1, roleDTO2);
@@ -159,14 +159,14 @@ public class UserControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testGetRoles_Unauthorized() throws Exception {
+    void testGetRoles_Unauthorized() throws Exception {
         mockMvc.perform(get("/api/users/roles")
                 .contentType(contentType))
                 .andExpect(status().isUnauthorized());
     }
 
     @Test
-    public void testUpdateUser() throws Exception {
+    void testUpdateUser() throws Exception {
         UserDTO userDTO = new UserDTO("1", "foo@bar.com", Arrays.asList(
                 new RoleDTO("1", "TANDEMMASTER"),
                 new RoleDTO("2", "VIDEOFLYER"))
@@ -192,7 +192,7 @@ public class UserControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testUpdateUser_Unauthorized() throws Exception {
+    void testUpdateUser_Unauthorized() throws Exception {
         UserDTO userDTO = new UserDTO("1", "foo@bar.com", Arrays.asList(
                 new RoleDTO("1", "TANDEMMASTER"),
                 new RoleDTO("2", "VIDEOFLYER"))

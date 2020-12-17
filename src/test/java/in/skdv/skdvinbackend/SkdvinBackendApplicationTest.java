@@ -5,10 +5,10 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-public class SkdvinBackendApplicationTest extends AbstractSkdvinTest {
+class SkdvinBackendApplicationTest extends AbstractSkdvinTest {
 
 	@Test
-	public void contextLoads() {
+	void contextLoads() {
 		Assertions.assertTrue(true);
 	}
 

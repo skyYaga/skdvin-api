@@ -15,24 +15,24 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class AssignmentConverterTest {
+class AssignmentConverterTest {
 
     AssignmentConverter converter = new AssignmentConverter();
 
     @Test
-    public void testConvertToSimpleAssignment() {
+    void testConvertToSimpleAssignment() {
         SimpleAssignment simpleAssignment = converter.convertToSimpleAssignment(ModelMockHelper.createAssignment(new Tandemmaster()));
         assertNotNull(simpleAssignment);
         assertTrue(simpleAssignment.isAssigned());
     }
 
     @Test
-    public void testConvertToSimpleAssignment_Null() {
+    void testConvertToSimpleAssignment_Null() {
         assertNull(converter.convertToSimpleAssignment(null));
     }
 
     @Test
-    public void testConvertToAssignment() {
+    void testConvertToAssignment() {
         SimpleAssignment simpleAssignment = new SimpleAssignment(true);
         Tandemmaster tandemmaster = ModelMockHelper.createTandemmaster();
 
@@ -44,12 +44,12 @@ public class AssignmentConverterTest {
     }
 
     @Test
-    public void testConvertToAssignment_Null() {
+    void testConvertToAssignment_Null() {
         assertNull(converter.convertToAssignment(null, null));
     }
 
     @Test
-    public void testConvertTandemmasterAssignment() {
+    void testConvertTandemmasterAssignment() {
         Assignment<Tandemmaster> assignment = new Assignment<>();
         Tandemmaster tandemmaster = ModelMockHelper.createTandemmaster();
         assignment.setFlyer(tandemmaster);
@@ -61,12 +61,12 @@ public class AssignmentConverterTest {
     }
 
     @Test
-    public void testConvertTandemmasterAssignment_Null() {
+    void testConvertTandemmasterAssignment_Null() {
         assertNull(converter.convertToTandemmasterAssignmentDTO((Assignment<Tandemmaster>) null));
     }
 
     @Test
-    public void testConvertTandemmasterAssignmentList() {
+    void testConvertTandemmasterAssignmentList() {
         Assignment<Tandemmaster> assignment = new Assignment<>();
         Tandemmaster tandemmaster = ModelMockHelper.createTandemmaster();
         assignment.setFlyer(tandemmaster);
@@ -79,12 +79,12 @@ public class AssignmentConverterTest {
     }
 
     @Test
-    public void testConvertTandemmasterAssignmentList_Null() {
+    void testConvertTandemmasterAssignmentList_Null() {
         assertEquals(0, converter.convertToTandemmasterAssignmentDTO((List<Assignment<Tandemmaster>>) null).size());
     }
 
     @Test
-    public void testConvertVideoflyerAssignment() {
+    void testConvertVideoflyerAssignment() {
         Assignment<Videoflyer> assignment = new Assignment<>();
         Videoflyer tandemmaster = ModelMockHelper.createVideoflyer();
         assignment.setFlyer(tandemmaster);
@@ -96,12 +96,12 @@ public class AssignmentConverterTest {
     }
 
     @Test
-    public void testConvertVideoflyerAssignment_Null() {
+    void testConvertVideoflyerAssignment_Null() {
         assertNull(converter.convertToVideoflyerAssignmentDTO((Assignment<Videoflyer>) null));
     }
 
     @Test
-    public void testConvertVideoflyerAssignmentList() {
+    void testConvertVideoflyerAssignmentList() {
         Assignment<Videoflyer> assignment = new Assignment<>();
         Videoflyer tandemmaster = ModelMockHelper.createVideoflyer();
         assignment.setFlyer(tandemmaster);
@@ -114,7 +114,7 @@ public class AssignmentConverterTest {
     }
 
     @Test
-    public void testConvertVideoflyerAssignmentList_Null() {
+    void testConvertVideoflyerAssignmentList_Null() {
         assertEquals(0, converter.convertToVideoflyerAssignmentDTO((List<Assignment<Videoflyer>>) null).size());
     }
 }

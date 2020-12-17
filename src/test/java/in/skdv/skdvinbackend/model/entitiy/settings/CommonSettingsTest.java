@@ -8,10 +8,10 @@ import java.util.ArrayList;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class CommonSettingsTest {
+class CommonSettingsTest {
 
     @Test
-    public void testOrder() {
+    void testOrder() {
         CommonSettings commonSettings = new CommonSettings();
         Faq faq1 = createFaq(1);
         Faq faq2 = createFaq(2);

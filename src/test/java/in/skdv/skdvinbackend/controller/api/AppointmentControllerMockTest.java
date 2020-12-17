@@ -39,7 +39,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppContextSetup;
 
 @SpringBootTest
-public class AppointmentControllerMockTest extends AbstractSkdvinTest {
+class AppointmentControllerMockTest extends AbstractSkdvinTest {
 
     private MediaType contentType = new MediaType(MediaType.APPLICATION_JSON.getType(),
             MediaType.APPLICATION_JSON.getSubtype(),
@@ -68,13 +68,13 @@ public class AppointmentControllerMockTest extends AbstractSkdvinTest {
     }
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         this.mockMvc = webAppContextSetup(webApplicationContext)
                         .apply(springSecurity()).build();
     }
 
     @Test
-    public void testAddAppointment_InternalError() throws Exception {
+    void testAddAppointment_InternalError() throws Exception {
         Mockito.when(appointmentService.saveAppointment(Mockito.any(Appointment.class)))
                 .thenReturn(new GenericResult<>(false, ErrorMessage.APPOINTMENT_SERVICE_ERROR_MSG));
         String appointmentJson = json(ModelMockHelper.createSingleAppointment());
@@ -89,7 +89,7 @@ public class AppointmentControllerMockTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testUpdateAppointment_InternalError() throws Exception {
+    void testUpdateAppointment_InternalError() throws Exception {
         Mockito.when(appointmentService.updateAppointment(Mockito.any(Appointment.class)))
                 .thenReturn(new GenericResult<>(false, ErrorMessage.APPOINTMENT_SERVICE_ERROR_MSG));
         String appointmentJson = json(ModelMockHelper.createSingleAppointment());
@@ -104,7 +104,7 @@ public class AppointmentControllerMockTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testUpdateAppointmentState_InternalError() throws Exception {
+    void testUpdateAppointmentState_InternalError() throws Exception {
         Appointment appointment = ModelMockHelper.createSingleAppointment();
 
         Mockito.when(appointmentService.findAppointment(Mockito.any(int.class))).thenReturn(appointment);
@@ -125,7 +125,7 @@ public class AppointmentControllerMockTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testFindFreeSlots_InternalError() throws Exception {
+    void testFindFreeSlots_InternalError() throws Exception {
         Mockito.when(appointmentService.findFreeSlots(Mockito.any(SlotQuery.class)))
                 .thenReturn(new GenericResult<>(false, ErrorMessage.APPOINTMENT_SERVICE_ERROR_MSG));
 
@@ -143,7 +143,7 @@ public class AppointmentControllerMockTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testGetAppointmentsByDate_InternalError() throws Exception {
+    void testGetAppointmentsByDate_InternalError() throws Exception {
         Mockito.when(appointmentService.findAppointmentsByDay(Mockito.any(LocalDate.class)))
                 .thenReturn(null);
 

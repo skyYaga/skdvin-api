@@ -36,7 +36,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
 @SpringBootTest
-public class MongoTandemmasterServiceTest extends AbstractSkdvinTest {
+class MongoTandemmasterServiceTest extends AbstractSkdvinTest {
 
     @MockBean
     ISettingsService settingsService;
@@ -54,13 +54,13 @@ public class MongoTandemmasterServiceTest extends AbstractSkdvinTest {
     IJumpdayService jumpdayService;
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         jumpdayRepository.deleteAll();
         tandemmasterRepository.deleteAll();
     }
 
     @Test
-    public void testGetTandemmasterById() {
+    void testGetTandemmasterById() {
         Tandemmaster tandemmaster = tandemmasterRepository.save(ModelMockHelper.createTandemmaster());
         LocalDate nowPlus1 = LocalDate.now().plus(1, ChronoUnit.DAYS);
 
@@ -80,7 +80,7 @@ public class MongoTandemmasterServiceTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testGetTandemmasterByEmail() {
+    void testGetTandemmasterByEmail() {
         Tandemmaster tandemmaster1 = ModelMockHelper.createTandemmaster();
         tandemmaster1.setEmail(MockJwtDecoder.EXAMPLE_EMAIL);
 
@@ -114,24 +114,24 @@ public class MongoTandemmasterServiceTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testGetTandemmasterById_NotFound() {
+    void testGetTandemmasterById_NotFound() {
         TandemmasterDetailsDTO tandemmasterDetails = tandemmasterService.getById("99999999999");
         assertNull(tandemmasterDetails);
     }
 
     @Test
-    public void testGetTandemmasterByEmail_NotFound() {
+    void testGetTandemmasterByEmail_NotFound() {
         TandemmasterDetailsDTO tandemmasterDetails = tandemmasterService.getByEmail("foo@example.com");
         assertNull(tandemmasterDetails);
     }
 
     @Test
-    public void testAssignTandemmasterToJumpday() {
+    void testAssignTandemmasterToJumpday() {
         assignTandemmaster(ModelMockHelper.createJumpday());
     }
 
     @Test
-    public void testAssignTandemmasterToJumpday_EditTandemmaster_CheckAssignment() {
+    void testAssignTandemmasterToJumpday_EditTandemmaster_CheckAssignment() {
         assignTandemmaster(ModelMockHelper.createJumpday());
 
         GenericResult<Jumpday> jumpday = jumpdayService.findJumpday(LocalDate.now());
@@ -149,7 +149,7 @@ public class MongoTandemmasterServiceTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testAssignTandemmasterToJumpday_AlreadyAssigned() {
+    void testAssignTandemmasterToJumpday_AlreadyAssigned() {
         Jumpday jumpday = ModelMockHelper.createJumpday();
         String tandemmasterId = assignTandemmaster(jumpday);
 
@@ -165,7 +165,7 @@ public class MongoTandemmasterServiceTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testAssignTandemmasterToJumpday_TandemmasterNotFound() {
+    void testAssignTandemmasterToJumpday_TandemmasterNotFound() {
         GenericResult<Jumpday> initialResult = jumpdayService.saveJumpday(ModelMockHelper.createJumpday());
         assertTrue(initialResult.isSuccess());
 
@@ -178,7 +178,7 @@ public class MongoTandemmasterServiceTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testAssignTandemmasterToJumpday_JumpdayNotFound() {
+    void testAssignTandemmasterToJumpday_JumpdayNotFound() {
         Tandemmaster tandemmaster = tandemmasterRepository.save(ModelMockHelper.createTandemmaster());
 
         GenericResult<Void> result = tandemmasterService.assignTandemmasterToJumpday(
@@ -190,7 +190,7 @@ public class MongoTandemmasterServiceTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testAssignTandemmasterToJumpday_Remove() {
+    void testAssignTandemmasterToJumpday_Remove() {
         Jumpday jumpday = ModelMockHelper.createJumpday();
         String tandemmasterId = assignTandemmaster(jumpday);
 
@@ -204,7 +204,7 @@ public class MongoTandemmasterServiceTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testAssignTandemmasterToJumpday_Remove_NotAssigned() {
+    void testAssignTandemmasterToJumpday_Remove_NotAssigned() {
         Jumpday jumpday = ModelMockHelper.createJumpday();
         jumpdayService.saveJumpday(jumpday);
         Tandemmaster tandemmaster = tandemmasterRepository.save(ModelMockHelper.createTandemmaster());
@@ -237,7 +237,7 @@ public class MongoTandemmasterServiceTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testAssignTandemmasterToJumpday_Remove_TandemmasterNotFound() {
+    void testAssignTandemmasterToJumpday_Remove_TandemmasterNotFound() {
         GenericResult<Jumpday> initialResult = jumpdayService.saveJumpday(ModelMockHelper.createJumpday());
         assertTrue(initialResult.isSuccess());
 
@@ -250,7 +250,7 @@ public class MongoTandemmasterServiceTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testAssignTandemmasterToJumpday_Remove_JumpdayNotFound() {
+    void testAssignTandemmasterToJumpday_Remove_JumpdayNotFound() {
         Tandemmaster tandemmaster = tandemmasterRepository.save(ModelMockHelper.createTandemmaster());
 
         GenericResult<Void> result = tandemmasterService.assignTandemmasterToJumpday(
@@ -262,7 +262,7 @@ public class MongoTandemmasterServiceTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testAssignTandemmaster_Addition() {
+    void testAssignTandemmaster_Addition() {
         TandemmasterDetailsDTO tandemmasterDetails = prepareJumpdaysAndTandemmaster();
         SimpleAssignment assignmentDTO = new SimpleAssignment(true);
         tandemmasterDetails.setAssignments(Map.of(LocalDate.now(), assignmentDTO, LocalDate.now().plus(1, ChronoUnit.DAYS), assignmentDTO));
@@ -282,7 +282,7 @@ public class MongoTandemmasterServiceTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testAssignTandemmaster_FromAlldayToTime() {
+    void testAssignTandemmaster_FromAlldayToTime() {
         TandemmasterDetailsDTO tandemmasterDetails = prepareJumpdaysAndTandemmaster();
 
         saveAndCheckDayBasedAssignment(tandemmasterDetails);
@@ -291,7 +291,7 @@ public class MongoTandemmasterServiceTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testAssignTandemmaster_FromTimeToAllday() {
+    void testAssignTandemmaster_FromTimeToAllday() {
         TandemmasterDetailsDTO tandemmaster = prepareJumpdaysAndTandemmaster();
 
         saveAndCheckTimeBasedAssignment(tandemmaster);
@@ -333,7 +333,7 @@ public class MongoTandemmasterServiceTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testAssignTandemmaster_Removal() {
+    void testAssignTandemmaster_Removal() {
         TandemmasterDetailsDTO tandemmasterDetails = prepareJumpdaysAndTandemmaster();
         tandemmasterService.assignTandemmasterToJumpday(LocalDate.now(), tandemmasterDetails.getId(), new SimpleAssignment(true));
         tandemmasterService.assignTandemmasterToJumpday(LocalDate.now().plus(1, ChronoUnit.DAYS), tandemmasterDetails.getId(), new SimpleAssignment(true));
@@ -357,7 +357,7 @@ public class MongoTandemmasterServiceTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testAssignTandemmaster_Error() {
+    void testAssignTandemmaster_Error() {
         Tandemmaster tandemmaster = tandemmasterRepository.save(ModelMockHelper.createTandemmaster());
         TandemmasterConverter converter = new TandemmasterConverter();
         TandemmasterDetailsDTO tandemmasterDetails = converter.convertToDetailsDto(tandemmaster, Map.of());
@@ -370,7 +370,7 @@ public class MongoTandemmasterServiceTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testDeleteTandemmaster() {
+    void testDeleteTandemmaster() {
         String id = tandemmasterRepository.save(ModelMockHelper.createTandemmaster()).getId();
 
         tandemmasterService.delete(id);
@@ -379,7 +379,7 @@ public class MongoTandemmasterServiceTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testDeleteTandemmaster_DeletesAssignments() {
+    void testDeleteTandemmaster_DeletesAssignments() {
         TandemmasterDetailsDTO tandemmasterDetails = prepareJumpdaysAndTandemmaster();
         SimpleAssignment assignmentDTO = new SimpleAssignment(true);
         tandemmasterDetails.setAssignments(Map.of(LocalDate.now(), assignmentDTO));
@@ -398,7 +398,7 @@ public class MongoTandemmasterServiceTest extends AbstractSkdvinTest {
 
 
     @Test
-    public void testAssignTandemmaster_READONLY() {
+    void testAssignTandemmaster_READONLY() {
         CommonSettings commonSettings = new CommonSettings();
         commonSettings.setSelfAssignmentMode(SelfAssignmentMode.READONLY);
         when(settingsService.getCommonSettingsByLanguage(Locale.GERMAN.getLanguage())).thenReturn(commonSettings);
@@ -413,7 +413,7 @@ public class MongoTandemmasterServiceTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testAssignTandemmaster_Removal_NODELETE() {
+    void testAssignTandemmaster_Removal_NODELETE() {
         CommonSettings commonSettings = new CommonSettings();
         commonSettings.setSelfAssignmentMode(SelfAssignmentMode.NODELETE);
         when(settingsService.getCommonSettingsByLanguage(Locale.GERMAN.getLanguage())).thenReturn(commonSettings);
@@ -429,7 +429,7 @@ public class MongoTandemmasterServiceTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testAssignTandemmaster_RemovalNotAllday_NODELETE() {
+    void testAssignTandemmaster_RemovalNotAllday_NODELETE() {
         CommonSettings commonSettings = new CommonSettings();
         commonSettings.setSelfAssignmentMode(SelfAssignmentMode.NODELETE);
         when(settingsService.getCommonSettingsByLanguage(Locale.GERMAN.getLanguage())).thenReturn(commonSettings);
@@ -446,7 +446,7 @@ public class MongoTandemmasterServiceTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testAssignTandemmaster_RemovalNotAssigned_NODELETE() {
+    void testAssignTandemmaster_RemovalNotAssigned_NODELETE() {
         CommonSettings commonSettings = new CommonSettings();
         commonSettings.setSelfAssignmentMode(SelfAssignmentMode.NODELETE);
         when(settingsService.getCommonSettingsByLanguage(Locale.GERMAN.getLanguage())).thenReturn(commonSettings);

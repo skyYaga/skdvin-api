@@ -49,7 +49,7 @@ import static org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppC
 
 @ExtendWith(RestDocumentationExtension.class)
 @SpringBootTest
-public class SettingsControllerTest extends AbstractSkdvinTest {
+class SettingsControllerTest extends AbstractSkdvinTest {
 
     private MediaType contentType = new MediaType(MediaType.APPLICATION_JSON.getType(),
             MediaType.APPLICATION_JSON.getSubtype(),
@@ -78,7 +78,7 @@ public class SettingsControllerTest extends AbstractSkdvinTest {
     }
 
     @BeforeEach
-    public void setup(RestDocumentationContextProvider restDocumentation) {
+    void setup(RestDocumentationContextProvider restDocumentation) {
         this.mockMvc = webAppContextSetup(webApplicationContext)
                 .apply(springSecurity())
                 .apply(documentationConfiguration(restDocumentation))
@@ -89,7 +89,7 @@ public class SettingsControllerTest extends AbstractSkdvinTest {
 
 
     @Test
-    public void testCreateSettings() throws Exception {
+    void testCreateSettings() throws Exception {
         String settingsJson = json(ModelMockHelper.createSettings());
 
         mockMvc.perform(RestDocumentationRequestBuilders.post("/api/settings/")
@@ -159,7 +159,7 @@ public class SettingsControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testCreateSettings_Unauthorized() throws Exception {
+    void testCreateSettings_Unauthorized() throws Exception {
         String settingsJson = json(ModelMockHelper.createSettings());
 
         mockMvc.perform(post("/api/settings/")
@@ -169,7 +169,7 @@ public class SettingsControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testUpdateSettings() throws Exception {
+    void testUpdateSettings() throws Exception {
         Settings settings = settingsRepository.save(ModelMockHelper.createSettings());
         settings.getAdminSettings().setTandemCount(2);
         settings.getCommonSettings().get(Locale.GERMAN.getLanguage()).getDropzone().setName("Renamed DZ");
@@ -244,7 +244,7 @@ public class SettingsControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testUpdateSettings_Unauthorized() throws Exception {
+    void testUpdateSettings_Unauthorized() throws Exception {
         Settings settings = settingsRepository.save(ModelMockHelper.createSettings());
         String settingsJson = json(settings);
 
@@ -255,7 +255,7 @@ public class SettingsControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testUpdateSettings_NotFound() throws Exception {
+    void testUpdateSettings_NotFound() throws Exception {
         Settings settings = settingsRepository.save(ModelMockHelper.createSettings());
         String settingsJson = json(settings);
 
@@ -270,7 +270,7 @@ public class SettingsControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testGetSettings() throws Exception {
+    void testGetSettings() throws Exception {
         settingsRepository.save(ModelMockHelper.createSettings());
 
         mockMvc.perform(RestDocumentationRequestBuilders.get("/api/settings/")
@@ -314,7 +314,7 @@ public class SettingsControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testGetSettings_Unauthorized() throws Exception {
+    void testGetSettings_Unauthorized() throws Exception {
         String settingsJson = json(ModelMockHelper.createSettings());
 
         mockMvc.perform(get("/api/settings/")
@@ -324,7 +324,7 @@ public class SettingsControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testGetCommonSettings_EN() throws Exception {
+    void testGetCommonSettings_EN() throws Exception {
         Settings settings = ModelMockHelper.createSettings();
         CommonSettings commonSettingsEN = ModelMockHelper.createCommonSettings();
         commonSettingsEN.getDropzone().setName("Example DZ EN");
@@ -361,7 +361,7 @@ public class SettingsControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testGetCommonSettings_DE() throws Exception {
+    void testGetCommonSettings_DE() throws Exception {
         Settings settings = ModelMockHelper.createSettings();
         CommonSettings commonSettingsEN = ModelMockHelper.createCommonSettings();
         commonSettingsEN.getDropzone().setName("Example DZ EN");

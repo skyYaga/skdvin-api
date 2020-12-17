@@ -16,12 +16,12 @@ import java.util.List;
 import static in.skdv.skdvinbackend.ModelMockHelper.*;
 import static org.junit.jupiter.api.Assertions.*;
 
-public class JumpdayConverterTest {
+class JumpdayConverterTest {
 
     private JumpdayConverter converter = new JumpdayConverter();
 
     @Test
-    public void convertToDto() {
+    void convertToDto() {
         Jumpday jumpday = createJumpday();
 
         JumpdayDTO jumpdayDTO = converter.convertToDto(jumpday);
@@ -31,7 +31,7 @@ public class JumpdayConverterTest {
     }
 
     @Test
-    public void convertToDtoList() {
+    void convertToDtoList() {
         Jumpday jumpday1 = createJumpday(LocalDate.now());
         Jumpday jumpday2 = createJumpday(LocalDate.now().plusDays(1));
         List<Jumpday> jumpdays = Arrays.asList(jumpday1, jumpday2);
@@ -44,7 +44,7 @@ public class JumpdayConverterTest {
     }
 
     @Test
-    public void convertToEntity() {
+    void convertToEntity() {
         Jumpday jumpday = createJumpday();
         JumpdayDTO jumpdayDTO = converter.convertToDto(jumpday);
 
@@ -55,24 +55,24 @@ public class JumpdayConverterTest {
     }
 
     @Test
-    public void convertToDto_Null() {
+    void convertToDto_Null() {
         Jumpday jumpday = null;
         assertNull(converter.convertToDto(jumpday));
     }
 
     @Test
-    public void convertToDtoList_Null() {
+    void convertToDtoList_Null() {
         List<Jumpday> jumpdays = null;
         assertEquals(0, converter.convertToDto(jumpdays).size());
     }
 
     @Test
-    public void convertToEntity_Null() {
+    void convertToEntity_Null() {
         assertNull(converter.convertToEntity(null));
     }
 
     @Test
-    public void testConvertToDto_withAssignments() {
+    void testConvertToDto_withAssignments() {
         Jumpday jumpday = createJumpday();
         jumpday.setTandemmaster(new ArrayList<>(Collections.singletonList(createAssignment(createTandemmaster()))));
         jumpday.setVideoflyer(new ArrayList<>(Collections.singletonList(createAssignment(createVideoflyer()))));

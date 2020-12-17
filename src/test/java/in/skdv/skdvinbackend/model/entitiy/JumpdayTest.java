@@ -12,16 +12,16 @@ import java.time.LocalTime;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class JumpdayTest {
+class JumpdayTest {
 
     @Test
-    public void testAddAppointment_SlotExists() {
+    void testAddAppointment_SlotExists() {
         Jumpday jumpday = ModelMockHelper.createJumpday();
         assertTrue(jumpday.addAppointment(ModelMockHelper.createSingleAppointment()));
     }
 
     @Test
-    public void testAddAppointment_SlotNotExists() {
+    void testAddAppointment_SlotNotExists() {
         Jumpday jumpday = ModelMockHelper.createJumpday();
         Appointment singleAppointment = ModelMockHelper.createSingleAppointment();
         singleAppointment.setDate(LocalDateTime.of(LocalDate.now(), LocalTime.of(11, 0)));
@@ -29,13 +29,13 @@ public class JumpdayTest {
     }
 
     @Test
-    public void testGetSlotForAppointment_SlotExists() {
+    void testGetSlotForAppointment_SlotExists() {
         Jumpday jumpday = ModelMockHelper.createJumpday();
         assertTrue(jumpday.getSlotForAppointment(ModelMockHelper.createSingleAppointment()).isPresent());
     }
 
     @Test
-    public void testGetSlotForAppointment_SlotNotExists() {
+    void testGetSlotForAppointment_SlotNotExists() {
         Jumpday jumpday = ModelMockHelper.createJumpday();
         Appointment singleAppointment = ModelMockHelper.createSingleAppointment();
         singleAppointment.setDate(LocalDateTime.of(LocalDate.now(), LocalTime.of(11, 0)));

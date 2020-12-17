@@ -8,12 +8,12 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class SlotTest {
+class SlotTest {
 
     private Slot slot;
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         slot = new Slot();
         slot.setTandemTotal(4);
         slot.setPicOrVidTotal(2);
@@ -22,37 +22,37 @@ public class SlotTest {
     }
 
     @Test
-    public void testIsValidForQuery_Valid() {
+    void testIsValidForQuery_Valid() {
         SlotQuery query = new SlotQuery(2, 1, 1, 1);
         assertTrue(slot.isValidForQuery(query));
     }
 
     @Test
-    public void testIsValidForQuery_InvalidTandem() {
+    void testIsValidForQuery_InvalidTandem() {
         SlotQuery query = new SlotQuery(5, 1, 1, 1);
         assertFalse(slot.isValidForQuery(query));
     }
 
     @Test
-    public void testIsValidForQuery_InvalidPaV() {
+    void testIsValidForQuery_InvalidPaV() {
         SlotQuery query = new SlotQuery(2, 1, 2, 1);
         assertFalse(slot.isValidForQuery(query));
     }
 
     @Test
-    public void testIsValidForQuery_InvalidPoV() {
+    void testIsValidForQuery_InvalidPoV() {
         SlotQuery query = new SlotQuery(2, 3, 1, 1);
         assertFalse(slot.isValidForQuery(query));
     }
 
     @Test
-    public void testIsValidForQuery_InvalidHandcam() {
+    void testIsValidForQuery_InvalidHandcam() {
         SlotQuery query = new SlotQuery(2, 1, 1, 2);
         assertFalse(slot.isValidForQuery(query));
     }
 
     @Test
-    public void testPicOrVid_IsReducedWhenPicAndVidBooked() {
+    void testPicOrVid_IsReducedWhenPicAndVidBooked() {
         Appointment appointment = new Appointment();
         appointment.setPicAndVid(1);
         appointment.setPicOrVid(0);
@@ -66,7 +66,7 @@ public class SlotTest {
     }
 
     @Test
-    public void testPicAndVid_IsLessOrEqualsPicOrVidAvailable() {
+    void testPicAndVid_IsLessOrEqualsPicOrVidAvailable() {
         Appointment appointment = new Appointment();
         appointment.setPicAndVid(0);
         appointment.setPicOrVid(2);

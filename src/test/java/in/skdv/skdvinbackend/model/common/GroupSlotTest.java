@@ -7,10 +7,10 @@ import java.util.Arrays;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class GroupSlotTest {
+class GroupSlotTest {
 
     @Test
-    public void testGroupSlot() {
+    void testGroupSlot() {
         LocalTime firstTime = LocalTime.of(9, 0);
         LocalTime lastTime = LocalTime.of(11, 30);
         GroupSlot groupSlot = new GroupSlot();

@@ -22,7 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
 @ExtendWith(MockitoExtension.class)
-public class JumdayAdviceTest {
+class JumdayAdviceTest {
 
     @Mock
     private MessageSource messageSource;
@@ -30,18 +30,18 @@ public class JumdayAdviceTest {
     private AutoCloseable closeable;
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         closeable = MockitoAnnotations.openMocks(this);
         jumdayAdvice = new JumdayAdvice(messageSource);
     }
 
     @AfterEach
-    public void releaseMocks() throws Exception {
+    void releaseMocks() throws Exception {
         closeable.close();
     }
 
     @Test
-    public void jumpdayExistsHandler() {
+    void jumpdayExistsHandler() {
         JumpdayExistsException jumpdayExistsException = new JumpdayExistsException(ErrorMessage.JUMPDAY_ALREADY_EXISTS_MSG.toString());
         Mockito.when(messageSource.getMessage(Mockito.eq(jumpdayExistsException.getMessage()), Mockito.isNull(), Mockito.any()))
             .thenReturn(ErrorMessage.JUMPDAY_ALREADY_EXISTS_MSG.toString());
@@ -54,7 +54,7 @@ public class JumdayAdviceTest {
     }
 
     @Test
-    public void jumpdayInternalErrorHandler() {
+    void jumpdayInternalErrorHandler() {
         JumpdayInternalException jumpdayInternalException = new JumpdayInternalException(ErrorMessage.JUMPDAY_SERVICE_ERROR_MSG.toString());
         Mockito.when(messageSource.getMessage(Mockito.eq(jumpdayInternalException.getMessage()), Mockito.isNull(), Mockito.any()))
                 .thenReturn(ErrorMessage.JUMPDAY_SERVICE_ERROR_MSG.toString());

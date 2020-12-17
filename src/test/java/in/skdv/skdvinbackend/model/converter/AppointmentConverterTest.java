@@ -11,12 +11,12 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
-public class AppointmentConverterTest {
+class AppointmentConverterTest {
 
     private AppointmentConverter converter = new AppointmentConverter();
 
     @Test
-    public void convertToDto() {
+    void convertToDto() {
         Appointment appointment = ModelMockHelper.createSingleAppointment();
 
         AppointmentDTO appointmentDTO = converter.convertToDto(appointment);
@@ -28,7 +28,7 @@ public class AppointmentConverterTest {
     }
 
     @Test
-    public void convertToDtoList() {
+    void convertToDtoList() {
         Appointment appointment1 = ModelMockHelper.createSingleAppointment();
         Appointment appointment2 = ModelMockHelper.createSecondAppointment();
         List<Appointment> appointments = Arrays.asList(appointment1, appointment2);
@@ -41,7 +41,7 @@ public class AppointmentConverterTest {
     }
 
     @Test
-    public void convertToEntity() {
+    void convertToEntity() {
         Appointment appointment = ModelMockHelper.createSingleAppointment();
         AppointmentDTO appointmentDTO = converter.convertToDto(appointment);
 
@@ -55,19 +55,19 @@ public class AppointmentConverterTest {
     }
 
     @Test
-    public void convertToDto_Null() {
+    void convertToDto_Null() {
         Appointment appointment = null;
         assertNull(converter.convertToDto(appointment));
     }
 
     @Test
-    public void convertToDtoList_Null() {
+    void convertToDtoList_Null() {
         List<Appointment> appointments = null;
         assertEquals( 0, converter.convertToDto(appointments).size());
     }
 
     @Test
-    public void convertToEntity_Null() {
+    void convertToEntity_Null() {
         assertNull(converter.convertToEntity(null));
     }
 }

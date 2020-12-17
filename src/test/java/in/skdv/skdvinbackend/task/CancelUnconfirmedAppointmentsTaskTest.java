@@ -31,7 +31,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
 @SpringBootTest
-public class CancelUnconfirmedAppointmentsTaskTest extends AbstractSkdvinTest {
+class CancelUnconfirmedAppointmentsTaskTest extends AbstractSkdvinTest {
     private static final String FROM_EMAIL = "skdvin@example.com";
     private static final String BASE_URL = "https://example.com";
 
@@ -54,7 +54,7 @@ public class CancelUnconfirmedAppointmentsTaskTest extends AbstractSkdvinTest {
     private IEmailService emailService;
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         jumpdayRepository.deleteAll();
         jumpdayRepository.save(ModelMockHelper.createJumpday());
 
@@ -67,7 +67,7 @@ public class CancelUnconfirmedAppointmentsTaskTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testAppointmentIsCanceled() {
+    void testAppointmentIsCanceled() {
         Appointment appointment1 = ModelMockHelper.createSingleAppointment();
         Appointment appointment2 = ModelMockHelper.createSecondAppointment();
         appointment1.setVerificationToken(VerificationTokenUtil.generate());
@@ -82,7 +82,7 @@ public class CancelUnconfirmedAppointmentsTaskTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testEmailIsSend_EN() throws MessagingException {
+    void testEmailIsSend_EN() throws MessagingException {
         Appointment appointment = ModelMockHelper.createSingleAppointment();
         appointment.setLang(Locale.ENGLISH.getLanguage());
         appointment.setVerificationToken(VerificationTokenUtil.generate());
@@ -97,7 +97,7 @@ public class CancelUnconfirmedAppointmentsTaskTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testEmailIsSend_DE() throws MessagingException {
+    void testEmailIsSend_DE() throws MessagingException {
         Appointment appointment = ModelMockHelper.createSingleAppointment();
         appointment.setLang(Locale.GERMAN.getLanguage());
         appointment.setVerificationToken(VerificationTokenUtil.generate());

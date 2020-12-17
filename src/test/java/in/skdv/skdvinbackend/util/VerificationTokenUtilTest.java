@@ -9,42 +9,42 @@ import java.time.temporal.ChronoUnit;
 import static org.junit.jupiter.api.Assertions.*;
 
 
-public class VerificationTokenUtilTest {
+class VerificationTokenUtilTest {
 
     @Test
-    public void testGenerateToken() {
+    void testGenerateToken() {
         VerificationToken token = VerificationTokenUtil.generate();
         assertNotNull(token.getToken());
         assertNotNull(token.getExpiryDate());
     }
 
     @Test
-    public void testTokenIsNotExpired() {
+    void testTokenIsNotExpired() {
         VerificationToken token = VerificationTokenUtil.generate();
         assertTrue(VerificationTokenUtil.isNotExpired(token));
     }
 
     @Test
-    public void testTokenIsExpired() {
+    void testTokenIsExpired() {
         VerificationToken token = VerificationTokenUtil.generate();
         token.setExpiryDate(LocalDateTime.now().minus(25, ChronoUnit.HOURS));
         assertFalse(VerificationTokenUtil.isNotExpired(token));
     }
 
     @Test
-    public void testTokenMatches() {
+    void testTokenMatches() {
         VerificationToken token = VerificationTokenUtil.generate();
         assertTrue(VerificationTokenUtil.matches(token.getToken(), token));
     }
 
     @Test
-    public void testTokenMatchesNot() {
+    void testTokenMatchesNot() {
         VerificationToken token = VerificationTokenUtil.generate();
         assertFalse(VerificationTokenUtil.matches("foo", token));
     }
 
     @Test
-    public void testTokenIsValid() {
+    void testTokenIsValid() {
         VerificationToken token = VerificationTokenUtil.generate();
         assertTrue(VerificationTokenUtil.isValid(token.getToken(), token));
     }

@@ -25,7 +25,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 
 @SpringBootTest
-public class MongoJumpdayServiceTest extends AbstractSkdvinTest {
+class MongoJumpdayServiceTest extends AbstractSkdvinTest {
 
     @Autowired
     JumpdayRepository jumpdayRepository;
@@ -40,12 +40,12 @@ public class MongoJumpdayServiceTest extends AbstractSkdvinTest {
     IAppointmentService appointmentService;
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         jumpdayRepository.deleteAll();
     }
 
     @Test
-    public void testSaveJumpday() {
+    void testSaveJumpday() {
         Jumpday jumpday = ModelMockHelper.createJumpday();
         GenericResult<Jumpday> savedJumpday = jumpdayService.saveJumpday(jumpday);
         assertNotNull(savedJumpday);
@@ -60,7 +60,7 @@ public class MongoJumpdayServiceTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testSaveJumpday_MoreVideoThanTandemSlots() {
+    void testSaveJumpday_MoreVideoThanTandemSlots() {
         Jumpday jumpday = ModelMockHelper.createJumpday();
         jumpday.getSlots().get(0).setTandemTotal(1);
         GenericResult<Jumpday> savedJumpday = jumpdayService.saveJumpday(jumpday);
@@ -70,7 +70,7 @@ public class MongoJumpdayServiceTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testSaveJumpday_MoreAndThanOrVideoSlots() {
+    void testSaveJumpday_MoreAndThanOrVideoSlots() {
         Jumpday jumpday = ModelMockHelper.createJumpday();
         jumpday.getSlots().get(0).setPicAndVidTotal(1);
         jumpday.getSlots().get(0).setPicOrVidTotal(0);
@@ -81,7 +81,7 @@ public class MongoJumpdayServiceTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testFindJumpdayByDate() {
+    void testFindJumpdayByDate() {
         Jumpday jumpday = ModelMockHelper.createJumpday();
         GenericResult<Jumpday> result = jumpdayService.saveJumpday(jumpday);
         assertTrue(result.isSuccess());
@@ -93,7 +93,7 @@ public class MongoJumpdayServiceTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testFindJumpdayByDate_NotFound() {
+    void testFindJumpdayByDate_NotFound() {
         GenericResult<Jumpday> foundJumpday = jumpdayService.findJumpday(LocalDate.now());
         assertNotNull(foundJumpday);
         assertFalse(foundJumpday.isSuccess());
@@ -102,7 +102,7 @@ public class MongoJumpdayServiceTest extends AbstractSkdvinTest {
 
 
     @Test
-    public void testFindJumpdays() {
+    void testFindJumpdays() {
         Jumpday jumpday1 = ModelMockHelper.createJumpday();
         Jumpday jumpday2 = ModelMockHelper.createJumpday();
         jumpday2.setDate(LocalDate.now().plusDays(1));
@@ -119,7 +119,7 @@ public class MongoJumpdayServiceTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testFindJumpdays_empty() {
+    void testFindJumpdays_empty() {
         GenericResult<List<Jumpday>> jumpdays = jumpdayService.findJumpdays();
         assertNotNull(jumpdays);
         assertTrue(jumpdays.isSuccess());
@@ -127,7 +127,7 @@ public class MongoJumpdayServiceTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testUpdateJumpday() {
+    void testUpdateJumpday() {
         GenericResult<Jumpday> initialResult = jumpdayService.saveJumpday(ModelMockHelper.createJumpday());
         assertTrue(initialResult.isSuccess());
         Jumpday changedJumpday = initialResult.getPayload();
@@ -142,7 +142,7 @@ public class MongoJumpdayServiceTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testUpdateJumpday_NotExisting() {
+    void testUpdateJumpday_NotExisting() {
         Jumpday jumpday = ModelMockHelper.createJumpday();
         jumpday.getSlots().get(0).setTandemTotal(2);
         jumpday.setDate(LocalDate.now().plus(1, ChronoUnit.YEARS));
@@ -155,7 +155,7 @@ public class MongoJumpdayServiceTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testUpdateJumpday_DeleteSlot() {
+    void testUpdateJumpday_DeleteSlot() {
         GenericResult<Jumpday> initialResult = jumpdayService.saveJumpday(ModelMockHelper.createJumpday());
         assertTrue(initialResult.isSuccess());
         Jumpday changedJumpday = initialResult.getPayload();
@@ -170,7 +170,7 @@ public class MongoJumpdayServiceTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testUpdateJumpday_AddSlot() {
+    void testUpdateJumpday_AddSlot() {
         GenericResult<Jumpday> initialResult = jumpdayService.saveJumpday(ModelMockHelper.createJumpday());
         assertTrue(initialResult.isSuccess());
         Jumpday changedJumpday = initialResult.getPayload();
@@ -191,7 +191,7 @@ public class MongoJumpdayServiceTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testUpdateJumpday_RemoveSlotWithAppointment() {
+    void testUpdateJumpday_RemoveSlotWithAppointment() {
         GenericResult<Jumpday> initialResult = jumpdayService.saveJumpday(ModelMockHelper.createJumpday());
         assertTrue(initialResult.isSuccess());
         GenericResult<Appointment> appointmentResult = appointmentService.saveAppointment(ModelMockHelper.createSingleAppointment());
@@ -208,7 +208,7 @@ public class MongoJumpdayServiceTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testUpdateJumpday_ReduceTandemCountWithAppointments() {
+    void testUpdateJumpday_ReduceTandemCountWithAppointments() {
         GenericResult<Jumpday> initialResult = jumpdayService.saveJumpday(ModelMockHelper.createJumpday());
         assertTrue(initialResult.isSuccess());
         GenericResult<Appointment> appointmentResult =
@@ -226,7 +226,7 @@ public class MongoJumpdayServiceTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testUpdateJumpday_MoreVideoThanTandemSlots() {
+    void testUpdateJumpday_MoreVideoThanTandemSlots() {
         GenericResult<Jumpday> initialResult = jumpdayService.saveJumpday(ModelMockHelper.createJumpday());
         assertTrue(initialResult.isSuccess());
         Jumpday changedJumpday = initialResult.getPayload();
@@ -241,7 +241,7 @@ public class MongoJumpdayServiceTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testUpdateJumpday_MoreAndThanOrVideoSlots() {
+    void testUpdateJumpday_MoreAndThanOrVideoSlots() {
         GenericResult<Jumpday> initialResult = jumpdayService.saveJumpday(ModelMockHelper.createJumpday());
         assertTrue(initialResult.isSuccess());
         Jumpday changedJumpday = initialResult.getPayload();
@@ -257,7 +257,7 @@ public class MongoJumpdayServiceTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testDeleteJumpday() {
+    void testDeleteJumpday() {
         GenericResult<Jumpday> initialResult = jumpdayService.saveJumpday(ModelMockHelper.createJumpday());
         assertTrue(initialResult.isSuccess());
 
@@ -268,7 +268,7 @@ public class MongoJumpdayServiceTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testDeleteJumpday_AppointmentsExist() {
+    void testDeleteJumpday_AppointmentsExist() {
         GenericResult<Jumpday> initialResult = jumpdayService.saveJumpday(ModelMockHelper.createJumpday());
         assertTrue(initialResult.isSuccess());
         GenericResult<Appointment> appointmentResult = appointmentService.saveAppointment(ModelMockHelper.createSingleAppointment());
@@ -282,7 +282,7 @@ public class MongoJumpdayServiceTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testDeleteJumpday_InvalidJumpday() {
+    void testDeleteJumpday_InvalidJumpday() {
         Jumpday jumpday = ModelMockHelper.createJumpday();
         jumpday.setDate(LocalDate.now().plus(1, ChronoUnit.YEARS));
 

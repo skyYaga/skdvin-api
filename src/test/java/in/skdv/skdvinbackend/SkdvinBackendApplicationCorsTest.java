@@ -14,10 +14,10 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class SkdvinBackendApplicationCorsTest {
+class SkdvinBackendApplicationCorsTest {
 
     @Test
-    public void testCorsMapping() {
+    void testCorsMapping() {
         String origin = "http://localhost:8080";
         ApplicationConfig config = new ApplicationConfig();
 		ReflectionTestUtils.setField(config, "corsEnabled", true);

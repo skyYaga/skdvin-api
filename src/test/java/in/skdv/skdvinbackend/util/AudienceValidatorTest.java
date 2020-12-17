@@ -8,18 +8,18 @@ import java.util.Collections;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class AudienceValidatorTest {
+class AudienceValidatorTest {
 
     private Jwt jwt = createJwt();
 
     @Test
-    public void testValidator_Valid() {
+    void testValidator_Valid() {
         AudienceValidator audienceValidator = new AudienceValidator("foo");
         assertFalse(audienceValidator.validate(jwt).hasErrors());
     }
 
     @Test
-    public void testValidator_Invalid() {
+    void testValidator_Invalid() {
         AudienceValidator audienceValidator = new AudienceValidator("bar");
         assertTrue(audienceValidator.validate(jwt).hasErrors());
     }

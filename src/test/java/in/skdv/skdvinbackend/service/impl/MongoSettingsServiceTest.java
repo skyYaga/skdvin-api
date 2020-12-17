@@ -19,7 +19,7 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
-public class MongoSettingsServiceTest extends AbstractSkdvinTest {
+class MongoSettingsServiceTest extends AbstractSkdvinTest {
 
     @Autowired
     private ISettingsService settingsService;
@@ -28,12 +28,12 @@ public class MongoSettingsServiceTest extends AbstractSkdvinTest {
     private SettingsRepository settingsRepository;
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         settingsRepository.deleteAll();
     }
 
     @Test
-    public void testAddSettings() {
+    void testAddSettings() {
         Settings settings = ModelMockHelper.createSettings();
 
         Settings saved = settingsService.saveSettings(settings);
@@ -44,7 +44,7 @@ public class MongoSettingsServiceTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testAddSettings_OverridesFirst() {
+    void testAddSettings_OverridesFirst() {
         settingsService.saveSettings(ModelMockHelper.createSettings());
         settingsService.saveSettings(ModelMockHelper.createSettings());
 
@@ -52,7 +52,7 @@ public class MongoSettingsServiceTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testAddSettings_secondLocale() {
+    void testAddSettings_secondLocale() {
         Settings settings = settingsService.saveSettings(ModelMockHelper.createSettings());
         settings.getCommonSettings().put(Locale.ENGLISH.getLanguage(), ModelMockHelper.createCommonSettings());
         settingsService.saveSettings(settings);
@@ -64,7 +64,7 @@ public class MongoSettingsServiceTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testGetSettings() {
+    void testGetSettings() {
         Settings settings = ModelMockHelper.createSettings();
         settingsService.saveSettings(settings);
 
@@ -74,14 +74,14 @@ public class MongoSettingsServiceTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testGetSettings_NullIfNotFound() {
+    void testGetSettings_NullIfNotFound() {
         Settings loadedSettings = settingsService.getSettings();
 
         assertNull(loadedSettings);
     }
 
     @Test
-    public void testGetAdminSettings() {
+    void testGetAdminSettings() {
         Settings settings = saveExampleSettings();
 
         AdminSettings adminSettings = settingsService.getAdminSettings();
@@ -91,7 +91,7 @@ public class MongoSettingsServiceTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testGetCommonSettings() {
+    void testGetCommonSettings() {
         Settings settings = saveExampleSettings();
 
         Map<String, CommonSettings> commonSettings = settingsService.getCommonSettings();
@@ -102,21 +102,21 @@ public class MongoSettingsServiceTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testGetAdminSettings_Null() {
+    void testGetAdminSettings_Null() {
         AdminSettings adminSettings = settingsService.getAdminSettings();
 
         assertNull(adminSettings);
     }
 
     @Test
-    public void testGetCommonSettings_Empty() {
+    void testGetCommonSettings_Empty() {
         Map<String, CommonSettings> commonSettings = settingsService.getCommonSettings();
 
         assertEquals(0, commonSettings.size());
     }
 
     @Test
-    public void testGetCommonSettingsByLocale() {
+    void testGetCommonSettingsByLocale() {
         Settings settings = saveExampleSettings();
 
         CommonSettings commonSettings = settingsService.getCommonSettingsByLanguage(Locale.GERMAN.getLanguage());
@@ -125,7 +125,7 @@ public class MongoSettingsServiceTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testGetCommonSettingsByLocale_DefaultIfNotFound() {
+    void testGetCommonSettingsByLocale_DefaultIfNotFound() {
         Settings settings = saveExampleSettings();
 
         CommonSettings commonSettings = settingsService.getCommonSettingsByLanguage(Locale.ENGLISH.getLanguage());

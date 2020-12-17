@@ -37,7 +37,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppContextSetup;
 
 @SpringBootTest
-public class JumpdayControllerMockTest extends AbstractSkdvinTest {
+class JumpdayControllerMockTest extends AbstractSkdvinTest {
 
     private MediaType contentType = new MediaType(MediaType.APPLICATION_JSON.getType(),
             MediaType.APPLICATION_JSON.getSubtype(),
@@ -66,13 +66,13 @@ public class JumpdayControllerMockTest extends AbstractSkdvinTest {
     }
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         this.mockMvc = webAppContextSetup(webApplicationContext)
                         .apply(springSecurity()).build();
     }
 
     @Test
-    public void testAddJumpday_InternalError() throws Exception {
+    void testAddJumpday_InternalError() throws Exception {
         Mockito.when(jumpdayService.saveJumpday(Mockito.any(Jumpday.class)))
                 .thenReturn(new GenericResult<>(false, ErrorMessage.JUMPDAY_SERVICE_ERROR_MSG));
         String jumpdayJson = json(ModelMockHelper.createJumpday());
@@ -89,7 +89,7 @@ public class JumpdayControllerMockTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testFindJumpday_InternalError() throws Exception {
+    void testFindJumpday_InternalError() throws Exception {
         Mockito.when(jumpdayService.findJumpday(Mockito.any(LocalDate.class)))
                 .thenReturn(new GenericResult<>(false, ErrorMessage.JUMPDAY_SERVICE_ERROR_MSG));
 
@@ -101,7 +101,7 @@ public class JumpdayControllerMockTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testFindJumpdays_InternalError() throws Exception {
+    void testFindJumpdays_InternalError() throws Exception {
         Mockito.when(jumpdayService.findJumpdays())
                 .thenReturn(new GenericResult<>(false, ErrorMessage.JUMPDAY_SERVICE_ERROR_MSG));
 

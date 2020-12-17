@@ -11,7 +11,7 @@ import org.springframework.data.mongodb.core.MongoOperations;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SpringBootTest
-public class SequenceServiceTest extends AbstractSkdvinTest {
+class SequenceServiceTest extends AbstractSkdvinTest {
 
     @Autowired
     private ISequenceService sequenceService;
@@ -20,13 +20,13 @@ public class SequenceServiceTest extends AbstractSkdvinTest {
     private MongoOperations mongoOperations;
 
     @Test
-    public void generateNotExistingId() {
+    void generateNotExistingId() {
         int foo = sequenceService.getNextSequence("foo");
         assertEquals(1, foo);
     }
 
     @Test
-    public void generateWithExistingId() {
+    void generateWithExistingId() {
         Sequence seq = new Sequence("bar", 5);
         mongoOperations.save(seq);
 
