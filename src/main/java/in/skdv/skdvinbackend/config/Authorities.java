@@ -35,5 +35,6 @@ public final class Authorities {
     public static final String VIDEOFLYER = "SCOPE_videoflyer";
 
     public static final String READ_USERS = "SCOPE_read:users";
+    public static final String UPDATE_USERS = "SCOPE_update:users";
 
 }

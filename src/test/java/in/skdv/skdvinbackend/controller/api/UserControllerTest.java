@@ -2,6 +2,7 @@ package in.skdv.skdvinbackend.controller.api;
 
 import in.skdv.skdvinbackend.AbstractSkdvinTest;
 import in.skdv.skdvinbackend.MockJwtDecoder;
+import in.skdv.skdvinbackend.model.dto.RoleDTO;
 import in.skdv.skdvinbackend.model.dto.UserDTO;
 import in.skdv.skdvinbackend.service.IUserService;
 import org.junit.Before;
@@ -22,6 +23,7 @@ import org.springframework.mock.http.MockHttpOutputMessage;
 import org.springframework.restdocs.JUnitRestDocumentation;
 import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation;
 import org.springframework.restdocs.mockmvc.MockMvcRestDocumentationConfigurer;
+import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders;
 import org.springframework.restdocs.mockmvc.RestDocumentationResultHandler;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
@@ -30,18 +32,20 @@ import org.springframework.web.context.WebApplicationContext;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static in.skdv.skdvinbackend.config.Authorities.READ_USERS;
+import static in.skdv.skdvinbackend.config.Authorities.UPDATE_USERS;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertNotNull;
+import static org.mockito.Mockito.doNothing;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
-import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
-import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
+import static org.springframework.restdocs.payload.PayloadDocumentation.*;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -97,8 +101,13 @@ public class UserControllerTest extends AbstractSkdvinTest {
 
     @Test
     public void testGetAllUsers() throws Exception {
-        UserDTO userDTO1 = new UserDTO("1", "foo@bar.com", Arrays.asList("tandemmaster", "videoflyer"));
-        UserDTO userDTO2 = new UserDTO("2", "baz@bar.com", Arrays.asList("manifest"));
+        UserDTO userDTO1 = new UserDTO("1", "foo@bar.com", Arrays.asList(
+                new RoleDTO("1", "TANDEMMASTER"),
+                new RoleDTO("2", "VIDEOFLYER"))
+        );
+        UserDTO userDTO2 = new UserDTO("2", "baz@bar.com", Collections.singletonList(
+                new RoleDTO("3", "MANIFEST"))
+        );
         List<UserDTO> userList = Arrays.asList(userDTO1, userDTO2);
 
         Mockito.when(userService.getUsers()).thenReturn(userList);
@@ -115,7 +124,9 @@ public class UserControllerTest extends AbstractSkdvinTest {
                                 fieldWithPath("message").description("message if there was an error"),
                                 fieldWithPath("payload[].userId").description("Users id"),
                                 fieldWithPath("payload[].email").description("Users email"),
-                                fieldWithPath("payload[].roles").description("Users roles"),
+                                fieldWithPath("payload[].roles[]").description("Users roles"),
+                                fieldWithPath("payload[].roles[].id").description("Role ID"),
+                                fieldWithPath("payload[].roles[].name").description("Role name"),
                                 fieldWithPath("exception").ignored()
                         )));
     }
@@ -124,6 +135,78 @@ public class UserControllerTest extends AbstractSkdvinTest {
     public void testGetAllUsers_Unauthorized() throws Exception {
         mockMvc.perform(get("/api/users")
                 .contentType(contentType))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    public void testGetRoles() throws Exception {
+        RoleDTO roleDTO1 = new RoleDTO("1", "ROLE_ADMIN");
+        RoleDTO roleDTO2 = new RoleDTO("2", "ROLE_TANDEMMASTER");
+        List<RoleDTO> roleList = Arrays.asList(roleDTO1, roleDTO2);
+
+        Mockito.when(userService.getRoles()).thenReturn(roleList);
+
+        mockMvc.perform(get("/api/users/roles")
+                .header("Authorization", MockJwtDecoder.addHeader(READ_USERS))
+                .contentType(contentType))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success", is(true)))
+                .andExpect(jsonPath("$.payload", hasSize(2)))
+                .andDo(document("users/get-roles",
+                        responseFields(
+                                fieldWithPath("success").description("true when the request was successful"),
+                                fieldWithPath("message").description("message if there was an error"),
+                                fieldWithPath("payload[].id").description("Role ID"),
+                                fieldWithPath("payload[].name").description("Role name"),
+                                fieldWithPath("exception").ignored()
+                        )));
+    }
+
+    @Test
+    public void testGetRoles_Unauthorized() throws Exception {
+        mockMvc.perform(get("/api/users/roles")
+                .contentType(contentType))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    public void testUpdateUser() throws Exception {
+        UserDTO userDTO = new UserDTO("1", "foo@bar.com", Arrays.asList(
+                new RoleDTO("1", "TANDEMMASTER"),
+                new RoleDTO("2", "VIDEOFLYER"))
+        );
+
+        doNothing().when(userService).updateUser(Mockito.any(UserDTO.class));
+
+        String userJson = json(userDTO);
+
+        mockMvc.perform(RestDocumentationRequestBuilders.put("/api/users")
+                .header("Authorization", MockJwtDecoder.addHeader(UPDATE_USERS))
+                .contentType(contentType)
+                .content(userJson))
+                .andExpect(status().isNoContent())
+                .andDo(document("users/update-user",
+                        requestFields(
+                                fieldWithPath("userId").description("Users id"),
+                                fieldWithPath("email").description("Users email"),
+                                fieldWithPath("roles[]").description("Users roles"),
+                                fieldWithPath("roles[].id").description("Role ID"),
+                                fieldWithPath("roles[].name").description("Role name")
+                        )));
+    }
+
+    @Test
+    public void testUpdateUser_Unauthorized() throws Exception {
+        UserDTO userDTO = new UserDTO("1", "foo@bar.com", Arrays.asList(
+                new RoleDTO("1", "TANDEMMASTER"),
+                new RoleDTO("2", "VIDEOFLYER"))
+        );
+
+        String userJson = json(userDTO);
+
+        mockMvc.perform(RestDocumentationRequestBuilders.put("/api/users")
+                .contentType(contentType)
+                .content(userJson))
                 .andExpect(status().isUnauthorized());
     }
 

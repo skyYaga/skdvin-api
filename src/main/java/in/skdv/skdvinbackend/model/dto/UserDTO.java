@@ -6,11 +6,11 @@ public class UserDTO {
 
     private String userId;
     private String email;
-    private List<String> roles;
+    private List<RoleDTO> roles;
 
     public UserDTO() {}
 
-    public UserDTO(String userId, String email, List<String> roles) {
+    public UserDTO(String userId, String email, List<RoleDTO> roles) {
         this.userId = userId;
         this.email = email;
         this.roles = roles;
@@ -32,11 +32,11 @@ public class UserDTO {
         this.email = email;
     }
 
-    public List<String> getRoles() {
+    public List<RoleDTO> getRoles() {
         return roles;
     }
 
-    public void setRoles(List<String> roles) {
+    public void setRoles(List<RoleDTO> roles) {
         this.roles = roles;
     }
 }
