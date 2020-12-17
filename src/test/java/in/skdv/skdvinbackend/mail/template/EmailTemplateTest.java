@@ -4,22 +4,19 @@ import in.skdv.skdvinbackend.AbstractSkdvinTest;
 import in.skdv.skdvinbackend.ModelMockHelper;
 import in.skdv.skdvinbackend.model.entity.Appointment;
 import in.skdv.skdvinbackend.model.entity.settings.CommonSettings;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@RunWith(SpringRunner.class)
 @SpringBootTest
-public class EmailTemplateTest extends AbstractSkdvinTest {
+class EmailTemplateTest extends AbstractSkdvinTest {
 
     private static final String BASE_URL = "https://example.com";
     private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
@@ -30,7 +27,7 @@ public class EmailTemplateTest extends AbstractSkdvinTest {
     private final CommonSettings settings = ModelMockHelper.createCommonSettings();
 
     @Test
-    public void testAppointmentVerificationMail_US() {
+    void testAppointmentVerificationMail_US() {
         Context ctx = createContext(Locale.US);
         ctx.setVariable("tokenurl", BASE_URL);
         String htmlMail = emailTemplateEngine.process("html/appointment-verification", ctx);
@@ -67,7 +64,7 @@ public class EmailTemplateTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testAppointmentVerificationMail_DE() {
+    void testAppointmentVerificationMail_DE() {
         Context ctx = createContext(Locale.GERMANY);
         ctx.setVariable("tokenurl", BASE_URL);
         String htmlMail = emailTemplateEngine.process("html/appointment-verification", ctx);
@@ -104,7 +101,7 @@ public class EmailTemplateTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testAppointmentConfirmationMail_US() {
+    void testAppointmentConfirmationMail_US() {
         Context ctx = createContext(Locale.US);
         String htmlMail = emailTemplateEngine.process("html/appointment-confirmation", ctx);
         assertEquals("<!DOCTYPE html>\n" +
@@ -143,7 +140,7 @@ public class EmailTemplateTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testAppointmentConfirmationMail_DE() {
+    void testAppointmentConfirmationMail_DE() {
         Context ctx = createContext(Locale.GERMANY);
         String htmlMail = emailTemplateEngine.process("html/appointment-confirmation", ctx);
         assertEquals("<!DOCTYPE html>\n" +
@@ -183,7 +180,7 @@ public class EmailTemplateTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testAppointmentUnconfirmedCancellationMail_EN() {
+    void testAppointmentUnconfirmedCancellationMail_EN() {
         Context ctx = createContext(Locale.US);
         String htmlMail = emailTemplateEngine.process("html/appointment-unconfirmed-cancellation", ctx);
         assertEquals("<!DOCTYPE html>\n" +
@@ -218,7 +215,7 @@ public class EmailTemplateTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testAppointmentUnconfirmedCancellationMail_DE() {
+    void testAppointmentUnconfirmedCancellationMail_DE() {
         Context ctx = createContext(Locale.GERMANY);
         String htmlMail = emailTemplateEngine.process("html/appointment-unconfirmed-cancellation", ctx);
         assertEquals("<!DOCTYPE html>\n" +
@@ -253,7 +250,7 @@ public class EmailTemplateTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testAppointmentUpdatedMail_EN() {
+    void testAppointmentUpdatedMail_EN() {
         Context ctx = createContext(Locale.US);
         String htmlMail = emailTemplateEngine.process("html/appointment-updated", ctx);
         assertEquals("<!DOCTYPE html>\n" +
@@ -292,7 +289,7 @@ public class EmailTemplateTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testAppointmentUpdatedMail_DE() {
+    void testAppointmentUpdatedMail_DE() {
         Context ctx = createContext(Locale.GERMANY);
         String htmlMail = emailTemplateEngine.process("html/appointment-updated", ctx);
         assertEquals("<!DOCTYPE html>\n" +
@@ -332,7 +329,7 @@ public class EmailTemplateTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testAppointmentDeletedMail_EN() {
+    void testAppointmentDeletedMail_EN() {
         Context ctx = createContext(Locale.US);
         String htmlMail = emailTemplateEngine.process("html/appointment-deleted", ctx);
         assertEquals("<!DOCTYPE html>\n" +
@@ -365,7 +362,7 @@ public class EmailTemplateTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testAppointmentDeletedMail_DE() {
+    void testAppointmentDeletedMail_DE() {
         Context ctx = createContext(Locale.GERMANY);
         String htmlMail = emailTemplateEngine.process("html/appointment-deleted", ctx);
         assertEquals("<!DOCTYPE html>\n" +
@@ -398,7 +395,7 @@ public class EmailTemplateTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testAppointmentReminderMail_EN() {
+    void testAppointmentReminderMail_EN() {
         Context ctx = createContext(Locale.US);
         String htmlMail = emailTemplateEngine.process("html/appointment-reminder", ctx);
         assertEquals("<!DOCTYPE html>\n" +
@@ -438,7 +435,7 @@ public class EmailTemplateTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testAppointmentReminderMail_DE() {
+    void testAppointmentReminderMail_DE() {
         Context ctx = createContext(Locale.GERMANY);
         String htmlMail = emailTemplateEngine.process("html/appointment-reminder", ctx);
         assertEquals("<!DOCTYPE html>\n" +

@@ -3,17 +3,17 @@ package in.skdv.skdvinbackend.model.converter;
 import in.skdv.skdvinbackend.ModelMockHelper;
 import in.skdv.skdvinbackend.model.dto.SettingsDTO;
 import in.skdv.skdvinbackend.model.entity.settings.Settings;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
-public class SettingsConverterTest {
+class SettingsConverterTest {
 
     private SettingsConverter converter = new SettingsConverter();
 
     @Test
-    public void convertToDto() {
+    void convertToDto() {
         Settings settings = ModelMockHelper.createSettings();
 
         SettingsDTO settingsDTO = converter.convertToDto(settings);
@@ -22,7 +22,7 @@ public class SettingsConverterTest {
     }
 
     @Test
-    public void convertToEntity() {
+    void convertToEntity() {
         Settings settings = ModelMockHelper.createSettings();
 
         SettingsDTO settingsDTO = converter.convertToDto(settings);
@@ -32,13 +32,13 @@ public class SettingsConverterTest {
     }
 
     @Test
-    public void convertToDto_Null() {
+    void convertToDto_Null() {
         Settings settings = null;
         assertNull(converter.convertToDto(settings));
     }
 
     @Test
-    public void convertToEntity_Null() {
+    void convertToEntity_Null() {
         assertNull(converter.convertToEntity(null));
     }
 }

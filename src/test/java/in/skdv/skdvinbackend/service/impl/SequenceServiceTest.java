@@ -3,17 +3,15 @@ package in.skdv.skdvinbackend.service.impl;
 import in.skdv.skdvinbackend.AbstractSkdvinTest;
 import in.skdv.skdvinbackend.model.entity.Sequence;
 import in.skdv.skdvinbackend.service.ISequenceService;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.mongodb.core.MongoOperations;
-import org.springframework.test.context.junit4.SpringRunner;
 
-@RunWith(SpringRunner.class)
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 @SpringBootTest
-public class SequenceServiceTest extends AbstractSkdvinTest {
+class SequenceServiceTest extends AbstractSkdvinTest {
 
     @Autowired
     private ISequenceService sequenceService;
@@ -22,17 +20,17 @@ public class SequenceServiceTest extends AbstractSkdvinTest {
     private MongoOperations mongoOperations;
 
     @Test
-    public void generateNotExistingId() {
+    void generateNotExistingId() {
         int foo = sequenceService.getNextSequence("foo");
-        Assert.assertEquals(1, foo);
+        assertEquals(1, foo);
     }
 
     @Test
-    public void generateWithExistingId() {
+    void generateWithExistingId() {
         Sequence seq = new Sequence("bar", 5);
         mongoOperations.save(seq);
 
         int bar = sequenceService.getNextSequence("bar");
-        Assert.assertEquals(6, bar);
+        assertEquals(6, bar);
     }
 }

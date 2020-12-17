@@ -7,9 +7,8 @@ import in.skdv.skdvinbackend.exception.ErrorMessage;
 import in.skdv.skdvinbackend.model.entity.Jumpday;
 import in.skdv.skdvinbackend.service.IJumpdayService;
 import in.skdv.skdvinbackend.util.GenericResult;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -18,7 +17,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.mock.http.MockHttpOutputMessage;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.context.WebApplicationContext;
 
@@ -30,17 +28,16 @@ import java.util.Arrays;
 import static in.skdv.skdvinbackend.config.Authorities.CREATE_JUMPDAYS;
 import static in.skdv.skdvinbackend.config.Authorities.READ_JUMPDAYS;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertNotNull;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
+import static org.springframework.test.util.AssertionErrors.assertNotNull;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppContextSetup;
 
-@RunWith(SpringRunner.class)
 @SpringBootTest
-public class JumpdayControllerMockTest extends AbstractSkdvinTest {
+class JumpdayControllerMockTest extends AbstractSkdvinTest {
 
     private MediaType contentType = new MediaType(MediaType.APPLICATION_JSON.getType(),
             MediaType.APPLICATION_JSON.getSubtype(),
@@ -68,14 +65,14 @@ public class JumpdayControllerMockTest extends AbstractSkdvinTest {
                 this.mappingJackson2HttpMessageConverter);
     }
 
-    @Before
-    public void setup() {
+    @BeforeEach
+    void setup() {
         this.mockMvc = webAppContextSetup(webApplicationContext)
                         .apply(springSecurity()).build();
     }
 
     @Test
-    public void testAddJumpday_InternalError() throws Exception {
+    void testAddJumpday_InternalError() throws Exception {
         Mockito.when(jumpdayService.saveJumpday(Mockito.any(Jumpday.class)))
                 .thenReturn(new GenericResult<>(false, ErrorMessage.JUMPDAY_SERVICE_ERROR_MSG));
         String jumpdayJson = json(ModelMockHelper.createJumpday());
@@ -92,7 +89,7 @@ public class JumpdayControllerMockTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testFindJumpday_InternalError() throws Exception {
+    void testFindJumpday_InternalError() throws Exception {
         Mockito.when(jumpdayService.findJumpday(Mockito.any(LocalDate.class)))
                 .thenReturn(new GenericResult<>(false, ErrorMessage.JUMPDAY_SERVICE_ERROR_MSG));
 
@@ -104,7 +101,7 @@ public class JumpdayControllerMockTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testFindJumpdays_InternalError() throws Exception {
+    void testFindJumpdays_InternalError() throws Exception {
         Mockito.when(jumpdayService.findJumpdays())
                 .thenReturn(new GenericResult<>(false, ErrorMessage.JUMPDAY_SERVICE_ERROR_MSG));
 

@@ -2,15 +2,16 @@ package in.skdv.skdvinbackend.model.entitiy.settings;
 
 import in.skdv.skdvinbackend.model.entity.settings.CommonSettings;
 import in.skdv.skdvinbackend.model.entity.settings.Faq;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 
-public class CommonSettingsTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+class CommonSettingsTest {
 
     @Test
-    public void testOrder() {
+    void testOrder() {
         CommonSettings commonSettings = new CommonSettings();
         Faq faq1 = createFaq(1);
         Faq faq2 = createFaq(2);
@@ -23,9 +24,9 @@ public class CommonSettingsTest {
 
         commonSettings.setFaq(list);
 
-        Assert.assertEquals(1, commonSettings.getFaq().get(0).getId());
-        Assert.assertEquals(2, commonSettings.getFaq().get(1).getId());
-        Assert.assertEquals(3, commonSettings.getFaq().get(2).getId());
+        assertEquals(1, commonSettings.getFaq().get(0).getId());
+        assertEquals(2, commonSettings.getFaq().get(1).getId());
+        assertEquals(3, commonSettings.getFaq().get(2).getId());
     }
 
     private Faq createFaq(int i) {

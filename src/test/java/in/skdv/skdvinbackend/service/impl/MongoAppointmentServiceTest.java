@@ -11,13 +11,10 @@ import in.skdv.skdvinbackend.repository.JumpdayRepository;
 import in.skdv.skdvinbackend.service.IAppointmentService;
 import in.skdv.skdvinbackend.util.GenericResult;
 import in.skdv.skdvinbackend.util.VerificationTokenUtil;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.*;
@@ -25,12 +22,11 @@ import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.List;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 
-@RunWith(SpringRunner.class)
 @SpringBootTest
-public class MongoAppointmentServiceTest extends AbstractSkdvinTest {
+class MongoAppointmentServiceTest extends AbstractSkdvinTest {
 
     @Autowired
     private JumpdayRepository jumpdayRepository;
@@ -38,8 +34,8 @@ public class MongoAppointmentServiceTest extends AbstractSkdvinTest {
     @Autowired
     private IAppointmentService appointmentService;
 
-    @Before
-    public void setup() {
+    @BeforeEach
+    void setup() {
         // Set mock clock
         Clock mockClock = Clock.fixed(Instant.parse(LocalDate.now().toString() + "T00:00:00Z"), ZoneOffset.UTC);
         ReflectionTestUtils.setField(appointmentService, "clock", mockClock);
@@ -49,7 +45,7 @@ public class MongoAppointmentServiceTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testSaveAppointment() {
+    void testSaveAppointment() {
         Appointment appointment = ModelMockHelper.createSingleAppointment();
 
         assertNull(appointment.getCreatedOn());
@@ -64,7 +60,7 @@ public class MongoAppointmentServiceTest extends AbstractSkdvinTest {
 
 
     @Test
-    public void testSaveAdminAppointment() {
+    void testSaveAdminAppointment() {
         Appointment appointment = ModelMockHelper.createSingleAppointment();
         appointment.getCustomer().setJumpers(Collections.emptyList());
 
@@ -78,7 +74,7 @@ public class MongoAppointmentServiceTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testSaveAppointment_WithNote() {
+    void testSaveAppointment_WithNote() {
         String note = "Price is 10% off";
         Appointment appointment = ModelMockHelper.createSingleAppointment();
         appointment.setNote(note);
@@ -90,7 +86,7 @@ public class MongoAppointmentServiceTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testSaveAppointment_NoJumpday() {
+    void testSaveAppointment_NoJumpday() {
         Appointment appointment = ModelMockHelper.createSingleAppointment();
         appointment.setDate(LocalDateTime.now().plusDays(1));
 
@@ -101,7 +97,7 @@ public class MongoAppointmentServiceTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testSaveAppointment_NoTandemSlotsAvailable() {
+    void testSaveAppointment_NoTandemSlotsAvailable() {
         Appointment appointment = ModelMockHelper.createAppointment(5, 0, 0, 0);
 
         GenericResult<Appointment> savedAppointment = appointmentService.saveAppointment(appointment);
@@ -111,7 +107,7 @@ public class MongoAppointmentServiceTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testSaveAppointment_NoSlotsAvailable() {
+    void testSaveAppointment_NoSlotsAvailable() {
         Appointment appointment = ModelMockHelper.createAppointment(5, 3, 0, 0);
 
         GenericResult<Appointment> savedAppointment = appointmentService.saveAppointment(appointment);
@@ -121,7 +117,7 @@ public class MongoAppointmentServiceTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testSaveAppointment_PicOrVid_NoSlotsAvailable() {
+    void testSaveAppointment_PicOrVid_NoSlotsAvailable() {
         Appointment appointment = ModelMockHelper.createAppointment(3, 3, 0, 0);
 
         GenericResult<Appointment> savedAppointment = appointmentService.saveAppointment(appointment);
@@ -131,7 +127,7 @@ public class MongoAppointmentServiceTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testSaveAppointment_PicOrVid_MoreVideoThanTandemSlots() {
+    void testSaveAppointment_PicOrVid_MoreVideoThanTandemSlots() {
         Appointment appointment = ModelMockHelper.createAppointment(3, 5, 0, 0);
 
         GenericResult<Appointment> savedAppointment = appointmentService.saveAppointment(appointment);
@@ -141,7 +137,7 @@ public class MongoAppointmentServiceTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testSaveAppointment_PicAndVid_NoSlotsAvailable() {
+    void testSaveAppointment_PicAndVid_NoSlotsAvailable() {
         Appointment appointment = ModelMockHelper.createAppointment(3, 0, 3, 0);
 
         GenericResult<Appointment> savedAppointment = appointmentService.saveAppointment(appointment);
@@ -151,7 +147,7 @@ public class MongoAppointmentServiceTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testSaveAppointment_PicAndVid_MoreVideoThanTandemSlots() {
+    void testSaveAppointment_PicAndVid_MoreVideoThanTandemSlots() {
         Appointment appointment = ModelMockHelper.createAppointment(3, 0, 5, 0);
 
         GenericResult<Appointment> savedAppointment = appointmentService.saveAppointment(appointment);
@@ -161,7 +157,7 @@ public class MongoAppointmentServiceTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testSaveAppointment_Handcam_NoSlotsAvailable() {
+    void testSaveAppointment_Handcam_NoSlotsAvailable() {
         Appointment appointment = ModelMockHelper.createAppointment(3, 0, 0, 3);
 
         GenericResult<Appointment> savedAppointment = appointmentService.saveAppointment(appointment);
@@ -171,7 +167,7 @@ public class MongoAppointmentServiceTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testSaveAppointment_Handcam_MoreVideoThanTandemSlots() {
+    void testSaveAppointment_Handcam_MoreVideoThanTandemSlots() {
         Appointment appointment = ModelMockHelper.createAppointment(3, 0, 0, 5);
 
         GenericResult<Appointment> savedAppointment = appointmentService.saveAppointment(appointment);
@@ -181,7 +177,7 @@ public class MongoAppointmentServiceTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testSaveAppointment_PicVidHandcam_MoreVideoThanTandemSlots() {
+    void testSaveAppointment_PicVidHandcam_MoreVideoThanTandemSlots() {
         Appointment appointment = ModelMockHelper.createAppointment(3, 2, 1, 1);
 
         GenericResult<Appointment> savedAppointment = appointmentService.saveAppointment(appointment);
@@ -191,7 +187,7 @@ public class MongoAppointmentServiceTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testSaveAppointment_PicAndVid_MoreCombinedVideoSlotsThanAvailable() {
+    void testSaveAppointment_PicAndVid_MoreCombinedVideoSlotsThanAvailable() {
         Appointment appointment = ModelMockHelper.createAppointment(4, 2, 1, 0);
 
         GenericResult<Appointment> savedAppointment = appointmentService.saveAppointment(appointment);
@@ -201,7 +197,7 @@ public class MongoAppointmentServiceTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testFindAppointment() {
+    void testFindAppointment() {
         GenericResult<Appointment> appointment = appointmentService.saveAppointment(ModelMockHelper.createSecondAppointment());
         appointmentService.saveAppointment(ModelMockHelper.createSingleAppointment());
         assertTrue(appointment.isSuccess());
@@ -214,13 +210,13 @@ public class MongoAppointmentServiceTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testFindAppointment_InvalidId() {
+    void testFindAppointment_InvalidId() {
         Appointment foundAppointment = appointmentService.findAppointment(9999999);
         assertNull(foundAppointment);
     }
 
     @Test
-    public void testFindAppointmentsByDay() {
+    void testFindAppointmentsByDay() {
         appointmentService.saveAppointment(ModelMockHelper.createSingleAppointment());
         appointmentService.saveAppointment(ModelMockHelper.createSecondAppointment());
 
@@ -231,7 +227,7 @@ public class MongoAppointmentServiceTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testFindAppointmentsByDay_NoJumpday() {
+    void testFindAppointmentsByDay_NoJumpday() {
         appointmentService.saveAppointment(ModelMockHelper.createSingleAppointment());
         appointmentService.saveAppointment(ModelMockHelper.createSecondAppointment());
 
@@ -241,7 +237,7 @@ public class MongoAppointmentServiceTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testUpdateAppointment() {
+    void testUpdateAppointment() {
         GenericResult<Appointment> appointment = appointmentService.saveAppointment(ModelMockHelper.createSecondAppointment());
         assertTrue(appointment.isSuccess());
         int appointmentId = appointment.getPayload().getAppointmentId();
@@ -255,7 +251,7 @@ public class MongoAppointmentServiceTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testUpdateAppointment_WithNote() {
+    void testUpdateAppointment_WithNote() {
         String note = "Price is 10% off";
 
         GenericResult<Appointment> savedAppointment = appointmentService.saveAppointment(ModelMockHelper.createSingleAppointment());
@@ -270,7 +266,7 @@ public class MongoAppointmentServiceTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testUpdateAppointment_ChangeTime() {
+    void testUpdateAppointment_ChangeTime() {
         GenericResult<Appointment> appointmentResult = appointmentService.saveAppointment(ModelMockHelper.createSecondAppointment());
         assertTrue(appointmentResult.isSuccess());
         Appointment appointment = appointmentResult.getPayload();
@@ -287,7 +283,7 @@ public class MongoAppointmentServiceTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testUpdateAppointment_ChangeDate() {
+    void testUpdateAppointment_ChangeDate() {
         jumpdayRepository.save(ModelMockHelper.createJumpday(LocalDate.now().plusDays(1)));
         GenericResult<Appointment> appointmentResult = appointmentService.saveAppointment(ModelMockHelper.createSecondAppointment());
         assertTrue(appointmentResult.isSuccess());
@@ -305,7 +301,7 @@ public class MongoAppointmentServiceTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testUpdateAppointment_ChangeDateAndTime() {
+    void testUpdateAppointment_ChangeDateAndTime() {
         jumpdayRepository.save(ModelMockHelper.createJumpday(LocalDate.now().plusDays(1)));
         GenericResult<Appointment> appointmentResult = appointmentService.saveAppointment(ModelMockHelper.createSecondAppointment());
         assertTrue(appointmentResult.isSuccess());
@@ -323,7 +319,7 @@ public class MongoAppointmentServiceTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testUpdateAdminAppointment() {
+    void testUpdateAdminAppointment() {
         GenericResult<Appointment> appointment = appointmentService.saveAppointment(ModelMockHelper.createSecondAppointment());
         assertTrue(appointment.isSuccess());
         int appointmentId = appointment.getPayload().getAppointmentId();
@@ -339,7 +335,7 @@ public class MongoAppointmentServiceTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testUpdateAdminAppointment_ChangeDate() {
+    void testUpdateAdminAppointment_ChangeDate() {
         jumpdayRepository.save(ModelMockHelper.createJumpday(LocalDate.now().plusDays(1)));
         GenericResult<Appointment> appointment = appointmentService.saveAppointment(ModelMockHelper.createSecondAppointment());
         assertTrue(appointment.isSuccess());
@@ -357,7 +353,7 @@ public class MongoAppointmentServiceTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testFindFreeSlots() {
+    void testFindFreeSlots() {
         SlotQuery slotQuery = new SlotQuery(2, 1, 0, 0);
 
         GenericResult<List<FreeSlot>> freeSlots = appointmentService.findFreeSlots(slotQuery);
@@ -372,7 +368,7 @@ public class MongoAppointmentServiceTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testFindFreeSlots_TooManyTandems() {
+    void testFindFreeSlots_TooManyTandems() {
         SlotQuery slotQuery = new SlotQuery(5, 1, 0, 0);
 
         GenericResult<List<FreeSlot>> freeSlots = appointmentService.findFreeSlots(slotQuery);
@@ -383,7 +379,7 @@ public class MongoAppointmentServiceTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testFindFreeSlots_TooManyVids() {
+    void testFindFreeSlots_TooManyVids() {
         SlotQuery slotQuery = new SlotQuery(4, 4, 0, 0);
 
         GenericResult<List<FreeSlot>> freeSlots = appointmentService.findFreeSlots(slotQuery);
@@ -394,7 +390,7 @@ public class MongoAppointmentServiceTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testFindFreeSlots_TooManyCombinedPicVids() {
+    void testFindFreeSlots_TooManyCombinedPicVids() {
         SlotQuery slotQuery = new SlotQuery(4, 2, 1, 0);
 
         GenericResult<List<FreeSlot>> freeSlots = appointmentService.findFreeSlots(slotQuery);
@@ -405,7 +401,7 @@ public class MongoAppointmentServiceTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testUpdateAppointmentState() {
+    void testUpdateAppointmentState() {
         GenericResult<Appointment> result = appointmentService.saveAppointment(ModelMockHelper.createSingleAppointment());
         GenericResult<Void> stateResult = appointmentService.updateAppointmentState(result.getPayload(), AppointmentState.CONFIRMED);
         Appointment appointment = appointmentService.findAppointment(result.getPayload().getAppointmentId());
@@ -415,7 +411,7 @@ public class MongoAppointmentServiceTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testUpdateAppointmentState_InvalidAppointment() {
+    void testUpdateAppointmentState_InvalidAppointment() {
         Appointment invalidAppointment = ModelMockHelper.createSingleAppointment();
         GenericResult<Void> result = appointmentService.updateAppointmentState(invalidAppointment, AppointmentState.CONFIRMED);
 
@@ -424,7 +420,7 @@ public class MongoAppointmentServiceTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testFindUnconfirmedAppointments_ExpiredAndUnconfirmed() {
+    void testFindUnconfirmedAppointments_ExpiredAndUnconfirmed() {
         Appointment appointment = ModelMockHelper.createSingleAppointment();
         VerificationToken verificationToken = VerificationTokenUtil.generate();
         verificationToken.setExpiryDate(LocalDateTime.now().minus(25, ChronoUnit.HOURS));
@@ -433,11 +429,11 @@ public class MongoAppointmentServiceTest extends AbstractSkdvinTest {
 
         List<Appointment> unconfirmedAppointments = appointmentService.findUnconfirmedAppointments();
 
-        Assert.assertEquals(1, unconfirmedAppointments.size());
+        assertEquals(1, unconfirmedAppointments.size());
     }
 
     @Test
-    public void testFindUnconfirmedAppointments_ExpiredAndConfirmed() {
+    void testFindUnconfirmedAppointments_ExpiredAndConfirmed() {
         Appointment appointment = ModelMockHelper.createSingleAppointment();
         VerificationToken verificationToken = VerificationTokenUtil.generate();
         verificationToken.setExpiryDate(LocalDateTime.now().minus(25, ChronoUnit.HOURS));
@@ -447,32 +443,32 @@ public class MongoAppointmentServiceTest extends AbstractSkdvinTest {
 
         List<Appointment> unconfirmedAppointments = appointmentService.findUnconfirmedAppointments();
 
-        Assert.assertEquals(0, unconfirmedAppointments.size());
+        assertEquals(0, unconfirmedAppointments.size());
     }
 
     @Test
-    public void testFindUnconfirmedAppointments_NotExpiredAndUnconfirmed() {
+    void testFindUnconfirmedAppointments_NotExpiredAndUnconfirmed() {
         Appointment appointment = ModelMockHelper.createSingleAppointment();
         appointment.setVerificationToken(VerificationTokenUtil.generate());
         appointmentService.saveAppointment(appointment);
 
         List<Appointment> unconfirmedAppointments = appointmentService.findUnconfirmedAppointments();
 
-        Assert.assertEquals(0, unconfirmedAppointments.size());
+        assertEquals(0, unconfirmedAppointments.size());
     }
 
     @Test
-    public void testDeleteAppointment() {
+    void testDeleteAppointment() {
         Appointment appointment = ModelMockHelper.createSingleAppointment();
         appointmentService.saveAppointment(appointment);
 
         appointmentService.deleteAppointment(appointment.getAppointmentId());
 
-        Assert.assertNull(appointmentService.findAppointment(appointment.getAppointmentId()));
+        assertNull(appointmentService.findAppointment(appointment.getAppointmentId()));
     }
 
     @Test
-    public void testFindGroupSlots() {
+    void testFindGroupSlots() {
         SlotQuery slotQuery = new SlotQuery(6, 0, 0, 0);
 
         List<GroupSlot> groupSlots = appointmentService.findGroupSlots(slotQuery);
@@ -497,7 +493,7 @@ public class MongoAppointmentServiceTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testFindGroupSlots_MultipleDays() {
+    void testFindGroupSlots_MultipleDays() {
         Jumpday jumpday = ModelMockHelper.createJumpday(LocalDate.now().plus(1, ChronoUnit.DAYS));
         Slot slot = new Slot();
         slot.setTime(LocalTime.of(13, 0));
@@ -517,7 +513,7 @@ public class MongoAppointmentServiceTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testFindGroupSlots_NoFreeSlots() {
+    void testFindGroupSlots_NoFreeSlots() {
         Jumpday jumpday = ModelMockHelper.createJumpday();
         jumpday.getSlots().forEach(s -> s.setTandemTotal(0));
         jumpdayRepository.deleteAll();
@@ -532,7 +528,7 @@ public class MongoAppointmentServiceTest extends AbstractSkdvinTest {
     }
     
     @Test
-    public void testFindAppointmentsWithinNextWeek() {
+    void testFindAppointmentsWithinNextWeek() {
         jumpdayRepository.save(ModelMockHelper.createJumpday(LocalDate.now().minusDays(1)));
         jumpdayRepository.save(ModelMockHelper.createJumpday(LocalDate.now().plusDays(5)));
         jumpdayRepository.save(ModelMockHelper.createJumpday(LocalDate.now().plusDays(10)));
@@ -559,7 +555,7 @@ public class MongoAppointmentServiceTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testReminderSent() {
+    void testReminderSent() {
         GenericResult<Appointment> savedAppointment = appointmentService.saveAppointment(ModelMockHelper.createSingleAppointment());
 
         appointmentService.reminderSent(savedAppointment.getPayload());
@@ -570,7 +566,7 @@ public class MongoAppointmentServiceTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testReminderSent_AdminAppointment() {
+    void testReminderSent_AdminAppointment() {
         Appointment singleAppointment = ModelMockHelper.createSingleAppointment();
         singleAppointment.getCustomer().setJumpers(Collections.emptyList());
         GenericResult<Appointment> savedAppointment = appointmentService.saveAdminAppointment(singleAppointment);

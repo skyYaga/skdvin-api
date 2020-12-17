@@ -8,9 +8,8 @@ import in.skdv.skdvinbackend.repository.JumpdayRepository;
 import in.skdv.skdvinbackend.service.IAppointmentService;
 import in.skdv.skdvinbackend.service.IEmailService;
 import in.skdv.skdvinbackend.service.ISettingsService;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,7 +17,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import javax.mail.MessagingException;
@@ -28,9 +26,8 @@ import java.util.Locale;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
-@RunWith(SpringRunner.class)
 @SpringBootTest
-public class SendAppointmentReminderTaskTest extends AbstractSkdvinTest {
+class SendAppointmentReminderTaskTest extends AbstractSkdvinTest {
     private static final String FROM_EMAIL = "skdvin@example.com";
     private static final String BASE_URL = "https://example.com";
 
@@ -52,8 +49,8 @@ public class SendAppointmentReminderTaskTest extends AbstractSkdvinTest {
     @Autowired
     private IEmailService emailService;
 
-    @Before
-    public void setup() {
+    @BeforeEach
+    void setup() {
         jumpdayRepository.deleteAll();
         jumpdayRepository.save(ModelMockHelper.createJumpday());
 
@@ -66,7 +63,7 @@ public class SendAppointmentReminderTaskTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testNoReminderIfNotConfirmedOrAlreadySent() {
+    void testNoReminderIfNotConfirmedOrAlreadySent() {
         Appointment appointment1 = ModelMockHelper.createSingleAppointment();
         Appointment appointment2 = ModelMockHelper.createSecondAppointment();
         appointment2.setState(AppointmentState.CONFIRMED);
@@ -80,7 +77,7 @@ public class SendAppointmentReminderTaskTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testEmailIsSend_EN() throws MessagingException {
+    void testEmailIsSend_EN() throws MessagingException {
         Appointment appointment = ModelMockHelper.createSingleAppointment();
         appointment.setLang(Locale.ENGLISH.getLanguage());
         appointment.setState(AppointmentState.CONFIRMED);
@@ -94,7 +91,7 @@ public class SendAppointmentReminderTaskTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testEmailIsSend_DE() throws MessagingException {
+    void testEmailIsSend_DE() throws MessagingException {
         Appointment appointment = ModelMockHelper.createSingleAppointment();
         appointment.setLang(Locale.GERMAN.getLanguage());
         appointment.setState(AppointmentState.CONFIRMED);

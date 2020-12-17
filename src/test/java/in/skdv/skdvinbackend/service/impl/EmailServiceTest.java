@@ -8,9 +8,8 @@ import in.skdv.skdvinbackend.model.entity.settings.Dropzone;
 import in.skdv.skdvinbackend.service.IEmailService;
 import in.skdv.skdvinbackend.service.ISettingsService;
 import in.skdv.skdvinbackend.util.VerificationTokenUtil;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -20,7 +19,6 @@ import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.thymeleaf.TemplateEngine;
 
@@ -30,12 +28,12 @@ import java.io.IOException;
 import java.util.Locale;
 import java.util.regex.Pattern;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-@RunWith(SpringRunner.class)
+
 @SpringBootTest
-public class EmailServiceTest extends AbstractSkdvinTest {
+class EmailServiceTest extends AbstractSkdvinTest {
 
     private static final String FROM_EMAIL = "skdvin@example.com";
     private static final String BCC_EMAIL = "dz@example.com";
@@ -54,8 +52,8 @@ public class EmailServiceTest extends AbstractSkdvinTest {
     @Autowired
     private MessageSource emailMessageSource;
 
-    @Before
-    public void setup() {
+    @BeforeEach
+    void setup() {
         Mockito.reset(settingsService);
 
         mailSender = spy(new JavaMailSenderImpl());
@@ -68,7 +66,7 @@ public class EmailServiceTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testAppointmentVerificationMail() throws MessagingException, IOException {
+    void testAppointmentVerificationMail() throws MessagingException, IOException {
         LocaleContextHolder.setLocale(Locale.GERMAN);
         doNothing().when(mailSender).send(Mockito.any(MimeMessage.class));
 
@@ -88,7 +86,7 @@ public class EmailServiceTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testAppointmentConfirmationMail() throws MessagingException, IOException {
+    void testAppointmentConfirmationMail() throws MessagingException, IOException {
         doNothing().when(mailSender).send(Mockito.any(MimeMessage.class));
 
         Appointment appointment = ModelMockHelper.createSingleAppointment();
@@ -106,7 +104,7 @@ public class EmailServiceTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testAppointmentUnconfirmedCancellationMail() throws MessagingException, IOException {
+    void testAppointmentUnconfirmedCancellationMail() throws MessagingException, IOException {
         doNothing().when(mailSender).send(Mockito.any(MimeMessage.class));
 
         Appointment appointment = ModelMockHelper.createSingleAppointment();
@@ -123,7 +121,7 @@ public class EmailServiceTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testAppointmentUpdatedMail() throws MessagingException, IOException {
+    void testAppointmentUpdatedMail() throws MessagingException, IOException {
         doNothing().when(mailSender).send(Mockito.any(MimeMessage.class));
 
         Appointment appointment = ModelMockHelper.createSingleAppointment();
@@ -140,7 +138,7 @@ public class EmailServiceTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testAppointmentDeletedMail() throws MessagingException, IOException {
+    void testAppointmentDeletedMail() throws MessagingException, IOException {
         doNothing().when(mailSender).send(Mockito.any(MimeMessage.class));
 
         Appointment appointment = ModelMockHelper.createSingleAppointment();
@@ -157,7 +155,7 @@ public class EmailServiceTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testAppointmentReminderMail() throws MessagingException, IOException {
+    void testAppointmentReminderMail() throws MessagingException, IOException {
         doNothing().when(mailSender).send(Mockito.any(MimeMessage.class));
 
         Appointment appointment = ModelMockHelper.createSingleAppointment();
@@ -174,7 +172,7 @@ public class EmailServiceTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testBccAndReplyToMail() throws MessagingException {
+    void testBccAndReplyToMail() throws MessagingException {
         CommonSettings commonSettings = new CommonSettings();
         commonSettings.setBccMail(BCC_EMAIL);
         Dropzone dropzone = new Dropzone();
@@ -199,7 +197,7 @@ public class EmailServiceTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testNoBccAndReplyToMail() throws MessagingException {
+    void testNoBccAndReplyToMail() throws MessagingException {
         CommonSettings settings = ModelMockHelper.createCommonSettings();
         settings.getDropzone().setEmail("");
         settings.setBccMail("");

@@ -11,8 +11,8 @@ import com.auth0.json.mgmt.users.UsersPage;
 import com.auth0.net.Request;
 import in.skdv.skdvinbackend.model.dto.RoleDTO;
 import in.skdv.skdvinbackend.model.dto.UserDTO;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -21,24 +21,25 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
-public class Auth0UserServiceTest {
+
+class Auth0UserServiceTest {
 
     private ManagementAPI managementAPI;
     private Auth0UserService auth0UserService;
 
-    @Before
-    public void setUp() {
+    @BeforeEach
+    void setUp() {
         managementAPI = Mockito.mock(ManagementAPI.class);
         auth0UserService = new Auth0UserService(managementAPI);
     }
 
     @Test
-    public void testGetUsers() throws Auth0Exception {
+    void testGetUsers() throws Auth0Exception {
         // Arrange
         List<User> userList = createMockUserList();
 
@@ -75,7 +76,7 @@ public class Auth0UserServiceTest {
     }
 
     @Test
-    public void testGetUsers_ExceptionRetrievingRoles() throws Auth0Exception {
+    void testGetUsers_ExceptionRetrievingRoles() throws Auth0Exception {
         // Arrange
         List<User> userList = createMockUserList();
 
@@ -100,7 +101,7 @@ public class Auth0UserServiceTest {
     }
 
     @Test
-    public void testGetUsers_ExceptionRetrievingUsers() throws Auth0Exception {
+    void testGetUsers_ExceptionRetrievingUsers() throws Auth0Exception {
         // Arrange
         List<User> userList = createMockUserList();
 
@@ -119,7 +120,7 @@ public class Auth0UserServiceTest {
     }
 
     @Test
-    public void testUpdateUser() throws Auth0Exception {
+    void testUpdateUser() throws Auth0Exception {
         // Arrange
         UserDTO newDTO = new UserDTO("1", "foo@example.com",
                 new ArrayList<>(Arrays.asList(
@@ -153,7 +154,7 @@ public class Auth0UserServiceTest {
     }
 
     @Test
-    public void testUpdateUser_NoChanges() throws Auth0Exception {
+    void testUpdateUser_NoChanges() throws Auth0Exception {
         // Arrange
         UserDTO newDTO = new UserDTO("1", "foo@example.com",
                 new ArrayList<>(Arrays.asList(
@@ -179,7 +180,7 @@ public class Auth0UserServiceTest {
     }
 
     @Test
-    public void testUpdateUser_ExceptionUpdatingRoles() throws Auth0Exception {
+    void testUpdateUser_ExceptionUpdatingRoles() throws Auth0Exception {
         // Arrange
         UserDTO newDTO = new UserDTO("1", "foo@example.com",
                 new ArrayList<>(Arrays.asList(
@@ -209,7 +210,7 @@ public class Auth0UserServiceTest {
     }
 
     @Test
-    public void testFindRolesToAdd() {
+    void testFindRolesToAdd() {
         ArrayList<RoleDTO> updatedRoles = new ArrayList<>(Arrays.asList(
                 new RoleDTO("1", "TANDEMMASTER"),
                 new RoleDTO("2", "VIDEOFLYER"))
@@ -226,7 +227,7 @@ public class Auth0UserServiceTest {
     }
 
     @Test
-    public void testFindRolesToRemove() {
+    void testFindRolesToRemove() {
         ArrayList<RoleDTO> updatedRoles = new ArrayList<>(Collections.singletonList(new RoleDTO("1", "TANDEMMASTER")));
         ArrayList<RoleDTO> currentRoles = new ArrayList<>(Arrays.asList(
                 new RoleDTO("1", "TANDEMMASTER"),
@@ -243,7 +244,7 @@ public class Auth0UserServiceTest {
     }
 
     @Test
-    public void testGetRoles() throws Auth0Exception {
+    void testGetRoles() throws Auth0Exception {
         // Arrange
         Request<RolesPage> rolesRequest = (Request<RolesPage>) Mockito.mock(Request.class);
         RolesEntity rolesEntity = Mockito.mock(RolesEntity.class);
@@ -267,7 +268,7 @@ public class Auth0UserServiceTest {
     }
 
     @Test
-    public void testGetRoles_ExceptionRetrievingRoles() throws Auth0Exception {
+    void testGetRoles_ExceptionRetrievingRoles() throws Auth0Exception {
         // Arrange
         Request<RolesPage> rolesRequest = (Request<RolesPage>) Mockito.mock(Request.class);
         RolesEntity rolesEntity = Mockito.mock(RolesEntity.class);

@@ -17,11 +17,9 @@ import in.skdv.skdvinbackend.repository.VideoflyerRepository;
 import in.skdv.skdvinbackend.service.IAppointmentService;
 import in.skdv.skdvinbackend.service.IJumpdayService;
 import in.skdv.skdvinbackend.util.GenericResult;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.restdocs.RestDocsMockMvcConfigurationCustomizer;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -31,12 +29,13 @@ import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.mock.http.MockHttpOutputMessage;
-import org.springframework.restdocs.JUnitRestDocumentation;
+import org.springframework.restdocs.RestDocumentationContextProvider;
+import org.springframework.restdocs.RestDocumentationExtension;
 import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation;
 import org.springframework.restdocs.mockmvc.MockMvcRestDocumentationConfigurer;
 import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders;
 import org.springframework.restdocs.mockmvc.RestDocumentationResultHandler;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.util.AssertionErrors;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.context.WebApplicationContext;
 
@@ -50,8 +49,8 @@ import java.util.Collections;
 import static in.skdv.skdvinbackend.config.Authorities.*;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
@@ -64,12 +63,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppContextSetup;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(RestDocumentationExtension.class)
 @SpringBootTest
-public class JumpdayControllerTest extends AbstractSkdvinTest {
-
-    @Rule
-    public JUnitRestDocumentation restDocumentation = new JUnitRestDocumentation();
+class JumpdayControllerTest extends AbstractSkdvinTest {
 
     private MediaType contentType = new MediaType(MediaType.APPLICATION_JSON.getType(),
             MediaType.APPLICATION_JSON.getSubtype(),
@@ -105,22 +101,22 @@ public class JumpdayControllerTest extends AbstractSkdvinTest {
                 .findAny()
                 .orElse(null);
 
-        assertNotNull("the JSON message converter must not be null",
+        AssertionErrors.assertNotNull("the JSON message converter must not be null",
                 this.mappingJackson2HttpMessageConverter);
     }
 
-    @Before
-    public void setup() {
+    @BeforeEach
+    void setup(RestDocumentationContextProvider restDocumentation) {
         this.mockMvc = webAppContextSetup(webApplicationContext)
                         .apply(springSecurity())
-                        .apply(documentationConfiguration(this.restDocumentation))
+                        .apply(documentationConfiguration(restDocumentation))
                         .build();
 
         jumpdayRepository.deleteAll();
     }
 
     @Test
-    public void testCreateJumpday() throws Exception {
+    void testCreateJumpday() throws Exception {
         String jumpdayJson = json(ModelMockHelper.createJumpday());
 
         mockMvc.perform(RestDocumentationRequestBuilders.post("/api/jumpday/")
@@ -187,7 +183,7 @@ public class JumpdayControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testCreateJumpday_AlreadyExists_DE() throws Exception {
+    void testCreateJumpday_AlreadyExists_DE() throws Exception {
         String jumpdayJson = json(ModelMockHelper.createJumpday());
 
         mockMvc.perform(RestDocumentationRequestBuilders.post("/api/jumpday")
@@ -207,7 +203,7 @@ public class JumpdayControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testCreateJumpday_AlreadyExists_EN() throws Exception {
+    void testCreateJumpday_AlreadyExists_EN() throws Exception {
         String jumpdayJson = json(ModelMockHelper.createJumpday());
 
         mockMvc.perform(RestDocumentationRequestBuilders.post("/api/jumpday")
@@ -228,7 +224,7 @@ public class JumpdayControllerTest extends AbstractSkdvinTest {
 
 
     @Test
-    public void testGetAll() throws Exception {
+    void testGetAll() throws Exception {
         GenericResult<Jumpday> result = jumpdayService.saveJumpday(ModelMockHelper.createJumpday());
         assertTrue(result.isSuccess());
         GenericResult<Jumpday> result2 = jumpdayService.saveJumpday(ModelMockHelper.createJumpday(LocalDate.now().plusDays(1)));
@@ -245,7 +241,7 @@ public class JumpdayControllerTest extends AbstractSkdvinTest {
 
 
     @Test
-    public void testGetAll_OneResult() throws Exception {
+    void testGetAll_OneResult() throws Exception {
         GenericResult<Jumpday> result = jumpdayService.saveJumpday(ModelMockHelper.createJumpday());
         Jumpday jumpday = result.getPayload();
 
@@ -292,7 +288,7 @@ public class JumpdayControllerTest extends AbstractSkdvinTest {
 
 
     @Test
-    public void testGetAll_NoResult() throws Exception {
+    void testGetAll_NoResult() throws Exception {
         mockMvc.perform(get("/api/jumpday/")
                 .header("Authorization", MockJwtDecoder.addHeader(READ_JUMPDAYS)))
                 .andExpect(status().isOk())
@@ -301,7 +297,7 @@ public class JumpdayControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testGetByDate() throws Exception {
+    void testGetByDate() throws Exception {
         GenericResult<Jumpday> result = jumpdayService.saveJumpday(ModelMockHelper.createJumpday());
         Jumpday jumpday = result.getPayload();
 
@@ -349,7 +345,7 @@ public class JumpdayControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testGetByDate_WithTandemmaster() throws Exception {
+    void testGetByDate_WithTandemmaster() throws Exception {
         Tandemmaster tandemmaster = tandemmasterRepository.save(ModelMockHelper.createTandemmaster());
         Jumpday unsavedJumpday = ModelMockHelper.createJumpday();
         unsavedJumpday.setTandemmaster(Collections.singletonList(ModelMockHelper.createAssignment(tandemmaster)));
@@ -410,7 +406,7 @@ public class JumpdayControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testGetByDate_WithVideoflyer() throws Exception {
+    void testGetByDate_WithVideoflyer() throws Exception {
         Videoflyer videoflyer = videoflyerRepository.save(ModelMockHelper.createVideoflyer());
         Jumpday unsavedJumpday = ModelMockHelper.createJumpday();
         unsavedJumpday.setVideoflyer(Collections.singletonList(ModelMockHelper.createAssignment(videoflyer)));
@@ -471,7 +467,7 @@ public class JumpdayControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testGetByDate_WithAppointments() throws Exception {
+    void testGetByDate_WithAppointments() throws Exception {
         // 4 tandem / 2 video at 10:00 and 11:30
         Jumpday jumpday = ModelMockHelper.createJumpday();
         // 1 tandem / 1 video at 10:00
@@ -519,7 +515,7 @@ public class JumpdayControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testGetByDate_NotFound_DE() throws Exception {
+    void testGetByDate_NotFound_DE() throws Exception {
         mockMvc.perform(get("/api/jumpday/{date}", LocalDate.now().toString())
                 .header("Authorization", MockJwtDecoder.addHeader(READ_JUMPDAYS))
                 .header("Accept-Language", "de-DE"))
@@ -529,7 +525,7 @@ public class JumpdayControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testGetByDate_NotFound_EN() throws Exception {
+    void testGetByDate_NotFound_EN() throws Exception {
         mockMvc.perform(get("/api/jumpday/{date}", LocalDate.now().toString())
                 .header("Authorization", MockJwtDecoder.addHeader(READ_JUMPDAYS))
                 .header("Accept-Language", "en-US"))
@@ -539,11 +535,11 @@ public class JumpdayControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testUpdateJumpday() throws Exception {
+    void testUpdateJumpday() throws Exception {
         int newCount = 4;
         Jumpday jumpday = ModelMockHelper.createJumpday();
         Jumpday savedJumpday = jumpdayRepository.save(jumpday);
-        Assert.assertNotNull(savedJumpday);
+        assertNotNull(savedJumpday);
 
         savedJumpday.getSlots().get(0).setTandemTotal(newCount);
 
@@ -609,7 +605,7 @@ public class JumpdayControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testUpdateJumpday_WithTandemmaster() throws Exception {
+    void testUpdateJumpday_WithTandemmaster() throws Exception {
         Tandemmaster tandemmaster = tandemmasterRepository.save(ModelMockHelper.createTandemmaster());
         Jumpday unsavedJumpday = ModelMockHelper.createJumpday();
         unsavedJumpday.setTandemmaster(Collections.singletonList(ModelMockHelper.createAssignment(tandemmaster)));
@@ -710,7 +706,7 @@ public class JumpdayControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testUpdateJumpday_WithVideoflyer() throws Exception {
+    void testUpdateJumpday_WithVideoflyer() throws Exception {
         Videoflyer videoflyer = videoflyerRepository.save(ModelMockHelper.createVideoflyer());
         Jumpday unsavedJumpday = ModelMockHelper.createJumpday();
         unsavedJumpday.setVideoflyer(Collections.singletonList(ModelMockHelper.createAssignment(videoflyer)));
@@ -811,7 +807,7 @@ public class JumpdayControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testUpdateJumpday_Unauthorized() throws Exception {
+    void testUpdateJumpday_Unauthorized() throws Exception {
         Jumpday jumpday = ModelMockHelper.createJumpday();
         String jumpdayJson = json(jumpday);
 
@@ -822,7 +818,7 @@ public class JumpdayControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testUpdateJumpday_NotExisting() throws Exception {
+    void testUpdateJumpday_NotExisting() throws Exception {
         Jumpday jumpday = ModelMockHelper.createJumpday();
         jumpday.setDate(LocalDate.now().plus(1, ChronoUnit.YEARS));
         String jumpdayJson = json(jumpday);
@@ -838,9 +834,9 @@ public class JumpdayControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testUpdateJumpday_InvalidChange() throws Exception {
+    void testUpdateJumpday_InvalidChange() throws Exception {
         Jumpday savedJumpday = jumpdayRepository.save(ModelMockHelper.createJumpday());
-        Assert.assertNotNull(savedJumpday);
+        assertNotNull(savedJumpday);
 
         savedJumpday.getSlots().get(0).setTandemTotal(1);
 
@@ -857,10 +853,10 @@ public class JumpdayControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testUpdateJumpday_AppointmentExists() throws Exception {
+    void testUpdateJumpday_AppointmentExists() throws Exception {
         Jumpday savedJumpday = jumpdayRepository.save(ModelMockHelper.createJumpday());
         appointmentService.saveAppointment(ModelMockHelper.createAppointment(3, 0, 0, 0));
-        Assert.assertNotNull(savedJumpday);
+        assertNotNull(savedJumpday);
 
         savedJumpday.getSlots().get(0).setTandemTotal(2);
 
@@ -877,7 +873,7 @@ public class JumpdayControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testDeleteJumpday() throws Exception {
+    void testDeleteJumpday() throws Exception {
         Jumpday jumpday = ModelMockHelper.createJumpday();
         Jumpday savedJumpday = jumpdayRepository.save(jumpday);
 
@@ -899,7 +895,7 @@ public class JumpdayControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testDeleteJumpday_Unauthorized() throws Exception {
+    void testDeleteJumpday_Unauthorized() throws Exception {
         Jumpday jumpday = ModelMockHelper.createJumpday();
         Jumpday savedJumpday = jumpdayRepository.save(jumpday);
 
@@ -909,7 +905,7 @@ public class JumpdayControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testDeleteJumpday_NotFound() throws Exception {
+    void testDeleteJumpday_NotFound() throws Exception {
         mockMvc.perform(delete("/api/jumpday/{date}", LocalDate.now().plus(1, ChronoUnit.YEARS))
                 .header("Accept-Language", "en-US")
                 .header("Authorization", MockJwtDecoder.addHeader(UPDATE_JUMPDAYS))
@@ -920,11 +916,11 @@ public class JumpdayControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testDeleteJumpday_AppointmentExists() throws Exception {
+    void testDeleteJumpday_AppointmentExists() throws Exception {
         Jumpday jumpday = ModelMockHelper.createJumpday();
         Jumpday savedJumpday = jumpdayRepository.save(jumpday);
         GenericResult<Appointment> result = appointmentService.saveAppointment(ModelMockHelper.createSingleAppointment());
-        Assert.assertTrue(result.isSuccess());
+        assertTrue(result.isSuccess());
 
         mockMvc.perform(delete("/api/jumpday/{date}", savedJumpday.getDate())
                 .header("Accept-Language", "en-US")
