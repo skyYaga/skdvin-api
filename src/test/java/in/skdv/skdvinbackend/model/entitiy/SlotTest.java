@@ -3,18 +3,16 @@ package in.skdv.skdvinbackend.model.entitiy;
 import in.skdv.skdvinbackend.model.common.SlotQuery;
 import in.skdv.skdvinbackend.model.entity.Appointment;
 import in.skdv.skdvinbackend.model.entity.Slot;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class SlotTest {
 
     private Slot slot;
 
-    @Before
+    @BeforeEach
     public void setup() {
         slot = new Slot();
         slot.setTandemTotal(4);
@@ -61,10 +59,10 @@ public class SlotTest {
 
         slot.getAppointments().add(appointment);
 
-        Assert.assertEquals(1, slot.getPicAndVidBooked());
-        Assert.assertEquals(0, slot.getPicAndVidAvailable());
-        Assert.assertEquals(0, slot.getPicOrVidBooked());
-        Assert.assertEquals(1, slot.getPicOrVidAvailable());
+        assertEquals(1, slot.getPicAndVidBooked());
+        assertEquals(0, slot.getPicAndVidAvailable());
+        assertEquals(0, slot.getPicOrVidBooked());
+        assertEquals(1, slot.getPicOrVidAvailable());
     }
 
     @Test
@@ -75,9 +73,9 @@ public class SlotTest {
 
         slot.getAppointments().add(appointment);
 
-        Assert.assertEquals(2, slot.getPicOrVidBooked());
-        Assert.assertEquals(0, slot.getPicOrVidAvailable());
-        Assert.assertEquals(0, slot.getPicAndVidBooked());
-        Assert.assertEquals(0, slot.getPicAndVidAvailable());
+        assertEquals(2, slot.getPicOrVidBooked());
+        assertEquals(0, slot.getPicOrVidAvailable());
+        assertEquals(0, slot.getPicAndVidBooked());
+        assertEquals(0, slot.getPicAndVidAvailable());
     }
 }

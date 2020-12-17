@@ -4,32 +4,40 @@ import in.skdv.skdvinbackend.exception.ErrorMessage;
 import in.skdv.skdvinbackend.exception.JumpdayExistsException;
 import in.skdv.skdvinbackend.exception.JumpdayInternalException;
 import in.skdv.skdvinbackend.util.GenericResult;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.MessageSource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import java.util.Objects;
 
-@RunWith(MockitoJUnitRunner.class)
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+
+@ExtendWith(MockitoExtension.class)
 public class JumdayAdviceTest {
 
     @Mock
     private MessageSource messageSource;
-
     private JumdayAdvice jumdayAdvice;
+    private AutoCloseable closeable;
 
-    @Before
+    @BeforeEach
     public void setup() {
-        MockitoAnnotations.initMocks(this);
+        closeable = MockitoAnnotations.openMocks(this);
         jumdayAdvice = new JumdayAdvice(messageSource);
+    }
+
+    @AfterEach
+    public void releaseMocks() throws Exception {
+        closeable.close();
     }
 
     @Test
@@ -40,9 +48,9 @@ public class JumdayAdviceTest {
 
         ResponseEntity<GenericResult> responseEntity = jumdayAdvice.jumpdayExistsHandler(jumpdayExistsException);
 
-        Assert.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
-        Assert.assertFalse(Objects.requireNonNull(responseEntity.getBody()).isSuccess());
-        Assert.assertEquals(ErrorMessage.JUMPDAY_ALREADY_EXISTS_MSG.toString(), responseEntity.getBody().getMessage());
+        assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+        assertFalse(Objects.requireNonNull(responseEntity.getBody()).isSuccess());
+        assertEquals(ErrorMessage.JUMPDAY_ALREADY_EXISTS_MSG.toString(), responseEntity.getBody().getMessage());
     }
 
     @Test
@@ -54,8 +62,8 @@ public class JumdayAdviceTest {
         ResponseEntity<GenericResult> responseEntity = jumdayAdvice.jumpdayInternalErrorHandler(jumpdayInternalException);
 
 
-        Assert.assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, responseEntity.getStatusCode());
-        Assert.assertFalse(Objects.requireNonNull(responseEntity.getBody()).isSuccess());
-        Assert.assertEquals(ErrorMessage.JUMPDAY_SERVICE_ERROR_MSG.toString(), responseEntity.getBody().getMessage());
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, responseEntity.getStatusCode());
+        assertFalse(Objects.requireNonNull(responseEntity.getBody()).isSuccess());
+        assertEquals(ErrorMessage.JUMPDAY_SERVICE_ERROR_MSG.toString(), responseEntity.getBody().getMessage());
     }
 }

@@ -8,9 +8,8 @@ import in.skdv.skdvinbackend.model.entity.settings.Dropzone;
 import in.skdv.skdvinbackend.service.IEmailService;
 import in.skdv.skdvinbackend.service.ISettingsService;
 import in.skdv.skdvinbackend.util.VerificationTokenUtil;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -20,7 +19,6 @@ import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.thymeleaf.TemplateEngine;
 
@@ -30,10 +28,10 @@ import java.io.IOException;
 import java.util.Locale;
 import java.util.regex.Pattern;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-@RunWith(SpringRunner.class)
+
 @SpringBootTest
 public class EmailServiceTest extends AbstractSkdvinTest {
 
@@ -54,7 +52,7 @@ public class EmailServiceTest extends AbstractSkdvinTest {
     @Autowired
     private MessageSource emailMessageSource;
 
-    @Before
+    @BeforeEach
     public void setup() {
         Mockito.reset(settingsService);
 

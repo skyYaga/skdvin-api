@@ -3,10 +3,10 @@ package in.skdv.skdvinbackend.model.converter;
 import in.skdv.skdvinbackend.ModelMockHelper;
 import in.skdv.skdvinbackend.model.dto.SettingsDTO;
 import in.skdv.skdvinbackend.model.entity.settings.Settings;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 public class SettingsConverterTest {
 

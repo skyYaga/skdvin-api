@@ -9,8 +9,8 @@ import com.auth0.json.mgmt.users.User;
 import com.auth0.json.mgmt.users.UsersPage;
 import com.auth0.net.Request;
 import in.skdv.skdvinbackend.model.dto.UserDTO;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import java.util.ArrayList;
@@ -18,17 +18,18 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
+
 
 public class Auth0UserServiceTest {
 
     private ManagementAPI managementAPI;
     private Auth0UserService auth0UserService;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         managementAPI = Mockito.mock(ManagementAPI.class);
         auth0UserService = new Auth0UserService(managementAPI);

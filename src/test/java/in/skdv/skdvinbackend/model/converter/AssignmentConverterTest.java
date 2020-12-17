@@ -8,11 +8,12 @@ import in.skdv.skdvinbackend.model.dto.VideoflyerDTO;
 import in.skdv.skdvinbackend.model.entity.Assignment;
 import in.skdv.skdvinbackend.model.entity.Tandemmaster;
 import in.skdv.skdvinbackend.model.entity.Videoflyer;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
 import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class AssignmentConverterTest {
 
@@ -21,13 +22,13 @@ public class AssignmentConverterTest {
     @Test
     public void testConvertToSimpleAssignment() {
         SimpleAssignment simpleAssignment = converter.convertToSimpleAssignment(ModelMockHelper.createAssignment(new Tandemmaster()));
-        Assert.assertNotNull(simpleAssignment);
-        Assert.assertTrue(simpleAssignment.isAssigned());
+        assertNotNull(simpleAssignment);
+        assertTrue(simpleAssignment.isAssigned());
     }
 
     @Test
     public void testConvertToSimpleAssignment_Null() {
-        Assert.assertNull(converter.convertToSimpleAssignment(null));
+        assertNull(converter.convertToSimpleAssignment(null));
     }
 
     @Test
@@ -37,14 +38,14 @@ public class AssignmentConverterTest {
 
         Assignment assignment = converter.convertToAssignment(simpleAssignment, tandemmaster);
 
-        Assert.assertNotNull(assignment);
-        Assert.assertEquals(tandemmaster.getFirstName(), assignment.getFlyer().getFirstName());
-        Assert.assertTrue(assignment.isAssigned());
+        assertNotNull(assignment);
+        assertEquals(tandemmaster.getFirstName(), assignment.getFlyer().getFirstName());
+        assertTrue(assignment.isAssigned());
     }
 
     @Test
     public void testConvertToAssignment_Null() {
-        Assert.assertNull(converter.convertToAssignment(null, null));
+        assertNull(converter.convertToAssignment(null, null));
     }
 
     @Test
@@ -55,13 +56,13 @@ public class AssignmentConverterTest {
 
         AssignmentDTO<TandemmasterDTO> assignmentDTO = converter.convertToTandemmasterAssignmentDTO(assignment);
 
-        Assert.assertTrue(assignmentDTO.getFlyer() instanceof TandemmasterDTO);
-        Assert.assertEquals(tandemmaster.getFirstName(), assignmentDTO.getFlyer().getFirstName());
+        assertTrue(assignmentDTO.getFlyer() instanceof TandemmasterDTO);
+        assertEquals(tandemmaster.getFirstName(), assignmentDTO.getFlyer().getFirstName());
     }
 
     @Test
     public void testConvertTandemmasterAssignment_Null() {
-        Assert.assertNull(converter.convertToTandemmasterAssignmentDTO((Assignment<Tandemmaster>) null));
+        assertNull(converter.convertToTandemmasterAssignmentDTO((Assignment<Tandemmaster>) null));
     }
 
     @Test
@@ -73,13 +74,13 @@ public class AssignmentConverterTest {
 
         List<AssignmentDTO<TandemmasterDTO>> assignmentDTOs = converter.convertToTandemmasterAssignmentDTO(assignments);
 
-        Assert.assertTrue(assignmentDTOs.get(0).getFlyer() instanceof TandemmasterDTO);
-        Assert.assertEquals(tandemmaster.getFirstName(), assignmentDTOs.get(0).getFlyer().getFirstName());
+        assertTrue(assignmentDTOs.get(0).getFlyer() instanceof TandemmasterDTO);
+        assertEquals(tandemmaster.getFirstName(), assignmentDTOs.get(0).getFlyer().getFirstName());
     }
 
     @Test
     public void testConvertTandemmasterAssignmentList_Null() {
-        Assert.assertEquals(0, converter.convertToTandemmasterAssignmentDTO((List<Assignment<Tandemmaster>>) null).size());
+        assertEquals(0, converter.convertToTandemmasterAssignmentDTO((List<Assignment<Tandemmaster>>) null).size());
     }
 
     @Test
@@ -90,13 +91,13 @@ public class AssignmentConverterTest {
 
         AssignmentDTO<VideoflyerDTO> assignmentDTO = converter.convertToVideoflyerAssignmentDTO(assignment);
 
-        Assert.assertTrue(assignmentDTO.getFlyer() instanceof VideoflyerDTO);
-        Assert.assertEquals(tandemmaster.getFirstName(), assignmentDTO.getFlyer().getFirstName());
+        assertTrue(assignmentDTO.getFlyer() instanceof VideoflyerDTO);
+        assertEquals(tandemmaster.getFirstName(), assignmentDTO.getFlyer().getFirstName());
     }
 
     @Test
     public void testConvertVideoflyerAssignment_Null() {
-        Assert.assertNull(converter.convertToVideoflyerAssignmentDTO((Assignment<Videoflyer>) null));
+        assertNull(converter.convertToVideoflyerAssignmentDTO((Assignment<Videoflyer>) null));
     }
 
     @Test
@@ -108,12 +109,12 @@ public class AssignmentConverterTest {
 
         List<AssignmentDTO<VideoflyerDTO>> assignmentDTOs = converter.convertToVideoflyerAssignmentDTO(assignments);
 
-        Assert.assertTrue(assignmentDTOs.get(0).getFlyer() instanceof VideoflyerDTO);
-        Assert.assertEquals(tandemmaster.getFirstName(), assignmentDTOs.get(0).getFlyer().getFirstName());
+        assertTrue(assignmentDTOs.get(0).getFlyer() instanceof VideoflyerDTO);
+        assertEquals(tandemmaster.getFirstName(), assignmentDTOs.get(0).getFlyer().getFirstName());
     }
 
     @Test
     public void testConvertVideoflyerAssignmentList_Null() {
-        Assert.assertEquals(0, converter.convertToVideoflyerAssignmentDTO((List<Assignment<Videoflyer>>) null).size());
+        assertEquals(0, converter.convertToVideoflyerAssignmentDTO((List<Assignment<Videoflyer>>) null).size());
     }
 }

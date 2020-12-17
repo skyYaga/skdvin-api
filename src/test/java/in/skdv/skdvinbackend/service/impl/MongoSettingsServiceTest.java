@@ -7,19 +7,17 @@ import in.skdv.skdvinbackend.model.entity.settings.CommonSettings;
 import in.skdv.skdvinbackend.model.entity.settings.Settings;
 import in.skdv.skdvinbackend.repository.SettingsRepository;
 import in.skdv.skdvinbackend.service.ISettingsService;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-@RunWith(SpringRunner.class)
+import static org.junit.jupiter.api.Assertions.*;
+
 @SpringBootTest
 public class MongoSettingsServiceTest extends AbstractSkdvinTest {
 
@@ -29,7 +27,7 @@ public class MongoSettingsServiceTest extends AbstractSkdvinTest {
     @Autowired
     private SettingsRepository settingsRepository;
 
-    @Before
+    @BeforeEach
     public void setup() {
         settingsRepository.deleteAll();
     }
@@ -40,9 +38,9 @@ public class MongoSettingsServiceTest extends AbstractSkdvinTest {
 
         Settings saved = settingsService.saveSettings(settings);
 
-        Assert.assertNotNull(saved.getId());
-        Assert.assertEquals(5, saved.getAdminSettings().getTandemCount());
-        Assert.assertEquals("Example DZ", saved.getCommonSettings().get(Locale.GERMAN.getLanguage()).getDropzone().getName());
+        assertNotNull(saved.getId());
+        assertEquals(5, saved.getAdminSettings().getTandemCount());
+        assertEquals("Example DZ", saved.getCommonSettings().get(Locale.GERMAN.getLanguage()).getDropzone().getName());
     }
 
     @Test
@@ -50,7 +48,7 @@ public class MongoSettingsServiceTest extends AbstractSkdvinTest {
         settingsService.saveSettings(ModelMockHelper.createSettings());
         settingsService.saveSettings(ModelMockHelper.createSettings());
 
-        Assert.assertEquals(1, settingsRepository.findAll().size());
+        assertEquals(1, settingsRepository.findAll().size());
     }
 
     @Test
@@ -61,8 +59,8 @@ public class MongoSettingsServiceTest extends AbstractSkdvinTest {
 
         List<Settings> savedSettings = settingsRepository.findAll();
 
-        Assert.assertEquals(1, savedSettings.size());
-        Assert.assertEquals(2, savedSettings.get(0).getCommonSettings().size());
+        assertEquals(1, savedSettings.size());
+        assertEquals(2, savedSettings.get(0).getCommonSettings().size());
     }
 
     @Test
@@ -72,14 +70,14 @@ public class MongoSettingsServiceTest extends AbstractSkdvinTest {
 
         Settings loadedSettings = settingsService.getSettings();
 
-        Assert.assertEquals(settings.getAdminSettings().getTandemsFrom(), loadedSettings.getAdminSettings().getTandemsFrom());
+        assertEquals(settings.getAdminSettings().getTandemsFrom(), loadedSettings.getAdminSettings().getTandemsFrom());
     }
 
     @Test
     public void testGetSettings_NullIfNotFound() {
         Settings loadedSettings = settingsService.getSettings();
 
-        Assert.assertNull(loadedSettings);
+        assertNull(loadedSettings);
     }
 
     @Test
@@ -88,8 +86,8 @@ public class MongoSettingsServiceTest extends AbstractSkdvinTest {
 
         AdminSettings adminSettings = settingsService.getAdminSettings();
 
-        Assert.assertNotNull(adminSettings);
-        Assert.assertEquals(settings.getAdminSettings().getTandemsFrom(), adminSettings.getTandemsFrom());
+        assertNotNull(adminSettings);
+        assertEquals(settings.getAdminSettings().getTandemsFrom(), adminSettings.getTandemsFrom());
     }
 
     @Test
@@ -98,8 +96,8 @@ public class MongoSettingsServiceTest extends AbstractSkdvinTest {
 
         Map<String, CommonSettings> commonSettings = settingsService.getCommonSettings();
 
-        Assert.assertEquals(1, commonSettings.size());
-        Assert.assertEquals(settings.getCommonSettings().get(Locale.GERMAN.getLanguage()).getDropzone().getPriceListUrl(),
+        assertEquals(1, commonSettings.size());
+        assertEquals(settings.getCommonSettings().get(Locale.GERMAN.getLanguage()).getDropzone().getPriceListUrl(),
                 commonSettings.get(Locale.GERMAN.getLanguage()).getDropzone().getPriceListUrl());
     }
 
@@ -107,14 +105,14 @@ public class MongoSettingsServiceTest extends AbstractSkdvinTest {
     public void testGetAdminSettings_Null() {
         AdminSettings adminSettings = settingsService.getAdminSettings();
 
-        Assert.assertNull(adminSettings);
+        assertNull(adminSettings);
     }
 
     @Test
     public void testGetCommonSettings_Empty() {
         Map<String, CommonSettings> commonSettings = settingsService.getCommonSettings();
 
-        Assert.assertEquals(0, commonSettings.size());
+        assertEquals(0, commonSettings.size());
     }
 
     @Test
@@ -123,7 +121,7 @@ public class MongoSettingsServiceTest extends AbstractSkdvinTest {
 
         CommonSettings commonSettings = settingsService.getCommonSettingsByLanguage(Locale.GERMAN.getLanguage());
 
-        Assert.assertEquals(settings.getCommonSettings().get(Locale.GERMAN.getLanguage()).getDropzone().getPriceListUrl(), commonSettings.getDropzone().getPriceListUrl());
+        assertEquals(settings.getCommonSettings().get(Locale.GERMAN.getLanguage()).getDropzone().getPriceListUrl(), commonSettings.getDropzone().getPriceListUrl());
     }
 
     @Test
@@ -132,8 +130,8 @@ public class MongoSettingsServiceTest extends AbstractSkdvinTest {
 
         CommonSettings commonSettings = settingsService.getCommonSettingsByLanguage(Locale.ENGLISH.getLanguage());
 
-        Assert.assertNotNull(commonSettings);
-        Assert.assertEquals(settings.getCommonSettings().get(Locale.GERMAN.getLanguage()).getDropzone().getPriceListUrl(), commonSettings.getDropzone().getPriceListUrl());
+        assertNotNull(commonSettings);
+        assertEquals(settings.getCommonSettings().get(Locale.GERMAN.getLanguage()).getDropzone().getPriceListUrl(), commonSettings.getDropzone().getPriceListUrl());
     }
 
     private Settings saveExampleSettings() {

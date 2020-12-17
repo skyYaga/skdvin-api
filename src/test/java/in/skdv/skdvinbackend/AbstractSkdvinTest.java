@@ -1,7 +1,7 @@
 package in.skdv.skdvinbackend;
 
 import com.auth0.client.mgmt.ManagementAPI;
-import org.junit.Before;
+import org.junit.jupiter.api.BeforeEach;
 import org.mockito.Mockito;
 import org.mockito.stubbing.Answer;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -24,7 +24,7 @@ public abstract class AbstractSkdvinTest {
     @MockBean
     public ManagementAPI managementAPI;
 
-    @Before
+    @BeforeEach
     public void initJwtMock() {
         Mockito.when(jwtDecoder.decode(Mockito.anyString()))
                 .thenAnswer((Answer<Jwt>) invocation -> MockJwtDecoder.decode(invocation.getArgument(0)));

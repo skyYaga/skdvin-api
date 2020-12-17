@@ -11,22 +11,19 @@ import in.skdv.skdvinbackend.repository.TandemmasterRepository;
 import in.skdv.skdvinbackend.service.IAppointmentService;
 import in.skdv.skdvinbackend.service.IJumpdayService;
 import in.skdv.skdvinbackend.util.GenericResult;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
-@RunWith(SpringRunner.class)
+
 @SpringBootTest
 public class MongoJumpdayServiceTest extends AbstractSkdvinTest {
 
@@ -42,7 +39,7 @@ public class MongoJumpdayServiceTest extends AbstractSkdvinTest {
     @Autowired
     IAppointmentService appointmentService;
 
-    @Before
+    @BeforeEach
     public void setup() {
         jumpdayRepository.deleteAll();
     }
@@ -139,9 +136,9 @@ public class MongoJumpdayServiceTest extends AbstractSkdvinTest {
 
         GenericResult<Jumpday> result = jumpdayService.updateJumpday(changedJumpday.getDate(), changedJumpday);
 
-        Assert.assertNotNull(result);
-        Assert.assertTrue(result.isSuccess());
-        Assert.assertEquals(2, result.getPayload().getSlots().get(0).getTandemTotal());
+        assertNotNull(result);
+        assertTrue(result.isSuccess());
+        assertEquals(2, result.getPayload().getSlots().get(0).getTandemTotal());
     }
 
     @Test
@@ -152,9 +149,9 @@ public class MongoJumpdayServiceTest extends AbstractSkdvinTest {
 
         GenericResult<Jumpday> result = jumpdayService.updateJumpday(jumpday.getDate(), jumpday);
 
-        Assert.assertNotNull(result);
-        Assert.assertFalse(result.isSuccess());
-        Assert.assertEquals(ErrorMessage.JUMPDAY_NOT_FOUND_MSG.toString(), result.getMessage());
+        assertNotNull(result);
+        assertFalse(result.isSuccess());
+        assertEquals(ErrorMessage.JUMPDAY_NOT_FOUND_MSG.toString(), result.getMessage());
     }
 
     @Test
@@ -167,9 +164,9 @@ public class MongoJumpdayServiceTest extends AbstractSkdvinTest {
 
         GenericResult<Jumpday> result = jumpdayService.updateJumpday(changedJumpday.getDate(), changedJumpday);
 
-        Assert.assertNotNull(result);
-        Assert.assertTrue(result.isSuccess());
-        Assert.assertEquals(1, result.getPayload().getSlots().size());
+        assertNotNull(result);
+        assertTrue(result.isSuccess());
+        assertEquals(1, result.getPayload().getSlots().size());
     }
 
     @Test
@@ -188,9 +185,9 @@ public class MongoJumpdayServiceTest extends AbstractSkdvinTest {
 
         GenericResult<Jumpday> result = jumpdayService.updateJumpday(changedJumpday.getDate(), changedJumpday);
 
-        Assert.assertNotNull(result);
-        Assert.assertTrue(result.isSuccess());
-        Assert.assertEquals(3, result.getPayload().getSlots().size());
+        assertNotNull(result);
+        assertTrue(result.isSuccess());
+        assertEquals(3, result.getPayload().getSlots().size());
     }
 
     @Test
@@ -205,9 +202,9 @@ public class MongoJumpdayServiceTest extends AbstractSkdvinTest {
 
         GenericResult<Jumpday> result = jumpdayService.updateJumpday(changedJumpday.getDate(), changedJumpday);
 
-        Assert.assertNotNull(result);
-        Assert.assertFalse(result.isSuccess());
-        Assert.assertEquals(ErrorMessage.JUMPDAY_SLOT_HAS_APPOINTMENTS.toString(), result.getMessage());
+        assertNotNull(result);
+        assertFalse(result.isSuccess());
+        assertEquals(ErrorMessage.JUMPDAY_SLOT_HAS_APPOINTMENTS.toString(), result.getMessage());
     }
 
     @Test
@@ -223,9 +220,9 @@ public class MongoJumpdayServiceTest extends AbstractSkdvinTest {
 
         GenericResult<Jumpday> result = jumpdayService.updateJumpday(changedJumpday.getDate(), changedJumpday);
 
-        Assert.assertNotNull(result);
-        Assert.assertFalse(result.isSuccess());
-        Assert.assertEquals(ErrorMessage.JUMPDAY_SLOT_HAS_APPOINTMENTS.toString(), result.getMessage());
+        assertNotNull(result);
+        assertFalse(result.isSuccess());
+        assertEquals(ErrorMessage.JUMPDAY_SLOT_HAS_APPOINTMENTS.toString(), result.getMessage());
     }
 
     @Test
@@ -238,9 +235,9 @@ public class MongoJumpdayServiceTest extends AbstractSkdvinTest {
 
         GenericResult<Jumpday> result = jumpdayService.updateJumpday(changedJumpday.getDate(), changedJumpday);
 
-        Assert.assertNotNull(result);
-        Assert.assertFalse(result.isSuccess());
-        Assert.assertEquals(ErrorMessage.JUMPDAY_INVALID.toString(), result.getMessage());
+        assertNotNull(result);
+        assertFalse(result.isSuccess());
+        assertEquals(ErrorMessage.JUMPDAY_INVALID.toString(), result.getMessage());
     }
 
     @Test
@@ -254,9 +251,9 @@ public class MongoJumpdayServiceTest extends AbstractSkdvinTest {
 
         GenericResult<Jumpday> result = jumpdayService.updateJumpday(changedJumpday.getDate(), changedJumpday);
 
-        Assert.assertNotNull(result);
-        Assert.assertFalse(result.isSuccess());
-        Assert.assertEquals(ErrorMessage.JUMPDAY_INVALID.toString(), result.getMessage());
+        assertNotNull(result);
+        assertFalse(result.isSuccess());
+        assertEquals(ErrorMessage.JUMPDAY_INVALID.toString(), result.getMessage());
     }
 
     @Test
@@ -266,8 +263,8 @@ public class MongoJumpdayServiceTest extends AbstractSkdvinTest {
 
         GenericResult<Void> result = jumpdayService.deleteJumpday(initialResult.getPayload().getDate());
 
-        Assert.assertNotNull(result);
-        Assert.assertTrue(result.isSuccess());
+        assertNotNull(result);
+        assertTrue(result.isSuccess());
     }
 
     @Test
@@ -279,9 +276,9 @@ public class MongoJumpdayServiceTest extends AbstractSkdvinTest {
 
         GenericResult<Void> result = jumpdayService.deleteJumpday(initialResult.getPayload().getDate());
 
-        Assert.assertNotNull(result);
-        Assert.assertFalse(result.isSuccess());
-        Assert.assertEquals(ErrorMessage.JUMPDAY_HAS_APPOINTMENTS.toString(), result.getMessage());
+        assertNotNull(result);
+        assertFalse(result.isSuccess());
+        assertEquals(ErrorMessage.JUMPDAY_HAS_APPOINTMENTS.toString(), result.getMessage());
     }
 
     @Test
@@ -291,9 +288,9 @@ public class MongoJumpdayServiceTest extends AbstractSkdvinTest {
 
         GenericResult<Void> result = jumpdayService.deleteJumpday(jumpday.getDate());
 
-        Assert.assertNotNull(result);
-        Assert.assertFalse(result.isSuccess());
-        Assert.assertEquals(ErrorMessage.JUMPDAY_NOT_FOUND_MSG.toString(), result.getMessage());
+        assertNotNull(result);
+        assertFalse(result.isSuccess());
+        assertEquals(ErrorMessage.JUMPDAY_NOT_FOUND_MSG.toString(), result.getMessage());
     }
 
 }

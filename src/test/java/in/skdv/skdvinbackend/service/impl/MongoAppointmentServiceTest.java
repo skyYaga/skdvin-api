@@ -11,13 +11,10 @@ import in.skdv.skdvinbackend.repository.JumpdayRepository;
 import in.skdv.skdvinbackend.service.IAppointmentService;
 import in.skdv.skdvinbackend.util.GenericResult;
 import in.skdv.skdvinbackend.util.VerificationTokenUtil;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.*;
@@ -25,10 +22,9 @@ import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.List;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 
-@RunWith(SpringRunner.class)
 @SpringBootTest
 public class MongoAppointmentServiceTest extends AbstractSkdvinTest {
 
@@ -38,7 +34,7 @@ public class MongoAppointmentServiceTest extends AbstractSkdvinTest {
     @Autowired
     private IAppointmentService appointmentService;
 
-    @Before
+    @BeforeEach
     public void setup() {
         // Set mock clock
         Clock mockClock = Clock.fixed(Instant.parse(LocalDate.now().toString() + "T00:00:00Z"), ZoneOffset.UTC);
@@ -433,7 +429,7 @@ public class MongoAppointmentServiceTest extends AbstractSkdvinTest {
 
         List<Appointment> unconfirmedAppointments = appointmentService.findUnconfirmedAppointments();
 
-        Assert.assertEquals(1, unconfirmedAppointments.size());
+        assertEquals(1, unconfirmedAppointments.size());
     }
 
     @Test
@@ -447,7 +443,7 @@ public class MongoAppointmentServiceTest extends AbstractSkdvinTest {
 
         List<Appointment> unconfirmedAppointments = appointmentService.findUnconfirmedAppointments();
 
-        Assert.assertEquals(0, unconfirmedAppointments.size());
+        assertEquals(0, unconfirmedAppointments.size());
     }
 
     @Test
@@ -458,7 +454,7 @@ public class MongoAppointmentServiceTest extends AbstractSkdvinTest {
 
         List<Appointment> unconfirmedAppointments = appointmentService.findUnconfirmedAppointments();
 
-        Assert.assertEquals(0, unconfirmedAppointments.size());
+        assertEquals(0, unconfirmedAppointments.size());
     }
 
     @Test
@@ -468,7 +464,7 @@ public class MongoAppointmentServiceTest extends AbstractSkdvinTest {
 
         appointmentService.deleteAppointment(appointment.getAppointmentId());
 
-        Assert.assertNull(appointmentService.findAppointment(appointment.getAppointmentId()));
+        assertNull(appointmentService.findAppointment(appointment.getAppointmentId()));
     }
 
     @Test

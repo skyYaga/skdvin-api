@@ -1,10 +1,12 @@
 package in.skdv.skdvinbackend.util;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.security.oauth2.jwt.Jwt;
 
 import java.util.Collections;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class AudienceValidatorTest {
 
@@ -13,13 +15,13 @@ public class AudienceValidatorTest {
     @Test
     public void testValidator_Valid() {
         AudienceValidator audienceValidator = new AudienceValidator("foo");
-        Assert.assertFalse(audienceValidator.validate(jwt).hasErrors());
+        assertFalse(audienceValidator.validate(jwt).hasErrors());
     }
 
     @Test
     public void testValidator_Invalid() {
         AudienceValidator audienceValidator = new AudienceValidator("bar");
-        Assert.assertTrue(audienceValidator.validate(jwt).hasErrors());
+        assertTrue(audienceValidator.validate(jwt).hasErrors());
     }
 
     private Jwt createJwt() {

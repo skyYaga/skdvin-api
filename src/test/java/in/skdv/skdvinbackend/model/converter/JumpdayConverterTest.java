@@ -5,8 +5,7 @@ import in.skdv.skdvinbackend.model.dto.JumpdayDTO;
 import in.skdv.skdvinbackend.model.dto.TandemmasterDTO;
 import in.skdv.skdvinbackend.model.dto.VideoflyerDTO;
 import in.skdv.skdvinbackend.model.entity.Jumpday;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -15,8 +14,7 @@ import java.util.Collections;
 import java.util.List;
 
 import static in.skdv.skdvinbackend.ModelMockHelper.*;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class JumpdayConverterTest {
 
@@ -65,7 +63,7 @@ public class JumpdayConverterTest {
     @Test
     public void convertToDtoList_Null() {
         List<Jumpday> jumpdays = null;
-        assertEquals( 0, converter.convertToDto(jumpdays).size());
+        assertEquals(0, converter.convertToDto(jumpdays).size());
     }
 
     @Test
@@ -81,11 +79,11 @@ public class JumpdayConverterTest {
 
         JumpdayDTO jumpdayDTO = converter.convertToDto(jumpday);
 
-        Assert.assertTrue(jumpdayDTO.getTandemmaster().get(0) instanceof AssignmentDTO);
-        Assert.assertTrue(jumpdayDTO.getTandemmaster().get(0).getFlyer() instanceof TandemmasterDTO);
-        Assert.assertTrue(jumpdayDTO.getVideoflyer().get(0) instanceof AssignmentDTO);
-        Assert.assertTrue(jumpdayDTO.getVideoflyer().get(0).getFlyer() instanceof VideoflyerDTO);
-        Assert.assertEquals(jumpday.getTandemmaster().size(), jumpdayDTO.getTandemmaster().size());
-        Assert.assertEquals(jumpday.getVideoflyer().size(), jumpdayDTO.getVideoflyer().size());
+        assertTrue(jumpdayDTO.getTandemmaster().get(0) instanceof AssignmentDTO);
+        assertTrue(jumpdayDTO.getTandemmaster().get(0).getFlyer() instanceof TandemmasterDTO);
+        assertTrue(jumpdayDTO.getVideoflyer().get(0) instanceof AssignmentDTO);
+        assertTrue(jumpdayDTO.getVideoflyer().get(0).getFlyer() instanceof VideoflyerDTO);
+        assertEquals(jumpday.getTandemmaster().size(), jumpdayDTO.getTandemmaster().size());
+        assertEquals(jumpday.getVideoflyer().size(), jumpdayDTO.getVideoflyer().size());
     }
 }

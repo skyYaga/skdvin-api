@@ -3,11 +3,13 @@ package in.skdv.skdvinbackend.model.converter;
 import in.skdv.skdvinbackend.ModelMockHelper;
 import in.skdv.skdvinbackend.model.dto.AppointmentDTO;
 import in.skdv.skdvinbackend.model.entity.Appointment;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 public class AppointmentConverterTest {
 
@@ -19,10 +21,10 @@ public class AppointmentConverterTest {
 
         AppointmentDTO appointmentDTO = converter.convertToDto(appointment);
 
-        Assert.assertEquals(appointment.getDate(), appointmentDTO.getDate());
-        Assert.assertEquals(appointment.getCustomer(), appointmentDTO.getCustomer());
-        Assert.assertEquals(appointment.getTandem(), appointmentDTO.getTandem());
-        Assert.assertEquals(appointment.getPicOrVid(), appointmentDTO.getPicOrVid());
+        assertEquals(appointment.getDate(), appointmentDTO.getDate());
+        assertEquals(appointment.getCustomer(), appointmentDTO.getCustomer());
+        assertEquals(appointment.getTandem(), appointmentDTO.getTandem());
+        assertEquals(appointment.getPicOrVid(), appointmentDTO.getPicOrVid());
     }
 
     @Test
@@ -33,9 +35,9 @@ public class AppointmentConverterTest {
 
         List<AppointmentDTO> appointmentDTOList = converter.convertToDto(appointments);
 
-        Assert.assertEquals(appointments.size(), appointmentDTOList.size());
-        Assert.assertEquals(appointment1.getCustomer(), appointmentDTOList.get(0).getCustomer());
-        Assert.assertEquals(appointment2.getTandem(), appointmentDTOList.get(1).getTandem());
+        assertEquals(appointments.size(), appointmentDTOList.size());
+        assertEquals(appointment1.getCustomer(), appointmentDTOList.get(0).getCustomer());
+        assertEquals(appointment2.getTandem(), appointmentDTOList.get(1).getTandem());
     }
 
     @Test
@@ -45,27 +47,27 @@ public class AppointmentConverterTest {
 
         appointment = converter.convertToEntity(appointmentDTO);
 
-        Assert.assertEquals(appointmentDTO.getDate(), appointment.getDate());
-        Assert.assertEquals(appointmentDTO.getCustomer(), appointment.getCustomer());
-        Assert.assertEquals(appointmentDTO.getTandem(), appointment.getTandem());
-        Assert.assertEquals(appointmentDTO.getPicOrVid(), appointment.getPicOrVid());
+        assertEquals(appointmentDTO.getDate(), appointment.getDate());
+        assertEquals(appointmentDTO.getCustomer(), appointment.getCustomer());
+        assertEquals(appointmentDTO.getTandem(), appointment.getTandem());
+        assertEquals(appointmentDTO.getPicOrVid(), appointment.getPicOrVid());
 
     }
 
     @Test
     public void convertToDto_Null() {
         Appointment appointment = null;
-        Assert.assertNull(converter.convertToDto(appointment));
+        assertNull(converter.convertToDto(appointment));
     }
 
     @Test
     public void convertToDtoList_Null() {
         List<Appointment> appointments = null;
-        Assert.assertEquals( 0, converter.convertToDto(appointments).size());
+        assertEquals( 0, converter.convertToDto(appointments).size());
     }
 
     @Test
     public void convertToEntity_Null() {
-        Assert.assertNull(converter.convertToEntity(null));
+        assertNull(converter.convertToEntity(null));
     }
 }
