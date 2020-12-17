@@ -15,10 +15,9 @@ import in.skdv.skdvinbackend.repository.VideoflyerRepository;
 import in.skdv.skdvinbackend.service.IJumpdayService;
 import in.skdv.skdvinbackend.service.ISettingsService;
 import in.skdv.skdvinbackend.service.IVideoflyerService;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.restdocs.RestDocsMockMvcConfigurationCustomizer;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -29,12 +28,12 @@ import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.mock.http.MockHttpOutputMessage;
-import org.springframework.restdocs.JUnitRestDocumentation;
+import org.springframework.restdocs.RestDocumentationContextProvider;
+import org.springframework.restdocs.RestDocumentationExtension;
 import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation;
 import org.springframework.restdocs.mockmvc.MockMvcRestDocumentationConfigurer;
 import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders;
 import org.springframework.restdocs.mockmvc.RestDocumentationResultHandler;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.context.WebApplicationContext;
 
@@ -48,7 +47,6 @@ import java.util.Map;
 import static in.skdv.skdvinbackend.config.Authorities.*;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.when;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
@@ -58,17 +56,15 @@ import static org.springframework.restdocs.payload.PayloadDocumentation.*;
 import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
 import static org.springframework.restdocs.request.RequestDocumentation.pathParameters;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
+import static org.springframework.test.util.AssertionErrors.assertNotNull;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppContextSetup;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(RestDocumentationExtension.class)
 @SpringBootTest
-public class VideoflyerControllerTest extends AbstractSkdvinTest {
-
-    @Rule
-    public JUnitRestDocumentation restDocumentation = new JUnitRestDocumentation();
+class VideoflyerControllerTest extends AbstractSkdvinTest {
 
     private MediaType contentType = new MediaType(MediaType.APPLICATION_JSON.getType(),
             MediaType.APPLICATION_JSON.getSubtype(),
@@ -110,11 +106,11 @@ public class VideoflyerControllerTest extends AbstractSkdvinTest {
                 this.mappingJackson2HttpMessageConverter);
     }
 
-    @Before
-    public void setup() {
+    @BeforeEach
+    void setup(RestDocumentationContextProvider restDocumentation) {
         this.mockMvc = webAppContextSetup(webApplicationContext)
                 .apply(springSecurity())
-                .apply(documentationConfiguration(this.restDocumentation))
+                .apply(documentationConfiguration(restDocumentation))
                 .build();
 
         videoflyerRepository.deleteAll();
@@ -124,7 +120,7 @@ public class VideoflyerControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testCreateVideoflyer() throws Exception {
+    void testCreateVideoflyer() throws Exception {
         String videoflyerJson = json(ModelMockHelper.createVideoflyer());
 
         mockMvc.perform(RestDocumentationRequestBuilders.post("/api/videoflyer/")
@@ -155,7 +151,7 @@ public class VideoflyerControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testCreateVideoflyer_Unauthorized() throws Exception {
+    void testCreateVideoflyer_Unauthorized() throws Exception {
         String videoflyerJson = json(ModelMockHelper.createVideoflyer());
 
         mockMvc.perform(post("/api/videoflyer/")
@@ -165,7 +161,7 @@ public class VideoflyerControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testGetAllVideoflyers() throws Exception {
+    void testGetAllVideoflyers() throws Exception {
         videoflyerRepository.save(ModelMockHelper.createVideoflyer());
         videoflyerRepository.save(ModelMockHelper.createVideoflyer("john", "doe"));
 
@@ -190,7 +186,7 @@ public class VideoflyerControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testGetAllVideoflyers_Unauthorized() throws Exception {
+    void testGetAllVideoflyers_Unauthorized() throws Exception {
         videoflyerRepository.save(ModelMockHelper.createVideoflyer());
         videoflyerRepository.save(ModelMockHelper.createVideoflyer("john", "doe"));
 
@@ -200,7 +196,7 @@ public class VideoflyerControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testUpdateVideoflyer() throws Exception {
+    void testUpdateVideoflyer() throws Exception {
         Videoflyer videoflyer = videoflyerRepository.save(ModelMockHelper.createVideoflyer());
         videoflyer.setEmail("foo@example.com");
         videoflyer.setPicAndVid(true);
@@ -240,7 +236,7 @@ public class VideoflyerControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testUpdateVideoflyer_Unauthorized() throws Exception {
+    void testUpdateVideoflyer_Unauthorized() throws Exception {
         Videoflyer videoflyer = videoflyerRepository.save(ModelMockHelper.createVideoflyer());
         videoflyer.setEmail("foo@example.com");
         videoflyer.setPicAndVid(true);
@@ -254,7 +250,7 @@ public class VideoflyerControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testUpdateVideoflyer_NotFound() throws Exception {
+    void testUpdateVideoflyer_NotFound() throws Exception {
         Videoflyer videoflyer = videoflyerRepository.save(ModelMockHelper.createVideoflyer());
         String videoflyerJson = json(videoflyer);
 
@@ -270,7 +266,7 @@ public class VideoflyerControllerTest extends AbstractSkdvinTest {
 
 
     @Test
-    public void testDeleteVideoflyer() throws Exception {
+    void testDeleteVideoflyer() throws Exception {
         Videoflyer videoflyer = videoflyerRepository.save(ModelMockHelper.createVideoflyer());
 
         mockMvc.perform(RestDocumentationRequestBuilders.delete("/api/videoflyer/{id}", videoflyer.getId())
@@ -290,7 +286,7 @@ public class VideoflyerControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testDeleteVideoflyer_Unauthorized() throws Exception {
+    void testDeleteVideoflyer_Unauthorized() throws Exception {
         Videoflyer videoflyer = videoflyerRepository.save(ModelMockHelper.createVideoflyer());
 
         mockMvc.perform(delete("/api/videoflyer/{id}", videoflyer.getId())
@@ -299,7 +295,7 @@ public class VideoflyerControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testDeleteVideoflyer_NotFound() throws Exception {
+    void testDeleteVideoflyer_NotFound() throws Exception {
 
         mockMvc.perform(delete("/api/videoflyer/{id}", 9999999)
                 .header("Authorization", MockJwtDecoder.addHeader(DELETE_VIDEOFLYER))
@@ -312,7 +308,7 @@ public class VideoflyerControllerTest extends AbstractSkdvinTest {
 
 
     @Test
-    public void testGetVideoflyer() throws Exception {
+    void testGetVideoflyer() throws Exception {
         Videoflyer videoflyer = videoflyerRepository.save(ModelMockHelper.createVideoflyer());
         Jumpday jumpday = ModelMockHelper.createJumpday();
         jumpdayService.saveJumpday(jumpday);
@@ -354,7 +350,7 @@ public class VideoflyerControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testGetVideoflyer_NotFound() throws Exception {
+    void testGetVideoflyer_NotFound() throws Exception {
         mockMvc.perform(get("/api/videoflyer/{id}", "999999999")
                 .header("Authorization", MockJwtDecoder.addHeader(READ_VIDEOFLYER))
                 .header("Accept-Language", "en-US")
@@ -365,14 +361,14 @@ public class VideoflyerControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testGetVideoflyer_Unauthorized() throws Exception {
+    void testGetVideoflyer_Unauthorized() throws Exception {
         mockMvc.perform(get("/api/videoflyer/{id}", "999999999")
                 .contentType(contentType))
                 .andExpect(status().isUnauthorized());
     }
 
     @Test
-    public void testAssignVideoflyer() throws Exception {
+    void testAssignVideoflyer() throws Exception {
         Videoflyer videoflyer = videoflyerRepository.save(ModelMockHelper.createVideoflyer());
         Jumpday jumpday = ModelMockHelper.createJumpday();
         jumpdayService.saveJumpday(jumpday);
@@ -413,7 +409,7 @@ public class VideoflyerControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testAssignVideoflyer_Unauthorized() throws Exception {
+    void testAssignVideoflyer_Unauthorized() throws Exception {
         String videoflyerJson = json(ModelMockHelper.createVideoflyer());
 
         mockMvc.perform(patch("/api/videoflyer/{id}/assign", "99999999")
@@ -423,7 +419,7 @@ public class VideoflyerControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testAssignVideoflyer_BadRequest() throws Exception {
+    void testAssignVideoflyer_BadRequest() throws Exception {
         Videoflyer videoflyer = videoflyerRepository.save(ModelMockHelper.createVideoflyer());
         Jumpday jumpday = ModelMockHelper.createJumpday();
         jumpdayService.saveJumpday(jumpday);
@@ -440,7 +436,7 @@ public class VideoflyerControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testAssignVideoflyer_NotFound() throws Exception {
+    void testAssignVideoflyer_NotFound() throws Exception {
         Videoflyer videoflyer = videoflyerRepository.save(ModelMockHelper.createVideoflyer());
         VideoflyerDetailsDTO videoflyerDetailsDTO = converter.convertToDetailsDto(videoflyer, Map.of(LocalDate.now(), new SimpleAssignment(true)));
 
@@ -457,7 +453,7 @@ public class VideoflyerControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testSelfAssignVideoflyer() throws Exception {
+    void testSelfAssignVideoflyer() throws Exception {
         Videoflyer videoflyer = videoflyerRepository.save(ModelMockHelper.createVideoflyer());
         videoflyer.setEmail(MockJwtDecoder.EXAMPLE_EMAIL);
         Jumpday jumpday = ModelMockHelper.createJumpday();
@@ -498,7 +494,7 @@ public class VideoflyerControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testSelfAssignVideoflyer_READONLY() throws Exception {
+    void testSelfAssignVideoflyer_READONLY() throws Exception {
         CommonSettings commonSettings = new CommonSettings();
         commonSettings.setSelfAssignmentMode(SelfAssignmentMode.READONLY);
         when(settingsService.getCommonSettingsByLanguage(Locale.GERMAN.getLanguage())).thenReturn(commonSettings);
@@ -523,7 +519,7 @@ public class VideoflyerControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testSelfAssignVideoflyer_Unauthorized() throws Exception {
+    void testSelfAssignVideoflyer_Unauthorized() throws Exception {
         String videoflyerJson = json(ModelMockHelper.createVideoflyer());
 
         mockMvc.perform(patch("/api/videoflyer/me/assign")
@@ -533,7 +529,7 @@ public class VideoflyerControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testSelfAssignVideoflyer_NoEmailSet() throws Exception {
+    void testSelfAssignVideoflyer_NoEmailSet() throws Exception {
         Videoflyer videoflyer = videoflyerRepository.save(ModelMockHelper.createVideoflyer());
         Jumpday jumpday = ModelMockHelper.createJumpday();
         jumpdayService.saveJumpday(jumpday);
@@ -551,7 +547,7 @@ public class VideoflyerControllerTest extends AbstractSkdvinTest {
 
 
     @Test
-    public void testGetMeVideoflyer() throws Exception {
+    void testGetMeVideoflyer() throws Exception {
         Videoflyer videoflyer1 = ModelMockHelper.createVideoflyer();
         videoflyer1.setEmail(MockJwtDecoder.EXAMPLE_EMAIL);
         Videoflyer videoflyer = videoflyerRepository.save(videoflyer1);
@@ -592,7 +588,7 @@ public class VideoflyerControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testGetMeVideoflyer_NotFound() throws Exception {
+    void testGetMeVideoflyer_NotFound() throws Exception {
         mockMvc.perform(get("/api/videoflyer/me")
                 .header("Authorization", MockJwtDecoder.addHeader(VIDEOFLYER))
                 .header("Accept-Language", "en-US")
@@ -603,7 +599,7 @@ public class VideoflyerControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testGetMeVideoflyer_Unauthorized() throws Exception {
+    void testGetMeVideoflyer_Unauthorized() throws Exception {
         mockMvc.perform(get("/api/videoflyer/me")
                 .contentType(contentType))
                 .andExpect(status().isUnauthorized());

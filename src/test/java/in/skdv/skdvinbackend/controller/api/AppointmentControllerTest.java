@@ -15,11 +15,9 @@ import in.skdv.skdvinbackend.service.IEmailService;
 import in.skdv.skdvinbackend.service.ISettingsService;
 import in.skdv.skdvinbackend.util.GenericResult;
 import in.skdv.skdvinbackend.util.VerificationTokenUtil;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,12 +32,12 @@ import org.springframework.http.converter.json.MappingJackson2HttpMessageConvert
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.mock.http.MockHttpOutputMessage;
-import org.springframework.restdocs.JUnitRestDocumentation;
+import org.springframework.restdocs.RestDocumentationContextProvider;
+import org.springframework.restdocs.RestDocumentationExtension;
 import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation;
 import org.springframework.restdocs.mockmvc.MockMvcRestDocumentationConfigurer;
 import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders;
 import org.springframework.restdocs.mockmvc.RestDocumentationResultHandler;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
@@ -56,7 +54,8 @@ import java.util.Collections;
 
 import static in.skdv.skdvinbackend.config.Authorities.*;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
@@ -64,17 +63,16 @@ import static org.springframework.restdocs.operation.preprocess.Preprocessors.pr
 import static org.springframework.restdocs.payload.PayloadDocumentation.*;
 import static org.springframework.restdocs.request.RequestDocumentation.*;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
+import static org.springframework.test.util.AssertionErrors.assertNotNull;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppContextSetup;
 
-@RunWith(SpringRunner.class)
-@SpringBootTest
-public class AppointmentControllerTest extends AbstractSkdvinTest {
 
-    @Rule
-    public JUnitRestDocumentation restDocumentation = new JUnitRestDocumentation();
+@ExtendWith(RestDocumentationExtension.class)
+@SpringBootTest
+class AppointmentControllerTest extends AbstractSkdvinTest {
 
     private static final String FROM_EMAIL = "skdvin@example.com";
     private static final String BASE_URL = "https://example.com";
@@ -117,15 +115,15 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
                 this.mappingJackson2HttpMessageConverter);
     }
 
-    @Before
-    public void setup() {
+    @BeforeEach
+    void setup(RestDocumentationContextProvider restDocumentation) {
         // Set mock clock
         Clock mockClock = Clock.fixed(Instant.parse(LocalDate.now().toString() + "T00:00:00Z"), ZoneOffset.UTC);
         ReflectionTestUtils.setField(appointmentService, "clock", mockClock);
 
         this.mockMvc = webAppContextSetup(webApplicationContext)
                 .apply(springSecurity())
-                .apply(documentationConfiguration(this.restDocumentation))
+                .apply(documentationConfiguration(restDocumentation))
                 .build();
 
         jumpdayRepository.deleteAll();
@@ -142,7 +140,7 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testGetOne() throws Exception {
+    void testGetOne() throws Exception {
         GenericResult<Appointment> appointmentGenericResult = appointmentService.saveAppointment(ModelMockHelper.createSingleAppointment());
         Appointment appointment = appointmentGenericResult.getPayload();
 
@@ -187,7 +185,7 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testGetOne_NotFound() throws Exception {
+    void testGetOne_NotFound() throws Exception {
         mockMvc.perform(get("/api/appointment/{id}", 999999)
                 .header("Authorization", MockJwtDecoder.addHeader(READ_APPOINTMENTS)))
                 .andExpect(status().isNotFound())
@@ -195,7 +193,7 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testGetOneUnauthorized() throws Exception {
+    void testGetOneUnauthorized() throws Exception {
         GenericResult<Appointment> appointmentGenericResult = appointmentService.saveAppointment(ModelMockHelper.createSingleAppointment());
         Appointment appointment = appointmentGenericResult.getPayload();
 
@@ -204,7 +202,7 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testAddAppointment() throws Exception {
+    void testAddAppointment() throws Exception {
         String appointmentJson = json(ModelMockHelper.createSingleAppointment());
 
         mockMvc.perform(RestDocumentationRequestBuilders.post("/api/appointment")
@@ -276,7 +274,7 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testAddAppointment_NoSlotLeft() throws Exception {
+    void testAddAppointment_NoSlotLeft() throws Exception {
         appointmentService.saveAppointment(ModelMockHelper.createAppointment(3, 0, 0, 0));
 
         String appointmentJson = json(ModelMockHelper.createAppointment(2, 0, 0, 0));
@@ -290,7 +288,7 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testAddAppointment_NoJumpDay() throws Exception {
+    void testAddAppointment_NoJumpDay() throws Exception {
         Appointment appointment = ModelMockHelper.createSingleAppointment();
         appointment.setDate(appointment.getDate().plusDays(10));
         String appointmentJson = json(appointment);
@@ -306,7 +304,7 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testAddAppointment_MorePicOrVidThanTandemSlots() throws Exception {
+    void testAddAppointment_MorePicOrVidThanTandemSlots() throws Exception {
         Appointment appointment = ModelMockHelper.createAppointment(1, 2, 0, 0);
         String appointmentJson = json(appointment);
 
@@ -321,7 +319,7 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testAddAppointment_MorePicAndVidThanTandemSlots() throws Exception {
+    void testAddAppointment_MorePicAndVidThanTandemSlots() throws Exception {
         Appointment appointment = ModelMockHelper.createAppointment(1, 0, 2, 0);
         String appointmentJson = json(appointment);
 
@@ -336,7 +334,7 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testAddAppointment_MoreHandCamThanTandemSlots() throws Exception {
+    void testAddAppointment_MoreHandCamThanTandemSlots() throws Exception {
         Appointment appointment = ModelMockHelper.createAppointment(1, 0, 0, 2);
         String appointmentJson = json(appointment);
 
@@ -351,7 +349,7 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testAddAppointment_MorePicVidHandCamThanTandemSlots() throws Exception {
+    void testAddAppointment_MorePicVidHandCamThanTandemSlots() throws Exception {
         Appointment appointment = ModelMockHelper.createAppointment(1, 1, 1, 1);
         String appointmentJson = json(appointment);
 
@@ -366,7 +364,7 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testAddAdminAppointment() throws Exception {
+    void testAddAdminAppointment() throws Exception {
         Appointment appointment = ModelMockHelper.createSingleAppointment();
         appointment.getCustomer().setJumpers(Collections.emptyList());
         String appointmentJson = json(appointment);
@@ -432,7 +430,7 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
 
 
     @Test
-    public void testAddAdminAppointment_Error() throws Exception {
+    void testAddAdminAppointment_Error() throws Exception {
         Appointment appointment = ModelMockHelper.createSingleAppointment();
         appointment.setPicAndVid(5);
         String appointmentJson = json(appointment);
@@ -449,7 +447,7 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
 
 
     @Test
-    public void testUpdateAppointment() throws Exception {
+    void testUpdateAppointment() throws Exception {
         AppointmentConverter appointmentConverter = new AppointmentConverter();
         AppointmentDTO appointment = appointmentConverter.convertToDto(appointmentService.findAppointmentsByDay(LocalDate.now()).get(0));
 
@@ -532,7 +530,7 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testUpdateAdminAppointment() throws Exception {
+    void testUpdateAdminAppointment() throws Exception {
         AppointmentConverter appointmentConverter = new AppointmentConverter();
         AppointmentDTO appointment = appointmentConverter.convertToDto(appointmentService.findAppointmentsByDay(LocalDate.now()).get(0));
 
@@ -603,7 +601,7 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testUpdateAdminAppointment_Error() throws Exception {
+    void testUpdateAdminAppointment_Error() throws Exception {
         Appointment appointment = ModelMockHelper.createSingleAppointment();
         appointment.setAppointmentId(99999999);
         String appointmentJson = json(appointment);
@@ -619,7 +617,7 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testUpdateAppointmentUnauthorized() throws Exception {
+    void testUpdateAppointmentUnauthorized() throws Exception {
         Appointment appointment = appointmentService.findAppointmentsByDay(LocalDate.now()).get(0);
 
         appointment.setTandem(10);
@@ -634,7 +632,7 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testUpdateAppointment_NoJumpDay() throws Exception {
+    void testUpdateAppointment_NoJumpDay() throws Exception {
         AppointmentConverter appointmentConverter = new AppointmentConverter();
         AppointmentDTO appointment = appointmentConverter.convertToDto(appointmentService.findAppointmentsByDay(LocalDate.now()).get(0));
 
@@ -653,7 +651,7 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testUpdateAppointment_MorePicAndVidThanTandemSlots() throws Exception {
+    void testUpdateAppointment_MorePicAndVidThanTandemSlots() throws Exception {
         GenericResult<Appointment> result = appointmentService.saveAppointment(ModelMockHelper.createAppointment(1, 0, 1, 0));
         AppointmentConverter appointmentConverter = new AppointmentConverter();
         AppointmentDTO appointment = appointmentConverter.convertToDto(appointmentService.findAppointment(result.getPayload().getAppointmentId()));
@@ -673,7 +671,7 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testUpdateAppointment_MorePicOrVidThanTandemSlots() throws Exception {
+    void testUpdateAppointment_MorePicOrVidThanTandemSlots() throws Exception {
         GenericResult<Appointment> result = appointmentService.saveAppointment(ModelMockHelper.createAppointment(1, 1, 0, 0));
         AppointmentConverter appointmentConverter = new AppointmentConverter();
         AppointmentDTO appointment = appointmentConverter.convertToDto(appointmentService.findAppointment(result.getPayload().getAppointmentId()));
@@ -693,7 +691,7 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testUpdateAppointment_MoreHandcamThanTandemSlots() throws Exception {
+    void testUpdateAppointment_MoreHandcamThanTandemSlots() throws Exception {
         GenericResult<Appointment> result = appointmentService.saveAppointment(ModelMockHelper.createAppointment(1, 0, 0, 1));
         AppointmentConverter appointmentConverter = new AppointmentConverter();
         AppointmentDTO appointment = appointmentConverter.convertToDto(appointmentService.findAppointment(result.getPayload().getAppointmentId()));
@@ -713,7 +711,7 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testUpdateAppointment_MorePicVidHandcamThanTandemSlots() throws Exception {
+    void testUpdateAppointment_MorePicVidHandcamThanTandemSlots() throws Exception {
         GenericResult<Appointment> result = appointmentService.saveAppointment(ModelMockHelper.createAppointment(1, 0, 1, 0));
         AppointmentConverter appointmentConverter = new AppointmentConverter();
         AppointmentDTO appointment = appointmentConverter.convertToDto(appointmentService.findAppointment(result.getPayload().getAppointmentId()));
@@ -734,7 +732,7 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testUpdateAppointment_NoSlotLeft() throws Exception {
+    void testUpdateAppointment_NoSlotLeft() throws Exception {
         AppointmentConverter appointmentConverter = new AppointmentConverter();
         AppointmentDTO appointment = appointmentConverter.convertToDto(appointmentService.findAppointmentsByDay(LocalDate.now()).get(0));
 
@@ -754,7 +752,7 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testFindFreeSlots() throws Exception {
+    void testFindFreeSlots() throws Exception {
         SlotQuery query = new SlotQuery(2, 0, 0, 0);
 
         mockMvc.perform(RestDocumentationRequestBuilders.get("/api/appointment/slots")
@@ -786,7 +784,7 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testFindFreeSlots_MoreVideoThanTandem_DE() throws Exception {
+    void testFindFreeSlots_MoreVideoThanTandem_DE() throws Exception {
         SlotQuery query = new SlotQuery(1, 2, 0, 0);
 
         mockMvc.perform(get("/api/appointment/slots")
@@ -801,7 +799,7 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testFindFreeSlots_MoreVideoThanTandem_EN() throws Exception {
+    void testFindFreeSlots_MoreVideoThanTandem_EN() throws Exception {
         SlotQuery query = new SlotQuery(1, 2, 0, 0);
 
         mockMvc.perform(get("/api/appointment/slots")
@@ -816,7 +814,7 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testFindFreeSlots_NoFreeSlots() throws Exception {
+    void testFindFreeSlots_NoFreeSlots() throws Exception {
         SlotQuery query = new SlotQuery(2, 0, 0, 2);
 
         mockMvc.perform(get("/api/appointment/slots")
@@ -832,7 +830,7 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testConfirmAppointment() throws Exception {
+    void testConfirmAppointment() throws Exception {
         Appointment appointment = ModelMockHelper.createSingleAppointment();
         appointment.setVerificationToken(VerificationTokenUtil.generate());
         GenericResult<Appointment> result = appointmentService.saveAppointment(appointment);
@@ -863,7 +861,7 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testConfirmAppointment_InvalidToken() throws Exception {
+    void testConfirmAppointment_InvalidToken() throws Exception {
         Appointment appointment = ModelMockHelper.createSingleAppointment();
         appointment.setVerificationToken(VerificationTokenUtil.generate());
         appointmentService.saveAppointment(appointment);
@@ -878,7 +876,7 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testConfirmAppointment_ExpiredToken() throws Exception {
+    void testConfirmAppointment_ExpiredToken() throws Exception {
         Appointment appointment = ModelMockHelper.createSingleAppointment();
         appointment.setVerificationToken(VerificationTokenUtil.generate());
         appointment.getVerificationToken().setExpiryDate(LocalDateTime.now().minus(1, ChronoUnit.HOURS));
@@ -894,7 +892,7 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testConfirmAppointment_AlreadyConfirmed() throws Exception {
+    void testConfirmAppointment_AlreadyConfirmed() throws Exception {
         Appointment appointment = ModelMockHelper.createSingleAppointment();
         appointment.setVerificationToken(VerificationTokenUtil.generate());
         appointment.setState(AppointmentState.CONFIRMED);
@@ -910,7 +908,7 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testConfirmAppointment_InvalidAppointment() throws Exception {
+    void testConfirmAppointment_InvalidAppointment() throws Exception {
         Appointment appointment = ModelMockHelper.createSingleAppointment();
         appointment.setVerificationToken(VerificationTokenUtil.generate());
         appointment.getVerificationToken().setExpiryDate(LocalDateTime.now().minus(1, ChronoUnit.HOURS));
@@ -926,7 +924,7 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testGetAppointmentsByDay() throws Exception {
+    void testGetAppointmentsByDay() throws Exception {
         mockMvc.perform(RestDocumentationRequestBuilders.get("/api/appointment/date/{date}",
                 LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE))
                 .header("Authorization", MockJwtDecoder.addHeader(READ_APPOINTMENTS))
@@ -969,7 +967,7 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testGetAppointmentsByDay_Unauthorized() throws Exception {
+    void testGetAppointmentsByDay_Unauthorized() throws Exception {
         Appointment appointment = ModelMockHelper.createSingleAppointment();
 
         mockMvc.perform(RestDocumentationRequestBuilders.get("/api/appointment/date/{date}",
@@ -979,7 +977,7 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testUpdateAppointmentState() throws Exception {
+    void testUpdateAppointmentState() throws Exception {
         Appointment appointment = ModelMockHelper.createSingleAppointment();
         GenericResult<Appointment> result = appointmentService.saveAppointment(appointment);
         Appointment savedAppointment = result.getPayload();
@@ -1009,11 +1007,11 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
                                 fieldWithPath("payload").description("The request's actual payload")
                         )));
 
-        Assert.assertEquals(AppointmentState.ACTIVE, appointmentService.findAppointment(savedAppointment.getAppointmentId()).getState());
+        assertEquals(AppointmentState.ACTIVE, appointmentService.findAppointment(savedAppointment.getAppointmentId()).getState());
     }
 
     @Test
-    public void testUpdateAppointmentState_Unauthorized() throws Exception {
+    void testUpdateAppointmentState_Unauthorized() throws Exception {
         Appointment appointment = ModelMockHelper.createSingleAppointment();
         GenericResult<Appointment> result = appointmentService.saveAppointment(appointment);
         Appointment savedAppointment = result.getPayload();
@@ -1030,7 +1028,7 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testUpdateAppointmentState_AppointmentNotFound() throws Exception {
+    void testUpdateAppointmentState_AppointmentNotFound() throws Exception {
         Appointment appointment = ModelMockHelper.createSingleAppointment();
         GenericResult<Appointment> result = appointmentService.saveAppointment(appointment);
         Appointment savedAppointment = result.getPayload();
@@ -1051,7 +1049,7 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testDeleteAppointment() throws Exception {
+    void testDeleteAppointment() throws Exception {
         Appointment appointment = ModelMockHelper.createSingleAppointment();
         GenericResult<Appointment> result = appointmentService.saveAppointment(appointment);
         int appointmentId = result.getPayload().getAppointmentId();
@@ -1081,7 +1079,7 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testDeleteAppointment_Unauthorized() throws Exception {
+    void testDeleteAppointment_Unauthorized() throws Exception {
         Appointment appointment = ModelMockHelper.createSingleAppointment();
         GenericResult<Appointment> result = appointmentService.saveAppointment(appointment);
         int appointmentId = result.getPayload().getAppointmentId();
@@ -1093,7 +1091,7 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testDeleteAppointment_Invalid() throws Exception {
+    void testDeleteAppointment_Invalid() throws Exception {
         mockMvc.perform(delete("/api/appointment/{appointmentId}", 9999999)
                 .header("Authorization", MockJwtDecoder.addHeader(UPDATE_APPOINTMENTS))
                 .contentType(contentType))
@@ -1103,7 +1101,7 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
 
 
     @Test
-    public void testFindGroupSlots() throws Exception {
+    void testFindGroupSlots() throws Exception {
         SlotQuery query = new SlotQuery(5, 0, 0, 0);
 
         mockMvc.perform(RestDocumentationRequestBuilders.get("/api/appointment/groupslots")
@@ -1143,7 +1141,7 @@ public class AppointmentControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testFindGroupSlots_Unauthorized() throws Exception {
+    void testFindGroupSlots_Unauthorized() throws Exception {
         SlotQuery query = new SlotQuery(5, 0, 0, 0);
 
         mockMvc.perform(RestDocumentationRequestBuilders.get("/api/appointment/groupslots")

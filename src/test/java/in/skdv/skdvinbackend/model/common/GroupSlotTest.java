@@ -1,15 +1,16 @@
 package in.skdv.skdvinbackend.model.common;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.time.LocalTime;
 import java.util.Arrays;
 
-public class GroupSlotTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+class GroupSlotTest {
 
     @Test
-    public void testGroupSlot() {
+    void testGroupSlot() {
         LocalTime firstTime = LocalTime.of(9, 0);
         LocalTime lastTime = LocalTime.of(11, 30);
         GroupSlot groupSlot = new GroupSlot();
@@ -28,12 +29,12 @@ public class GroupSlotTest {
 
         groupSlot.setSlots(Arrays.asList(simpleSlot1, simpleSlot2));
 
-        Assert.assertEquals(firstTime, groupSlot.getFirstTime());
-        Assert.assertEquals(lastTime, groupSlot.getLastTime());
-        Assert.assertEquals(2, groupSlot.getTimeCount());
-        Assert.assertEquals(7, groupSlot.getTandemAvailable());
-        Assert.assertEquals(3, groupSlot.getPicOrVidAvailable());
-        Assert.assertEquals(2, groupSlot.getPicAndVidAvailable());
-        Assert.assertEquals(1, groupSlot.getHandcamAvailable());
+        assertEquals(firstTime, groupSlot.getFirstTime());
+        assertEquals(lastTime, groupSlot.getLastTime());
+        assertEquals(2, groupSlot.getTimeCount());
+        assertEquals(7, groupSlot.getTandemAvailable());
+        assertEquals(3, groupSlot.getPicOrVidAvailable());
+        assertEquals(2, groupSlot.getPicAndVidAvailable());
+        assertEquals(1, groupSlot.getHandcamAvailable());
     }
 }

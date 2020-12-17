@@ -5,10 +5,9 @@ import in.skdv.skdvinbackend.MockJwtDecoder;
 import in.skdv.skdvinbackend.model.dto.RoleDTO;
 import in.skdv.skdvinbackend.model.dto.UserDTO;
 import in.skdv.skdvinbackend.service.IUserService;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.restdocs.RestDocsMockMvcConfigurationCustomizer;
@@ -20,12 +19,12 @@ import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.mock.http.MockHttpOutputMessage;
-import org.springframework.restdocs.JUnitRestDocumentation;
+import org.springframework.restdocs.RestDocumentationContextProvider;
+import org.springframework.restdocs.RestDocumentationExtension;
 import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation;
 import org.springframework.restdocs.mockmvc.MockMvcRestDocumentationConfigurer;
 import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders;
 import org.springframework.restdocs.mockmvc.RestDocumentationResultHandler;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.context.WebApplicationContext;
 
@@ -39,7 +38,6 @@ import static in.skdv.skdvinbackend.config.Authorities.READ_USERS;
 import static in.skdv.skdvinbackend.config.Authorities.UPDATE_USERS;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.doNothing;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
@@ -47,16 +45,14 @@ import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuild
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
 import static org.springframework.restdocs.payload.PayloadDocumentation.*;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
+import static org.springframework.test.util.AssertionErrors.assertNotNull;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppContextSetup;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(RestDocumentationExtension.class)
 @SpringBootTest
-public class UserControllerTest extends AbstractSkdvinTest {
-
-    @Rule
-    public JUnitRestDocumentation restDocumentation = new JUnitRestDocumentation();
+class UserControllerTest extends AbstractSkdvinTest {
 
     private MediaType contentType = new MediaType(MediaType.APPLICATION_JSON.getType(),
             MediaType.APPLICATION_JSON.getSubtype(),
@@ -84,11 +80,11 @@ public class UserControllerTest extends AbstractSkdvinTest {
                 this.mappingJackson2HttpMessageConverter);
     }
 
-    @Before
-    public void setup() {
+    @BeforeEach
+    void setup(RestDocumentationContextProvider restDocumentation) {
         this.mockMvc = webAppContextSetup(webApplicationContext)
                 .apply(springSecurity())
-                .apply(documentationConfiguration(this.restDocumentation))
+                .apply(documentationConfiguration(restDocumentation))
                 .build();
     }
 
@@ -100,7 +96,7 @@ public class UserControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testGetAllUsers() throws Exception {
+    void testGetAllUsers() throws Exception {
         UserDTO userDTO1 = new UserDTO("1", "foo@bar.com", Arrays.asList(
                 new RoleDTO("1", "TANDEMMASTER"),
                 new RoleDTO("2", "VIDEOFLYER"))
@@ -132,14 +128,14 @@ public class UserControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testGetAllUsers_Unauthorized() throws Exception {
+    void testGetAllUsers_Unauthorized() throws Exception {
         mockMvc.perform(get("/api/users")
                 .contentType(contentType))
                 .andExpect(status().isUnauthorized());
     }
 
     @Test
-    public void testGetRoles() throws Exception {
+    void testGetRoles() throws Exception {
         RoleDTO roleDTO1 = new RoleDTO("1", "ROLE_ADMIN");
         RoleDTO roleDTO2 = new RoleDTO("2", "ROLE_TANDEMMASTER");
         List<RoleDTO> roleList = Arrays.asList(roleDTO1, roleDTO2);
@@ -163,14 +159,14 @@ public class UserControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testGetRoles_Unauthorized() throws Exception {
+    void testGetRoles_Unauthorized() throws Exception {
         mockMvc.perform(get("/api/users/roles")
                 .contentType(contentType))
                 .andExpect(status().isUnauthorized());
     }
 
     @Test
-    public void testUpdateUser() throws Exception {
+    void testUpdateUser() throws Exception {
         UserDTO userDTO = new UserDTO("1", "foo@bar.com", Arrays.asList(
                 new RoleDTO("1", "TANDEMMASTER"),
                 new RoleDTO("2", "VIDEOFLYER"))
@@ -196,7 +192,7 @@ public class UserControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testUpdateUser_Unauthorized() throws Exception {
+    void testUpdateUser_Unauthorized() throws Exception {
         UserDTO userDTO = new UserDTO("1", "foo@bar.com", Arrays.asList(
                 new RoleDTO("1", "TANDEMMASTER"),
                 new RoleDTO("2", "VIDEOFLYER"))
