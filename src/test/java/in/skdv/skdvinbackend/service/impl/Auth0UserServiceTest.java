@@ -24,8 +24,7 @@ import java.util.List;
 import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 public class Auth0UserServiceTest {
 
@@ -173,6 +172,10 @@ public class Auth0UserServiceTest {
 
         // Act
         auth0UserService.updateUser(newDTO);
+
+        // Assert
+        verify(usersEntity, never()).addRoles(any(), any());
+        verify(usersEntity, never()).removeRoles(any(), any());
     }
 
     @Test
