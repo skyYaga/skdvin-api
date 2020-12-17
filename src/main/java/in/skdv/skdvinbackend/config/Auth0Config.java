@@ -5,6 +5,7 @@ import com.auth0.client.mgmt.ManagementAPI;
 import com.auth0.exception.Auth0Exception;
 import com.auth0.json.auth.TokenHolder;
 import com.auth0.net.AuthRequest;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -22,8 +23,13 @@ public class Auth0Config {
     private String clientSecret;
 
     @Bean
-    public ManagementAPI managementAPI() throws Auth0Exception {
-        AuthAPI authAPI = new AuthAPI(domain, clientId, clientSecret);
+    public AuthAPI authAPI() {
+        return new AuthAPI(domain, clientId, clientSecret);
+    }
+
+    @Bean
+    @Autowired
+    public ManagementAPI managementAPI(AuthAPI authAPI) throws Auth0Exception {
         AuthRequest authRequest = authAPI.requestToken("https://" + domain + "/api/v2/");
         TokenHolder holder = authRequest.execute();
         return new ManagementAPI(domain, holder.getAccessToken());
