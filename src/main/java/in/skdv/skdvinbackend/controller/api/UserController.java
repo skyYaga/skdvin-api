@@ -1,15 +1,15 @@
 package in.skdv.skdvinbackend.controller.api;
 
+import in.skdv.skdvinbackend.model.dto.RoleDTO;
 import in.skdv.skdvinbackend.model.dto.UserDTO;
 import in.skdv.skdvinbackend.service.IUserService;
 import in.skdv.skdvinbackend.util.GenericResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.List;
 
 @RestController
@@ -28,5 +28,19 @@ public class UserController {
     public ResponseEntity<GenericResult<List<UserDTO>>> getAllUsers() {
         List<UserDTO> userList = userService.getUsers();
         return ResponseEntity.ok(new GenericResult<>(true, userList));
+    }
+
+    @PutMapping
+    @PreAuthorize("hasAuthority('SCOPE_update:users')")
+    public ResponseEntity<Void> updateUser(@RequestBody @Valid UserDTO input) {
+        userService.updateUser(input);
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/roles")
+    @PreAuthorize("hasAuthority('SCOPE_read:users')")
+    public ResponseEntity<GenericResult<List<RoleDTO>>> getRoles() {
+        List<RoleDTO> roles = userService.getRoles();
+        return ResponseEntity.ok(new GenericResult<>(true, roles));
     }
 }
