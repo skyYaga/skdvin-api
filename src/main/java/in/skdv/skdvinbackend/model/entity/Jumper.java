@@ -12,6 +12,8 @@ public class Jumper {
     @NotNull
     private LocalDate dateOfBirth;
 
+    private boolean voucher = false;
+
     public Jumper(String firstName, String lastName, LocalDate dateOfBirth) {
         this.firstName = firstName;
         this.lastName = lastName;
@@ -42,4 +44,11 @@ public class Jumper {
         this.dateOfBirth = dateOfBirth;
     }
 
+    public boolean isVoucher() {
+        return voucher;
+    }
+
+    public void setVoucher(boolean voucher) {
+        this.voucher = voucher;
+    }
 }
