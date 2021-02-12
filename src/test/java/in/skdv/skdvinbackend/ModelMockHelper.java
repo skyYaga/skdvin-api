@@ -155,7 +155,7 @@ public class ModelMockHelper {
         return settings;
     }
 
-    private static WaiverSettings createWaiverSettings() {
+    public static WaiverSettings createWaiverSettings() {
         Tandemwaiver tandemwaiver = new Tandemwaiver();
         tandemwaiver.setText("Bitte akzeptieren Sie die Bedingungen.");
 

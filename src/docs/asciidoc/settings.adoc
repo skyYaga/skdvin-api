@@ -24,3 +24,9 @@ operation::settings/get-settings[snippets='http-request,http-response,response-f
 A `GET` request is used to get common settings (excluding admin settings).
 
 operation::settings/get-common-settings[snippets='http-request,http-response,response-fields']
+
+
+=== Get Waiver Settings
+A `GET` request is used to get waiver settings.
+
+operation::settings/get-waiver-settings[snippets='http-request,http-response,response-fields']
