@@ -5,6 +5,7 @@ import in.skdv.skdvinbackend.ModelMockHelper;
 import in.skdv.skdvinbackend.model.entity.settings.AdminSettings;
 import in.skdv.skdvinbackend.model.entity.settings.CommonSettings;
 import in.skdv.skdvinbackend.model.entity.settings.Settings;
+import in.skdv.skdvinbackend.model.entity.settings.WaiverSettings;
 import in.skdv.skdvinbackend.repository.SettingsRepository;
 import in.skdv.skdvinbackend.service.ISettingsService;
 import org.junit.jupiter.api.BeforeEach;
@@ -102,6 +103,17 @@ class MongoSettingsServiceTest extends AbstractSkdvinTest {
     }
 
     @Test
+    void testGetWaiverSettings() {
+        Settings settings = saveExampleSettings();
+
+        Map<String, WaiverSettings> waiverSettings = settingsService.getWaiverSettings();
+
+        assertEquals(1, waiverSettings.size());
+        assertEquals(settings.getWaiverSettings().get(Locale.GERMAN.getLanguage()).getTandemwaiver().getText(),
+                waiverSettings.get(Locale.GERMAN.getLanguage()).getTandemwaiver().getText());
+    }
+
+    @Test
     void testGetAdminSettings_Null() {
         AdminSettings adminSettings = settingsService.getAdminSettings();
 
@@ -116,12 +128,28 @@ class MongoSettingsServiceTest extends AbstractSkdvinTest {
     }
 
     @Test
+    void testGetWaiverSettings_Empty() {
+        Map<String, WaiverSettings> waiverSettings = settingsService.getWaiverSettings();
+
+        assertEquals(0, waiverSettings.size());
+    }
+
+    @Test
     void testGetCommonSettingsByLocale() {
         Settings settings = saveExampleSettings();
 
         CommonSettings commonSettings = settingsService.getCommonSettingsByLanguage(Locale.GERMAN.getLanguage());
 
         assertEquals(settings.getCommonSettings().get(Locale.GERMAN.getLanguage()).getDropzone().getPriceListUrl(), commonSettings.getDropzone().getPriceListUrl());
+    }
+
+    @Test
+    void testGetWaiverSettingsByLocale() {
+        Settings settings = saveExampleSettings();
+
+        WaiverSettings waiverSettings = settingsService.getWaiverSettingsByLanguage(Locale.GERMAN.getLanguage());
+
+        assertEquals(settings.getWaiverSettings().get(Locale.GERMAN.getLanguage()).getTandemwaiver().getText(), waiverSettings.getTandemwaiver().getText());
     }
 
     @Test
@@ -132,6 +160,16 @@ class MongoSettingsServiceTest extends AbstractSkdvinTest {
 
         assertNotNull(commonSettings);
         assertEquals(settings.getCommonSettings().get(Locale.GERMAN.getLanguage()).getDropzone().getPriceListUrl(), commonSettings.getDropzone().getPriceListUrl());
+    }
+
+    @Test
+    void testGetWaiverSettingsByLocale_DefaultIfNotFound() {
+        Settings settings = saveExampleSettings();
+
+        WaiverSettings waiverSettings = settingsService.getWaiverSettingsByLanguage(Locale.ENGLISH.getLanguage());
+
+        assertNotNull(waiverSettings);
+        assertEquals(settings.getWaiverSettings().get(Locale.GERMAN.getLanguage()).getTandemwaiver().getText(), waiverSettings.getTandemwaiver().getText());
     }
 
     private Settings saveExampleSettings() {

@@ -5,6 +5,7 @@ import in.skdv.skdvinbackend.MockJwtDecoder;
 import in.skdv.skdvinbackend.ModelMockHelper;
 import in.skdv.skdvinbackend.model.entity.settings.CommonSettings;
 import in.skdv.skdvinbackend.model.entity.settings.Settings;
+import in.skdv.skdvinbackend.model.entity.settings.WaiverSettings;
 import in.skdv.skdvinbackend.repository.SettingsRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -124,7 +125,8 @@ class SettingsControllerTest extends AbstractSkdvinTest {
                         fieldWithPath("commonSettings.de.selfAssignmentMode").description("Self assignment mode"),
                         fieldWithPath("commonSettings.de.additionalReminderHint").description("Additional hint text for appointment reminder mail"),
                         fieldWithPath("commonSettings.de.faq[].question").description("FAQ question"),
-                        fieldWithPath("commonSettings.de.faq[].answer").description("FAQ answer")
+                        fieldWithPath("commonSettings.de.faq[].answer").description("FAQ answer"),
+                        fieldWithPath("waiverSettings.de.tandemwaiver.text").description("Tandemwaiver text")
                 ), responseFields(
                         fieldWithPath("payload.adminSettings").description("Object with admin settings"),
                         fieldWithPath("payload.adminSettings.tandemsFrom").description("Default tandems from setting"),
@@ -151,6 +153,7 @@ class SettingsControllerTest extends AbstractSkdvinTest {
                         fieldWithPath("payload.commonSettings.de.faq[].id").description("FAQ entry id"),
                         fieldWithPath("payload.commonSettings.de.faq[].question").description("FAQ question"),
                         fieldWithPath("payload.commonSettings.de.faq[].answer").description("FAQ answer"),
+                        fieldWithPath("payload.waiverSettings.de.tandemwaiver.text").description("Tandem waiver text"),
                         fieldWithPath("success").description("true when the request was successful"),
                         fieldWithPath("message").description("message if there was an error"),
                         fieldWithPath("exception").ignored(),
@@ -209,7 +212,8 @@ class SettingsControllerTest extends AbstractSkdvinTest {
                         fieldWithPath("commonSettings.de.selfAssignmentMode").description("Self assignment mode"),
                         fieldWithPath("commonSettings.de.additionalReminderHint").description("Additional hint text for appointment reminder mail"),
                         fieldWithPath("commonSettings.de.faq[].question").description("FAQ question"),
-                        fieldWithPath("commonSettings.de.faq[].answer").description("FAQ answer")
+                        fieldWithPath("commonSettings.de.faq[].answer").description("FAQ answer"),
+                        fieldWithPath("waiverSettings.de.tandemwaiver.text").description("Tandem waiver text")
                 ), responseFields(
                         fieldWithPath("payload.id").description("Id of the settings object"),
                         fieldWithPath("payload.adminSettings").description("Object with admin settings"),
@@ -237,6 +241,7 @@ class SettingsControllerTest extends AbstractSkdvinTest {
                         fieldWithPath("payload.commonSettings.de.faq[].id").description("FAQ entry id"),
                         fieldWithPath("payload.commonSettings.de.faq[].question").description("FAQ question"),
                         fieldWithPath("payload.commonSettings.de.faq[].answer").description("FAQ answer"),
+                        fieldWithPath("payload.waiverSettings.de.tandemwaiver.text").description("Tandem waiver text"),
                         fieldWithPath("success").description("true when the request was successful"),
                         fieldWithPath("message").description("message if there was an error"),
                         fieldWithPath("exception").ignored()
@@ -306,6 +311,7 @@ class SettingsControllerTest extends AbstractSkdvinTest {
                         fieldWithPath("payload.commonSettings.de.faq[].id").description("FAQ entry id"),
                         fieldWithPath("payload.commonSettings.de.faq[].question").description("FAQ question"),
                         fieldWithPath("payload.commonSettings.de.faq[].answer").description("FAQ answer"),
+                        fieldWithPath("payload.waiverSettings.de.tandemwaiver.text").description("Tandem waiver text"),
                         fieldWithPath("success").description("true when the request was successful"),
                         fieldWithPath("message").description("message if there was an error"),
                         fieldWithPath("exception").ignored(),
@@ -363,9 +369,6 @@ class SettingsControllerTest extends AbstractSkdvinTest {
     @Test
     void testGetCommonSettings_DE() throws Exception {
         Settings settings = ModelMockHelper.createSettings();
-        CommonSettings commonSettingsEN = ModelMockHelper.createCommonSettings();
-        commonSettingsEN.getDropzone().setName("Example DZ EN");
-        settings.getCommonSettings().put(Locale.ENGLISH.getLanguage(), commonSettingsEN);
         settingsRepository.save(settings);
 
         mockMvc.perform(RestDocumentationRequestBuilders.get("/api/settings/common/")
@@ -373,28 +376,42 @@ class SettingsControllerTest extends AbstractSkdvinTest {
                 .contentType(contentType))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success", is(true)))
-                .andExpect(jsonPath("$.payload.dropzone.name", is("Example DZ")))
-                .andDo(document("settings/get-common-settings", responseFields(
-                        fieldWithPath("payload.dropzone").description("Object with dropzone details"),
-                        fieldWithPath("payload.dropzone.name").description("Dropzone name"),
-                        fieldWithPath("payload.dropzone.email").description("Dropzone email"),
-                        fieldWithPath("payload.dropzone.phone").description("Dropzone phone"),
-                        fieldWithPath("payload.dropzone.mobile").description("Dropzone mobile"),
-                        fieldWithPath("payload.dropzone.priceListUrl").description("URL to price list"),
-                        fieldWithPath("payload.dropzone.transportationAgreementUrl")
-                                .description("URL to transportation and liability agreement"),
-                        fieldWithPath("payload.homepageHint").description("Homepage hint"),
-                        fieldWithPath("payload.homepageHintTitle").description("Homepage hint title"),
-                        fieldWithPath("payload.bccMail").description("Mail address for bcc mails"),
-                        fieldWithPath("payload.selfAssignmentMode").description("Self assignment mode"),
-                        fieldWithPath("payload.additionalReminderHint").description("Additional hint text for appointment reminder mail"),
-                        fieldWithPath("payload.faq[].id").description("FAQ entry id"),
-                        fieldWithPath("payload.faq[].question").description("FAQ question"),
-                        fieldWithPath("payload.faq[].answer").description("FAQ answer"),
+                .andExpect(jsonPath("$.payload.dropzone.name", is("Example DZ")));
+    }
+
+    @Test
+    void testGetWaiverSettings_EN() throws Exception {
+        Settings settings = ModelMockHelper.createSettings();
+        WaiverSettings waiverSettingsEN = ModelMockHelper.createWaiverSettings();
+        waiverSettingsEN.getTandemwaiver().setText("Please accept the terms and conditions.");
+        settings.getWaiverSettings().put(Locale.ENGLISH.getLanguage(), waiverSettingsEN);
+        settingsRepository.save(settings);
+
+        mockMvc.perform(RestDocumentationRequestBuilders.get("/api/settings/waiver")
+                .header("Accept-Language", "en-US")
+                .contentType(contentType))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success", is(true)))
+                .andExpect(jsonPath("$.payload.tandemwaiver.text", is("Please accept the terms and conditions.")))
+                .andDo(document("settings/get-waiver-settings", responseFields(
+                        fieldWithPath("payload.tandemwaiver.text").description("Tandemwaiver text"),
                         fieldWithPath("success").description("true when the request was successful"),
                         fieldWithPath("message").description("message if there was an error"),
                         fieldWithPath("exception").ignored()
                 )));
+    }
+
+    @Test
+    void testGetWaiverSettings_DE() throws Exception {
+        Settings settings = ModelMockHelper.createSettings();
+        settingsRepository.save(settings);
+
+        mockMvc.perform(RestDocumentationRequestBuilders.get("/api/settings/waiver/")
+                .header("Accept-Language", "de")
+                .contentType(contentType))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success", is(true)))
+                .andExpect(jsonPath("$.payload.tandemwaiver.text", is("Bitte akzeptieren Sie die Bedingungen.")));
     }
 
 

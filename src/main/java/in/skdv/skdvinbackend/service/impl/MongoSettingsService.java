@@ -3,6 +3,7 @@ package in.skdv.skdvinbackend.service.impl;
 import in.skdv.skdvinbackend.model.entity.settings.AdminSettings;
 import in.skdv.skdvinbackend.model.entity.settings.CommonSettings;
 import in.skdv.skdvinbackend.model.entity.settings.Settings;
+import in.skdv.skdvinbackend.model.entity.settings.WaiverSettings;
 import in.skdv.skdvinbackend.repository.SettingsRepository;
 import in.skdv.skdvinbackend.service.ISettingsService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,6 +60,21 @@ public class MongoSettingsService implements ISettingsService {
         return getCommonSettingsByLocaleOrDefault(commonSettings, language);
     }
 
+    @Override
+    public Map<String, WaiverSettings> getWaiverSettings() {
+        Settings settings = getSettings();
+        if (settings != null) {
+            return settings.getWaiverSettings();
+        }
+        return new HashMap<>();
+    }
+
+    @Override
+    public WaiverSettings getWaiverSettingsByLanguage(String language) {
+        Map<String, WaiverSettings> waiverSettings = getSettings().getWaiverSettings();
+        return getWaiverSettingsByLocaleOrDefault(waiverSettings, language);
+    }
+
     private CommonSettings getCommonSettingsByLocaleOrDefault(Map<String, CommonSettings> commonSettings, String language) {
         if (commonSettings != null) {
             CommonSettings localeCommonSettings = commonSettings.get(language);
@@ -66,6 +82,17 @@ public class MongoSettingsService implements ISettingsService {
                 localeCommonSettings = commonSettings.get(DEFAULT_LOCALE.getLanguage());
             }
             return localeCommonSettings;
+        }
+        return null;
+    }
+
+    private WaiverSettings getWaiverSettingsByLocaleOrDefault(Map<String, WaiverSettings> waiverSettings, String language) {
+        if (waiverSettings != null) {
+            WaiverSettings localeWaiverSettings = waiverSettings.get(language);
+            if (localeWaiverSettings == null) {
+                localeWaiverSettings = waiverSettings.get(DEFAULT_LOCALE.getLanguage());
+            }
+            return localeWaiverSettings;
         }
         return null;
     }

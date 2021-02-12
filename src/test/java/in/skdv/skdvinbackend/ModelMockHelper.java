@@ -145,11 +145,24 @@ public class ModelMockHelper {
 
         Map<String, CommonSettings> commonSettingsMap = new HashMap<>(Map.of(locale.getLanguage(), createCommonSettings()));
 
+        Map<String, WaiverSettings> waiverSettingsMap = new HashMap<>(Map.of(locale.getLanguage(), createWaiverSettings()));
+
         Settings settings = new Settings();
         settings.setAdminSettings(adminSettings);
         settings.setCommonSettings(commonSettingsMap);
+        settings.setWaiverSettings(waiverSettingsMap);
 
         return settings;
+    }
+
+    public static WaiverSettings createWaiverSettings() {
+        Tandemwaiver tandemwaiver = new Tandemwaiver();
+        tandemwaiver.setText("Bitte akzeptieren Sie die Bedingungen.");
+
+        WaiverSettings waiverSettings = new WaiverSettings();
+        waiverSettings.setTandemwaiver(tandemwaiver);
+
+        return waiverSettings;
     }
 
     public static CommonSettings createCommonSettings() {
