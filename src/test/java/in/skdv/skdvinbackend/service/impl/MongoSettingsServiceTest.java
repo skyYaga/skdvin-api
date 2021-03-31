@@ -109,8 +109,8 @@ class MongoSettingsServiceTest extends AbstractSkdvinTest {
         Map<String, WaiverSettings> waiverSettings = settingsService.getWaiverSettings();
 
         assertEquals(1, waiverSettings.size());
-        assertEquals(settings.getWaiverSettings().get(Locale.GERMAN.getLanguage()).getTandemwaiver().getText(),
-                waiverSettings.get(Locale.GERMAN.getLanguage()).getTandemwaiver().getText());
+        assertEquals(settings.getWaiverSettings().get(Locale.GERMAN.getLanguage()).getTandemwaiver(),
+                waiverSettings.get(Locale.GERMAN.getLanguage()).getTandemwaiver());
     }
 
     @Test
@@ -149,7 +149,7 @@ class MongoSettingsServiceTest extends AbstractSkdvinTest {
 
         WaiverSettings waiverSettings = settingsService.getWaiverSettingsByLanguage(Locale.GERMAN.getLanguage());
 
-        assertEquals(settings.getWaiverSettings().get(Locale.GERMAN.getLanguage()).getTandemwaiver().getText(), waiverSettings.getTandemwaiver().getText());
+        assertEquals(settings.getWaiverSettings().get(Locale.GERMAN.getLanguage()).getTandemwaiver(), waiverSettings.getTandemwaiver());
     }
 
     @Test
@@ -169,7 +169,7 @@ class MongoSettingsServiceTest extends AbstractSkdvinTest {
         WaiverSettings waiverSettings = settingsService.getWaiverSettingsByLanguage(Locale.ENGLISH.getLanguage());
 
         assertNotNull(waiverSettings);
-        assertEquals(settings.getWaiverSettings().get(Locale.GERMAN.getLanguage()).getTandemwaiver().getText(), waiverSettings.getTandemwaiver().getText());
+        assertEquals(settings.getWaiverSettings().get(Locale.GERMAN.getLanguage()).getTandemwaiver(), waiverSettings.getTandemwaiver());
     }
 
     private Settings saveExampleSettings() {
