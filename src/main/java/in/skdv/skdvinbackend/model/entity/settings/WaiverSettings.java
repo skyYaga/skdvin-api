@@ -2,12 +2,13 @@ package in.skdv.skdvinbackend.model.entity.settings;
 
 public class WaiverSettings {
 
-    private Tandemwaiver tandemwaiver;
-    public Tandemwaiver getTandemwaiver() {
+    private String tandemwaiver = "";
+
+    public String getTandemwaiver() {
         return tandemwaiver;
     }
 
-    public void setTandemwaiver(Tandemwaiver tandemwaiver) {
+    public void setTandemwaiver(String tandemwaiver) {
         this.tandemwaiver = tandemwaiver;
     }
 }

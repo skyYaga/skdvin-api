@@ -10,7 +10,7 @@ public class AbstractSettings {
 
     private AdminSettings adminSettings;
     private Map<String, CommonSettings> commonSettings;
-    private Map<String, WaiverSettings> waiverSettings;
+    private Map<String, WaiverSettings> waiverSettings = Map.of("de", new WaiverSettings(), "en", new WaiverSettings());
 
     public AdminSettings getAdminSettings() {
         return adminSettings;

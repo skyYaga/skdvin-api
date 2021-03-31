@@ -126,7 +126,7 @@ class SettingsControllerTest extends AbstractSkdvinTest {
                         fieldWithPath("commonSettings.de.additionalReminderHint").description("Additional hint text for appointment reminder mail"),
                         fieldWithPath("commonSettings.de.faq[].question").description("FAQ question"),
                         fieldWithPath("commonSettings.de.faq[].answer").description("FAQ answer"),
-                        fieldWithPath("waiverSettings.de.tandemwaiver.text").description("Tandemwaiver text")
+                        fieldWithPath("waiverSettings.de.tandemwaiver").description("Tandemwaiver text")
                 ), responseFields(
                         fieldWithPath("payload.adminSettings").description("Object with admin settings"),
                         fieldWithPath("payload.adminSettings.tandemsFrom").description("Default tandems from setting"),
@@ -153,7 +153,7 @@ class SettingsControllerTest extends AbstractSkdvinTest {
                         fieldWithPath("payload.commonSettings.de.faq[].id").description("FAQ entry id"),
                         fieldWithPath("payload.commonSettings.de.faq[].question").description("FAQ question"),
                         fieldWithPath("payload.commonSettings.de.faq[].answer").description("FAQ answer"),
-                        fieldWithPath("payload.waiverSettings.de.tandemwaiver.text").description("Tandem waiver text"),
+                        fieldWithPath("payload.waiverSettings.de.tandemwaiver").description("Tandem waiver text"),
                         fieldWithPath("success").description("true when the request was successful"),
                         fieldWithPath("message").description("message if there was an error"),
                         fieldWithPath("exception").ignored(),
@@ -213,7 +213,7 @@ class SettingsControllerTest extends AbstractSkdvinTest {
                         fieldWithPath("commonSettings.de.additionalReminderHint").description("Additional hint text for appointment reminder mail"),
                         fieldWithPath("commonSettings.de.faq[].question").description("FAQ question"),
                         fieldWithPath("commonSettings.de.faq[].answer").description("FAQ answer"),
-                        fieldWithPath("waiverSettings.de.tandemwaiver.text").description("Tandem waiver text")
+                        fieldWithPath("waiverSettings.de.tandemwaiver").description("Tandem waiver text")
                 ), responseFields(
                         fieldWithPath("payload.id").description("Id of the settings object"),
                         fieldWithPath("payload.adminSettings").description("Object with admin settings"),
@@ -241,7 +241,7 @@ class SettingsControllerTest extends AbstractSkdvinTest {
                         fieldWithPath("payload.commonSettings.de.faq[].id").description("FAQ entry id"),
                         fieldWithPath("payload.commonSettings.de.faq[].question").description("FAQ question"),
                         fieldWithPath("payload.commonSettings.de.faq[].answer").description("FAQ answer"),
-                        fieldWithPath("payload.waiverSettings.de.tandemwaiver.text").description("Tandem waiver text"),
+                        fieldWithPath("payload.waiverSettings.de.tandemwaiver").description("Tandem waiver text"),
                         fieldWithPath("success").description("true when the request was successful"),
                         fieldWithPath("message").description("message if there was an error"),
                         fieldWithPath("exception").ignored()
@@ -311,7 +311,7 @@ class SettingsControllerTest extends AbstractSkdvinTest {
                         fieldWithPath("payload.commonSettings.de.faq[].id").description("FAQ entry id"),
                         fieldWithPath("payload.commonSettings.de.faq[].question").description("FAQ question"),
                         fieldWithPath("payload.commonSettings.de.faq[].answer").description("FAQ answer"),
-                        fieldWithPath("payload.waiverSettings.de.tandemwaiver.text").description("Tandem waiver text"),
+                        fieldWithPath("payload.waiverSettings.de.tandemwaiver").description("Tandem waiver text"),
                         fieldWithPath("success").description("true when the request was successful"),
                         fieldWithPath("message").description("message if there was an error"),
                         fieldWithPath("exception").ignored(),
@@ -383,7 +383,7 @@ class SettingsControllerTest extends AbstractSkdvinTest {
     void testGetWaiverSettings_EN() throws Exception {
         Settings settings = ModelMockHelper.createSettings();
         WaiverSettings waiverSettingsEN = ModelMockHelper.createWaiverSettings();
-        waiverSettingsEN.getTandemwaiver().setText("Please accept the terms and conditions.");
+        waiverSettingsEN.setTandemwaiver("Please accept the terms and conditions.");
         settings.getWaiverSettings().put(Locale.ENGLISH.getLanguage(), waiverSettingsEN);
         settingsRepository.save(settings);
 
@@ -392,9 +392,9 @@ class SettingsControllerTest extends AbstractSkdvinTest {
                 .contentType(contentType))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success", is(true)))
-                .andExpect(jsonPath("$.payload.tandemwaiver.text", is("Please accept the terms and conditions.")))
+                .andExpect(jsonPath("$.payload.tandemwaiver", is("Please accept the terms and conditions.")))
                 .andDo(document("settings/get-waiver-settings", responseFields(
-                        fieldWithPath("payload.tandemwaiver.text").description("Tandemwaiver text"),
+                        fieldWithPath("payload.tandemwaiver").description("Tandemwaiver text"),
                         fieldWithPath("success").description("true when the request was successful"),
                         fieldWithPath("message").description("message if there was an error"),
                         fieldWithPath("exception").ignored()
@@ -411,7 +411,7 @@ class SettingsControllerTest extends AbstractSkdvinTest {
                 .contentType(contentType))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success", is(true)))
-                .andExpect(jsonPath("$.payload.tandemwaiver.text", is("Bitte akzeptieren Sie die Bedingungen.")));
+                .andExpect(jsonPath("$.payload.tandemwaiver", is("Bitte akzeptieren Sie die Bedingungen.")));
     }
 
 
