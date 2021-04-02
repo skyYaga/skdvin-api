@@ -19,3 +19,5 @@ include::videoflyer.adoc[]
 include::settings.adoc[]
 
 include::users.adoc[]
+
+include::waivers.adoc[]

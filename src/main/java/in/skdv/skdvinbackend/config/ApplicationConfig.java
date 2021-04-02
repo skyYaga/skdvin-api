@@ -42,6 +42,9 @@ public class ApplicationConfig implements WebMvcConfigurer {
     private SettingsRepository settingsRepository;
 
     @Autowired
+    private WaiverRepository waiverRepository;
+
+    @Autowired
     private MongoTemplate mongoTemplate;
 
     @Bean
@@ -75,6 +78,11 @@ public class ApplicationConfig implements WebMvcConfigurer {
     @Bean
     public ISettingsService getSettingsService() {
         return new MongoSettingsService(settingsRepository);
+    }
+
+    @Bean
+    public IWaiverService getWaiverService() {
+        return new MongoWaiverService(waiverRepository);
     }
 
     @Bean

@@ -29,7 +29,7 @@ public class UpdateAuth0TokenTask {
         this.authAPI = authAPI;
     }
 
-    @Scheduled(fixedDelay = 1000 * 60 * 60 * 8) // every 8 hours
+    @Scheduled(fixedDelay = 1000 * 60 * 60 * 8, initialDelay = 1000 * 60) // every 8 hours
     public void updateToken() {
         AuthRequest authRequest = authAPI.requestToken("https://" + domain + "/api/v2/");
         try {
