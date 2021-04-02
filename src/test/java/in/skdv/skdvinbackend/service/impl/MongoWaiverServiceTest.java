@@ -22,7 +22,7 @@ import java.time.LocalDate;
 import java.util.stream.Stream;
 
 @SpringBootTest
-public class MongoWaiverServiceTest extends AbstractSkdvinTest {
+class MongoWaiverServiceTest extends AbstractSkdvinTest {
 
     private WaiverConverter converter = new WaiverConverter();
 
