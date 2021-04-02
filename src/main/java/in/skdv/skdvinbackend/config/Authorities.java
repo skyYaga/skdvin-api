@@ -37,4 +37,6 @@ public final class Authorities {
     public static final String READ_USERS = "SCOPE_read:users";
     public static final String UPDATE_USERS = "SCOPE_update:users";
 
+    public static final String READ_WAIVERS = "SCOPE_read:waivers";
+    public static final String UPDATE_WAIVERS = "SCOPE_update:waivers";
 }
