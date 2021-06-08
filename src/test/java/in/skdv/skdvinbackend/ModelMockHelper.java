@@ -202,7 +202,6 @@ public class ModelMockHelper {
         waiverCustomer.setDateOfBirth(LocalDate.now().minusYears(20));
 
         Waiver waiver = new Waiver();
-        waiver.setWaiverText("Waiver Text");
         waiver.setAppointmentId(1);
         waiver.setWaiverCustomer(waiverCustomer);
         waiver.setSignature("data:signature");
