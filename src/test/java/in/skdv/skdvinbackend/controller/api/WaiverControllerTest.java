@@ -5,7 +5,10 @@ import in.skdv.skdvinbackend.MockJwtDecoder;
 import in.skdv.skdvinbackend.ModelMockHelper;
 import in.skdv.skdvinbackend.model.converter.WaiverConverter;
 import in.skdv.skdvinbackend.model.dto.WaiverDTO;
+import in.skdv.skdvinbackend.model.entity.settings.WaiverSettings;
+import in.skdv.skdvinbackend.service.ISettingsService;
 import in.skdv.skdvinbackend.service.IWaiverService;
+import in.skdv.skdvinbackend.util.GenericResult;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -13,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.restdocs.RestDocsMockMvcConfigurationCustomizer;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
@@ -36,6 +40,8 @@ import static in.skdv.skdvinbackend.config.Authorities.READ_WAIVERS;
 import static in.skdv.skdvinbackend.config.Authorities.UPDATE_WAIVERS;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.when;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
@@ -59,6 +65,9 @@ class WaiverControllerTest extends AbstractSkdvinTest {
 
     private MockMvc mockMvc;
     private WaiverConverter converter = new WaiverConverter();
+
+    @MockBean
+    private ISettingsService settingsService;
 
     @Autowired
     private WebApplicationContext webApplicationContext;
@@ -84,6 +93,11 @@ class WaiverControllerTest extends AbstractSkdvinTest {
                 .apply(springSecurity())
                 .apply(documentationConfiguration(restDocumentation))
                 .build();
+
+        WaiverSettings waiverSettings = new WaiverSettings();
+        waiverSettings.setTandemwaiver("Tandem Waiver Text");
+        when(settingsService.getWaiverSettingsByLanguage(anyString())).
+                thenReturn(waiverSettings);
     }
 
     @Test
@@ -102,6 +116,7 @@ class WaiverControllerTest extends AbstractSkdvinTest {
                                 fieldWithPath("success").description("true when the request was successful"),
                                 fieldWithPath("message").description("message if there was an error"),
                                 fieldWithPath("payload[].id").description("waivers id"),
+                                fieldWithPath("payload[].state").description("waiver's state"),
                                 fieldWithPath("payload[].appointmentId").description("Appointment id"),
                                 fieldWithPath("payload[].waiverText").description("Waiver Text"),
                                 fieldWithPath("payload[].waiverCustomer.firstName").description("Customers first name"),
@@ -115,6 +130,8 @@ class WaiverControllerTest extends AbstractSkdvinTest {
                                 fieldWithPath("payload[].parentSignature1").description("parent's signature 1 for minors"),
                                 fieldWithPath("payload[].parentSignature2").description("parent's signature 2 for minors"),
                                 fieldWithPath("payload[].gdprSocial").description("Allow social sharing?"),
+                                fieldWithPath("payload[].tandemmaster").description("Assigned tandemmaster"),
+                                fieldWithPath("payload[].tandemmasterSignature").description("Assigned tandemmaster's signature"),
                                 fieldWithPath("exception").ignored()
                         )));
     }
@@ -139,6 +156,7 @@ class WaiverControllerTest extends AbstractSkdvinTest {
                 .andDo(document("waivers/save-waiver",
                         requestFields(
                                 fieldWithPath("id").description("waivers id"),
+                                fieldWithPath("state").description("waivers state"),
                                 fieldWithPath("appointmentId").description("Appointment id"),
                                 fieldWithPath("waiverText").description("Waiver Text"),
                                 fieldWithPath("waiverCustomer.firstName").description("Customers first name"),
@@ -151,7 +169,9 @@ class WaiverControllerTest extends AbstractSkdvinTest {
                                 fieldWithPath("signature").description("customers signature"),
                                 fieldWithPath("parentSignature1").description("parent's signature 1 for minors"),
                                 fieldWithPath("parentSignature2").description("parent's signature 2 for minors"),
-                                fieldWithPath("gdprSocial").description("Allow social sharing?")
+                                fieldWithPath("gdprSocial").description("Allow social sharing?"),
+                                fieldWithPath("tandemmaster").description("Assigned tandemmaster"),
+                                fieldWithPath("tandemmasterSignature").description("Assigned tandemmaster's signature")
                         )));
     }
 
@@ -191,17 +211,19 @@ class WaiverControllerTest extends AbstractSkdvinTest {
     @Test
     void testUpdateWaiver() throws Exception {
         WaiverDTO waiver1 = converter.convertToDto(ModelMockHelper.createWaiver());
+        GenericResult<WaiverDTO> result = waiverService.saveWaiver(waiver1);
 
-        String userJson = json(waiver1);
+        String userJson = json(result.getPayload());
 
         mockMvc.perform(RestDocumentationRequestBuilders.put("/api/waivers")
                 .header("Authorization", MockJwtDecoder.addHeader(UPDATE_WAIVERS))
                 .contentType(contentType)
                 .content(userJson))
-                .andExpect(status().isNoContent())
+                .andExpect(status().isOk())
                 .andDo(document("waivers/update-waiver",
                         requestFields(
                                 fieldWithPath("id").description("waivers id"),
+                                fieldWithPath("state").description("waivers state"),
                                 fieldWithPath("appointmentId").description("Appointment id"),
                                 fieldWithPath("waiverText").description("Waiver Text"),
                                 fieldWithPath("waiverCustomer.firstName").description("Customers first name"),
@@ -214,8 +236,46 @@ class WaiverControllerTest extends AbstractSkdvinTest {
                                 fieldWithPath("signature").description("customers signature"),
                                 fieldWithPath("parentSignature1").description("parent's signature 1 for minors"),
                                 fieldWithPath("parentSignature2").description("parent's signature 2 for minors"),
-                                fieldWithPath("gdprSocial").description("Allow social sharing?")
+                                fieldWithPath("gdprSocial").description("Allow social sharing?"),
+                                fieldWithPath("tandemmaster").description("Assigned tandemmaster"),
+                                fieldWithPath("tandemmasterSignature").description("Assigned tandemmaster's signature")
                         )));
+    }
+
+    @Test
+    void testUpdateWaiver_NotExisting_DE() throws Exception {
+        WaiverDTO waiver1 = converter.convertToDto(ModelMockHelper.createWaiver());
+        waiver1.setTandemmaster("12345");
+        waiver1.setId("12345");
+
+        String userJson = json(waiver1);
+
+        mockMvc.perform(RestDocumentationRequestBuilders.put("/api/waivers")
+                .header("Authorization", MockJwtDecoder.addHeader(UPDATE_WAIVERS))
+                .header("Accept-Language", "de")
+                .contentType(contentType)
+                .content(userJson))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.message", is("Haftungsvereinbarung existiert nicht")));
+    }
+
+    @Test
+    void testUpdateWaiver_NotExisting_EN() throws Exception {
+        WaiverDTO waiver1 = converter.convertToDto(ModelMockHelper.createWaiver());
+        waiver1.setTandemmaster("12345");
+        waiver1.setId("12345");
+
+        String userJson = json(waiver1);
+
+        mockMvc.perform(RestDocumentationRequestBuilders.put("/api/waivers")
+                .header("Authorization", MockJwtDecoder.addHeader(UPDATE_WAIVERS))
+                .header("Accept-Language", "en")
+                .contentType(contentType)
+                .content(userJson))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.message", is("Waiver does not exist")));
     }
 
     @Test

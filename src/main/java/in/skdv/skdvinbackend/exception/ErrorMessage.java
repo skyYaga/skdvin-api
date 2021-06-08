@@ -30,7 +30,8 @@ public enum ErrorMessage {
     SELFASSIGNMENT_READONLY("selfassignment.readonly"),
     SELFASSIGNMENT_NODELETE("selfassignment.nodelete"),
 
-    WAIVER_MINOR_MISSING_SIGNATURES("waiver.minor.missing.signatures");
+    WAIVER_MINOR_MISSING_SIGNATURES("waiver.minor.missing.signatures"),
+    WAIVER_NOT_EXISTING("waiver.not.existing");
 
     private final String message;
 

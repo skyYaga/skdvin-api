@@ -10,4 +10,5 @@ public interface IWaiverService {
 
     GenericResult<WaiverDTO> saveWaiver(WaiverDTO waiver);
 
+    GenericResult<WaiverDTO> updateWaiver(WaiverDTO waiver);
 }

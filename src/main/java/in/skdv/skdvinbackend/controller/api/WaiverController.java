@@ -46,8 +46,13 @@ public class WaiverController {
 
     @PutMapping
     @PreAuthorize("hasAuthority('SCOPE_update:waivers')")
-    public ResponseEntity<Void> updateWaiver(@RequestBody @Valid WaiverDTO input) {
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<GenericResult<WaiverDTO>> updateWaiver(@RequestBody @Valid WaiverDTO input) {
+        GenericResult<WaiverDTO> waiverResult = waiverService.updateWaiver(input);
+        if (waiverResult.isSuccess()) {
+            return ResponseEntity.status(HttpStatus.OK).body(waiverResult);
+        }
+        return ResponseEntity.badRequest().body(new GenericResult<>(false,
+                messageSource.getMessage(waiverResult.getMessage(), null, LocaleContextHolder.getLocale())));
     }
 
 }

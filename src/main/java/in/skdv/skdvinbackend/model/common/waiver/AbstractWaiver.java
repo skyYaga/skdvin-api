@@ -12,8 +12,7 @@ public class AbstractWaiver {
 
     private int appointmentId;
 
-    @NotNull
-    private String waiverText;
+    private WaiverState state = WaiverState.NEW;
 
     @Valid
     @NotNull
@@ -24,6 +23,9 @@ public class AbstractWaiver {
 
     private String parentSignature1;
     private String parentSignature2;
+
+    private String tandemmaster;
+    private String tandemmasterSignature;
 
     private boolean gdprSocial;
 
