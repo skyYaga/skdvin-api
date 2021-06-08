@@ -10,4 +10,6 @@ public class WaiverDTO extends AbstractWaiver {
 
     private String id;
 
+    private String waiverText;
+
 }
