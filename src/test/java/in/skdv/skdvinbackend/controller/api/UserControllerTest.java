@@ -2,6 +2,7 @@ package in.skdv.skdvinbackend.controller.api;
 
 import in.skdv.skdvinbackend.AbstractSkdvinTest;
 import in.skdv.skdvinbackend.MockJwtDecoder;
+import in.skdv.skdvinbackend.model.common.user.UserListResult;
 import in.skdv.skdvinbackend.model.dto.RoleDTO;
 import in.skdv.skdvinbackend.model.dto.UserDTO;
 import in.skdv.skdvinbackend.service.IUserService;
@@ -105,24 +106,30 @@ class UserControllerTest extends AbstractSkdvinTest {
                 new RoleDTO("3", "MANIFEST"))
         );
         List<UserDTO> userList = Arrays.asList(userDTO1, userDTO2);
+        var userListResult = new UserListResult();
+        userListResult.setUsers(userList);
+        userListResult.setStart(0);
+        userListResult.setTotal(2);
 
-        Mockito.when(userService.getUsers()).thenReturn(userList);
+        Mockito.when(userService.getUsers(0, 5)).thenReturn(userListResult);
 
         mockMvc.perform(get("/api/users")
                 .header("Authorization", MockJwtDecoder.addHeader(READ_USERS))
                 .contentType(contentType))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success", is(true)))
-                .andExpect(jsonPath("$.payload", hasSize(2)))
+                .andExpect(jsonPath("$.payload.users", hasSize(2)))
                 .andDo(document("users/get-users",
                         responseFields(
                                 fieldWithPath("success").description("true when the request was successful"),
                                 fieldWithPath("message").description("message if there was an error"),
-                                fieldWithPath("payload[].userId").description("Users id"),
-                                fieldWithPath("payload[].email").description("Users email"),
-                                fieldWithPath("payload[].roles[]").description("Users roles"),
-                                fieldWithPath("payload[].roles[].id").description("Role ID"),
-                                fieldWithPath("payload[].roles[].name").description("Role name"),
+                                fieldWithPath("payload.start").description("pagination start"),
+                                fieldWithPath("payload.total").description("pagination total entries"),
+                                fieldWithPath("payload.users[].userId").description("Users id"),
+                                fieldWithPath("payload.users[].email").description("Users email"),
+                                fieldWithPath("payload.users[].roles[]").description("Users roles"),
+                                fieldWithPath("payload.users[].roles[].id").description("Role ID"),
+                                fieldWithPath("payload.users[].roles[].name").description("Role name"),
                                 fieldWithPath("exception").ignored()
                         )));
     }
