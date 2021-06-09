@@ -1,5 +1,6 @@
 package in.skdv.skdvinbackend.controller.api;
 
+import in.skdv.skdvinbackend.model.common.user.UserListResult;
 import in.skdv.skdvinbackend.model.dto.RoleDTO;
 import in.skdv.skdvinbackend.model.dto.UserDTO;
 import in.skdv.skdvinbackend.service.IUserService;
@@ -25,8 +26,10 @@ public class UserController {
 
     @GetMapping
     @PreAuthorize("hasAuthority('SCOPE_read:users')")
-    public ResponseEntity<GenericResult<List<UserDTO>>> getAllUsers() {
-        List<UserDTO> userList = userService.getUsers();
+    public ResponseEntity<GenericResult<UserListResult>> getAllUsers(
+            @RequestParam(value = "page", defaultValue = "0") Integer pageNumber,
+            @RequestParam(value = "per_page", defaultValue = "5") Integer amountPerPage) {
+        UserListResult userList = userService.getUsers(pageNumber, amountPerPage);
         return ResponseEntity.ok(new GenericResult<>(true, userList));
     }
 
