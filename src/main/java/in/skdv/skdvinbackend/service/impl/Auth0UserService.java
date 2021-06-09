@@ -10,6 +10,7 @@ import com.auth0.json.mgmt.RolesPage;
 import com.auth0.json.mgmt.users.User;
 import com.auth0.json.mgmt.users.UsersPage;
 import in.skdv.skdvinbackend.exception.AuthConnectionException;
+import in.skdv.skdvinbackend.model.common.user.UserListResult;
 import in.skdv.skdvinbackend.model.dto.RoleDTO;
 import in.skdv.skdvinbackend.model.dto.UserDTO;
 import in.skdv.skdvinbackend.service.IUserService;
@@ -33,12 +34,12 @@ public class Auth0UserService implements IUserService {
     }
 
     @Override
-    public List<UserDTO> getUsers() {
+    public UserListResult getUsers(int pageNumber, int amountPerPage) {
         try {
-            List<UserDTO> returnList = new ArrayList<>();
-            retrieveUsers(returnList);
-            returnList.forEach(userDTO -> userDTO.setRoles(retrieveRoles(userDTO.getUserId())));
-            return returnList;
+            UserListResult userListResult = new UserListResult();
+            retrieveUsers(userListResult, pageNumber, amountPerPage);
+            userListResult.getUsers().forEach(userDTO -> userDTO.setRoles(retrieveRoles(userDTO.getUserId())));
+            return userListResult;
         } catch (Auth0Exception e) {
             throw new AuthConnectionException("Error retrieving users from auth0", e);
         }
@@ -94,15 +95,18 @@ public class Auth0UserService implements IUserService {
         return rolesToRemove.stream().map(RoleDTO::getId).collect(Collectors.toList());
     }
 
-    private void retrieveUsers(List<UserDTO> returnList) throws Auth0Exception {
-        UsersPage list = managementAPI.users().list(new UserFilter()).execute();
+    private void retrieveUsers(UserListResult returnList, int pageNumber, int amountPerPage) throws Auth0Exception {
+        UserFilter userFilter = new UserFilter().withPage(pageNumber, amountPerPage).withTotals(true);
+        UsersPage list = managementAPI.users().list(userFilter).execute();
         List<User> userList = list.getItems();
 
+        returnList.setStart(list.getStart());
+        returnList.setTotal(list.getTotal());
         userList.forEach(user -> {
             UserDTO userDTO = new UserDTO();
             userDTO.setUserId(user.getId());
             userDTO.setEmail(user.getEmail());
-            returnList.add(userDTO);
+            returnList.getUsers().add(userDTO);
         });
     }
 

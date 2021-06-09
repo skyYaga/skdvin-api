@@ -9,6 +9,7 @@ import com.auth0.json.mgmt.RolesPage;
 import com.auth0.json.mgmt.users.User;
 import com.auth0.json.mgmt.users.UsersPage;
 import com.auth0.net.Request;
+import in.skdv.skdvinbackend.model.common.user.UserListResult;
 import in.skdv.skdvinbackend.model.dto.RoleDTO;
 import in.skdv.skdvinbackend.model.dto.UserDTO;
 import org.junit.jupiter.api.BeforeEach;
@@ -62,7 +63,8 @@ class Auth0UserServiceTest {
         when(rolesPage2.getItems()).thenReturn(createRolesForUser(2));
 
         // Act
-        List<UserDTO> users = auth0UserService.getUsers();
+        UserListResult userListResult = auth0UserService.getUsers(0, 10);
+        var users = userListResult.getUsers();
 
         // Assert
         assertNotNull(users);
@@ -94,7 +96,7 @@ class Auth0UserServiceTest {
         when(usersPage.getItems()).thenReturn(userList);
 
         // Act
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> auth0UserService.getUsers());
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> auth0UserService.getUsers(0, 10));
 
         // Assert
         assertEquals("Error retrieving roles from auth0", exception.getMessage());
@@ -113,7 +115,7 @@ class Auth0UserServiceTest {
         when(usersRequest.execute()).thenThrow(new Auth0Exception("Auth0 not available"));
 
         // Act
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> auth0UserService.getUsers());
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> auth0UserService.getUsers(0, 10));
 
         // Assert
         assertEquals("Error retrieving users from auth0", exception.getMessage());
