@@ -7,6 +7,7 @@ import in.skdv.skdvinbackend.service.IEmailService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -27,7 +28,10 @@ public class SendAppointmentReminderTask {
         this.emailService = emailService;
     }
 
-    @Scheduled(fixedDelay = 1000 * 60 * 30) // every 30 minutes
+    @Scheduled(fixedDelay = 1000 * 60 * 30, initialDelay = 1000 * 60) // every 30 minutes
+    @ConditionalOnProperty(
+            value = "app.scheduling.enable", havingValue = "true", matchIfMissing = true
+    )
     public void sendReminder() {
         List<Appointment> nextWeeksAppointments = appointmentService.findAppointmentsWithinNextWeek();
         nextWeeksAppointments.stream()

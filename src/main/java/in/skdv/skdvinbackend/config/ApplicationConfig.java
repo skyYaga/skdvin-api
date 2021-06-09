@@ -1,5 +1,6 @@
 package in.skdv.skdvinbackend.config;
 
+import com.auth0.client.mgmt.ManagementAPI;
 import in.skdv.skdvinbackend.repository.*;
 import in.skdv.skdvinbackend.service.*;
 import in.skdv.skdvinbackend.service.impl.*;
@@ -41,6 +42,9 @@ public class ApplicationConfig implements WebMvcConfigurer {
     private SettingsRepository settingsRepository;
 
     @Autowired
+    private WaiverRepository waiverRepository;
+
+    @Autowired
     private MongoTemplate mongoTemplate;
 
     @Bean
@@ -74,6 +78,18 @@ public class ApplicationConfig implements WebMvcConfigurer {
     @Bean
     public ISettingsService getSettingsService() {
         return new MongoSettingsService(settingsRepository);
+    }
+
+    @Bean
+    @Autowired
+    public IWaiverService getWaiverService(ISettingsService settingsService) {
+        return new MongoWaiverService(waiverRepository, settingsService);
+    }
+
+    @Bean
+    @Autowired
+    public IUserService getUserService(ManagementAPI managementAPI) {
+        return new Auth0UserService(managementAPI);
     }
 
     @Bean

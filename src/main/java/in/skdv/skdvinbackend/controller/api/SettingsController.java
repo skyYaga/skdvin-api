@@ -5,6 +5,7 @@ import in.skdv.skdvinbackend.model.converter.SettingsConverter;
 import in.skdv.skdvinbackend.model.dto.SettingsDTO;
 import in.skdv.skdvinbackend.model.entity.settings.CommonSettings;
 import in.skdv.skdvinbackend.model.entity.settings.Settings;
+import in.skdv.skdvinbackend.model.entity.settings.WaiverSettings;
 import in.skdv.skdvinbackend.repository.SettingsRepository;
 import in.skdv.skdvinbackend.service.ISettingsService;
 import in.skdv.skdvinbackend.util.GenericResult;
@@ -54,6 +55,12 @@ public class SettingsController {
     public ResponseEntity<GenericResult<CommonSettings>> getCommonSettings() {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(new GenericResult<>(true, settingsService.getCommonSettingsByLanguage(LocaleContextHolder.getLocale().getLanguage())));
+    }
+
+    @GetMapping("/waiver")
+    public ResponseEntity<GenericResult<WaiverSettings>> getWaiverSettings() {
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(new GenericResult<>(true, settingsService.getWaiverSettingsByLanguage(LocaleContextHolder.getLocale().getLanguage())));
     }
 
     @PutMapping("/{id}")

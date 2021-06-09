@@ -5,11 +5,11 @@ import in.skdv.skdvinbackend.MockJwtDecoder;
 import in.skdv.skdvinbackend.ModelMockHelper;
 import in.skdv.skdvinbackend.model.entity.settings.CommonSettings;
 import in.skdv.skdvinbackend.model.entity.settings.Settings;
+import in.skdv.skdvinbackend.model.entity.settings.WaiverSettings;
 import in.skdv.skdvinbackend.repository.SettingsRepository;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.restdocs.RestDocsMockMvcConfigurationCustomizer;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -19,12 +19,12 @@ import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.mock.http.MockHttpOutputMessage;
-import org.springframework.restdocs.JUnitRestDocumentation;
+import org.springframework.restdocs.RestDocumentationContextProvider;
+import org.springframework.restdocs.RestDocumentationExtension;
 import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation;
 import org.springframework.restdocs.mockmvc.MockMvcRestDocumentationConfigurer;
 import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders;
 import org.springframework.restdocs.mockmvc.RestDocumentationResultHandler;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.context.WebApplicationContext;
 
@@ -35,7 +35,6 @@ import java.util.Locale;
 
 import static in.skdv.skdvinbackend.config.Authorities.*;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertNotNull;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
@@ -43,17 +42,15 @@ import static org.springframework.restdocs.payload.PayloadDocumentation.*;
 import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
 import static org.springframework.restdocs.request.RequestDocumentation.pathParameters;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
+import static org.springframework.test.util.AssertionErrors.assertNotNull;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppContextSetup;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(RestDocumentationExtension.class)
 @SpringBootTest
-public class SettingsControllerTest extends AbstractSkdvinTest {
-
-    @Rule
-    public JUnitRestDocumentation restDocumentation = new JUnitRestDocumentation();
+class SettingsControllerTest extends AbstractSkdvinTest {
 
     private MediaType contentType = new MediaType(MediaType.APPLICATION_JSON.getType(),
             MediaType.APPLICATION_JSON.getSubtype(),
@@ -81,11 +78,11 @@ public class SettingsControllerTest extends AbstractSkdvinTest {
                 this.mappingJackson2HttpMessageConverter);
     }
 
-    @Before
-    public void setup() {
+    @BeforeEach
+    void setup(RestDocumentationContextProvider restDocumentation) {
         this.mockMvc = webAppContextSetup(webApplicationContext)
                 .apply(springSecurity())
-                .apply(documentationConfiguration(this.restDocumentation))
+                .apply(documentationConfiguration(restDocumentation))
                 .build();
 
         settingsRepository.deleteAll();
@@ -93,7 +90,7 @@ public class SettingsControllerTest extends AbstractSkdvinTest {
 
 
     @Test
-    public void testCreateSettings() throws Exception {
+    void testCreateSettings() throws Exception {
         String settingsJson = json(ModelMockHelper.createSettings());
 
         mockMvc.perform(RestDocumentationRequestBuilders.post("/api/settings/")
@@ -128,7 +125,8 @@ public class SettingsControllerTest extends AbstractSkdvinTest {
                         fieldWithPath("commonSettings.de.selfAssignmentMode").description("Self assignment mode"),
                         fieldWithPath("commonSettings.de.additionalReminderHint").description("Additional hint text for appointment reminder mail"),
                         fieldWithPath("commonSettings.de.faq[].question").description("FAQ question"),
-                        fieldWithPath("commonSettings.de.faq[].answer").description("FAQ answer")
+                        fieldWithPath("commonSettings.de.faq[].answer").description("FAQ answer"),
+                        fieldWithPath("waiverSettings.de.tandemwaiver").description("Tandemwaiver text")
                 ), responseFields(
                         fieldWithPath("payload.adminSettings").description("Object with admin settings"),
                         fieldWithPath("payload.adminSettings.tandemsFrom").description("Default tandems from setting"),
@@ -155,6 +153,7 @@ public class SettingsControllerTest extends AbstractSkdvinTest {
                         fieldWithPath("payload.commonSettings.de.faq[].id").description("FAQ entry id"),
                         fieldWithPath("payload.commonSettings.de.faq[].question").description("FAQ question"),
                         fieldWithPath("payload.commonSettings.de.faq[].answer").description("FAQ answer"),
+                        fieldWithPath("payload.waiverSettings.de.tandemwaiver").description("Tandem waiver text"),
                         fieldWithPath("success").description("true when the request was successful"),
                         fieldWithPath("message").description("message if there was an error"),
                         fieldWithPath("exception").ignored(),
@@ -163,7 +162,7 @@ public class SettingsControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testCreateSettings_Unauthorized() throws Exception {
+    void testCreateSettings_Unauthorized() throws Exception {
         String settingsJson = json(ModelMockHelper.createSettings());
 
         mockMvc.perform(post("/api/settings/")
@@ -173,7 +172,7 @@ public class SettingsControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testUpdateSettings() throws Exception {
+    void testUpdateSettings() throws Exception {
         Settings settings = settingsRepository.save(ModelMockHelper.createSettings());
         settings.getAdminSettings().setTandemCount(2);
         settings.getCommonSettings().get(Locale.GERMAN.getLanguage()).getDropzone().setName("Renamed DZ");
@@ -213,7 +212,8 @@ public class SettingsControllerTest extends AbstractSkdvinTest {
                         fieldWithPath("commonSettings.de.selfAssignmentMode").description("Self assignment mode"),
                         fieldWithPath("commonSettings.de.additionalReminderHint").description("Additional hint text for appointment reminder mail"),
                         fieldWithPath("commonSettings.de.faq[].question").description("FAQ question"),
-                        fieldWithPath("commonSettings.de.faq[].answer").description("FAQ answer")
+                        fieldWithPath("commonSettings.de.faq[].answer").description("FAQ answer"),
+                        fieldWithPath("waiverSettings.de.tandemwaiver").description("Tandem waiver text")
                 ), responseFields(
                         fieldWithPath("payload.id").description("Id of the settings object"),
                         fieldWithPath("payload.adminSettings").description("Object with admin settings"),
@@ -241,6 +241,7 @@ public class SettingsControllerTest extends AbstractSkdvinTest {
                         fieldWithPath("payload.commonSettings.de.faq[].id").description("FAQ entry id"),
                         fieldWithPath("payload.commonSettings.de.faq[].question").description("FAQ question"),
                         fieldWithPath("payload.commonSettings.de.faq[].answer").description("FAQ answer"),
+                        fieldWithPath("payload.waiverSettings.de.tandemwaiver").description("Tandem waiver text"),
                         fieldWithPath("success").description("true when the request was successful"),
                         fieldWithPath("message").description("message if there was an error"),
                         fieldWithPath("exception").ignored()
@@ -248,7 +249,7 @@ public class SettingsControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testUpdateSettings_Unauthorized() throws Exception {
+    void testUpdateSettings_Unauthorized() throws Exception {
         Settings settings = settingsRepository.save(ModelMockHelper.createSettings());
         String settingsJson = json(settings);
 
@@ -259,7 +260,7 @@ public class SettingsControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testUpdateSettings_NotFound() throws Exception {
+    void testUpdateSettings_NotFound() throws Exception {
         Settings settings = settingsRepository.save(ModelMockHelper.createSettings());
         String settingsJson = json(settings);
 
@@ -274,7 +275,7 @@ public class SettingsControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testGetSettings() throws Exception {
+    void testGetSettings() throws Exception {
         settingsRepository.save(ModelMockHelper.createSettings());
 
         mockMvc.perform(RestDocumentationRequestBuilders.get("/api/settings/")
@@ -310,6 +311,7 @@ public class SettingsControllerTest extends AbstractSkdvinTest {
                         fieldWithPath("payload.commonSettings.de.faq[].id").description("FAQ entry id"),
                         fieldWithPath("payload.commonSettings.de.faq[].question").description("FAQ question"),
                         fieldWithPath("payload.commonSettings.de.faq[].answer").description("FAQ answer"),
+                        fieldWithPath("payload.waiverSettings.de.tandemwaiver").description("Tandem waiver text"),
                         fieldWithPath("success").description("true when the request was successful"),
                         fieldWithPath("message").description("message if there was an error"),
                         fieldWithPath("exception").ignored(),
@@ -318,7 +320,7 @@ public class SettingsControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testGetSettings_Unauthorized() throws Exception {
+    void testGetSettings_Unauthorized() throws Exception {
         String settingsJson = json(ModelMockHelper.createSettings());
 
         mockMvc.perform(get("/api/settings/")
@@ -328,7 +330,7 @@ public class SettingsControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testGetCommonSettings_EN() throws Exception {
+    void testGetCommonSettings_EN() throws Exception {
         Settings settings = ModelMockHelper.createSettings();
         CommonSettings commonSettingsEN = ModelMockHelper.createCommonSettings();
         commonSettingsEN.getDropzone().setName("Example DZ EN");
@@ -365,11 +367,8 @@ public class SettingsControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testGetCommonSettings_DE() throws Exception {
+    void testGetCommonSettings_DE() throws Exception {
         Settings settings = ModelMockHelper.createSettings();
-        CommonSettings commonSettingsEN = ModelMockHelper.createCommonSettings();
-        commonSettingsEN.getDropzone().setName("Example DZ EN");
-        settings.getCommonSettings().put(Locale.ENGLISH.getLanguage(), commonSettingsEN);
         settingsRepository.save(settings);
 
         mockMvc.perform(RestDocumentationRequestBuilders.get("/api/settings/common/")
@@ -377,28 +376,42 @@ public class SettingsControllerTest extends AbstractSkdvinTest {
                 .contentType(contentType))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success", is(true)))
-                .andExpect(jsonPath("$.payload.dropzone.name", is("Example DZ")))
-                .andDo(document("settings/get-common-settings", responseFields(
-                        fieldWithPath("payload.dropzone").description("Object with dropzone details"),
-                        fieldWithPath("payload.dropzone.name").description("Dropzone name"),
-                        fieldWithPath("payload.dropzone.email").description("Dropzone email"),
-                        fieldWithPath("payload.dropzone.phone").description("Dropzone phone"),
-                        fieldWithPath("payload.dropzone.mobile").description("Dropzone mobile"),
-                        fieldWithPath("payload.dropzone.priceListUrl").description("URL to price list"),
-                        fieldWithPath("payload.dropzone.transportationAgreementUrl")
-                                .description("URL to transportation and liability agreement"),
-                        fieldWithPath("payload.homepageHint").description("Homepage hint"),
-                        fieldWithPath("payload.homepageHintTitle").description("Homepage hint title"),
-                        fieldWithPath("payload.bccMail").description("Mail address for bcc mails"),
-                        fieldWithPath("payload.selfAssignmentMode").description("Self assignment mode"),
-                        fieldWithPath("payload.additionalReminderHint").description("Additional hint text for appointment reminder mail"),
-                        fieldWithPath("payload.faq[].id").description("FAQ entry id"),
-                        fieldWithPath("payload.faq[].question").description("FAQ question"),
-                        fieldWithPath("payload.faq[].answer").description("FAQ answer"),
+                .andExpect(jsonPath("$.payload.dropzone.name", is("Example DZ")));
+    }
+
+    @Test
+    void testGetWaiverSettings_EN() throws Exception {
+        Settings settings = ModelMockHelper.createSettings();
+        WaiverSettings waiverSettingsEN = ModelMockHelper.createWaiverSettings();
+        waiverSettingsEN.setTandemwaiver("Please accept the terms and conditions.");
+        settings.getWaiverSettings().put(Locale.ENGLISH.getLanguage(), waiverSettingsEN);
+        settingsRepository.save(settings);
+
+        mockMvc.perform(RestDocumentationRequestBuilders.get("/api/settings/waiver")
+                .header("Accept-Language", "en-US")
+                .contentType(contentType))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success", is(true)))
+                .andExpect(jsonPath("$.payload.tandemwaiver", is("Please accept the terms and conditions.")))
+                .andDo(document("settings/get-waiver-settings", responseFields(
+                        fieldWithPath("payload.tandemwaiver").description("Tandemwaiver text"),
                         fieldWithPath("success").description("true when the request was successful"),
                         fieldWithPath("message").description("message if there was an error"),
                         fieldWithPath("exception").ignored()
                 )));
+    }
+
+    @Test
+    void testGetWaiverSettings_DE() throws Exception {
+        Settings settings = ModelMockHelper.createSettings();
+        settingsRepository.save(settings);
+
+        mockMvc.perform(RestDocumentationRequestBuilders.get("/api/settings/waiver/")
+                .header("Accept-Language", "de")
+                .contentType(contentType))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success", is(true)))
+                .andExpect(jsonPath("$.payload.tandemwaiver", is("Bitte akzeptieren Sie die Bedingungen.")));
     }
 
 

@@ -15,10 +15,9 @@ import in.skdv.skdvinbackend.repository.TandemmasterRepository;
 import in.skdv.skdvinbackend.service.IJumpdayService;
 import in.skdv.skdvinbackend.service.ISettingsService;
 import in.skdv.skdvinbackend.service.ITandemmasterService;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.restdocs.RestDocsMockMvcConfigurationCustomizer;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -29,12 +28,12 @@ import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.mock.http.MockHttpOutputMessage;
-import org.springframework.restdocs.JUnitRestDocumentation;
+import org.springframework.restdocs.RestDocumentationContextProvider;
+import org.springframework.restdocs.RestDocumentationExtension;
 import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation;
 import org.springframework.restdocs.mockmvc.MockMvcRestDocumentationConfigurer;
 import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders;
 import org.springframework.restdocs.mockmvc.RestDocumentationResultHandler;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.context.WebApplicationContext;
 
@@ -48,7 +47,6 @@ import java.util.Map;
 import static in.skdv.skdvinbackend.config.Authorities.*;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.when;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
@@ -58,17 +56,15 @@ import static org.springframework.restdocs.payload.PayloadDocumentation.*;
 import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
 import static org.springframework.restdocs.request.RequestDocumentation.pathParameters;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
+import static org.springframework.test.util.AssertionErrors.assertNotNull;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppContextSetup;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(RestDocumentationExtension.class)
 @SpringBootTest
-public class TandemmasterControllerTest extends AbstractSkdvinTest {
-
-    @Rule
-    public JUnitRestDocumentation restDocumentation = new JUnitRestDocumentation();
+class TandemmasterControllerTest extends AbstractSkdvinTest {
 
     private MediaType contentType = new MediaType(MediaType.APPLICATION_JSON.getType(),
             MediaType.APPLICATION_JSON.getSubtype(),
@@ -110,11 +106,11 @@ public class TandemmasterControllerTest extends AbstractSkdvinTest {
                 this.mappingJackson2HttpMessageConverter);
     }
 
-    @Before
-    public void setup() {
+    @BeforeEach
+    void setup(RestDocumentationContextProvider restDocumentation) {
         this.mockMvc = webAppContextSetup(webApplicationContext)
                 .apply(springSecurity())
-                .apply(documentationConfiguration(this.restDocumentation))
+                .apply(documentationConfiguration(restDocumentation))
                 .build();
 
         tandemmasterRepository.deleteAll();
@@ -124,7 +120,7 @@ public class TandemmasterControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testCreateTandemmaster() throws Exception {
+    void testCreateTandemmaster() throws Exception {
         String tandemmasterJson = json(ModelMockHelper.createTandemmaster());
 
         mockMvc.perform(RestDocumentationRequestBuilders.post("/api/tandemmaster/")
@@ -155,7 +151,7 @@ public class TandemmasterControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testCreateTandemmaster_Unauthorized() throws Exception {
+    void testCreateTandemmaster_Unauthorized() throws Exception {
         String tandemmasterJson = json(ModelMockHelper.createTandemmaster());
 
         mockMvc.perform(post("/api/tandemmaster/")
@@ -165,7 +161,7 @@ public class TandemmasterControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testGetAllTandemmasters() throws Exception {
+    void testGetAllTandemmasters() throws Exception {
         tandemmasterRepository.save(ModelMockHelper.createTandemmaster());
         tandemmasterRepository.save(ModelMockHelper.createTandemmaster("john", "doe"));
 
@@ -190,7 +186,7 @@ public class TandemmasterControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testGetAllTandemmasters_Unauthorized() throws Exception {
+    void testGetAllTandemmasters_Unauthorized() throws Exception {
         tandemmasterRepository.save(ModelMockHelper.createTandemmaster());
         tandemmasterRepository.save(ModelMockHelper.createTandemmaster("john", "doe"));
 
@@ -200,7 +196,7 @@ public class TandemmasterControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testUpdateTandemmaster() throws Exception {
+    void testUpdateTandemmaster() throws Exception {
         Tandemmaster tandemmaster = tandemmasterRepository.save(ModelMockHelper.createTandemmaster());
         tandemmaster.setEmail("foo@example.com");
         tandemmaster.setHandcam(true);
@@ -240,7 +236,7 @@ public class TandemmasterControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testUpdateTandemmaster_Unauthorized() throws Exception {
+    void testUpdateTandemmaster_Unauthorized() throws Exception {
         Tandemmaster tandemmaster = tandemmasterRepository.save(ModelMockHelper.createTandemmaster());
         tandemmaster.setEmail("foo@example.com");
         tandemmaster.setHandcam(true);
@@ -254,7 +250,7 @@ public class TandemmasterControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testUpdateTandemmaster_NotFound() throws Exception {
+    void testUpdateTandemmaster_NotFound() throws Exception {
         Tandemmaster tandemmaster = tandemmasterRepository.save(ModelMockHelper.createTandemmaster());
         String tandemmasterJson = json(tandemmaster);
 
@@ -270,7 +266,7 @@ public class TandemmasterControllerTest extends AbstractSkdvinTest {
 
 
     @Test
-    public void testDeleteTandemmaster() throws Exception {
+    void testDeleteTandemmaster() throws Exception {
         Tandemmaster tandemmaster = tandemmasterRepository.save(ModelMockHelper.createTandemmaster());
 
         mockMvc.perform(RestDocumentationRequestBuilders.delete("/api/tandemmaster/{id}", tandemmaster.getId())
@@ -290,7 +286,7 @@ public class TandemmasterControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testDeleteTandemmaster_Unauthorized() throws Exception {
+    void testDeleteTandemmaster_Unauthorized() throws Exception {
         Tandemmaster tandemmaster = tandemmasterRepository.save(ModelMockHelper.createTandemmaster());
 
         mockMvc.perform(delete("/api/tandemmaster/{id}", tandemmaster.getId())
@@ -299,7 +295,7 @@ public class TandemmasterControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testDeleteTandemmaster_NotFound() throws Exception {
+    void testDeleteTandemmaster_NotFound() throws Exception {
 
         mockMvc.perform(delete("/api/tandemmaster/{id}", 9999999)
                 .header("Authorization", MockJwtDecoder.addHeader(DELETE_TANDEMMASTER))
@@ -311,7 +307,7 @@ public class TandemmasterControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testGetTandemmaster() throws Exception {
+    void testGetTandemmaster() throws Exception {
         Tandemmaster tandemmaster = tandemmasterRepository.save(ModelMockHelper.createTandemmaster());
         Jumpday jumpday = ModelMockHelper.createJumpday();
         jumpdayService.saveJumpday(jumpday);
@@ -353,7 +349,7 @@ public class TandemmasterControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testGetTandemmaster_NotFound() throws Exception {
+    void testGetTandemmaster_NotFound() throws Exception {
         mockMvc.perform(get("/api/tandemmaster/{id}", "999999999")
                 .header("Authorization", MockJwtDecoder.addHeader(READ_TANDEMMASTER))
                 .header("Accept-Language", "en-US")
@@ -364,14 +360,14 @@ public class TandemmasterControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testGetTandemmaster_Unauthorized() throws Exception {
+    void testGetTandemmaster_Unauthorized() throws Exception {
         mockMvc.perform(get("/api/tandemmaster/{id}", "999999999")
                 .contentType(contentType))
                 .andExpect(status().isUnauthorized());
     }
 
     @Test
-    public void testAssignTandemmaster() throws Exception {
+    void testAssignTandemmaster() throws Exception {
         Tandemmaster tandemmaster = tandemmasterRepository.save(ModelMockHelper.createTandemmaster());
         Jumpday jumpday = ModelMockHelper.createJumpday();
         jumpdayService.saveJumpday(jumpday);
@@ -414,7 +410,7 @@ public class TandemmasterControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testAssignTandemmaster_Unauthorized() throws Exception {
+    void testAssignTandemmaster_Unauthorized() throws Exception {
         String tandemmasterJson = json(ModelMockHelper.createTandemmaster());
 
         mockMvc.perform(patch("/api/tandemmaster/{id}/assign", "99999999")
@@ -424,7 +420,7 @@ public class TandemmasterControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testAssignTandemmaster_BadRequest() throws Exception {
+    void testAssignTandemmaster_BadRequest() throws Exception {
         Tandemmaster tandemmaster = tandemmasterRepository.save(ModelMockHelper.createTandemmaster());
         Jumpday jumpday = ModelMockHelper.createJumpday();
         jumpdayService.saveJumpday(jumpday);
@@ -441,7 +437,7 @@ public class TandemmasterControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testAssignTandemmaster_NotFound() throws Exception {
+    void testAssignTandemmaster_NotFound() throws Exception {
         Tandemmaster tandemmaster = tandemmasterRepository.save(ModelMockHelper.createTandemmaster());
         TandemmasterDetailsDTO tandemmasterDetailsDTO = converter.convertToDetailsDto(tandemmaster, Map.of(LocalDate.now(), new SimpleAssignment(true)));
 
@@ -458,7 +454,7 @@ public class TandemmasterControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testSelfAssignTandemmaster() throws Exception {
+    void testSelfAssignTandemmaster() throws Exception {
         Tandemmaster tandemmaster = tandemmasterRepository.save(ModelMockHelper.createTandemmaster());
         tandemmaster.setEmail(MockJwtDecoder.EXAMPLE_EMAIL);
         Jumpday jumpday = ModelMockHelper.createJumpday();
@@ -499,7 +495,7 @@ public class TandemmasterControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testSelfAssignTandemmaster_READONLY() throws Exception {
+    void testSelfAssignTandemmaster_READONLY() throws Exception {
         CommonSettings commonSettings = new CommonSettings();
         commonSettings.setSelfAssignmentMode(SelfAssignmentMode.READONLY);
         when(settingsService.getCommonSettingsByLanguage(Locale.GERMAN.getLanguage())).thenReturn(commonSettings);
@@ -523,7 +519,7 @@ public class TandemmasterControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testSelfAssignTandemmaster_Unauthorized() throws Exception {
+    void testSelfAssignTandemmaster_Unauthorized() throws Exception {
         String tandemmasterJson = json(ModelMockHelper.createTandemmaster());
 
         mockMvc.perform(patch("/api/tandemmaster/me/assign")
@@ -534,7 +530,7 @@ public class TandemmasterControllerTest extends AbstractSkdvinTest {
 
 
     @Test
-    public void testSelfAssignTandemmaster_NoEmailSet() throws Exception {
+    void testSelfAssignTandemmaster_NoEmailSet() throws Exception {
         Tandemmaster tandemmaster = tandemmasterRepository.save(ModelMockHelper.createTandemmaster());
         Jumpday jumpday = ModelMockHelper.createJumpday();
         jumpdayService.saveJumpday(jumpday);
@@ -551,7 +547,7 @@ public class TandemmasterControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testGetMeTandemmaster() throws Exception {
+    void testGetMeTandemmaster() throws Exception {
         Tandemmaster tandemmaster1 = ModelMockHelper.createTandemmaster();
         tandemmaster1.setEmail(MockJwtDecoder.EXAMPLE_EMAIL);
         Tandemmaster tandemmaster = tandemmasterRepository.save(tandemmaster1);
@@ -592,7 +588,7 @@ public class TandemmasterControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testGetMeTandemmaster_NotFound() throws Exception {
+    void testGetMeTandemmaster_NotFound() throws Exception {
         mockMvc.perform(get("/api/tandemmaster/me")
                 .header("Authorization", MockJwtDecoder.addHeader(TANDEMMASTER))
                 .header("Accept-Language", "en-US")
@@ -603,7 +599,7 @@ public class TandemmasterControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    public void testGetMeTandemmaster_Unauthorized() throws Exception {
+    void testGetMeTandemmaster_Unauthorized() throws Exception {
         mockMvc.perform(get("/api/tandemmaster/me")
                 .contentType(contentType))
                 .andExpect(status().isUnauthorized());

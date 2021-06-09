@@ -5,21 +5,21 @@ import in.skdv.skdvinbackend.model.common.SimpleAssignment;
 import in.skdv.skdvinbackend.model.dto.TandemmasterDTO;
 import in.skdv.skdvinbackend.model.dto.TandemmasterDetailsDTO;
 import in.skdv.skdvinbackend.model.entity.Tandemmaster;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
-public class TandemmasterConverterTest {
+class TandemmasterConverterTest {
 
     private TandemmasterConverter converter = new TandemmasterConverter();
 
     @Test
-    public void convertToDto() {
+    void convertToDto() {
         Tandemmaster tandemmaster = ModelMockHelper.createTandemmaster();
 
         TandemmasterDTO tandemmasterDTO = converter.convertToDto(tandemmaster);
@@ -28,7 +28,7 @@ public class TandemmasterConverterTest {
     }
 
     @Test
-    public void convertToDtoList() {
+    void convertToDtoList() {
         Tandemmaster tandemmaster1 = ModelMockHelper.createTandemmaster();
         Tandemmaster tandemmaster2 = ModelMockHelper.createTandemmaster("John", "Doe");
 
@@ -40,7 +40,7 @@ public class TandemmasterConverterTest {
     }
 
     @Test
-    public void convertToEntity() {
+    void convertToEntity() {
         Tandemmaster tandemmaster = ModelMockHelper.createTandemmaster();
 
         TandemmasterDTO tandemmasterDTO = converter.convertToDto(tandemmaster);
@@ -50,24 +50,24 @@ public class TandemmasterConverterTest {
     }
 
     @Test
-    public void convertToDto_Null() {
+    void convertToDto_Null() {
         Tandemmaster tandemmaster = null;
         assertNull(converter.convertToDto(tandemmaster));
     }
 
     @Test
-    public void convertToDtoList_Null() {
+    void convertToDtoList_Null() {
         List<Tandemmaster> tandemmasters = null;
         assertEquals( 0, converter.convertToDto(tandemmasters).size());
     }
 
     @Test
-    public void convertToEntity_Null() {
+    void convertToEntity_Null() {
         assertNull(converter.convertToEntity(null));
     }
 
     @Test
-    public void convertToDetailsDto() {
+    void convertToDetailsDto() {
         Tandemmaster tandemmaster = ModelMockHelper.createTandemmaster();
         Map<LocalDate, SimpleAssignment> assignments = Map.of(LocalDate.now(), new SimpleAssignment(true));
         TandemmasterDetailsDTO tandemmasterDTO = converter.convertToDetailsDto(tandemmaster, assignments);
@@ -77,7 +77,7 @@ public class TandemmasterConverterTest {
     }
 
     @Test
-    public void convertToDetailsDto_Null() {
+    void convertToDetailsDto_Null() {
         assertNull(converter.convertToDto((Tandemmaster) null));
     }
 }

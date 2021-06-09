@@ -16,7 +16,6 @@ import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -26,9 +25,6 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/api/tandemmaster")
 public class TandemmasterController {
-
-    @Autowired
-    private JwtDecoder jwtDecoder;
 
     private final TandemmasterRepository tandemmasterRepository;
     private TandemmasterConverter tandemmasterConverter = new TandemmasterConverter();

@@ -1,0 +1,21 @@
+== Waivers
+API Endpoint to manage Waivers
+
+
+=== Get Waivers
+A `GET` request is used to get all Waivers.
+
+operation::waivers/get-waivers[snippets='http-request,http-response,response-fields']
+
+
+=== Save Waiver
+A `POST` request is used to save a waiver.
+
+operation::waivers/save-waiver[snippets='http-request,request-fields,http-response']
+
+
+=== Update Waiver
+A `PUT` request is used to update a waiver.
+
+operation::waivers/update-waiver[snippets='http-request,request-fields,http-response']
+

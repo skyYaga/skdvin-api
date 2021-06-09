@@ -1,0 +1,20 @@
+== Users
+API Endpoint to manage Users
+
+
+=== Get Users
+A `GET` request is used to get all Users (with roles).
+
+operation::users/get-users[snippets='http-request,http-response,response-fields']
+
+
+=== Update User
+A `PUT` request is used to update a user's roles.
+
+operation::users/update-user[snippets='http-request,request-fields,http-response']
+
+
+=== Get Roles
+A `GET` request is used to get all roles.
+
+operation::users/get-roles[snippets='http-request,http-response,response-fields']

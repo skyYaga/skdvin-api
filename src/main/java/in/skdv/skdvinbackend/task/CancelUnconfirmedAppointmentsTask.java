@@ -6,6 +6,7 @@ import in.skdv.skdvinbackend.service.IEmailService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -26,7 +27,10 @@ public class CancelUnconfirmedAppointmentsTask {
         this.emailService = emailService;
     }
 
-    @Scheduled(fixedDelay = 1000 * 60 * 10) // every 10 minutes
+    @Scheduled(fixedDelay = 1000 * 60 * 10, initialDelay = 1000 * 60) // every 10 minutes
+    @ConditionalOnProperty(
+            value = "app.scheduling.enable", havingValue = "true", matchIfMissing = true
+    )
     public void cancelAppointments() {
         List<Appointment> unconfirmedAppointments = appointmentService.findUnconfirmedAppointments();
         unconfirmedAppointments.forEach(appointment -> {
