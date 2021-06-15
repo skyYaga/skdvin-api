@@ -222,6 +222,18 @@ class JumpdayControllerTest extends AbstractSkdvinTest {
                 .andExpect(jsonPath("$.message", is("Jumpday already exists")));
     }
 
+    @Test
+    void testCreateJumpday_NoDateSet() throws Exception {
+        Jumpday jumpday = ModelMockHelper.createJumpday();
+        jumpday.setDate(null);
+        String jumpdayJson = json(jumpday);
+
+        mockMvc.perform(RestDocumentationRequestBuilders.post("/api/jumpday")
+                .header("Authorization", MockJwtDecoder.addHeader(CREATE_JUMPDAYS))
+                .contentType(contentType)
+                .content(jumpdayJson))
+                .andExpect(status().isBadRequest());
+    }
 
     @Test
     void testGetAll() throws Exception {
