@@ -2,11 +2,13 @@ package in.skdv.skdvinbackend.model.common;
 
 import in.skdv.skdvinbackend.model.entity.Slot;
 
+import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.util.List;
 
 public abstract class AbstractJumpday {
 
+    @NotNull
     private LocalDate date;
 
     private boolean jumping;
