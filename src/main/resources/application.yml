@@ -41,3 +41,6 @@ skdvin:
   from: ${SKDVIN_FROM:}
   cors:
     enabled: ${SKDVIN_CORS_ENABLED:false}
+
+sentry:
+  traces-sample-rate: 0.3
