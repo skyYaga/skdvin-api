@@ -122,7 +122,7 @@ public class MongoAppointmentService implements IAppointmentService {
 
     @Override
     public Appointment findAppointment(int id) {
-        List<Jumpday> jumpdayList = jumpdayRepository.findAll();
+        List<Jumpday> jumpdayList = jumpdayRepository.findBySlotsAppointmentsAppointmentId(id);
 
         Optional<Appointment> appointment = jumpdayList.stream()
                 .flatMap(day -> day.getSlots().stream())
