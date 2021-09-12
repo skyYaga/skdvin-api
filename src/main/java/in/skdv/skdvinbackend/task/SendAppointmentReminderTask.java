@@ -38,10 +38,11 @@ public class SendAppointmentReminderTask {
                 .filter(a -> !a.isReminderSent() && a.getState() != AppointmentState.UNCONFIRMED)
                 .forEach(appointment -> {
                     try {
+                        LOG.info("Sending AppintmentReminder for appointment {}", appointment.getAppointmentId());
                         emailService.sendAppointmentReminder(appointment);
                         appointmentService.reminderSent(appointment);
                     } catch (MessagingException e) {
-                        LOG.error("Error sending AppointmentUnconfirmedCancellation", e);
+                        LOG.error("Error sending AppointmentReminder", e);
                     }
                 });
     }
