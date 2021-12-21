@@ -39,4 +39,7 @@ public class MongoDbContainer extends GenericContainer<MongoDbContainer> {
         addExposedPort(MONGODB_PORT);
     }
 
+    public String getUri() {
+        return "mongodb://" + getHost() + ":" + getMappedPort(MONGODB_PORT) + "/unit-tests";
+    }
 }
