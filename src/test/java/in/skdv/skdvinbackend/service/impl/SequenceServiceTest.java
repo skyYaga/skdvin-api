@@ -9,6 +9,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.mongodb.core.MongoOperations;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest
 class SequenceServiceTest extends AbstractSkdvinTest {
@@ -22,7 +23,7 @@ class SequenceServiceTest extends AbstractSkdvinTest {
     @Test
     void generateNotExistingId() {
         int foo = sequenceService.getNextSequence("foo");
-        assertEquals(1, foo);
+        assertTrue(0 < foo);
     }
 
     @Test

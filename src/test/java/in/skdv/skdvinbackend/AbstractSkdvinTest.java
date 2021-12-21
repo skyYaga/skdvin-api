@@ -5,6 +5,7 @@ import com.auth0.client.mgmt.ManagementAPI;
 import com.auth0.exception.Auth0Exception;
 import com.auth0.json.auth.TokenHolder;
 import com.auth0.net.TokenRequest;
+import org.junit.ClassRule;
 import org.junit.jupiter.api.BeforeEach;
 import org.mockito.Mockito;
 import org.mockito.stubbing.Answer;
@@ -35,8 +36,13 @@ public abstract class AbstractSkdvinTest {
     @MockBean
     public AuthAPI authAPI;
 
+    @ClassRule
+    public static MongoDbContainer mongoDbContainer = new MongoDbContainer();
+
     @BeforeEach
-    void setupMocks() throws Auth0Exception {
+    void setupEnv() throws Auth0Exception {
+        mongoDbContainer.start();
+
         TokenRequest authRequest = Mockito.mock(TokenRequest.class);
         TokenHolder tokenHolder = new TokenHolder();
         ReflectionTestUtils.setField(tokenHolder, "accessToken", "foo");

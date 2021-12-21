@@ -6,6 +6,7 @@ import in.skdv.skdvinbackend.ModelMockHelper;
 import in.skdv.skdvinbackend.model.converter.WaiverConverter;
 import in.skdv.skdvinbackend.model.dto.WaiverDTO;
 import in.skdv.skdvinbackend.model.entity.settings.WaiverSettings;
+import in.skdv.skdvinbackend.repository.WaiverRepository;
 import in.skdv.skdvinbackend.service.ISettingsService;
 import in.skdv.skdvinbackend.service.IWaiverService;
 import in.skdv.skdvinbackend.util.GenericResult;
@@ -76,6 +77,9 @@ class WaiverControllerTest extends AbstractSkdvinTest {
     private IWaiverService waiverService;
 
     @Autowired
+    private WaiverRepository waiverRepository;
+
+    @Autowired
     void setConverters(HttpMessageConverter<?>[] converters) {
 
         this.mappingJackson2HttpMessageConverter = Arrays.stream(converters)
@@ -98,6 +102,8 @@ class WaiverControllerTest extends AbstractSkdvinTest {
         waiverSettings.setTandemwaiver("Tandem Waiver Text");
         when(settingsService.getWaiverSettingsByLanguage(anyString())).
                 thenReturn(waiverSettings);
+
+        waiverRepository.deleteAll();
     }
 
     @Test
