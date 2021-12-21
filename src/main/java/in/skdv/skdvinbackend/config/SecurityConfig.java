@@ -32,7 +32,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     public void configure(HttpSecurity http) throws Exception {
-        http.authorizeRequests()
+        http.cors().and()
+            .authorizeRequests()
                 .mvcMatchers(POST, "/api/appointment").permitAll()
                 .mvcMatchers(GET, "/api/appointment/slots").permitAll()
                 .mvcMatchers(GET, "/api/appointment/{appointmentId}/confirm/{token}").permitAll()
@@ -40,15 +41,14 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .mvcMatchers(GET, "/api/settings/waiver").permitAll()
                 .mvcMatchers(POST, "/api/waivers").permitAll()
                 .mvcMatchers("/docs/**").permitAll()
-                .anyRequest().authenticated()
-                .and()
-                .csrf().disable()
-                .oauth2ResourceServer()
-                    .jwt()
-                        .jwtAuthenticationConverter(getJwtAuthenticationConverter());
+            .anyRequest().authenticated().and()
+            .csrf().disable()
+            .oauth2ResourceServer()
+                .jwt()
+                    .jwtAuthenticationConverter(getJwtAuthenticationConverter());
     }
 
-    private Converter<Jwt,? extends AbstractAuthenticationToken> getJwtAuthenticationConverter() {
+    private Converter<Jwt, ? extends AbstractAuthenticationToken> getJwtAuthenticationConverter() {
         JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
         JwtGrantedAuthoritiesConverter grantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();
         grantedAuthoritiesConverter.setAuthoritiesClaimName("permissions");
@@ -61,7 +61,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         NimbusJwtDecoder jwtDecoder = (NimbusJwtDecoder) loadRemoteJwtDecoder();
 
         OAuth2TokenValidator<Jwt> audienceValidator = new AudienceValidator(audience);
-        OAuth2TokenValidator<Jwt> withIssuer = JwtValidators.   createDefaultWithIssuer(issuer);
+        OAuth2TokenValidator<Jwt> withIssuer = JwtValidators.createDefaultWithIssuer(issuer);
         OAuth2TokenValidator<Jwt> withAudience = new DelegatingOAuth2TokenValidator<>(withIssuer, audienceValidator);
         jwtDecoder.setJwtValidator(withAudience);
 
