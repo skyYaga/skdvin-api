@@ -14,7 +14,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.5.6</version>
+        <version>2.6.1</version>
     </parent>
 
     <scm>
@@ -27,9 +27,9 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <java.version>11</java.version>
         <auth0.version>1.35.0</auth0.version>
-        <modelmapper.version>2.4.4</modelmapper.version>
+        <modelmapper.version>2.4.5</modelmapper.version>
         <okhttp3.version>4.9.1</okhttp3.version>
-        <sentry.version>5.3.0</sentry.version>
+        <sentry.version>5.5.2</sentry.version>
         <testcontainers.version>1.16.2</testcontainers.version>
     </properties>
 
