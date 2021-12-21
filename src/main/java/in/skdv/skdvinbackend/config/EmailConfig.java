@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.thymeleaf.TemplateEngine;
@@ -22,6 +23,7 @@ import java.util.Collections;
 /**
  * @see <a href="https://www.thymeleaf.org/doc/articles/springmail.html">https://www.thymeleaf.org/doc/articles/springmail.html</a>
  */
+@Configuration
 public class EmailConfig {
 
     private static final String EMAIL_TEMPLATE_ENCODING = "UTF-8";
