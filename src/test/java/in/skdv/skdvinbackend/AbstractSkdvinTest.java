@@ -11,19 +11,27 @@ import org.mockito.stubbing.Answer;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 /**
  * Abstract Base Class for tests that sets default settings.
  */
+@Testcontainers
 @TestPropertySource(properties = {
         "auth0.audience=http://localhost",
         "auth0.management.domain=localhost",
         "auth0.management.client-id=foo",
         "auth0.management.client-secret=foo",
-        "spring.security.oauth2.resourceserver.jwt.issuer-uri=https://example.com"
+        "spring.security.oauth2.resourceserver.jwt.issuer-uri=https://example.com",
 })
+// Needed to use MongoDB Testcontainer with DynamicPropertySource
+@DirtiesContext
 public abstract class AbstractSkdvinTest {
 
     @MockBean
@@ -34,6 +42,14 @@ public abstract class AbstractSkdvinTest {
 
     @MockBean
     public AuthAPI authAPI;
+
+    @Container
+    public static final MongoDbContainer MONGO_DB_CONTAINER = new MongoDbContainer();
+
+    @DynamicPropertySource
+    static void mongoDbProperties(DynamicPropertyRegistry registry) {
+        registry.add("spring.data.mongodb.uri", MONGO_DB_CONTAINER::getUri);
+    }
 
     @BeforeEach
     void setupMocks() throws Auth0Exception {
