@@ -52,12 +52,14 @@ public class SettingsController {
     }
 
     @GetMapping("/common")
+    @PreAuthorize("permitAll")
     public ResponseEntity<GenericResult<CommonSettings>> getCommonSettings() {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(new GenericResult<>(true, settingsService.getCommonSettingsByLanguage(LocaleContextHolder.getLocale().getLanguage())));
     }
 
     @GetMapping("/waiver")
+    @PreAuthorize("permitAll")
     public ResponseEntity<GenericResult<WaiverSettings>> getWaiverSettings() {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(new GenericResult<>(true, settingsService.getWaiverSettingsByLanguage(LocaleContextHolder.getLocale().getLanguage())));

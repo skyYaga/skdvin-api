@@ -35,6 +35,7 @@ public class WaiverController {
     }
 
     @PostMapping
+    @PreAuthorize("permitAll")
     public ResponseEntity<GenericResult<WaiverDTO>> saveWaiver(@RequestBody @Valid WaiverDTO input) {
         GenericResult<WaiverDTO> waiverResult = waiverService.saveWaiver(input);
         if (waiverResult.isSuccess()) {
