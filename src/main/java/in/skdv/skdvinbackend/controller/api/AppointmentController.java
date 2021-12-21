@@ -61,6 +61,7 @@ public class AppointmentController {
     }
 
     @PostMapping
+    @PreAuthorize("permitAll")
     public ResponseEntity<GenericResult> addAppointment(@RequestBody @Valid AppointmentDTO input) {
         Appointment appointment = appointmentConverter.convertToEntity(input);
         appointment.setVerificationToken(VerificationTokenUtil.generate());
@@ -165,6 +166,7 @@ public class AppointmentController {
     }
 
     @GetMapping(value = "/slots")
+    @PreAuthorize("permitAll")
     public ResponseEntity<GenericResult> findFreeSlots(SlotQuery input) {
         GenericResult<List<FreeSlot>> result = appointmentService.findFreeSlots(input);
 
@@ -188,6 +190,7 @@ public class AppointmentController {
     }
 
     @GetMapping(value = "/{appointmentId}/confirm/{token}")
+    @PreAuthorize("permitAll")
     public ResponseEntity<GenericResult<Void>> confirmAppointment(@PathVariable int appointmentId, @PathVariable String token) {
         Appointment appointment = appointmentService.findAppointment(appointmentId);
         if (appointment != null) {

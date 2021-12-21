@@ -17,23 +17,13 @@ import in.skdv.skdvinbackend.service.ISettingsService;
 import in.skdv.skdvinbackend.service.ITandemmasterService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.restdocs.RestDocsMockMvcConfigurationCustomizer;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Bean;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.mock.http.MockHttpOutputMessage;
-import org.springframework.restdocs.RestDocumentationContextProvider;
-import org.springframework.restdocs.RestDocumentationExtension;
-import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation;
-import org.springframework.restdocs.mockmvc.MockMvcRestDocumentationConfigurer;
-import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders;
-import org.springframework.restdocs.mockmvc.RestDocumentationResultHandler;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.context.WebApplicationContext;
 
@@ -48,13 +38,6 @@ import static in.skdv.skdvinbackend.config.Authorities.*;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.when;
-import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
-import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
-import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
-import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
-import static org.springframework.restdocs.payload.PayloadDocumentation.*;
-import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
-import static org.springframework.restdocs.request.RequestDocumentation.pathParameters;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.util.AssertionErrors.assertNotNull;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -62,7 +45,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppContextSetup;
 
-@ExtendWith(RestDocumentationExtension.class)
 @SpringBootTest
 class TandemmasterControllerTest extends AbstractSkdvinTest {
 
@@ -107,10 +89,9 @@ class TandemmasterControllerTest extends AbstractSkdvinTest {
     }
 
     @BeforeEach
-    void setup(RestDocumentationContextProvider restDocumentation) {
+    void setup() {
         this.mockMvc = webAppContextSetup(webApplicationContext)
                 .apply(springSecurity())
-                .apply(documentationConfiguration(restDocumentation))
                 .build();
 
         tandemmasterRepository.deleteAll();
@@ -121,33 +102,16 @@ class TandemmasterControllerTest extends AbstractSkdvinTest {
 
     @Test
     void testCreateTandemmaster() throws Exception {
-        String tandemmasterJson = json(ModelMockHelper.createTandemmaster());
+        String tandemmasterJson = json(ModelMockHelper.createTandemmasterDto());
 
-        mockMvc.perform(RestDocumentationRequestBuilders.post("/api/tandemmaster/")
+        mockMvc.perform(post("/api/tandemmaster/")
                 .header("Authorization", MockJwtDecoder.addHeader(CREATE_TANDEMMASTER))
                 .contentType(contentType)
                 .content(tandemmasterJson))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.success", is(true)))
                 .andExpect(jsonPath("$.payload.firstName", is("Max")))
-                .andExpect(jsonPath("$.payload.lastName", is("Mustermann")))
-                .andDo(document("tandemmaster/create-tandemmaster", requestFields(
-                        fieldWithPath("firstName").description("Tandemmasters first name"),
-                        fieldWithPath("lastName").description("Tandemmasters last name"),
-                        fieldWithPath("email").description("Tandemmasters email"),
-                        fieldWithPath("tel").description("Tandemmasters phone number"),
-                        fieldWithPath("handcam").description("true if the Tandemmaster makes handcam videos")
-                ), responseFields(
-                        fieldWithPath("success").description("true when the request was successful"),
-                        fieldWithPath("message").description("message if there was an error"),
-                        fieldWithPath("payload.id").description("Tandemmasters id"),
-                        fieldWithPath("payload.firstName").description("Tandemmasters first name"),
-                        fieldWithPath("payload.lastName").description("Tandemmasters last name"),
-                        fieldWithPath("payload.email").description("Tandemmasters email"),
-                        fieldWithPath("payload.tel").description("Tandemmasters phone number"),
-                        fieldWithPath("payload.handcam").description("true if the Tandemmaster makes handcam videos"),
-                        fieldWithPath("exception").ignored()
-                )));
+                .andExpect(jsonPath("$.payload.lastName", is("Mustermann")));
     }
 
     @Test
@@ -170,19 +134,7 @@ class TandemmasterControllerTest extends AbstractSkdvinTest {
                 .contentType(contentType))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success", is(true)))
-                .andExpect(jsonPath("$.payload", hasSize(2)))
-                .andDo(document("tandemmaster/get-tandemmasters",
-                        responseFields(
-                                fieldWithPath("success").description("true when the request was successful"),
-                                fieldWithPath("message").description("message if there was an error"),
-                                fieldWithPath("payload[].id").description("Tandemmasters id"),
-                                fieldWithPath("payload[].firstName").description("Tandemmasters first name"),
-                                fieldWithPath("payload[].lastName").description("Tandemmasters last name"),
-                                fieldWithPath("payload[].email").description("Tandemmasters email"),
-                                fieldWithPath("payload[].tel").description("Tandemmasters phone number"),
-                                fieldWithPath("payload[].handcam").description("true if the Tandemmaster makes handcam videos"),
-                                fieldWithPath("exception").ignored()
-                        )));
+                .andExpect(jsonPath("$.payload", hasSize(2)));
     }
 
     @Test
@@ -203,36 +155,14 @@ class TandemmasterControllerTest extends AbstractSkdvinTest {
 
         String tandemmasterJson = json(converter.convertToDto(tandemmaster));
 
-        mockMvc.perform(RestDocumentationRequestBuilders.put("/api/tandemmaster/{id}", tandemmaster.getId())
+        mockMvc.perform(put("/api/tandemmaster/{id}", tandemmaster.getId())
                 .header("Authorization", MockJwtDecoder.addHeader(UPDATE_TANDEMMASTER))
                 .contentType(contentType)
                 .content(tandemmasterJson))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success", is(true)))
                 .andExpect(jsonPath("$.payload.email", is("foo@example.com")))
-                .andExpect(jsonPath("$.payload.handcam", is(true)))
-                .andDo(document("tandemmaster/update-tandemmaster",
-                        pathParameters(
-                                parameterWithName("id").description("Tandemmasters id")
-                        ),
-                        requestFields(
-                                fieldWithPath("id").description("Tandemmasters id"),
-                                fieldWithPath("firstName").description("Tandemmasters first name"),
-                                fieldWithPath("lastName").description("Tandemmasters last name"),
-                                fieldWithPath("email").description("Tandemmasters email"),
-                                fieldWithPath("tel").description("Tandemmasters phone number"),
-                                fieldWithPath("handcam").description("true if the Tandemmaster makes handcam videos")
-                        ), responseFields(
-                                fieldWithPath("success").description("true when the request was successful"),
-                                fieldWithPath("message").description("message if there was an error"),
-                                fieldWithPath("payload.id").description("Tandemmasters id"),
-                                fieldWithPath("payload.firstName").description("Tandemmasters first name"),
-                                fieldWithPath("payload.lastName").description("Tandemmasters last name"),
-                                fieldWithPath("payload.email").description("Tandemmasters email"),
-                                fieldWithPath("payload.tel").description("Tandemmasters phone number"),
-                                fieldWithPath("payload.handcam").description("true if the Tandemmaster makes handcam videos"),
-                                fieldWithPath("exception").ignored()
-                        )));
+                .andExpect(jsonPath("$.payload.handcam", is(true)));
     }
 
     @Test
@@ -269,20 +199,11 @@ class TandemmasterControllerTest extends AbstractSkdvinTest {
     void testDeleteTandemmaster() throws Exception {
         Tandemmaster tandemmaster = tandemmasterRepository.save(ModelMockHelper.createTandemmaster());
 
-        mockMvc.perform(RestDocumentationRequestBuilders.delete("/api/tandemmaster/{id}", tandemmaster.getId())
+        mockMvc.perform(delete("/api/tandemmaster/{id}", tandemmaster.getId())
                 .header("Authorization", MockJwtDecoder.addHeader(DELETE_TANDEMMASTER))
                 .contentType(contentType))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.success", is(true)))
-                .andDo(document("tandemmaster/delete-tandemmaster",
-                        pathParameters(
-                                parameterWithName("id").description("Tandemmasters id")
-                        ), responseFields(
-                                fieldWithPath("success").description("true when the request was successful"),
-                                fieldWithPath("message").description("message if there was an error"),
-                                fieldWithPath("exception").ignored(),
-                                fieldWithPath("payload").ignored()
-                        )));
+                .andExpect(jsonPath("$.success", is(true)));
     }
 
     @Test
@@ -313,39 +234,12 @@ class TandemmasterControllerTest extends AbstractSkdvinTest {
         jumpdayService.saveJumpday(jumpday);
         tandemmasterService.assignTandemmasterToJumpday(jumpday.getDate(), tandemmaster.getId(), new SimpleAssignment(true));
 
-        mockMvc.perform(RestDocumentationRequestBuilders.get("/api/tandemmaster/{id}", tandemmaster.getId())
+        mockMvc.perform(get("/api/tandemmaster/{id}", tandemmaster.getId())
                 .header("Authorization", MockJwtDecoder.addHeader(READ_TANDEMMASTER))
                 .contentType(contentType))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success", is(true)))
-                .andExpect(jsonPath("$.payload.assignments." + LocalDate.now() + ".assigned", is(true)))
-                .andDo(document("tandemmaster/get-tandemmaster",
-                        pathParameters(
-                                parameterWithName("id").description("The id of the requested tandemmaster")
-                        ),
-                        responseFields(
-                                fieldWithPath("success").description("true when the request was successful"),
-                                fieldWithPath("message").description("message if there was an error"),
-                                fieldWithPath("payload.id").description("Tandemmasters id"),
-                                fieldWithPath("payload.firstName").description("Tandemmasters first name"),
-                                fieldWithPath("payload.lastName").description("Tandemmasters last name"),
-                                fieldWithPath("payload.email").description("Tandemmasters email"),
-                                fieldWithPath("payload.tel").description("Tandemmasters phone number"),
-                                fieldWithPath("payload.handcam").description("true if the Tandemmaster makes handcam videos"),
-                                fieldWithPath("payload.assignments").description("key value pairs of date and the tandemmasters assignment state as boolean"),
-                                fieldWithPath("payload.assignments." + LocalDate.now() + ".assigned").description("true if the flyer is assigned"),
-                                fieldWithPath("payload.assignments." + LocalDate.now() + ".allday").description("true if the flyer is assigned all day"),
-                                fieldWithPath("payload.assignments." + LocalDate.now() + ".from").description("from time if the flyer is not assigned all day"),
-                                fieldWithPath("payload.assignments." + LocalDate.now() + ".to").description("to time if the flyer is not assigned all day"),
-                                fieldWithPath("payload.assignments." + LocalDate.now() + ".flyer.firstName").description("Tandemmaster's first name"),
-                                fieldWithPath("payload.assignments." + LocalDate.now() + ".flyer.lastName").description("Tandemmaster's last name"),
-                                fieldWithPath("payload.assignments." + LocalDate.now() + ".flyer.email").description("Tandemmaster's email"),
-                                fieldWithPath("payload.assignments." + LocalDate.now() + ".flyer.tel").description("Tandemmaster's phone number"),
-                                fieldWithPath("payload.assignments." + LocalDate.now() + ".flyer.handcam").description("Tandemmaster's handcam"),
-                                fieldWithPath("payload.assignments." + LocalDate.now() + ".flyer.id").description("Tandemmaster's id"),
-                                fieldWithPath("payload.assignments." + LocalDate.now()).ignored(),
-                                fieldWithPath("exception").ignored()
-                        )));
+                .andExpect(jsonPath("$.payload.assignments." + LocalDate.now() + ".assigned", is(true)));
     }
 
     @Test
@@ -376,37 +270,12 @@ class TandemmasterControllerTest extends AbstractSkdvinTest {
 
         String tandemmasterJson = json(tandemmasterDetailsDTO);
 
-        mockMvc.perform(RestDocumentationRequestBuilders.patch("/api/tandemmaster/{id}/assign", tandemmasterDetailsDTO.getId())
+        mockMvc.perform(patch("/api/tandemmaster/{id}/assign", tandemmasterDetailsDTO.getId())
                 .header("Authorization", MockJwtDecoder.addHeader(UPDATE_TANDEMMASTER))
                 .contentType(contentType)
                 .content(tandemmasterJson))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.success", is(true)))
-                .andDo(document("tandemmaster/assign-tandemmaster",
-                        pathParameters(
-                                parameterWithName("id").description("Tandemmasters id")
-                        ),
-                        requestFields(
-                                fieldWithPath("id").description("Tandemmasters id"),
-                                fieldWithPath("assignments").description("key value pairs of date and the tandemmasters assignment state as boolean"),
-                                fieldWithPath("assignments." + LocalDate.now() + ".assigned").description("true if the flyer is assigned"),
-                                fieldWithPath("assignments." + LocalDate.now() + ".allday").description("true if the flyer is assigned all day"),
-                                fieldWithPath("assignments." + LocalDate.now() + ".from").description("from time if the flyer is not assigned all day"),
-                                fieldWithPath("assignments." + LocalDate.now() + ".to").description("to time if the flyer is not assigned all day"),
-                                fieldWithPath("assignments." + LocalDate.now()).ignored(),
-                                fieldWithPath("assignments." + LocalDate.now()).ignored(),
-                                fieldWithPath("firstName").ignored(),
-                                fieldWithPath("lastName").ignored(),
-                                fieldWithPath("email").ignored(),
-                                fieldWithPath("tel").ignored(),
-                                fieldWithPath("handcam").ignored()
-                        ),
-                        responseFields(
-                                fieldWithPath("success").description("true when the request was successful"),
-                                fieldWithPath("message").description("message if there was an error"),
-                                fieldWithPath("exception").ignored(),
-                                fieldWithPath("payload").ignored()
-                        )));
+                .andExpect(jsonPath("$.success", is(true)));
     }
 
     @Test
@@ -464,34 +333,12 @@ class TandemmasterControllerTest extends AbstractSkdvinTest {
 
         String tandemmasterJson = json(tandemmasterDetailsDTO);
 
-        mockMvc.perform(RestDocumentationRequestBuilders.patch("/api/tandemmaster/me/assign")
+        mockMvc.perform(patch("/api/tandemmaster/me/assign")
                 .header("Authorization", MockJwtDecoder.addHeader(TANDEMMASTER))
                 .contentType(contentType)
                 .content(tandemmasterJson))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.success", is(true)))
-                .andDo(document("tandemmaster/self-assign-tandemmaster",
-                        requestFields(
-                                fieldWithPath("id").description("Tandemmasters id"),
-                                fieldWithPath("email").description("Tandemmasters email"),
-                                fieldWithPath("assignments").description("key value pairs of date and the tandemmasters assignment state as boolean"),
-                                fieldWithPath("assignments." + LocalDate.now() + ".assigned").description("true if the flyer is assigned"),
-                                fieldWithPath("assignments." + LocalDate.now() + ".allday").description("true if the flyer is assigned all day"),
-                                fieldWithPath("assignments." + LocalDate.now() + ".from").description("from time if the flyer is not assigned all day"),
-                                fieldWithPath("assignments." + LocalDate.now() + ".to").description("to time if the flyer is not assigned all day"),
-                                fieldWithPath("assignments." + LocalDate.now()).ignored(),
-                                fieldWithPath("assignments." + LocalDate.now()).ignored(),
-                                fieldWithPath("firstName").ignored(),
-                                fieldWithPath("lastName").ignored(),
-                                fieldWithPath("tel").ignored(),
-                                fieldWithPath("handcam").ignored()
-                        ),
-                        responseFields(
-                                fieldWithPath("success").description("true when the request was successful"),
-                                fieldWithPath("message").description("message if there was an error"),
-                                fieldWithPath("exception").ignored(),
-                                fieldWithPath("payload").ignored()
-                        )));
+                .andExpect(jsonPath("$.success", is(true)));
     }
 
     @Test
@@ -509,7 +356,7 @@ class TandemmasterControllerTest extends AbstractSkdvinTest {
 
         String tandemmasterJson = json(tandemmasterDetailsDTO);
 
-        mockMvc.perform(RestDocumentationRequestBuilders.patch("/api/tandemmaster/me/assign")
+        mockMvc.perform(patch("/api/tandemmaster/me/assign")
                 .header("Authorization", MockJwtDecoder.addHeader(TANDEMMASTER))
                 .contentType(contentType)
                 .content(tandemmasterJson))
@@ -555,36 +402,12 @@ class TandemmasterControllerTest extends AbstractSkdvinTest {
         jumpdayService.saveJumpday(jumpday);
         tandemmasterService.assignTandemmasterToJumpday(jumpday.getDate(), tandemmaster.getId(), new SimpleAssignment(true));
 
-        mockMvc.perform(RestDocumentationRequestBuilders.get("/api/tandemmaster/me")
+        mockMvc.perform(get("/api/tandemmaster/me")
                 .header("Authorization", MockJwtDecoder.addHeader(TANDEMMASTER))
                 .contentType(contentType))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success", is(true)))
-                .andExpect(jsonPath("$.payload.assignments." + LocalDate.now() + ".assigned", is(true)))
-                .andDo(document("tandemmaster/get-me-tandemmaster",
-                        responseFields(
-                                fieldWithPath("success").description("true when the request was successful"),
-                                fieldWithPath("message").description("message if there was an error"),
-                                fieldWithPath("payload.id").description("Tandemmasters id"),
-                                fieldWithPath("payload.firstName").description("Tandemmasters first name"),
-                                fieldWithPath("payload.lastName").description("Tandemmasters last name"),
-                                fieldWithPath("payload.email").description("Tandemmasters email"),
-                                fieldWithPath("payload.tel").description("Tandemmasters phone number"),
-                                fieldWithPath("payload.handcam").description("true if the Tandemmaster makes handcam videos"),
-                                fieldWithPath("payload.assignments").description("key value pairs of date and the tandemmasters assignment state as boolean"),
-                                fieldWithPath("payload.assignments." + LocalDate.now() + ".assigned").description("true if the flyer is assigned"),
-                                fieldWithPath("payload.assignments." + LocalDate.now() + ".allday").description("true if the flyer is assigned all day"),
-                                fieldWithPath("payload.assignments." + LocalDate.now() + ".from").description("from time if the flyer is not assigned all day"),
-                                fieldWithPath("payload.assignments." + LocalDate.now() + ".to").description("to time if the flyer is not assigned all day"),
-                                fieldWithPath("payload.assignments." + LocalDate.now() + ".flyer.firstName").description("Tandemmaster's first name"),
-                                fieldWithPath("payload.assignments." + LocalDate.now() + ".flyer.lastName").description("Tandemmaster's last name"),
-                                fieldWithPath("payload.assignments." + LocalDate.now() + ".flyer.email").description("Tandemmaster's email"),
-                                fieldWithPath("payload.assignments." + LocalDate.now() + ".flyer.tel").description("Tandemmaster's phone number"),
-                                fieldWithPath("payload.assignments." + LocalDate.now() + ".flyer.handcam").description("Tandemmaster's handcam"),
-                                fieldWithPath("payload.assignments." + LocalDate.now() + ".flyer.id").description("Tandemmaster's id"),
-                                fieldWithPath("payload.assignments." + LocalDate.now()).ignored(),
-                                fieldWithPath("exception").ignored()
-                        )));
+                .andExpect(jsonPath("$.payload.assignments." + LocalDate.now() + ".assigned", is(true)));
     }
 
     @Test
@@ -612,18 +435,4 @@ class TandemmasterControllerTest extends AbstractSkdvinTest {
         return mockHttpOutputMessage.getBodyAsString();
     }
 
-    @TestConfiguration
-    static class CustomizationConfiguration implements RestDocsMockMvcConfigurationCustomizer {
-        @Override
-        public void customize(MockMvcRestDocumentationConfigurer configurer) {
-            configurer.operationPreprocessors()
-                    .withRequestDefaults(prettyPrint())
-                    .withResponseDefaults(prettyPrint());
-        }
-
-        @Bean
-        public RestDocumentationResultHandler restDocumentation() {
-            return MockMvcRestDocumentation.document("{method-name}");
-        }
-    }
 }

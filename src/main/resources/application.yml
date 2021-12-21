@@ -44,3 +44,9 @@ skdvin:
 
 sentry:
   traces-sample-rate: 0.3
+
+springdoc:
+  api-docs:
+    path: /docs/api-docs
+  swagger-ui:
+    path: /docs/swagger-ui.html

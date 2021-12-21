@@ -17,27 +17,17 @@ import in.skdv.skdvinbackend.util.GenericResult;
 import in.skdv.skdvinbackend.util.VerificationTokenUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.restdocs.RestDocsMockMvcConfigurationCustomizer;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Bean;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.mock.http.MockHttpOutputMessage;
-import org.springframework.restdocs.RestDocumentationContextProvider;
-import org.springframework.restdocs.RestDocumentationExtension;
-import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation;
-import org.springframework.restdocs.mockmvc.MockMvcRestDocumentationConfigurer;
-import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders;
-import org.springframework.restdocs.mockmvc.RestDocumentationResultHandler;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
@@ -57,11 +47,6 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
-import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
-import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
-import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
-import static org.springframework.restdocs.payload.PayloadDocumentation.*;
-import static org.springframework.restdocs.request.RequestDocumentation.*;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.util.AssertionErrors.assertNotNull;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -70,7 +55,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppContextSetup;
 
 
-@ExtendWith(RestDocumentationExtension.class)
 @SpringBootTest
 class AppointmentControllerTest extends AbstractSkdvinTest {
 
@@ -116,14 +100,13 @@ class AppointmentControllerTest extends AbstractSkdvinTest {
     }
 
     @BeforeEach
-    void setup(RestDocumentationContextProvider restDocumentation) {
+    void setup() {
         // Set mock clock
         Clock mockClock = Clock.fixed(Instant.parse(LocalDate.now().toString() + "T00:00:00Z"), ZoneOffset.UTC);
         ReflectionTestUtils.setField(appointmentService, "clock", mockClock);
 
         this.mockMvc = webAppContextSetup(webApplicationContext)
                 .apply(springSecurity())
-                .apply(documentationConfiguration(restDocumentation))
                 .build();
 
         jumpdayRepository.deleteAll();
@@ -144,45 +127,12 @@ class AppointmentControllerTest extends AbstractSkdvinTest {
         GenericResult<Appointment> appointmentGenericResult = appointmentService.saveAppointment(ModelMockHelper.createSingleAppointment());
         Appointment appointment = appointmentGenericResult.getPayload();
 
-        mockMvc.perform(RestDocumentationRequestBuilders.get("/api/appointment/{id}", appointment.getAppointmentId())
+        mockMvc.perform(get("/api/appointment/{id}", appointment.getAppointmentId())
                 .header("Authorization", MockJwtDecoder.addHeader(READ_APPOINTMENTS)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success", is(true)))
                 .andExpect(jsonPath("$.payload.appointmentId", is(appointment.getAppointmentId())))
-                .andExpect(jsonPath("$.payload.customer.firstName", is(appointment.getCustomer().getFirstName())))
-                .andDo(document("appointment/get-appointment",
-                    pathParameters(
-                        parameterWithName("id").description("The id of the requested appointment")
-                    ),
-                        responseFields(
-                                fieldWithPath("success").description("true, if the request was successful"),
-                                fieldWithPath("message").description("Message in case of error"),
-                                fieldWithPath("exception").description("Exception if any"),
-                                fieldWithPath("payload").description("The request's actual payload"),
-                                fieldWithPath("payload.appointmentId").description("The created appointment's id"),
-                                fieldWithPath("payload.customer").description("Customer Details"),
-                                fieldWithPath("payload.customer.firstName").description("Customer's first name"),
-                                fieldWithPath("payload.customer.lastName").description("Customer's last name"),
-                                fieldWithPath("payload.customer.tel").description("Customer's phone number"),
-                                fieldWithPath("payload.customer.email").description("Customer's email address"),
-                                fieldWithPath("payload.customer.zip").description("Customer's zip code"),
-                                fieldWithPath("payload.customer.city").description("Customer's city"),
-                                fieldWithPath("payload.customer.jumpers[]").description("Jumpers for this appointment"),
-                                fieldWithPath("payload.customer.jumpers[].firstName").description("Jumper's first name"),
-                                fieldWithPath("payload.customer.jumpers[].lastName").description("Jumper's last name"),
-                                fieldWithPath("payload.customer.jumpers[].dateOfBirth").description("Jumper's date of birth"),
-                                fieldWithPath("payload.customer.jumpers[].voucher").description("true if the jumper has a voucher"),
-                                fieldWithPath("payload.date").description("Appointments date/time"),
-                                fieldWithPath("payload.tandem").description("Tandem count"),
-                                fieldWithPath("payload.picOrVid").description("picture or video count"),
-                                fieldWithPath("payload.picAndVid").description("picture and video count"),
-                                fieldWithPath("payload.handcam").description("handcam count"),
-                                fieldWithPath("payload.note").description("An optional note for the appointment"),
-                                fieldWithPath("payload.state").ignored(),
-                                fieldWithPath("payload.createdOn").ignored(),
-                                fieldWithPath("payload.createdBy").ignored(),
-                                fieldWithPath("payload.clientId").ignored()
-                        )));
+                .andExpect(jsonPath("$.payload.customer.firstName", is(appointment.getCustomer().getFirstName())));
     }
 
     @Test
@@ -204,72 +154,15 @@ class AppointmentControllerTest extends AbstractSkdvinTest {
 
     @Test
     void testAddAppointment() throws Exception {
-        String appointmentJson = json(ModelMockHelper.createSingleAppointment());
+        String appointmentJson = json(ModelMockHelper.createAppointmentDto());
 
-        mockMvc.perform(RestDocumentationRequestBuilders.post("/api/appointment")
+        mockMvc.perform(post("/api/appointment")
                 .header("Accept-Language", "en-US")
                 .contentType(contentType)
                 .content(appointmentJson))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.success", is(true)))
-                .andExpect(jsonPath("$.payload.customer.firstName", is("Max")))
-                .andDo(document("appointment/add-appointment",
-                        requestFields(
-                                fieldWithPath("customer").description("Customer Details"),
-                                fieldWithPath("customer.firstName").description("Customer's first name"),
-                                fieldWithPath("customer.lastName").description("Customer's last name"),
-                                fieldWithPath("customer.tel").description("Customer's phone number"),
-                                fieldWithPath("customer.email").description("Customer's email address"),
-                                fieldWithPath("customer.zip").description("Customer's zip code"),
-                                fieldWithPath("customer.city").description("Customer's city"),
-                                fieldWithPath("customer.jumpers[]").description("Jumpers for this appointment"),
-                                fieldWithPath("customer.jumpers[].firstName").description("Jumper's first name"),
-                                fieldWithPath("customer.jumpers[].lastName").description("Jumper's last name"),
-                                fieldWithPath("customer.jumpers[].dateOfBirth").description("Jumper's date of birth"),
-                                fieldWithPath("customer.jumpers[].voucher").description("true if the jumper has a voucher"),
-                                fieldWithPath("date").description("Appointments date/time"),
-                                fieldWithPath("tandem").description("Tandem count"),
-                                fieldWithPath("picOrVid").description("picture or video count"),
-                                fieldWithPath("picAndVid").description("picture and video count"),
-                                fieldWithPath("handcam").description("handcam count"),
-                                fieldWithPath("note").description("An optional note for the appointment"),
-                                fieldWithPath("state").ignored(),
-                                fieldWithPath("createdOn").ignored(),
-                                fieldWithPath("createdBy").ignored(),
-                                fieldWithPath("clientId").ignored(),
-                                fieldWithPath("lang").ignored(),
-                                fieldWithPath("reminderSent").ignored(),
-                                fieldWithPath("verificationToken").ignored()
-                        ),
-                        responseFields(
-                                fieldWithPath("success").description("true, if the request was successful"),
-                                fieldWithPath("message").description("Message in case of error"),
-                                fieldWithPath("exception").description("Exception if any"),
-                                fieldWithPath("payload").description("The request's actual payload"),
-                                fieldWithPath("payload.appointmentId").description("The created appointment's id"),
-                                fieldWithPath("payload.customer").description("Customer Details"),
-                                fieldWithPath("payload.customer.firstName").description("Customer's first name"),
-                                fieldWithPath("payload.customer.lastName").description("Customer's last name"),
-                                fieldWithPath("payload.customer.tel").description("Customer's phone number"),
-                                fieldWithPath("payload.customer.email").description("Customer's email address"),
-                                fieldWithPath("payload.customer.zip").description("Customer's zip code"),
-                                fieldWithPath("payload.customer.city").description("Customer's city"),
-                                fieldWithPath("payload.customer.jumpers[]").description("Jumpers for this appointment"),
-                                fieldWithPath("payload.customer.jumpers[].firstName").description("Jumper's first name"),
-                                fieldWithPath("payload.customer.jumpers[].lastName").description("Jumper's last name"),
-                                fieldWithPath("payload.customer.jumpers[].dateOfBirth").description("Jumper's date of birth"),
-                                fieldWithPath("payload.customer.jumpers[].voucher").description("true if the jumper has a voucher"),
-                                fieldWithPath("payload.date").description("Appointments date/time"),
-                                fieldWithPath("payload.tandem").description("Tandem count"),
-                                fieldWithPath("payload.picOrVid").description("picture or video count"),
-                                fieldWithPath("payload.picAndVid").description("picture and video count"),
-                                fieldWithPath("payload.handcam").description("handcam count"),
-                                fieldWithPath("payload.note").description("An optional note for the appointment"),
-                                fieldWithPath("payload.state").ignored(),
-                                fieldWithPath("payload.createdOn").ignored(),
-                                fieldWithPath("payload.createdBy").ignored(),
-                                fieldWithPath("payload.clientId").ignored()
-                        )));
+                .andExpect(jsonPath("$.payload.customer.firstName", is("Max")));
 
         ArgumentCaptor<MimeMessage> argument = ArgumentCaptor.forClass(MimeMessage.class);
         verify(mailSender).send(argument.capture());
@@ -368,67 +261,18 @@ class AppointmentControllerTest extends AbstractSkdvinTest {
 
     @Test
     void testAddAdminAppointment() throws Exception {
-        Appointment appointment = ModelMockHelper.createSingleAppointment();
+        AppointmentDTO appointment = ModelMockHelper.createAppointmentDto();
         appointment.getCustomer().setJumpers(Collections.emptyList());
         String appointmentJson = json(appointment);
 
-        mockMvc.perform(RestDocumentationRequestBuilders.post("/api/appointment/admin")
+        mockMvc.perform(post("/api/appointment/admin")
                 .header("Accept-Language", "en-US")
                 .header("Authorization", MockJwtDecoder.addHeader(CREATE_APPOINTMENTS))
                 .contentType(contentType)
                 .content(appointmentJson))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.success", is(true)))
-                .andExpect(jsonPath("$.payload.customer.firstName", is("Max")))
-                .andDo(document("appointment/add-admin-appointment",
-                        requestFields(
-                                fieldWithPath("customer").description("Customer Details"),
-                                fieldWithPath("customer.firstName").description("Customer's first name"),
-                                fieldWithPath("customer.lastName").description("Customer's last name"),
-                                fieldWithPath("customer.tel").description("Customer's phone number"),
-                                fieldWithPath("customer.email").description("Customer's email address"),
-                                fieldWithPath("customer.zip").description("Customer's zip code"),
-                                fieldWithPath("customer.city").description("Customer's city"),
-                                fieldWithPath("customer.jumpers[]").description("Jumpers for this appointment"),
-                                fieldWithPath("date").description("Appointments date/time"),
-                                fieldWithPath("tandem").description("Tandem count"),
-                                fieldWithPath("picOrVid").description("picture or video count"),
-                                fieldWithPath("picAndVid").description("picture and video count"),
-                                fieldWithPath("handcam").description("handcam count"),
-                                fieldWithPath("note").description("An optional note for the appointment"),
-                                fieldWithPath("state").ignored(),
-                                fieldWithPath("createdOn").ignored(),
-                                fieldWithPath("createdBy").ignored(),
-                                fieldWithPath("clientId").ignored(),
-                                fieldWithPath("lang").ignored(),
-                                fieldWithPath("reminderSent").ignored(),
-                                fieldWithPath("verificationToken").ignored()
-                        ),
-                        responseFields(
-                                fieldWithPath("success").description("true, if the request was successful"),
-                                fieldWithPath("message").description("Message in case of error"),
-                                fieldWithPath("exception").description("Exception if any"),
-                                fieldWithPath("payload").description("The request's actual payload"),
-                                fieldWithPath("payload.appointmentId").description("The created appointment's id"),
-                                fieldWithPath("payload.customer").description("Customer Details"),
-                                fieldWithPath("payload.customer.firstName").description("Customer's first name"),
-                                fieldWithPath("payload.customer.lastName").description("Customer's last name"),
-                                fieldWithPath("payload.customer.tel").description("Customer's phone number"),
-                                fieldWithPath("payload.customer.email").description("Customer's email address"),
-                                fieldWithPath("payload.customer.zip").description("Customer's zip code"),
-                                fieldWithPath("payload.customer.city").description("Customer's city"),
-                                fieldWithPath("payload.customer.jumpers[]").description("Jumpers for this appointment"),
-                                fieldWithPath("payload.date").description("Appointments date/time"),
-                                fieldWithPath("payload.tandem").description("Tandem count"),
-                                fieldWithPath("payload.picOrVid").description("picture or video count"),
-                                fieldWithPath("payload.picAndVid").description("picture and video count"),
-                                fieldWithPath("payload.handcam").description("handcam count"),
-                                fieldWithPath("payload.note").description("An optional note for the appointment"),
-                                fieldWithPath("payload.state").ignored(),
-                                fieldWithPath("payload.createdOn").ignored(),
-                                fieldWithPath("payload.createdBy").ignored(),
-                                fieldWithPath("payload.clientId").ignored()
-                        )));
+                .andExpect(jsonPath("$.payload.customer.firstName", is("Max")));
     }
 
 
@@ -438,7 +282,7 @@ class AppointmentControllerTest extends AbstractSkdvinTest {
         appointment.setPicAndVid(5);
         String appointmentJson = json(appointment);
 
-        mockMvc.perform(RestDocumentationRequestBuilders.post("/api/appointment/admin")
+        mockMvc.perform(post("/api/appointment/admin")
                 .header("Accept-Language", "en-US")
                 .header("Authorization", MockJwtDecoder.addHeader(CREATE_APPOINTMENTS))
                 .contentType(contentType)
@@ -462,7 +306,7 @@ class AppointmentControllerTest extends AbstractSkdvinTest {
 
         String appointmentJson = json(appointment);
 
-        mockMvc.perform(RestDocumentationRequestBuilders.put("/api/appointment")
+        mockMvc.perform(put("/api/appointment")
                 .header("Accept-Language", "en-US")
                 .header("Authorization", MockJwtDecoder.addHeader(UPDATE_APPOINTMENTS))
                 .contentType(contentType)
@@ -471,62 +315,7 @@ class AppointmentControllerTest extends AbstractSkdvinTest {
                 .andExpect(jsonPath("$.success", is(true)))
                 .andExpect(jsonPath("$.payload.tandem", is(newCount)))
                 .andExpect(jsonPath("$.payload.customer.firstName", is("Unitjane")))
-                .andExpect(jsonPath("$.payload.customer.jumpers", hasSize(2)))
-                .andDo(document("appointment/update-admin-appointment",
-                        requestFields(
-                                fieldWithPath("appointmentId").description("The appointment's id"),
-                                fieldWithPath("customer").description("Customer Details"),
-                                fieldWithPath("customer.firstName").description("Customer's first name"),
-                                fieldWithPath("customer.lastName").description("Customer's last name"),
-                                fieldWithPath("customer.tel").description("Customer's phone number"),
-                                fieldWithPath("customer.email").description("Customer's email address"),
-                                fieldWithPath("customer.zip").description("Customer's zip code"),
-                                fieldWithPath("customer.city").description("Customer's city"),
-                                fieldWithPath("customer.jumpers[]").description("Jumpers for this appointment"),
-                                fieldWithPath("customer.jumpers[].firstName").description("Jumper's first name"),
-                                fieldWithPath("customer.jumpers[].lastName").description("Jumper's last name"),
-                                fieldWithPath("customer.jumpers[].dateOfBirth").description("Jumper's date of birth"),
-                                fieldWithPath("customer.jumpers[].voucher").description("true if the jumper has a voucher"),
-                                fieldWithPath("date").description("Appointments date/time"),
-                                fieldWithPath("tandem").description("Tandem count"),
-                                fieldWithPath("picOrVid").description("picture or video count"),
-                                fieldWithPath("picAndVid").description("picture and video count"),
-                                fieldWithPath("handcam").description("handcam count"),
-                                fieldWithPath("note").description("An optional note for the appointment"),
-                                fieldWithPath("state").ignored(),
-                                fieldWithPath("createdOn").ignored(),
-                                fieldWithPath("createdBy").ignored(),
-                                fieldWithPath("clientId").ignored()
-                        ),
-                        responseFields(
-                                fieldWithPath("success").description("true, if the request was successful"),
-                                fieldWithPath("message").description("Message in case of error"),
-                                fieldWithPath("exception").description("Exception if any"),
-                                fieldWithPath("payload").description("The request's actual payload"),
-                                fieldWithPath("payload.appointmentId").description("The appointment's id"),
-                                fieldWithPath("payload.customer").description("Customer Details"),
-                                fieldWithPath("payload.customer.firstName").description("Customer's first name"),
-                                fieldWithPath("payload.customer.lastName").description("Customer's last name"),
-                                fieldWithPath("payload.customer.tel").description("Customer's phone number"),
-                                fieldWithPath("payload.customer.email").description("Customer's email address"),
-                                fieldWithPath("payload.customer.zip").description("Customer's zip code"),
-                                fieldWithPath("payload.customer.city").description("Customer's city"),
-                                fieldWithPath("payload.customer.jumpers[]").description("Jumpers for this appointment"),
-                                fieldWithPath("payload.customer.jumpers[].firstName").description("Jumper's first name"),
-                                fieldWithPath("payload.customer.jumpers[].lastName").description("Jumper's last name"),
-                                fieldWithPath("payload.customer.jumpers[].dateOfBirth").description("Jumper's date of birth"),
-                                fieldWithPath("payload.customer.jumpers[].voucher").description("true if the jumper has a voucher"),
-                                fieldWithPath("payload.date").description("Appointments date/time"),
-                                fieldWithPath("payload.tandem").description("Tandem count"),
-                                fieldWithPath("payload.picOrVid").description("picture or video count"),
-                                fieldWithPath("payload.picAndVid").description("picture and video count"),
-                                fieldWithPath("payload.handcam").description("handcam count"),
-                                fieldWithPath("payload.note").description("An optional note for the appointment"),
-                                fieldWithPath("payload.state").ignored(),
-                                fieldWithPath("payload.createdOn").ignored(),
-                                fieldWithPath("payload.createdBy").ignored(),
-                                fieldWithPath("payload.clientId").ignored()
-                        )));
+                .andExpect(jsonPath("$.payload.customer.jumpers", hasSize(2)));
 
         ArgumentCaptor<MimeMessage> argument = ArgumentCaptor.forClass(MimeMessage.class);
         verify(mailSender).send(argument.capture());
@@ -546,7 +335,7 @@ class AppointmentControllerTest extends AbstractSkdvinTest {
 
         String appointmentJson = json(appointment);
 
-        mockMvc.perform(RestDocumentationRequestBuilders.put("/api/appointment/admin")
+        mockMvc.perform(put("/api/appointment/admin")
                 .header("Accept-Language", "en-US")
                 .header("Authorization", MockJwtDecoder.addHeader(UPDATE_APPOINTMENTS))
                 .contentType(contentType)
@@ -555,54 +344,7 @@ class AppointmentControllerTest extends AbstractSkdvinTest {
                 .andExpect(jsonPath("$.success", is(true)))
                 .andExpect(jsonPath("$.payload.tandem", is(newCount)))
                 .andExpect(jsonPath("$.payload.customer.firstName", is("Max")))
-                .andExpect(jsonPath("$.payload.customer.jumpers", hasSize(0)))
-                .andDo(document("appointment/update-appointment",
-                        requestFields(
-                                fieldWithPath("appointmentId").description("The appointment's id"),
-                                fieldWithPath("customer").description("Customer Details"),
-                                fieldWithPath("customer.firstName").description("Customer's first name"),
-                                fieldWithPath("customer.lastName").description("Customer's last name"),
-                                fieldWithPath("customer.tel").description("Customer's phone number"),
-                                fieldWithPath("customer.email").description("Customer's email address"),
-                                fieldWithPath("customer.zip").description("Customer's zip code"),
-                                fieldWithPath("customer.city").description("Customer's city"),
-                                fieldWithPath("customer.jumpers[]").description("Jumpers for this appointment"),
-                                fieldWithPath("date").description("Appointments date/time"),
-                                fieldWithPath("tandem").description("Tandem count"),
-                                fieldWithPath("picOrVid").description("picture or video count"),
-                                fieldWithPath("picAndVid").description("picture and video count"),
-                                fieldWithPath("handcam").description("handcam count"),
-                                fieldWithPath("note").description("An optional note for the appointment"),
-                                fieldWithPath("state").ignored(),
-                                fieldWithPath("createdOn").ignored(),
-                                fieldWithPath("createdBy").ignored(),
-                                fieldWithPath("clientId").ignored()
-                        ),
-                        responseFields(
-                                fieldWithPath("success").description("true, if the request was successful"),
-                                fieldWithPath("message").description("Message in case of error"),
-                                fieldWithPath("exception").description("Exception if any"),
-                                fieldWithPath("payload").description("The request's actual payload"),
-                                fieldWithPath("payload.appointmentId").description("The appointment's id"),
-                                fieldWithPath("payload.customer").description("Customer Details"),
-                                fieldWithPath("payload.customer.firstName").description("Customer's first name"),
-                                fieldWithPath("payload.customer.lastName").description("Customer's last name"),
-                                fieldWithPath("payload.customer.tel").description("Customer's phone number"),
-                                fieldWithPath("payload.customer.email").description("Customer's email address"),
-                                fieldWithPath("payload.customer.zip").description("Customer's zip code"),
-                                fieldWithPath("payload.customer.city").description("Customer's city"),
-                                fieldWithPath("payload.customer.jumpers[]").description("Jumpers for this appointment"),
-                                fieldWithPath("payload.date").description("Appointments date/time"),
-                                fieldWithPath("payload.tandem").description("Tandem count"),
-                                fieldWithPath("payload.picOrVid").description("picture or video count"),
-                                fieldWithPath("payload.picAndVid").description("picture and video count"),
-                                fieldWithPath("payload.handcam").description("handcam count"),
-                                fieldWithPath("payload.note").description("An optional note for the appointment"),
-                                fieldWithPath("payload.state").ignored(),
-                                fieldWithPath("payload.createdOn").ignored(),
-                                fieldWithPath("payload.createdBy").ignored(),
-                                fieldWithPath("payload.clientId").ignored()
-                        )));
+                .andExpect(jsonPath("$.payload.customer.jumpers", hasSize(0)));
     }
 
     @Test
@@ -611,7 +353,7 @@ class AppointmentControllerTest extends AbstractSkdvinTest {
         appointment.setAppointmentId(99999999);
         String appointmentJson = json(appointment);
 
-        mockMvc.perform(RestDocumentationRequestBuilders.put("/api/appointment/admin")
+        mockMvc.perform(put("/api/appointment/admin")
                 .header("Accept-Language", "en-US")
                 .header("Authorization", MockJwtDecoder.addHeader(UPDATE_APPOINTMENTS))
                 .contentType(contentType)
@@ -760,7 +502,7 @@ class AppointmentControllerTest extends AbstractSkdvinTest {
     void testFindFreeSlots() throws Exception {
         SlotQuery query = new SlotQuery(2, 0, 0, 0);
 
-        mockMvc.perform(RestDocumentationRequestBuilders.get("/api/appointment/slots")
+        mockMvc.perform(get("/api/appointment/slots")
                 .header("Accept-Language", "en-US")
                 .param("tandem", String.valueOf(query.getTandem()))
                 .param("picOrVid", String.valueOf(query.getPicOrVid()))
@@ -769,23 +511,7 @@ class AppointmentControllerTest extends AbstractSkdvinTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success", is(true)))
                 .andExpect(jsonPath("$.payload[0].date", is(LocalDate.now().toString())))
-                .andExpect(jsonPath("$.payload[0].times[0]", is(LocalTime.of(11, 30).toString())))
-                .andDo(document("appointment/find-slots",
-                        requestParameters(
-                                parameterWithName("tandem").description("number of tandem jumps"),
-                                parameterWithName("picOrVid").description("picOrVid count"),
-                                parameterWithName("picAndVid").description("picAndVid count"),
-                                parameterWithName("handcam").description("handcam count")
-                        ),
-                        responseFields(
-                                fieldWithPath("success").description("true when the request was successful"),
-                                fieldWithPath("exception").description("exception message"),
-                                fieldWithPath("message").description("optional return code message"),
-                                fieldWithPath("payload[]").description("an array of date/time Objects"),
-                                fieldWithPath("payload[].date").description("date of free slots"),
-                                fieldWithPath("payload[].times[]").description("time values of free slots")
-                        )
-                ));
+                .andExpect(jsonPath("$.payload[0].times[0]", is(LocalTime.of(11, 30).toString())));
     }
 
     @Test
@@ -841,23 +567,12 @@ class AppointmentControllerTest extends AbstractSkdvinTest {
         GenericResult<Appointment> result = appointmentService.saveAppointment(appointment);
         Appointment savedAppointment = result.getPayload();
 
-        mockMvc.perform(RestDocumentationRequestBuilders.get("/api/appointment/{appointmentId}/confirm/{token}",
+        mockMvc.perform(get("/api/appointment/{appointmentId}/confirm/{token}",
                 appointment.getAppointmentId(), savedAppointment.getVerificationToken().getToken())
                 .header("Accept-Language", "en-US")
                 .contentType(contentType))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.success", is(true)))
-                .andDo(document("appointment/confirm-appointment",
-                        pathParameters(
-                                parameterWithName("appointmentId").description("The id of the appointment"),
-                                parameterWithName("token").description("The verification token for this appointment")
-                        ),
-                        responseFields(
-                                fieldWithPath("success").description("true, if the request was successful"),
-                                fieldWithPath("message").description("Message in case of error"),
-                                fieldWithPath("exception").description("Exception if any"),
-                                fieldWithPath("payload").description("The request's actual payload")
-                        )));
+                .andExpect(jsonPath("$.success", is(true)));
 
         ArgumentCaptor<MimeMessage> argument = ArgumentCaptor.forClass(MimeMessage.class);
         verify(mailSender).send(argument.capture());
@@ -930,53 +645,20 @@ class AppointmentControllerTest extends AbstractSkdvinTest {
 
     @Test
     void testGetAppointmentsByDay() throws Exception {
-        mockMvc.perform(RestDocumentationRequestBuilders.get("/api/appointment/date/{date}",
+        mockMvc.perform(get("/api/appointment/date/{date}",
                 LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE))
                 .header("Authorization", MockJwtDecoder.addHeader(READ_APPOINTMENTS))
                 .contentType(contentType))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success", is(true)))
-                .andExpect(jsonPath("$.payload", hasSize(2)))
-                .andDo(document("appointment/get-appointments-by-day",
-                        pathParameters(
-                                parameterWithName("date").description("The date for which appointments to get")
-                        ),
-                        responseFields(
-                                fieldWithPath("success").description("true, if the request was successful"),
-                                fieldWithPath("message").description("Message in case of error"),
-                                fieldWithPath("exception").description("Exception if any"),
-                                fieldWithPath("payload").description("The request's actual payload"),
-                                fieldWithPath("payload[].appointmentId").description("The created appointment's id"),
-                                fieldWithPath("payload[].customer").description("Customer Details"),
-                                fieldWithPath("payload[].customer.firstName").description("Customer's first name"),
-                                fieldWithPath("payload[].customer.lastName").description("Customer's last name"),
-                                fieldWithPath("payload[].customer.tel").description("Customer's phone number"),
-                                fieldWithPath("payload[].customer.email").description("Customer's email address"),
-                                fieldWithPath("payload[].customer.zip").description("Customer's zip code"),
-                                fieldWithPath("payload[].customer.city").description("Customer's city"),
-                                fieldWithPath("payload[].customer.jumpers[]").description("Jumpers for this appointment"),
-                                fieldWithPath("payload[].customer.jumpers[].firstName").description("Jumper's first name"),
-                                fieldWithPath("payload[].customer.jumpers[].lastName").description("Jumper's last name"),
-                                fieldWithPath("payload[].customer.jumpers[].dateOfBirth").description("Jumper's date of birth"),
-                                fieldWithPath("payload[].customer.jumpers[].voucher").description("true if the jumper has a voucher"),
-                                fieldWithPath("payload[].date").description("Appointments date/time"),
-                                fieldWithPath("payload[].tandem").description("Tandem count"),
-                                fieldWithPath("payload[].picOrVid").description("picture or video count"),
-                                fieldWithPath("payload[].picAndVid").description("picture and video count"),
-                                fieldWithPath("payload[].handcam").description("handcam count"),
-                                fieldWithPath("payload[].note").description("An optional note for the appointment"),
-                                fieldWithPath("payload[].state").ignored(),
-                                fieldWithPath("payload[].createdOn").ignored(),
-                                fieldWithPath("payload[].createdBy").ignored(),
-                                fieldWithPath("payload[].clientId").ignored()
-                        )));
+                .andExpect(jsonPath("$.payload", hasSize(2)));
     }
 
     @Test
     void testGetAppointmentsByDay_Unauthorized() throws Exception {
         Appointment appointment = ModelMockHelper.createSingleAppointment();
 
-        mockMvc.perform(RestDocumentationRequestBuilders.get("/api/appointment/date/{date}",
+        mockMvc.perform(get("/api/appointment/date/{date}",
                 appointment.getDate())
                 .contentType(contentType))
                 .andExpect(status().isUnauthorized());
@@ -992,26 +674,13 @@ class AppointmentControllerTest extends AbstractSkdvinTest {
         appointmentStateOnly.setState(AppointmentState.ACTIVE);
         String appointmentStateOnlyJson = json(appointmentStateOnly);
 
-        mockMvc.perform(RestDocumentationRequestBuilders.patch("/api/appointment/{appointmentId}",
+        mockMvc.perform(patch("/api/appointment/{appointmentId}",
                 savedAppointment.getAppointmentId())
                 .header("Authorization", MockJwtDecoder.addHeader(UPDATE_APPOINTMENTS))
                 .contentType(contentType)
                 .content(appointmentStateOnlyJson))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.success", is(true)))
-                .andDo(document("appointment/update-appointment-state",
-                        pathParameters(
-                                parameterWithName("appointmentId").description("The id of the appointment")
-                        ),
-                        requestFields(
-                                fieldWithPath("state").description("The new state for this appointment")
-                        ),
-                        responseFields(
-                                fieldWithPath("success").description("true, if the request was successful"),
-                                fieldWithPath("message").description("Message in case of error"),
-                                fieldWithPath("exception").description("Exception if any"),
-                                fieldWithPath("payload").description("The request's actual payload")
-                        )));
+                .andExpect(jsonPath("$.success", is(true)));
 
         assertEquals(AppointmentState.ACTIVE, appointmentService.findAppointment(savedAppointment.getAppointmentId()).getState());
     }
@@ -1061,22 +730,12 @@ class AppointmentControllerTest extends AbstractSkdvinTest {
         int appointmentId = result.getPayload().getAppointmentId();
 
 
-        mockMvc.perform(RestDocumentationRequestBuilders.delete("/api/appointment/{appointmentId}", appointmentId)
+        mockMvc.perform(delete("/api/appointment/{appointmentId}", appointmentId)
                 .header("Accept-Language", "en-US")
                 .header("Authorization", MockJwtDecoder.addHeader(UPDATE_APPOINTMENTS))
                 .contentType(contentType))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.success", is(true)))
-                .andDo(document("appointment/delete-appointment",
-                        pathParameters(
-                                parameterWithName("appointmentId").description("The id of the appointment")
-                        ),
-                        responseFields(
-                                fieldWithPath("success").description("true, if the request was successful"),
-                                fieldWithPath("message").description("Message in case of error"),
-                                fieldWithPath("exception").description("Exception if any"),
-                                fieldWithPath("payload").description("The request's actual payload")
-                        )));
+                .andExpect(jsonPath("$.success", is(true)));
 
         ArgumentCaptor<MimeMessage> argument = ArgumentCaptor.forClass(MimeMessage.class);
         verify(mailSender).send(argument.capture());
@@ -1110,7 +769,7 @@ class AppointmentControllerTest extends AbstractSkdvinTest {
     void testFindGroupSlots() throws Exception {
         SlotQuery query = new SlotQuery(5, 0, 0, 0);
 
-        mockMvc.perform(RestDocumentationRequestBuilders.get("/api/appointment/groupslots")
+        mockMvc.perform(get("/api/appointment/groupslots")
                 .header("Authorization", MockJwtDecoder.addHeader(READ_APPOINTMENTS))
                 .param("tandem", String.valueOf(query.getTandem())))
                 .andDo(MockMvcResultHandlers.print())
@@ -1118,39 +777,14 @@ class AppointmentControllerTest extends AbstractSkdvinTest {
                 .andExpect(jsonPath("$.success", is(true)))
                 .andExpect(jsonPath("$.payload", hasSize(1)))
                 .andExpect(jsonPath("$.payload[0].date", is(LocalDate.now().toString())))
-                .andExpect(jsonPath("$.payload[0].slots", hasSize(2)))
-                .andDo(document("appointment/group-slots",
-                        requestParameters(
-                                parameterWithName("tandem").description("number of tandem jumps")
-                        ),
-                        responseFields(
-                                fieldWithPath("success").description("true when the request was successful"),
-                                fieldWithPath("exception").description("exception message"),
-                                fieldWithPath("message").description("optional return code message"),
-                                fieldWithPath("payload[]").description("an array of group slots"),
-                                fieldWithPath("payload[].date").description("date of this group slot"),
-                                fieldWithPath("payload[].firstTime").description("first slot time of this group slot"),
-                                fieldWithPath("payload[].lastTime").description("last slot time of this group slot"),
-                                fieldWithPath("payload[].timeCount").description("number of slots for this group slot"),
-                                fieldWithPath("payload[].tandemAvailable").description("available tandems for this slot"),
-                                fieldWithPath("payload[].picOrVidAvailable").description("available picOrVid for this slot"),
-                                fieldWithPath("payload[].picAndVidAvailable").description("available picAndVid for this slot"),
-                                fieldWithPath("payload[].handcamAvailable").description("available handcam for this slot"),
-                                fieldWithPath("payload[].slots[]").description("array of slots for this group slot"),
-                                fieldWithPath("payload[].slots[].time").description("time of this slot"),
-                                fieldWithPath("payload[].slots[].tandemAvailable").description("available tandems for this slot"),
-                                fieldWithPath("payload[].slots[].picOrVidAvailable").description("available picOrVid for this slot"),
-                                fieldWithPath("payload[].slots[].picAndVidAvailable").description("available picAndVid for this slot"),
-                                fieldWithPath("payload[].slots[].handcamAvailable").description("available handcam for this slot")
-                        )
-                ));
+                .andExpect(jsonPath("$.payload[0].slots", hasSize(2)));
     }
 
     @Test
     void testFindGroupSlots_Unauthorized() throws Exception {
         SlotQuery query = new SlotQuery(5, 0, 0, 0);
 
-        mockMvc.perform(RestDocumentationRequestBuilders.get("/api/appointment/groupslots")
+        mockMvc.perform(get("/api/appointment/groupslots")
                 .param("tandem", String.valueOf(query.getTandem())))
                 .andExpect(status().isUnauthorized());
     }
@@ -1161,20 +795,4 @@ class AppointmentControllerTest extends AbstractSkdvinTest {
                 o, MediaType.APPLICATION_JSON, mockHttpOutputMessage);
         return mockHttpOutputMessage.getBodyAsString();
     }
-
-    @TestConfiguration
-    static class CustomizationConfiguration implements RestDocsMockMvcConfigurationCustomizer {
-        @Override
-        public void customize(MockMvcRestDocumentationConfigurer configurer) {
-            configurer.operationPreprocessors()
-                    .withRequestDefaults(prettyPrint())
-                    .withResponseDefaults(prettyPrint());
-        }
-
-        @Bean
-        public RestDocumentationResultHandler restDocumentation() {
-            return MockMvcRestDocumentation.document("{method-name}");
-        }
-    }
-
 }
