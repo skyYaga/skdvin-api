@@ -17,23 +17,13 @@ import in.skdv.skdvinbackend.service.ISettingsService;
 import in.skdv.skdvinbackend.service.IVideoflyerService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.restdocs.RestDocsMockMvcConfigurationCustomizer;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Bean;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.mock.http.MockHttpOutputMessage;
-import org.springframework.restdocs.RestDocumentationContextProvider;
-import org.springframework.restdocs.RestDocumentationExtension;
-import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation;
-import org.springframework.restdocs.mockmvc.MockMvcRestDocumentationConfigurer;
-import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders;
-import org.springframework.restdocs.mockmvc.RestDocumentationResultHandler;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.context.WebApplicationContext;
 
@@ -48,13 +38,6 @@ import static in.skdv.skdvinbackend.config.Authorities.*;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.when;
-import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
-import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
-import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
-import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
-import static org.springframework.restdocs.payload.PayloadDocumentation.*;
-import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
-import static org.springframework.restdocs.request.RequestDocumentation.pathParameters;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.util.AssertionErrors.assertNotNull;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -62,7 +45,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppContextSetup;
 
-@ExtendWith(RestDocumentationExtension.class)
 @SpringBootTest
 class VideoflyerControllerTest extends AbstractSkdvinTest {
 
@@ -107,10 +89,9 @@ class VideoflyerControllerTest extends AbstractSkdvinTest {
     }
 
     @BeforeEach
-    void setup(RestDocumentationContextProvider restDocumentation) {
+    void setup() {
         this.mockMvc = webAppContextSetup(webApplicationContext)
                 .apply(springSecurity())
-                .apply(documentationConfiguration(restDocumentation))
                 .build();
 
         videoflyerRepository.deleteAll();
@@ -121,33 +102,16 @@ class VideoflyerControllerTest extends AbstractSkdvinTest {
 
     @Test
     void testCreateVideoflyer() throws Exception {
-        String videoflyerJson = json(ModelMockHelper.createVideoflyer());
+        String videoflyerJson = json(ModelMockHelper.createVideoflyerDto());
 
-        mockMvc.perform(RestDocumentationRequestBuilders.post("/api/videoflyer/")
+        mockMvc.perform(post("/api/videoflyer/")
                 .header("Authorization", MockJwtDecoder.addHeader(CREATE_VIDEOFLYER))
                 .contentType(contentType)
                 .content(videoflyerJson))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.success", is(true)))
                 .andExpect(jsonPath("$.payload.firstName", is("Max")))
-                .andExpect(jsonPath("$.payload.lastName", is("Mustermann")))
-                .andDo(document("videoflyer/create-videoflyer", requestFields(
-                        fieldWithPath("firstName").description("Videoflyers first name"),
-                        fieldWithPath("lastName").description("Videoflyers last name"),
-                        fieldWithPath("email").description("Videoflyers email"),
-                        fieldWithPath("tel").description("Videoflyers phone number"),
-                        fieldWithPath("picAndVid").description("true if the Videoflyer makes pictures and videos")
-                ), responseFields(
-                        fieldWithPath("success").description("true when the request was successful"),
-                        fieldWithPath("message").description("message if there was an error"),
-                        fieldWithPath("payload.id").description("Videoflyers id"),
-                        fieldWithPath("payload.firstName").description("Videoflyers first name"),
-                        fieldWithPath("payload.lastName").description("Videoflyers last name"),
-                        fieldWithPath("payload.email").description("Videoflyers email"),
-                        fieldWithPath("payload.tel").description("Videoflyers phone number"),
-                        fieldWithPath("payload.picAndVid").description("true if the Videoflyer makes pictures and videos"),
-                        fieldWithPath("exception").ignored()
-                )));
+                .andExpect(jsonPath("$.payload.lastName", is("Mustermann")));
     }
 
     @Test
@@ -170,19 +134,7 @@ class VideoflyerControllerTest extends AbstractSkdvinTest {
                 .contentType(contentType))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success", is(true)))
-                .andExpect(jsonPath("$.payload", hasSize(2)))
-                .andDo(document("videoflyer/get-videoflyers",
-                        responseFields(
-                                fieldWithPath("success").description("true when the request was successful"),
-                                fieldWithPath("message").description("message if there was an error"),
-                                fieldWithPath("payload[].id").description("Videoflyers id"),
-                                fieldWithPath("payload[].firstName").description("Videoflyers first name"),
-                                fieldWithPath("payload[].lastName").description("Videoflyers last name"),
-                                fieldWithPath("payload[].email").description("Videoflyers email"),
-                                fieldWithPath("payload[].tel").description("Videoflyers phone number"),
-                                fieldWithPath("payload[].picAndVid").description("true if the Videoflyer makes pictures and videos"),
-                                fieldWithPath("exception").ignored()
-                        )));
+                .andExpect(jsonPath("$.payload", hasSize(2)));
     }
 
     @Test
@@ -203,36 +155,14 @@ class VideoflyerControllerTest extends AbstractSkdvinTest {
 
         String videoflyerJson = json(converter.convertToDto(videoflyer));
 
-        mockMvc.perform(RestDocumentationRequestBuilders.put("/api/videoflyer/{id}", videoflyer.getId())
+        mockMvc.perform(put("/api/videoflyer/{id}", videoflyer.getId())
                 .header("Authorization", MockJwtDecoder.addHeader(UPDATE_VIDEOFLYER))
                 .contentType(contentType)
                 .content(videoflyerJson))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success", is(true)))
                 .andExpect(jsonPath("$.payload.email", is("foo@example.com")))
-                .andExpect(jsonPath("$.payload.picAndVid", is(true)))
-                .andDo(document("videoflyer/update-videoflyer",
-                        pathParameters(
-                                parameterWithName("id").description("Videoflyers id")
-                        ),
-                        requestFields(
-                                fieldWithPath("id").description("Videoflyers id"),
-                                fieldWithPath("firstName").description("Videoflyers first name"),
-                                fieldWithPath("lastName").description("Videoflyers last name"),
-                                fieldWithPath("email").description("Videoflyers email"),
-                                fieldWithPath("tel").description("Videoflyers phone number"),
-                                fieldWithPath("picAndVid").description("true if the Videoflyer makes pictures and videos")
-                        ), responseFields(
-                                fieldWithPath("success").description("true when the request was successful"),
-                                fieldWithPath("message").description("message if there was an error"),
-                                fieldWithPath("payload.id").description("Videoflyers id"),
-                                fieldWithPath("payload.firstName").description("Videoflyers first name"),
-                                fieldWithPath("payload.lastName").description("Videoflyers last name"),
-                                fieldWithPath("payload.email").description("Videoflyers email"),
-                                fieldWithPath("payload.tel").description("Videoflyers phone number"),
-                                fieldWithPath("payload.picAndVid").description("true if the Videoflyer makes pictures and videos"),
-                                fieldWithPath("exception").ignored()
-                        )));
+                .andExpect(jsonPath("$.payload.picAndVid", is(true)));
     }
 
     @Test
@@ -269,20 +199,11 @@ class VideoflyerControllerTest extends AbstractSkdvinTest {
     void testDeleteVideoflyer() throws Exception {
         Videoflyer videoflyer = videoflyerRepository.save(ModelMockHelper.createVideoflyer());
 
-        mockMvc.perform(RestDocumentationRequestBuilders.delete("/api/videoflyer/{id}", videoflyer.getId())
+        mockMvc.perform(delete("/api/videoflyer/{id}", videoflyer.getId())
                 .header("Authorization", MockJwtDecoder.addHeader(DELETE_VIDEOFLYER))
                 .contentType(contentType))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.success", is(true)))
-                .andDo(document("videoflyer/delete-videoflyer",
-                        pathParameters(
-                                parameterWithName("id").description("Videoflyers id")
-                        ), responseFields(
-                                fieldWithPath("success").description("true when the request was successful"),
-                                fieldWithPath("message").description("message if there was an error"),
-                                fieldWithPath("exception").ignored(),
-                                fieldWithPath("payload").ignored()
-                        )));
+                .andExpect(jsonPath("$.success", is(true)));
     }
 
     @Test
@@ -314,39 +235,12 @@ class VideoflyerControllerTest extends AbstractSkdvinTest {
         jumpdayService.saveJumpday(jumpday);
         videoflyerService.assignVideoflyerToJumpday(jumpday.getDate(), videoflyer.getId(), new SimpleAssignment(true));
 
-        mockMvc.perform(RestDocumentationRequestBuilders.get("/api/videoflyer/{id}", videoflyer.getId())
+        mockMvc.perform(get("/api/videoflyer/{id}", videoflyer.getId())
                 .header("Authorization", MockJwtDecoder.addHeader(READ_VIDEOFLYER))
                 .contentType(contentType))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success", is(true)))
-                .andExpect(jsonPath("$.payload.assignments." + LocalDate.now() + ".assigned", is(true)))
-                .andDo(document("videoflyer/get-videoflyer",
-                        pathParameters(
-                                parameterWithName("id").description("The id of the requested videoflyer")
-                        ),
-                        responseFields(
-                                fieldWithPath("success").description("true when the request was successful"),
-                                fieldWithPath("message").description("message if there was an error"),
-                                fieldWithPath("payload.id").description("Videoflyers id"),
-                                fieldWithPath("payload.firstName").description("Videoflyers first name"),
-                                fieldWithPath("payload.lastName").description("Videoflyers last name"),
-                                fieldWithPath("payload.email").description("Videoflyers email"),
-                                fieldWithPath("payload.tel").description("Videoflyers phone number"),
-                                fieldWithPath("payload.picAndVid").description("true if the Videoflyer makes pictures and videos"),
-                                fieldWithPath("payload.assignments").description("key value pairs of date and the videoflyers assignment state as boolean"),
-                                fieldWithPath("payload.assignments." + LocalDate.now() + ".assigned").description("true if the flyer is assigned"),
-                                fieldWithPath("payload.assignments." + LocalDate.now() + ".allday").description("true if the flyer is assigned all day"),
-                                fieldWithPath("payload.assignments." + LocalDate.now() + ".from").description("from time if the flyer is not assigned all day"),
-                                fieldWithPath("payload.assignments." + LocalDate.now() + ".to").description("to time if the flyer is not assigned all day"),
-                                fieldWithPath("payload.assignments." + LocalDate.now() + ".flyer.firstName").description("videoflyer's first name"),
-                                fieldWithPath("payload.assignments." + LocalDate.now() + ".flyer.lastName").description("videoflyer's last name"),
-                                fieldWithPath("payload.assignments." + LocalDate.now() + ".flyer.email").description("videoflyer's email"),
-                                fieldWithPath("payload.assignments." + LocalDate.now() + ".flyer.tel").description("videoflyer's phone number"),
-                                fieldWithPath("payload.assignments." + LocalDate.now() + ".flyer.picAndVid").description("videoflyer's pic and video setting"),
-                                fieldWithPath("payload.assignments." + LocalDate.now() + ".flyer.id").description("videoflyer's id"),
-                                fieldWithPath("payload.assignments." + LocalDate.now()).ignored(),
-                                fieldWithPath("exception").ignored()
-                        )));
+                .andExpect(jsonPath("$.payload.assignments." + LocalDate.now() + ".assigned", is(true)));
     }
 
     @Test
@@ -376,36 +270,12 @@ class VideoflyerControllerTest extends AbstractSkdvinTest {
 
         String videoflyerJson = json(videoflyerDetailsDTO);
 
-        mockMvc.perform(RestDocumentationRequestBuilders.patch("/api/videoflyer/{id}/assign", videoflyerDetailsDTO.getId())
+        mockMvc.perform(patch("/api/videoflyer/{id}/assign", videoflyerDetailsDTO.getId())
                 .header("Authorization", MockJwtDecoder.addHeader(UPDATE_VIDEOFLYER))
                 .contentType(contentType)
                 .content(videoflyerJson))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.success", is(true)))
-                .andDo(document("videoflyer/assign-videoflyer",
-                        pathParameters(
-                                parameterWithName("id").description("Videoflyers id")
-                        ),
-                        requestFields(
-                                fieldWithPath("id").description("Videoflyers id"),
-                                fieldWithPath("assignments").description("details on the videoflyers assignment state"),
-                                fieldWithPath("assignments." + LocalDate.now() + ".assigned").description("true if the flyer is assigned"),
-                                fieldWithPath("assignments." + LocalDate.now() + ".allday").description("true if the flyer is assigned all day"),
-                                fieldWithPath("assignments." + LocalDate.now() + ".from").description("from time if the flyer is not assigned all day"),
-                                fieldWithPath("assignments." + LocalDate.now() + ".to").description("to time if the flyer is not assigned all day"),
-                                fieldWithPath("assignments." + LocalDate.now()).ignored(),
-                                fieldWithPath("firstName").ignored(),
-                                fieldWithPath("lastName").ignored(),
-                                fieldWithPath("email").ignored(),
-                                fieldWithPath("tel").ignored(),
-                                fieldWithPath("picAndVid").ignored()
-                        ),
-                        responseFields(
-                                fieldWithPath("success").description("true when the request was successful"),
-                                fieldWithPath("message").description("message if there was an error"),
-                                fieldWithPath("exception").ignored(),
-                                fieldWithPath("payload").ignored()
-                        )));
+                .andExpect(jsonPath("$.success", is(true)));
     }
 
     @Test
@@ -463,34 +333,12 @@ class VideoflyerControllerTest extends AbstractSkdvinTest {
 
         String videoflyerJson = json(videoflyerDetailsDTO);
 
-        mockMvc.perform(RestDocumentationRequestBuilders.patch("/api/videoflyer/me/assign")
+        mockMvc.perform(patch("/api/videoflyer/me/assign")
                 .header("Authorization", MockJwtDecoder.addHeader(VIDEOFLYER))
                 .contentType(contentType)
                 .content(videoflyerJson))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.success", is(true)))
-                .andDo(document("videoflyer/self-assign-videoflyer",
-                        requestFields(
-                                fieldWithPath("id").description("Videoflyers id"),
-                                fieldWithPath("email").description("Videoflyers email"),
-                                fieldWithPath("assignments").description("key value pairs of date and the videoflyers assignment state as boolean"),
-                                fieldWithPath("assignments." + LocalDate.now() + ".assigned").description("true if the flyer is assigned"),
-                                fieldWithPath("assignments." + LocalDate.now() + ".allday").description("true if the flyer is assigned all day"),
-                                fieldWithPath("assignments." + LocalDate.now() + ".from").description("from time if the flyer is not assigned all day"),
-                                fieldWithPath("assignments." + LocalDate.now() + ".to").description("to time if the flyer is not assigned all day"),
-                                fieldWithPath("assignments." + LocalDate.now()).ignored(),
-                                fieldWithPath("assignments." + LocalDate.now()).ignored(),
-                                fieldWithPath("firstName").ignored(),
-                                fieldWithPath("lastName").ignored(),
-                                fieldWithPath("tel").ignored(),
-                                fieldWithPath("picAndVid").ignored()
-                        ),
-                        responseFields(
-                                fieldWithPath("success").description("true when the request was successful"),
-                                fieldWithPath("message").description("message if there was an error"),
-                                fieldWithPath("exception").ignored(),
-                                fieldWithPath("payload").ignored()
-                        )));
+                .andExpect(jsonPath("$.success", is(true)));
     }
 
     @Test
@@ -555,36 +403,12 @@ class VideoflyerControllerTest extends AbstractSkdvinTest {
         jumpdayService.saveJumpday(jumpday);
         videoflyerService.assignVideoflyerToJumpday(jumpday.getDate(), videoflyer.getId(), new SimpleAssignment(true));
 
-        mockMvc.perform(RestDocumentationRequestBuilders.get("/api/videoflyer/me")
+        mockMvc.perform(get("/api/videoflyer/me")
                 .header("Authorization", MockJwtDecoder.addHeader(VIDEOFLYER))
                 .contentType(contentType))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success", is(true)))
-                .andExpect(jsonPath("$.payload.assignments." + LocalDate.now() + ".assigned", is(true)))
-                .andDo(document("videoflyer/get-me-videoflyer",
-                        responseFields(
-                                fieldWithPath("success").description("true when the request was successful"),
-                                fieldWithPath("message").description("message if there was an error"),
-                                fieldWithPath("payload.id").description("Videoflyers id"),
-                                fieldWithPath("payload.firstName").description("Videoflyers first name"),
-                                fieldWithPath("payload.lastName").description("Videoflyers last name"),
-                                fieldWithPath("payload.email").description("Videoflyers email"),
-                                fieldWithPath("payload.tel").description("Videoflyers phone number"),
-                                fieldWithPath("payload.picAndVid").description("true if the Videoflyer makes handcam videos"),
-                                fieldWithPath("payload.assignments").description("key value pairs of date and the videoflyers assignment state as boolean"),
-                                fieldWithPath("payload.assignments." + LocalDate.now() + ".assigned").description("true if the flyer is assigned"),
-                                fieldWithPath("payload.assignments." + LocalDate.now() + ".allday").description("true if the flyer is assigned all day"),
-                                fieldWithPath("payload.assignments." + LocalDate.now() + ".from").description("from time if the flyer is not assigned all day"),
-                                fieldWithPath("payload.assignments." + LocalDate.now() + ".to").description("to time if the flyer is not assigned all day"),
-                                fieldWithPath("payload.assignments." + LocalDate.now() + ".flyer.firstName").description("Videoflyer's first name"),
-                                fieldWithPath("payload.assignments." + LocalDate.now() + ".flyer.lastName").description("Videoflyer's last name"),
-                                fieldWithPath("payload.assignments." + LocalDate.now() + ".flyer.email").description("Videoflyer's email"),
-                                fieldWithPath("payload.assignments." + LocalDate.now() + ".flyer.tel").description("Videoflyer's phone number"),
-                                fieldWithPath("payload.assignments." + LocalDate.now() + ".flyer.picAndVid").description("Videoflyer's handcam"),
-                                fieldWithPath("payload.assignments." + LocalDate.now() + ".flyer.id").description("Videoflyer's id"),
-                                fieldWithPath("payload.assignments." + LocalDate.now()).ignored(),
-                                fieldWithPath("exception").ignored()
-                        )));
+                .andExpect(jsonPath("$.payload.assignments." + LocalDate.now() + ".assigned", is(true)));
     }
 
     @Test
@@ -612,18 +436,4 @@ class VideoflyerControllerTest extends AbstractSkdvinTest {
         return mockHttpOutputMessage.getBodyAsString();
     }
 
-    @TestConfiguration
-    static class CustomizationConfiguration implements RestDocsMockMvcConfigurationCustomizer {
-        @Override
-        public void customize(MockMvcRestDocumentationConfigurer configurer) {
-            configurer.operationPreprocessors()
-                    .withRequestDefaults(prettyPrint())
-                    .withResponseDefaults(prettyPrint());
-        }
-
-        @Bean
-        public RestDocumentationResultHandler restDocumentation() {
-            return MockMvcRestDocumentation.document("{method-name}");
-        }
-    }
 }

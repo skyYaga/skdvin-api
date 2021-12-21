@@ -8,24 +8,14 @@ import in.skdv.skdvinbackend.model.dto.UserDTO;
 import in.skdv.skdvinbackend.service.IUserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.restdocs.RestDocsMockMvcConfigurationCustomizer;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Bean;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.mock.http.MockHttpOutputMessage;
-import org.springframework.restdocs.RestDocumentationContextProvider;
-import org.springframework.restdocs.RestDocumentationExtension;
-import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation;
-import org.springframework.restdocs.mockmvc.MockMvcRestDocumentationConfigurer;
-import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders;
-import org.springframework.restdocs.mockmvc.RestDocumentationResultHandler;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.context.WebApplicationContext;
 
@@ -40,18 +30,14 @@ import static in.skdv.skdvinbackend.config.Authorities.UPDATE_USERS;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.doNothing;
-import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
-import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
-import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
-import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
-import static org.springframework.restdocs.payload.PayloadDocumentation.*;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.util.AssertionErrors.assertNotNull;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppContextSetup;
 
-@ExtendWith(RestDocumentationExtension.class)
 @SpringBootTest
 class UserControllerTest extends AbstractSkdvinTest {
 
@@ -82,10 +68,9 @@ class UserControllerTest extends AbstractSkdvinTest {
     }
 
     @BeforeEach
-    void setup(RestDocumentationContextProvider restDocumentation) {
+    void setup() {
         this.mockMvc = webAppContextSetup(webApplicationContext)
                 .apply(springSecurity())
-                .apply(documentationConfiguration(restDocumentation))
                 .build();
     }
 
@@ -118,20 +103,7 @@ class UserControllerTest extends AbstractSkdvinTest {
                 .contentType(contentType))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success", is(true)))
-                .andExpect(jsonPath("$.payload.users", hasSize(2)))
-                .andDo(document("users/get-users",
-                        responseFields(
-                                fieldWithPath("success").description("true when the request was successful"),
-                                fieldWithPath("message").description("message if there was an error"),
-                                fieldWithPath("payload.start").description("pagination start"),
-                                fieldWithPath("payload.total").description("pagination total entries"),
-                                fieldWithPath("payload.users[].userId").description("Users id"),
-                                fieldWithPath("payload.users[].email").description("Users email"),
-                                fieldWithPath("payload.users[].roles[]").description("Users roles"),
-                                fieldWithPath("payload.users[].roles[].id").description("Role ID"),
-                                fieldWithPath("payload.users[].roles[].name").description("Role name"),
-                                fieldWithPath("exception").ignored()
-                        )));
+                .andExpect(jsonPath("$.payload.users", hasSize(2)));
     }
 
     @Test
@@ -154,15 +126,7 @@ class UserControllerTest extends AbstractSkdvinTest {
                 .contentType(contentType))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success", is(true)))
-                .andExpect(jsonPath("$.payload", hasSize(2)))
-                .andDo(document("users/get-roles",
-                        responseFields(
-                                fieldWithPath("success").description("true when the request was successful"),
-                                fieldWithPath("message").description("message if there was an error"),
-                                fieldWithPath("payload[].id").description("Role ID"),
-                                fieldWithPath("payload[].name").description("Role name"),
-                                fieldWithPath("exception").ignored()
-                        )));
+                .andExpect(jsonPath("$.payload", hasSize(2)));
     }
 
     @Test
@@ -183,19 +147,11 @@ class UserControllerTest extends AbstractSkdvinTest {
 
         String userJson = json(userDTO);
 
-        mockMvc.perform(RestDocumentationRequestBuilders.put("/api/users")
+        mockMvc.perform(put("/api/users")
                 .header("Authorization", MockJwtDecoder.addHeader(UPDATE_USERS))
                 .contentType(contentType)
                 .content(userJson))
-                .andExpect(status().isNoContent())
-                .andDo(document("users/update-user",
-                        requestFields(
-                                fieldWithPath("userId").description("Users id"),
-                                fieldWithPath("email").description("Users email"),
-                                fieldWithPath("roles[]").description("Users roles"),
-                                fieldWithPath("roles[].id").description("Role ID"),
-                                fieldWithPath("roles[].name").description("Role name")
-                        )));
+                .andExpect(status().isNoContent());
     }
 
     @Test
@@ -207,24 +163,10 @@ class UserControllerTest extends AbstractSkdvinTest {
 
         String userJson = json(userDTO);
 
-        mockMvc.perform(RestDocumentationRequestBuilders.put("/api/users")
+        mockMvc.perform(put("/api/users")
                 .contentType(contentType)
                 .content(userJson))
                 .andExpect(status().isUnauthorized());
     }
 
-    @TestConfiguration
-    static class CustomizationConfiguration implements RestDocsMockMvcConfigurationCustomizer {
-        @Override
-        public void customize(MockMvcRestDocumentationConfigurer configurer) {
-            configurer.operationPreprocessors()
-                    .withRequestDefaults(prettyPrint())
-                    .withResponseDefaults(prettyPrint());
-        }
-
-        @Bean
-        public RestDocumentationResultHandler restDocumentation() {
-            return MockMvcRestDocumentation.document("{method-name}");
-        }
-    }
 }

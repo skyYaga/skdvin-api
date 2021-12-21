@@ -19,22 +19,12 @@ import in.skdv.skdvinbackend.service.IJumpdayService;
 import in.skdv.skdvinbackend.util.GenericResult;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.restdocs.RestDocsMockMvcConfigurationCustomizer;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.context.annotation.Bean;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.mock.http.MockHttpOutputMessage;
-import org.springframework.restdocs.RestDocumentationContextProvider;
-import org.springframework.restdocs.RestDocumentationExtension;
-import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation;
-import org.springframework.restdocs.mockmvc.MockMvcRestDocumentationConfigurer;
-import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders;
-import org.springframework.restdocs.mockmvc.RestDocumentationResultHandler;
 import org.springframework.test.util.AssertionErrors;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.context.WebApplicationContext;
@@ -51,19 +41,12 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
-import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
-import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
-import static org.springframework.restdocs.payload.PayloadDocumentation.*;
-import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
-import static org.springframework.restdocs.request.RequestDocumentation.pathParameters;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppContextSetup;
 
-@ExtendWith(RestDocumentationExtension.class)
 @SpringBootTest
 class JumpdayControllerTest extends AbstractSkdvinTest {
 
@@ -74,6 +57,8 @@ class JumpdayControllerTest extends AbstractSkdvinTest {
     private HttpMessageConverter mappingJackson2HttpMessageConverter;
 
     private MockMvc mockMvc;
+
+    private JumpdayConverter jumpdayConverter = new JumpdayConverter();
 
     @Autowired
     private IJumpdayService jumpdayService;
@@ -106,10 +91,9 @@ class JumpdayControllerTest extends AbstractSkdvinTest {
     }
 
     @BeforeEach
-    void setup(RestDocumentationContextProvider restDocumentation) {
+    void setup() {
         this.mockMvc = webAppContextSetup(webApplicationContext)
                         .apply(springSecurity())
-                        .apply(documentationConfiguration(restDocumentation))
                         .build();
 
         jumpdayRepository.deleteAll();
@@ -117,9 +101,9 @@ class JumpdayControllerTest extends AbstractSkdvinTest {
 
     @Test
     void testCreateJumpday() throws Exception {
-        String jumpdayJson = json(ModelMockHelper.createJumpday());
+        String jumpdayJson = json(ModelMockHelper.createJumpdayDto());
 
-        mockMvc.perform(RestDocumentationRequestBuilders.post("/api/jumpday/")
+        mockMvc.perform(post("/api/jumpday/")
                 .header("Authorization", MockJwtDecoder.addHeader(CREATE_JUMPDAYS))
                 .contentType(contentType)
                 .content(jumpdayJson))
@@ -133,66 +117,20 @@ class JumpdayControllerTest extends AbstractSkdvinTest {
                 .andExpect(jsonPath("$.payload.slots[0].picAndVidTotal", is(1)))
                 .andExpect(jsonPath("$.payload.slots[0].handcamTotal", is(1)))
                 .andExpect(jsonPath("$.payload.slots[0].time", is("10:00")))
-                .andExpect(jsonPath("$.payload.slots[1].time", is("11:30")))
-                .andDo(document("jumpday/create-jumpday", requestFields(
-                        fieldWithPath("date").description("The date of the jumpday"),
-                        fieldWithPath("jumping").description("true when it's a jumpday"),
-                        fieldWithPath("slots[]").description("The list of time slots on this jumpday"),
-                        fieldWithPath("slots[].time").description("The time of this slot"),
-                        fieldWithPath("slots[].tandemTotal").description("The total capacity of tandem slots"),
-                        fieldWithPath("slots[].picOrVidTotal").description("The total capacity of picture OR video slots"),
-                        fieldWithPath("slots[].picAndVidTotal").description("The total capacity of picture AND video slots"),
-                        fieldWithPath("slots[].handcamTotal").description("The total capacity of handcam slots"),
-                        fieldWithPath("slots[].tandemBooked").ignored(),
-                        fieldWithPath("slots[].tandemAvailable").ignored(),
-                        fieldWithPath("slots[].picOrVidBooked").ignored(),
-                        fieldWithPath("slots[].picAndVidBooked").ignored(),
-                        fieldWithPath("slots[].handcamBooked").ignored(),
-                        fieldWithPath("slots[].picOrVidAvailable").ignored(),
-                        fieldWithPath("slots[].picAndVidAvailable").ignored(),
-                        fieldWithPath("slots[].handcamAvailable").ignored(),
-                        fieldWithPath("slots[].appointments").ignored(),
-                        fieldWithPath("tandemmaster[]").ignored(),
-                        fieldWithPath("videoflyer[]").ignored(),
-                        fieldWithPath("freeTimes").ignored()
-                        ), responseFields(
-                        fieldWithPath("success").description("true when the request was successful"),
-                        fieldWithPath("payload.date").description("The date of the jumpday"),
-                        fieldWithPath("payload.jumping").description("true when it's a jumpday"),
-                        fieldWithPath("payload.videoflyer[]").description("A list of video flyers avalable at this date"),
-                        fieldWithPath("payload.tandemmaster[]").description("A list of tandemmasters avalable at this date"),
-                        fieldWithPath("payload.slots[]").description("The list of time slots on this jumpday"),
-                        fieldWithPath("payload.slots[].time").description("The time of this slot"),
-                        fieldWithPath("payload.slots[].tandemTotal").description("The total capacity of tandem slots"),
-                        fieldWithPath("payload.slots[].tandemBooked").description("The total booked tandem slots"),
-                        fieldWithPath("payload.slots[].tandemAvailable").description("The total available tandem slots"),
-                        fieldWithPath("payload.slots[].picOrVidTotal").description("The total capacity of picture OR video slots"),
-                        fieldWithPath("payload.slots[].picOrVidBooked").description("The total booked picture OR video slots"),
-                        fieldWithPath("payload.slots[].picOrVidAvailable").description("The total available picture OR video slots"),
-                        fieldWithPath("payload.slots[].picAndVidTotal").description("The total capacity of picture AND video slots"),
-                        fieldWithPath("payload.slots[].picAndVidBooked").description("The total booked picture AND video slots"),
-                        fieldWithPath("payload.slots[].picAndVidAvailable").description("The total available picture AND video slots"),
-                        fieldWithPath("payload.slots[].handcamTotal").description("The total capacity of handcam slots"),
-                        fieldWithPath("payload.slots[].handcamBooked").description("The total booked handcam slots"),
-                        fieldWithPath("payload.slots[].handcamAvailable").description("The total available handcam slots"),
-                        fieldWithPath("message").ignored(),
-                        fieldWithPath("exception").ignored(),
-                        fieldWithPath("payload.freeTimes").ignored(),
-                        fieldWithPath("payload.slots[].appointments").ignored()
-                )));
+                .andExpect(jsonPath("$.payload.slots[1].time", is("11:30")));
     }
 
     @Test
     void testCreateJumpday_AlreadyExists_DE() throws Exception {
         String jumpdayJson = json(ModelMockHelper.createJumpday());
 
-        mockMvc.perform(RestDocumentationRequestBuilders.post("/api/jumpday")
+        mockMvc.perform(post("/api/jumpday")
                 .header("Authorization", MockJwtDecoder.addHeader(CREATE_JUMPDAYS))
                 .contentType(contentType)
                 .content(jumpdayJson))
                 .andExpect(status().isCreated());
 
-        mockMvc.perform(RestDocumentationRequestBuilders.post("/api/jumpday")
+        mockMvc.perform(post("/api/jumpday")
                 .header("Authorization", MockJwtDecoder.addHeader(CREATE_JUMPDAYS))
                 .header("Accept-Language", "de-DE")
                 .contentType(contentType)
@@ -206,13 +144,13 @@ class JumpdayControllerTest extends AbstractSkdvinTest {
     void testCreateJumpday_AlreadyExists_EN() throws Exception {
         String jumpdayJson = json(ModelMockHelper.createJumpday());
 
-        mockMvc.perform(RestDocumentationRequestBuilders.post("/api/jumpday")
+        mockMvc.perform(post("/api/jumpday")
                 .header("Authorization", MockJwtDecoder.addHeader(CREATE_JUMPDAYS))
                 .contentType(contentType)
                 .content(jumpdayJson))
                 .andExpect(status().isCreated());
 
-        mockMvc.perform(RestDocumentationRequestBuilders.post("/api/jumpday")
+        mockMvc.perform(post("/api/jumpday")
                 .header("Authorization", MockJwtDecoder.addHeader(CREATE_JUMPDAYS))
                 .header("Accept-Language", "en-US")
                 .contentType(contentType)
@@ -228,7 +166,7 @@ class JumpdayControllerTest extends AbstractSkdvinTest {
         jumpday.setDate(null);
         String jumpdayJson = json(jumpday);
 
-        mockMvc.perform(RestDocumentationRequestBuilders.post("/api/jumpday")
+        mockMvc.perform(post("/api/jumpday")
                 .header("Authorization", MockJwtDecoder.addHeader(CREATE_JUMPDAYS))
                 .contentType(contentType)
                 .content(jumpdayJson))
@@ -269,33 +207,7 @@ class JumpdayControllerTest extends AbstractSkdvinTest {
                 .andExpect(jsonPath("$.payload[0].slots[0].tandemTotal", is(jumpday.getSlots().get(0).getTandemTotal())))
                 .andExpect(jsonPath("$.payload[0].slots[0].picOrVidTotal", is(jumpday.getSlots().get(0).getPicOrVidTotal())))
                 .andExpect(jsonPath("$.payload[0].slots[0].picAndVidTotal", is(jumpday.getSlots().get(0).getPicAndVidTotal())))
-                .andExpect(jsonPath("$.payload[0].slots[0].handcamTotal", is(jumpday.getSlots().get(0).getHandcamTotal())))
-                .andDo(document("jumpday/get-jumpdays", responseFields(
-                        fieldWithPath("success").description("true when the request was successful"),
-                        fieldWithPath("payload[]").description("The list of jumpdays"),
-                        fieldWithPath("payload[].date").description("The date of the jumpday"),
-                        fieldWithPath("payload[].jumping").description("true when it's a jumpday"),
-                        fieldWithPath("payload[].tandemmaster").description("A list of tandem masters avalable at this date"),
-                        fieldWithPath("payload[].videoflyer").description("A list of video flyers avalable at this date"),
-                        fieldWithPath("payload[].slots[]").description("The list of time slots on this jumpday"),
-                        fieldWithPath("payload[].slots[].time").description("The time of this slot"),
-                        fieldWithPath("payload[].slots[].tandemTotal").description("The total capacity of tandem slots"),
-                        fieldWithPath("payload[].slots[].tandemBooked").description("The total booked tandem slots"),
-                        fieldWithPath("payload[].slots[].tandemAvailable").description("The total available tandem slots"),
-                        fieldWithPath("payload[].slots[].picOrVidTotal").description("The total capacity of picture OR video slots"),
-                        fieldWithPath("payload[].slots[].picOrVidBooked").description("The total booked picture OR video slots"),
-                        fieldWithPath("payload[].slots[].picOrVidAvailable").description("The total available picture OR video slots"),
-                        fieldWithPath("payload[].slots[].picAndVidTotal").description("The total capacity of picture AND video slots"),
-                        fieldWithPath("payload[].slots[].picAndVidBooked").description("The total booked picture AND video slots"),
-                        fieldWithPath("payload[].slots[].picAndVidAvailable").description("The total available picture AND video slots"),
-                        fieldWithPath("payload[].slots[].handcamTotal").description("The total capacity of handcam slots"),
-                        fieldWithPath("payload[].slots[].handcamBooked").description("The total booked handcam slots"),
-                        fieldWithPath("payload[].slots[].handcamAvailable").description("The total available handcam slots"),
-                        fieldWithPath("message").ignored(),
-                        fieldWithPath("exception").ignored(),
-                        fieldWithPath("payload[].freeTimes").ignored(),
-                        fieldWithPath("payload[].slots[].appointments").ignored()
-                )));
+                .andExpect(jsonPath("$.payload[0].slots[0].handcamTotal", is(jumpday.getSlots().get(0).getHandcamTotal())));
     }
 
 
@@ -313,7 +225,7 @@ class JumpdayControllerTest extends AbstractSkdvinTest {
         GenericResult<Jumpday> result = jumpdayService.saveJumpday(ModelMockHelper.createJumpday());
         Jumpday jumpday = result.getPayload();
 
-        mockMvc.perform(RestDocumentationRequestBuilders.get("/api/jumpday/{date}", jumpday.getDate().toString())
+        mockMvc.perform(get("/api/jumpday/{date}", jumpday.getDate().toString())
                 .header("Authorization", MockJwtDecoder.addHeader(READ_JUMPDAYS)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success", is(true)))
@@ -324,36 +236,7 @@ class JumpdayControllerTest extends AbstractSkdvinTest {
                 .andExpect(jsonPath("$.payload.slots[0].tandemTotal", is(jumpday.getSlots().get(0).getTandemTotal())))
                 .andExpect(jsonPath("$.payload.slots[0].picOrVidTotal", is(jumpday.getSlots().get(0).getPicOrVidTotal())))
                 .andExpect(jsonPath("$.payload.slots[0].picAndVidTotal", is(jumpday.getSlots().get(0).getPicAndVidTotal())))
-                .andExpect(jsonPath("$.payload.slots[0].handcamTotal", is(jumpday.getSlots().get(0).getHandcamTotal())))
-                .andDo(document("jumpday/get-jumpday", pathParameters(
-                        parameterWithName("date").description("The date of the requested jumpday")
-                ), responseFields(
-                        fieldWithPath("success").description("true when the request was successful"),
-                        fieldWithPath("payload").description("The list of jumpdays"),
-                        fieldWithPath("payload.date").description("The date of the jumpday"),
-                        fieldWithPath("payload.jumping").description("true when it's a jumpday"),
-                        fieldWithPath("payload.tandemmaster").description("A list of tandem masters avalable at this date"),
-                        fieldWithPath("payload.videoflyer").description("A list of video flyers avalable at this date"),
-                        fieldWithPath("payload.slots[]").description("The list of time slots on this jumpday"),
-                        fieldWithPath("payload.slots[].time").description("The time of this slot"),
-                        fieldWithPath("payload.slots[].tandemTotal").description("The total capacity of tandem slots"),
-                        fieldWithPath("payload.slots[].tandemBooked").description("The total booked tandem slots"),
-                        fieldWithPath("payload.slots[].tandemAvailable").description("The total available tandem slots"),
-                        fieldWithPath("payload.slots[].picOrVidTotal").description("The total capacity of picture OR video slots"),
-                        fieldWithPath("payload.slots[].picOrVidBooked").description("The total booked picture OR video slots"),
-                        fieldWithPath("payload.slots[].picOrVidAvailable").description("The total available picture OR video slots"),
-                        fieldWithPath("payload.slots[].picAndVidTotal").description("The total capacity of picture AND video slots"),
-                        fieldWithPath("payload.slots[].picAndVidBooked").description("The total booked picture AND video slots"),
-                        fieldWithPath("payload.slots[].picAndVidAvailable").description("The total available picture AND video slots"),
-                        fieldWithPath("payload.slots[].handcamTotal").description("The total capacity of handcam slots"),
-                        fieldWithPath("payload.slots[].handcamBooked").description("The total booked handcam slots"),
-                        fieldWithPath("payload.slots[].handcamAvailable").description("The total available handcam slots"),
-                        fieldWithPath("message").ignored(),
-                        fieldWithPath("exception").ignored(),
-                        fieldWithPath("payload.freeTimes").ignored(),
-                        fieldWithPath("payload.slots[].appointments").ignored()
-                )));
-
+                .andExpect(jsonPath("$.payload.slots[0].handcamTotal", is(jumpday.getSlots().get(0).getHandcamTotal())));
     }
 
     @Test
@@ -364,7 +247,7 @@ class JumpdayControllerTest extends AbstractSkdvinTest {
         GenericResult<Jumpday> result = jumpdayService.saveJumpday(unsavedJumpday);
         Jumpday jumpday = result.getPayload();
 
-        mockMvc.perform(RestDocumentationRequestBuilders.get("/api/jumpday/{date}", jumpday.getDate().toString())
+        mockMvc.perform(get("/api/jumpday/{date}", jumpday.getDate().toString())
                 .header("Authorization", MockJwtDecoder.addHeader(READ_JUMPDAYS)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success", is(true)))
@@ -375,45 +258,7 @@ class JumpdayControllerTest extends AbstractSkdvinTest {
                 .andExpect(jsonPath("$.payload.slots[0].tandemTotal", is(jumpday.getSlots().get(0).getTandemTotal())))
                 .andExpect(jsonPath("$.payload.slots[0].picOrVidTotal", is(jumpday.getSlots().get(0).getPicOrVidTotal())))
                 .andExpect(jsonPath("$.payload.slots[0].picAndVidTotal", is(jumpday.getSlots().get(0).getPicAndVidTotal())))
-                .andExpect(jsonPath("$.payload.slots[0].handcamTotal", is(jumpday.getSlots().get(0).getHandcamTotal())))
-                .andDo(document("jumpday/get-jumpdays-with-tm", pathParameters(
-                        parameterWithName("date").description("The date of the requested jumpday")
-                ), responseFields(
-                        fieldWithPath("success").description("true when the request was successful"),
-                        fieldWithPath("payload").description("The list of jumpdays"),
-                        fieldWithPath("payload.date").description("The date of the jumpday"),
-                        fieldWithPath("payload.jumping").description("true when it's a jumpday"),
-                        fieldWithPath("payload.tandemmaster[]").description("A list of tandem masters avalable at this date"),
-                        fieldWithPath("payload.tandemmaster[].assigned").description("true if the flyer is assigned to this date"),
-                        fieldWithPath("payload.tandemmaster[].allday").description("true if the flyer is assigned all day"),
-                        fieldWithPath("payload.tandemmaster[].from").description("From time if the flyer is not assigned all day"),
-                        fieldWithPath("payload.tandemmaster[].to").description("To time if the flyer is not assigned all day"),
-                        fieldWithPath("payload.tandemmaster[].flyer.firstName").description("Tandemmaster's first name"),
-                        fieldWithPath("payload.tandemmaster[].flyer.lastName").description("Tandemmaster's last name"),
-                        fieldWithPath("payload.tandemmaster[].flyer.email").description("Tandemmaster's email"),
-                        fieldWithPath("payload.tandemmaster[].flyer.tel").description("Tandemmaster's phone number"),
-                        fieldWithPath("payload.tandemmaster[].flyer.handcam").description("Tandemmaster's handcam"),
-                        fieldWithPath("payload.tandemmaster[].flyer.id").description("Tandemmaster's id"),
-                        fieldWithPath("payload.videoflyer").description("A list of video flyers avalable at this date"),
-                        fieldWithPath("payload.slots[]").description("The list of time slots on this jumpday"),
-                        fieldWithPath("payload.slots[].time").description("The time of this slot"),
-                        fieldWithPath("payload.slots[].tandemTotal").description("The total capacity of tandem slots"),
-                        fieldWithPath("payload.slots[].tandemBooked").description("The total booked tandem slots"),
-                        fieldWithPath("payload.slots[].tandemAvailable").description("The total available tandem slots"),
-                        fieldWithPath("payload.slots[].picOrVidTotal").description("The total capacity of picture OR video slots"),
-                        fieldWithPath("payload.slots[].picOrVidBooked").description("The total booked picture OR video slots"),
-                        fieldWithPath("payload.slots[].picOrVidAvailable").description("The total available picture OR video slots"),
-                        fieldWithPath("payload.slots[].picAndVidTotal").description("The total capacity of picture AND video slots"),
-                        fieldWithPath("payload.slots[].picAndVidBooked").description("The total booked picture AND video slots"),
-                        fieldWithPath("payload.slots[].picAndVidAvailable").description("The total available picture AND video slots"),
-                        fieldWithPath("payload.slots[].handcamTotal").description("The total capacity of handcam slots"),
-                        fieldWithPath("payload.slots[].handcamBooked").description("The total booked handcam slots"),
-                        fieldWithPath("payload.slots[].handcamAvailable").description("The total available handcam slots"),
-                        fieldWithPath("message").ignored(),
-                        fieldWithPath("exception").ignored(),
-                        fieldWithPath("payload.freeTimes").ignored(),
-                        fieldWithPath("payload.slots[].appointments").ignored()
-                )));
+                .andExpect(jsonPath("$.payload.slots[0].handcamTotal", is(jumpday.getSlots().get(0).getHandcamTotal())));
 
     }
 
@@ -425,7 +270,7 @@ class JumpdayControllerTest extends AbstractSkdvinTest {
         GenericResult<Jumpday> result = jumpdayService.saveJumpday(unsavedJumpday);
         Jumpday jumpday = result.getPayload();
 
-        mockMvc.perform(RestDocumentationRequestBuilders.get("/api/jumpday/{date}", jumpday.getDate().toString())
+        mockMvc.perform(get("/api/jumpday/{date}", jumpday.getDate().toString())
                 .header("Authorization", MockJwtDecoder.addHeader(READ_JUMPDAYS)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success", is(true)))
@@ -436,45 +281,7 @@ class JumpdayControllerTest extends AbstractSkdvinTest {
                 .andExpect(jsonPath("$.payload.slots[0].tandemTotal", is(jumpday.getSlots().get(0).getTandemTotal())))
                 .andExpect(jsonPath("$.payload.slots[0].picOrVidTotal", is(jumpday.getSlots().get(0).getPicOrVidTotal())))
                 .andExpect(jsonPath("$.payload.slots[0].picAndVidTotal", is(jumpday.getSlots().get(0).getPicAndVidTotal())))
-                .andExpect(jsonPath("$.payload.slots[0].handcamTotal", is(jumpday.getSlots().get(0).getHandcamTotal())))
-                .andDo(document("jumpday/get-jumpdays-with-videoflyer", pathParameters(
-                        parameterWithName("date").description("The date of the requested jumpday")
-                ), responseFields(
-                        fieldWithPath("success").description("true when the request was successful"),
-                        fieldWithPath("payload").description("The list of jumpdays"),
-                        fieldWithPath("payload.date").description("The date of the jumpday"),
-                        fieldWithPath("payload.jumping").description("true when it's a jumpday"),
-                        fieldWithPath("payload.videoflyer[]").description("A list of videoflyer avalable at this date"),
-                        fieldWithPath("payload.videoflyer[].assigned").description("true if the flyer is assigned to this date"),
-                        fieldWithPath("payload.videoflyer[].allday").description("true if the flyer is assigned all day"),
-                        fieldWithPath("payload.videoflyer[].from").description("From time if the flyer is not assigned all day"),
-                        fieldWithPath("payload.videoflyer[].to").description("To time if the flyer is not assigned all day"),
-                        fieldWithPath("payload.videoflyer[].flyer.firstName").description("videoflyer's first name"),
-                        fieldWithPath("payload.videoflyer[].flyer.lastName").description("videoflyer's last name"),
-                        fieldWithPath("payload.videoflyer[].flyer.email").description("videoflyer's email"),
-                        fieldWithPath("payload.videoflyer[].flyer.tel").description("videoflyer's phone number"),
-                        fieldWithPath("payload.videoflyer[].flyer.picAndVid").description("videoflyer's pic and video setting"),
-                        fieldWithPath("payload.videoflyer[].flyer.id").description("videoflyer's id"),
-                        fieldWithPath("payload.tandemmaster").description("A list of tandemmasters avalable at this date"),
-                        fieldWithPath("payload.slots[]").description("The list of time slots on this jumpday"),
-                        fieldWithPath("payload.slots[].time").description("The time of this slot"),
-                        fieldWithPath("payload.slots[].tandemTotal").description("The total capacity of tandem slots"),
-                        fieldWithPath("payload.slots[].tandemBooked").description("The total booked tandem slots"),
-                        fieldWithPath("payload.slots[].tandemAvailable").description("The total available tandem slots"),
-                        fieldWithPath("payload.slots[].picOrVidTotal").description("The total capacity of picture OR video slots"),
-                        fieldWithPath("payload.slots[].picOrVidBooked").description("The total booked picture OR video slots"),
-                        fieldWithPath("payload.slots[].picOrVidAvailable").description("The total available picture OR video slots"),
-                        fieldWithPath("payload.slots[].picAndVidTotal").description("The total capacity of picture AND video slots"),
-                        fieldWithPath("payload.slots[].picAndVidBooked").description("The total booked picture AND video slots"),
-                        fieldWithPath("payload.slots[].picAndVidAvailable").description("The total available picture AND video slots"),
-                        fieldWithPath("payload.slots[].handcamTotal").description("The total capacity of handcam slots"),
-                        fieldWithPath("payload.slots[].handcamBooked").description("The total booked handcam slots"),
-                        fieldWithPath("payload.slots[].handcamAvailable").description("The total available handcam slots"),
-                        fieldWithPath("message").ignored(),
-                        fieldWithPath("exception").ignored(),
-                        fieldWithPath("payload.freeTimes").ignored(),
-                        fieldWithPath("payload.slots[].appointments").ignored()
-                )));
+                .andExpect(jsonPath("$.payload.slots[0].handcamTotal", is(jumpday.getSlots().get(0).getHandcamTotal())));
 
     }
 
@@ -555,65 +362,15 @@ class JumpdayControllerTest extends AbstractSkdvinTest {
 
         savedJumpday.getSlots().get(0).setTandemTotal(newCount);
 
-        String jumpdayJson = json(savedJumpday);
+        String jumpdayJson = json(jumpdayConverter.convertToDto(savedJumpday));
 
-        mockMvc.perform(RestDocumentationRequestBuilders.put("/api/jumpday/{date}", LocalDate.now().toString())
+        mockMvc.perform(put("/api/jumpday/{date}", LocalDate.now().toString())
                 .header("Authorization", MockJwtDecoder.addHeader(UPDATE_JUMPDAYS))
                 .contentType(contentType)
                 .content(jumpdayJson))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success", is(true)))
-                .andExpect(jsonPath("$.payload.slots[0].tandemTotal", is(newCount)))
-                .andDo(document("jumpday/update-jumpday",
-                        pathParameters(
-                                parameterWithName("date").description("The date of the updated jumpday")
-                        ),
-                        requestFields(
-                                fieldWithPath("date").description("The date of the jumpday"),
-                                fieldWithPath("jumping").description("true when it's a jumpday"),
-                                fieldWithPath("slots[]").description("The list of time slots on this jumpday"),
-                                fieldWithPath("slots[].time").description("The time of this slot"),
-                                fieldWithPath("slots[].tandemTotal").description("The total capacity of tandem slots"),
-                                fieldWithPath("slots[].picOrVidTotal").description("The total capacity of picture OR video slots"),
-                                fieldWithPath("slots[].picAndVidTotal").description("The total capacity of picture AND video slots"),
-                                fieldWithPath("slots[].handcamTotal").description("The total capacity of handcam slots"),
-                                fieldWithPath("slots[].tandemBooked").ignored(),
-                                fieldWithPath("slots[].tandemAvailable").ignored(),
-                                fieldWithPath("slots[].picOrVidBooked").ignored(),
-                                fieldWithPath("slots[].picAndVidBooked").ignored(),
-                                fieldWithPath("slots[].handcamBooked").ignored(),
-                                fieldWithPath("slots[].picOrVidAvailable").ignored(),
-                                fieldWithPath("slots[].picAndVidAvailable").ignored(),
-                                fieldWithPath("slots[].handcamAvailable").ignored(),
-                                fieldWithPath("slots[].appointments").ignored(),
-                                fieldWithPath("tandemmaster[]").ignored(),
-                                fieldWithPath("videoflyer[]").ignored(),
-                                fieldWithPath("freeTimes").ignored()
-                        ), responseFields(
-                                fieldWithPath("success").description("true when the request was successful"),
-                                fieldWithPath("payload.date").description("The date of the jumpday"),
-                                fieldWithPath("payload.jumping").description("true when it's a jumpday"),
-                                fieldWithPath("payload.tandemmaster[]").description("A list of tandem masters avalable at this date"),
-                                fieldWithPath("payload.videoflyer[]").description("A list of video flyers avalable at this date"),
-                                fieldWithPath("payload.slots[]").description("The list of time slots on this jumpday"),
-                                fieldWithPath("payload.slots[].time").description("The time of this slot"),
-                                fieldWithPath("payload.slots[].tandemTotal").description("The total capacity of tandem slots"),
-                                fieldWithPath("payload.slots[].tandemBooked").description("The total booked tandem slots"),
-                                fieldWithPath("payload.slots[].tandemAvailable").description("The total available tandem slots"),
-                                fieldWithPath("payload.slots[].picOrVidTotal").description("The total capacity of picture OR video slots"),
-                                fieldWithPath("payload.slots[].picOrVidBooked").description("The total booked picture OR video slots"),
-                                fieldWithPath("payload.slots[].picOrVidAvailable").description("The total available picture OR video slots"),
-                                fieldWithPath("payload.slots[].picAndVidTotal").description("The total capacity of picture AND video slots"),
-                                fieldWithPath("payload.slots[].picAndVidBooked").description("The total booked picture AND video slots"),
-                                fieldWithPath("payload.slots[].picAndVidAvailable").description("The total available picture AND video slots"),
-                                fieldWithPath("payload.slots[].handcamTotal").description("The total capacity of handcam slots"),
-                                fieldWithPath("payload.slots[].handcamBooked").description("The total booked handcam slots"),
-                                fieldWithPath("payload.slots[].handcamAvailable").description("The total available handcam slots"),
-                                fieldWithPath("message").ignored(),
-                                fieldWithPath("exception").ignored(),
-                                fieldWithPath("payload.freeTimes").ignored(),
-                                fieldWithPath("payload.slots[].appointments").ignored()
-                        )));
+                .andExpect(jsonPath("$.payload.slots[0].tandemTotal", is(newCount)));
     }
 
     @Test
@@ -624,7 +381,6 @@ class JumpdayControllerTest extends AbstractSkdvinTest {
         GenericResult<Jumpday> result = jumpdayService.saveJumpday(unsavedJumpday);
         Jumpday jumpday = result.getPayload();
 
-        JumpdayConverter jumpdayConverter = new JumpdayConverter();
         JumpdayDTO jumpdayDTO = jumpdayConverter.convertToDto(jumpday);
 
         // don't set fields
@@ -639,82 +395,12 @@ class JumpdayControllerTest extends AbstractSkdvinTest {
 
         String jumpdayJson = json(jumpdayDTO);
 
-        mockMvc.perform(RestDocumentationRequestBuilders.put("/api/jumpday/{date}", LocalDate.now().toString())
+        mockMvc.perform(put("/api/jumpday/{date}", LocalDate.now().toString())
                 .header("Authorization", MockJwtDecoder.addHeader(UPDATE_JUMPDAYS))
                 .contentType(contentType)
                 .content(jumpdayJson))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.success", is(true)))
-                .andDo(document("jumpday/update-jumpday-with-tm",
-                        pathParameters(
-                                parameterWithName("date").description("The date of the updated jumpday")
-                        ),
-                        requestFields(
-                                fieldWithPath("date").description("The date of the jumpday"),
-                                fieldWithPath("jumping").description("true when it's a jumpday"),
-                                fieldWithPath("videoflyer").description("A list of video flyers available at this date"),
-                                fieldWithPath("tandemmaster[]").description("A list of tandemmasters available at this date"),
-                                fieldWithPath("tandemmaster[].assigned").description("Assignment state of the tandemmaster"),
-                                fieldWithPath("tandemmaster[].allday").description("true if the tandemmaster is assigned all-day"),
-                                fieldWithPath("tandemmaster[].from").description("From time, if the tandemmaster is not assigned all-day"),
-                                fieldWithPath("tandemmaster[].to").description("To time, if the tandemmaster is not assigned all-day"),
-                                fieldWithPath("tandemmaster[].flyer.id").description("The tandemmaster's id"),
-                                fieldWithPath("slots[]").description("The list of time slots on this jumpday"),
-                                fieldWithPath("slots[].time").description("The time of this slot"),
-                                fieldWithPath("slots[].tandemTotal").description("The total capacity of tandem slots"),
-                                fieldWithPath("slots[].picOrVidTotal").description("The total capacity of picture OR video slots"),
-                                fieldWithPath("slots[].picAndVidTotal").description("The total capacity of picture AND video slots"),
-                                fieldWithPath("slots[].handcamTotal").description("The total capacity of handcam slots"),
-                                fieldWithPath("slots[].tandemBooked").ignored(),
-                                fieldWithPath("slots[].tandemAvailable").ignored(),
-                                fieldWithPath("slots[].picOrVidBooked").ignored(),
-                                fieldWithPath("slots[].picAndVidBooked").ignored(),
-                                fieldWithPath("slots[].handcamBooked").ignored(),
-                                fieldWithPath("slots[].picOrVidAvailable").ignored(),
-                                fieldWithPath("slots[].picAndVidAvailable").ignored(),
-                                fieldWithPath("slots[].handcamAvailable").ignored(),
-                                fieldWithPath("slots[].appointments").ignored(),
-                                fieldWithPath("freeTimes").ignored(),
-                                fieldWithPath("tandemmaster[].flyer.firstName").ignored(),
-                                fieldWithPath("tandemmaster[].flyer.lastName").ignored(),
-                                fieldWithPath("tandemmaster[].flyer.email").ignored(),
-                                fieldWithPath("tandemmaster[].flyer.tel").ignored(),
-                                fieldWithPath("tandemmaster[].flyer.handcam").ignored()
-                        ), responseFields(
-                                fieldWithPath("success").description("true when the request was successful"),
-                                fieldWithPath("payload.date").description("The date of the jumpday"),
-                                fieldWithPath("payload.jumping").description("true when it's a jumpday"),
-                                fieldWithPath("payload.tandemmaster[]").description("A list of tandemmasters available at this date"),
-                                fieldWithPath("payload.tandemmaster[].assigned").description("Assignment state of the tandemmaster"),
-                                fieldWithPath("payload.tandemmaster[].allday").description("true if the tandemmaster is assigned all-day"),
-                                fieldWithPath("payload.tandemmaster[].from").description("From time, if the tandemmaster is not assigned all-day"),
-                                fieldWithPath("payload.tandemmaster[].to").description("To time, if the tandemmaster is not assigned all-day"),
-                                fieldWithPath("payload.tandemmaster[].flyer.id").description("The tandemmaster's id"),
-                                fieldWithPath("payload.tandemmaster[].flyer.firstName").description("Tandemmaster's first name"),
-                                fieldWithPath("payload.tandemmaster[].flyer.lastName").description("Tandemmaster's last name"),
-                                fieldWithPath("payload.tandemmaster[].flyer.email").description("Tandemmaster's email"),
-                                fieldWithPath("payload.tandemmaster[].flyer.tel").description("Tandemmaster's phone number"),
-                                fieldWithPath("payload.tandemmaster[].flyer.handcam").description("Tandemmaster's handcam"),
-                                fieldWithPath("payload.videoflyer").description("A list of video flyers avalable at this date"),
-                                fieldWithPath("payload.slots[]").description("The list of time slots on this jumpday"),
-                                fieldWithPath("payload.slots[].time").description("The time of this slot"),
-                                fieldWithPath("payload.slots[].tandemTotal").description("The total capacity of tandem slots"),
-                                fieldWithPath("payload.slots[].tandemBooked").description("The total booked tandem slots"),
-                                fieldWithPath("payload.slots[].tandemAvailable").description("The total available tandem slots"),
-                                fieldWithPath("payload.slots[].picOrVidTotal").description("The total capacity of picture OR video slots"),
-                                fieldWithPath("payload.slots[].picOrVidBooked").description("The total booked picture OR video slots"),
-                                fieldWithPath("payload.slots[].picOrVidAvailable").description("The total available picture OR video slots"),
-                                fieldWithPath("payload.slots[].picAndVidTotal").description("The total capacity of picture AND video slots"),
-                                fieldWithPath("payload.slots[].picAndVidBooked").description("The total booked picture AND video slots"),
-                                fieldWithPath("payload.slots[].picAndVidAvailable").description("The total available picture AND video slots"),
-                                fieldWithPath("payload.slots[].handcamTotal").description("The total capacity of handcam slots"),
-                                fieldWithPath("payload.slots[].handcamBooked").description("The total booked handcam slots"),
-                                fieldWithPath("payload.slots[].handcamAvailable").description("The total available handcam slots"),
-                                fieldWithPath("message").ignored(),
-                                fieldWithPath("exception").ignored(),
-                                fieldWithPath("payload.freeTimes").ignored(),
-                                fieldWithPath("payload.slots[].appointments").ignored()
-                        )));
+                .andExpect(jsonPath("$.success", is(true)));
     }
 
     @Test
@@ -725,7 +411,6 @@ class JumpdayControllerTest extends AbstractSkdvinTest {
         GenericResult<Jumpday> result = jumpdayService.saveJumpday(unsavedJumpday);
         Jumpday jumpday = result.getPayload();
 
-        JumpdayConverter jumpdayConverter = new JumpdayConverter();
         JumpdayDTO jumpdayDTO = jumpdayConverter.convertToDto(jumpday);
 
         // don't set fields
@@ -740,82 +425,12 @@ class JumpdayControllerTest extends AbstractSkdvinTest {
 
         String jumpdayJson = json(jumpdayDTO);
 
-        mockMvc.perform(RestDocumentationRequestBuilders.put("/api/jumpday/{date}", LocalDate.now().toString())
+        mockMvc.perform(put("/api/jumpday/{date}", LocalDate.now().toString())
                 .header("Authorization", MockJwtDecoder.addHeader(UPDATE_JUMPDAYS))
                 .contentType(contentType)
                 .content(jumpdayJson))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.success", is(true)))
-                .andDo(document("jumpday/update-jumpday-with-videoflyer",
-                        pathParameters(
-                                parameterWithName("date").description("The date of the updated jumpday")
-                        ),
-                        requestFields(
-                                fieldWithPath("date").description("The date of the jumpday"),
-                                fieldWithPath("jumping").description("true when it's a jumpday"),
-                                fieldWithPath("tandemmaster").description("A list of tandemmasters available at this date"),
-                                fieldWithPath("videoflyer[]").description("A list of videoflyer available at this date"),
-                                fieldWithPath("videoflyer[].assigned").description("Assignment state of the videoflyer"),
-                                fieldWithPath("videoflyer[].allday").description("true if the videoflyer is assigned all-day"),
-                                fieldWithPath("videoflyer[].from").description("From time, if the videoflyer is not assigned all-day"),
-                                fieldWithPath("videoflyer[].to").description("To time, if the videoflyer is not assigned all-day"),
-                                fieldWithPath("videoflyer[].flyer.id").description("The videoflyer's id"),
-                                fieldWithPath("slots[]").description("The list of time slots on this jumpday"),
-                                fieldWithPath("slots[].time").description("The time of this slot"),
-                                fieldWithPath("slots[].tandemTotal").description("The total capacity of tandem slots"),
-                                fieldWithPath("slots[].picOrVidTotal").description("The total capacity of picture OR video slots"),
-                                fieldWithPath("slots[].picAndVidTotal").description("The total capacity of picture AND video slots"),
-                                fieldWithPath("slots[].handcamTotal").description("The total capacity of handcam slots"),
-                                fieldWithPath("slots[].tandemBooked").ignored(),
-                                fieldWithPath("slots[].tandemAvailable").ignored(),
-                                fieldWithPath("slots[].picOrVidBooked").ignored(),
-                                fieldWithPath("slots[].picAndVidBooked").ignored(),
-                                fieldWithPath("slots[].handcamBooked").ignored(),
-                                fieldWithPath("slots[].picOrVidAvailable").ignored(),
-                                fieldWithPath("slots[].picAndVidAvailable").ignored(),
-                                fieldWithPath("slots[].handcamAvailable").ignored(),
-                                fieldWithPath("slots[].appointments").ignored(),
-                                fieldWithPath("freeTimes").ignored(),
-                                fieldWithPath("videoflyer[].flyer.firstName").ignored(),
-                                fieldWithPath("videoflyer[].flyer.lastName").ignored(),
-                                fieldWithPath("videoflyer[].flyer.email").ignored(),
-                                fieldWithPath("videoflyer[].flyer.tel").ignored(),
-                                fieldWithPath("videoflyer[].flyer.picAndVid").ignored()
-                        ), responseFields(
-                                fieldWithPath("success").description("true when the request was successful"),
-                                fieldWithPath("payload.date").description("The date of the jumpday"),
-                                fieldWithPath("payload.jumping").description("true when it's a jumpday"),
-                                fieldWithPath("payload.videoflyer[]").description("A list of videoflyer available at this date"),
-                                fieldWithPath("payload.videoflyer[].assigned").description("Assignment state of the videoflyer"),
-                                fieldWithPath("payload.videoflyer[].allday").description("true if the videoflyer is assigned all-day"),
-                                fieldWithPath("payload.videoflyer[].from").description("From time, if the videoflyer is not assigned all-day"),
-                                fieldWithPath("payload.videoflyer[].to").description("To time, if the videoflyer is not assigned all-day"),
-                                fieldWithPath("payload.videoflyer[].flyer.id").description("The videoflyer's id"),
-                                fieldWithPath("payload.videoflyer[].flyer.firstName").description("videoflyer's first name"),
-                                fieldWithPath("payload.videoflyer[].flyer.lastName").description("videoflyer's last name"),
-                                fieldWithPath("payload.videoflyer[].flyer.email").description("videoflyer's email"),
-                                fieldWithPath("payload.videoflyer[].flyer.tel").description("videoflyer's phone number"),
-                                fieldWithPath("payload.videoflyer[].flyer.picAndVid").description("videoflyer's pic and video settings"),
-                                fieldWithPath("payload.tandemmaster").description("A list of tandemmasters avalable at this date"),
-                                fieldWithPath("payload.slots[]").description("The list of time slots on this jumpday"),
-                                fieldWithPath("payload.slots[].time").description("The time of this slot"),
-                                fieldWithPath("payload.slots[].tandemTotal").description("The total capacity of tandem slots"),
-                                fieldWithPath("payload.slots[].tandemBooked").description("The total booked tandem slots"),
-                                fieldWithPath("payload.slots[].tandemAvailable").description("The total available tandem slots"),
-                                fieldWithPath("payload.slots[].picOrVidTotal").description("The total capacity of picture OR video slots"),
-                                fieldWithPath("payload.slots[].picOrVidBooked").description("The total booked picture OR video slots"),
-                                fieldWithPath("payload.slots[].picOrVidAvailable").description("The total available picture OR video slots"),
-                                fieldWithPath("payload.slots[].picAndVidTotal").description("The total capacity of picture AND video slots"),
-                                fieldWithPath("payload.slots[].picAndVidBooked").description("The total booked picture AND video slots"),
-                                fieldWithPath("payload.slots[].picAndVidAvailable").description("The total available picture AND video slots"),
-                                fieldWithPath("payload.slots[].handcamTotal").description("The total capacity of handcam slots"),
-                                fieldWithPath("payload.slots[].handcamBooked").description("The total booked handcam slots"),
-                                fieldWithPath("payload.slots[].handcamAvailable").description("The total available handcam slots"),
-                                fieldWithPath("message").ignored(),
-                                fieldWithPath("exception").ignored(),
-                                fieldWithPath("payload.freeTimes").ignored(),
-                                fieldWithPath("payload.slots[].appointments").ignored()
-                        )));
+                .andExpect(jsonPath("$.success", is(true)));
     }
 
     @Test
@@ -835,7 +450,7 @@ class JumpdayControllerTest extends AbstractSkdvinTest {
         jumpday.setDate(LocalDate.now().plus(1, ChronoUnit.YEARS));
         String jumpdayJson = json(jumpday);
 
-        mockMvc.perform(RestDocumentationRequestBuilders.put("/api/jumpday/{date}", LocalDate.now().toString())
+        mockMvc.perform(put("/api/jumpday/{date}", LocalDate.now().toString())
                 .header("Accept-Language", "en-US")
                 .header("Authorization", MockJwtDecoder.addHeader(UPDATE_JUMPDAYS))
                 .contentType(contentType)
@@ -854,7 +469,7 @@ class JumpdayControllerTest extends AbstractSkdvinTest {
 
         String jumpdayJson = json(savedJumpday);
 
-        mockMvc.perform(RestDocumentationRequestBuilders.put("/api/jumpday/{date}", LocalDate.now().toString())
+        mockMvc.perform(put("/api/jumpday/{date}", LocalDate.now().toString())
                 .header("Accept-Language", "en-US")
                 .header("Authorization", MockJwtDecoder.addHeader(UPDATE_JUMPDAYS))
                 .contentType(contentType)
@@ -874,7 +489,7 @@ class JumpdayControllerTest extends AbstractSkdvinTest {
 
         String jumpdayJson = json(savedJumpday);
 
-        mockMvc.perform(RestDocumentationRequestBuilders.put("/api/jumpday/{date}", LocalDate.now().toString())
+        mockMvc.perform(put("/api/jumpday/{date}", LocalDate.now().toString())
                 .header("Accept-Language", "en-US")
                 .header("Authorization", MockJwtDecoder.addHeader(UPDATE_JUMPDAYS))
                 .contentType(contentType)
@@ -889,21 +504,11 @@ class JumpdayControllerTest extends AbstractSkdvinTest {
         Jumpday jumpday = ModelMockHelper.createJumpday();
         Jumpday savedJumpday = jumpdayRepository.save(jumpday);
 
-        mockMvc.perform(RestDocumentationRequestBuilders.delete("/api/jumpday/{date}", savedJumpday.getDate())
+        mockMvc.perform(delete("/api/jumpday/{date}", savedJumpday.getDate())
                 .header("Authorization", MockJwtDecoder.addHeader(UPDATE_JUMPDAYS))
                 .contentType(contentType))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.success", is(true)))
-                .andDo(document("jumpday/delete-jumpday",
-                        pathParameters(
-                                parameterWithName("date").description("The date of the jumpday to delete")
-                        ),
-                        responseFields(
-                                fieldWithPath("success").description("true when the request was successful"),
-                                fieldWithPath("message").description("message in case of error"),
-                                fieldWithPath("exception").ignored(),
-                                fieldWithPath("payload").ignored()
-                        )));
+                .andExpect(jsonPath("$.success", is(true)));
     }
 
     @Test
@@ -949,19 +554,5 @@ class JumpdayControllerTest extends AbstractSkdvinTest {
         this.mappingJackson2HttpMessageConverter.write(
                 o, MediaType.APPLICATION_JSON, mockHttpOutputMessage);
         return mockHttpOutputMessage.getBodyAsString();
-    }
-
-    @TestConfiguration
-    static class CustomizationConfiguration implements RestDocsMockMvcConfigurationCustomizer {
-        @Override
-        public void customize(MockMvcRestDocumentationConfigurer configurer) {
-            configurer.operationPreprocessors()
-                    .withRequestDefaults(prettyPrint())
-                    .withResponseDefaults(prettyPrint());
-        }
-        @Bean
-        public RestDocumentationResultHandler restDocumentation() {
-            return MockMvcRestDocumentation.document("{method-name}");
-        }
     }
 }

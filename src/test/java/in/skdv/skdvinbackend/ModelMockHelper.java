@@ -2,6 +2,8 @@ package in.skdv.skdvinbackend;
 
 import in.skdv.skdvinbackend.model.common.AbstractFlyer;
 import in.skdv.skdvinbackend.model.common.waiver.WaiverCustomer;
+import in.skdv.skdvinbackend.model.converter.*;
+import in.skdv.skdvinbackend.model.dto.*;
 import in.skdv.skdvinbackend.model.entity.*;
 import in.skdv.skdvinbackend.model.entity.settings.*;
 import in.skdv.skdvinbackend.model.entity.waiver.Waiver;
@@ -12,6 +14,16 @@ import java.time.LocalTime;
 import java.util.*;
 
 public class ModelMockHelper {
+
+    private static final JumpdayConverter JUMPDAY_CONVERTER = new JumpdayConverter();
+    private static final VideoflyerConverter VIDEOFLYER_CONVERTER = new VideoflyerConverter();
+    private static final AppointmentConverter APPOINTMENT_CONVERTER = new AppointmentConverter();
+    private static final TandemmasterConverter TANDEMMASTER_CONVERTER = new TandemmasterConverter();
+    private static final SettingsConverter SETTINGS_CONVERTER = new SettingsConverter();
+
+    public static AppointmentDTO createAppointmentDto() {
+        return APPOINTMENT_CONVERTER.convertToDto(createSingleAppointment());
+    }
 
     public static Appointment createSingleAppointment() {
         return createAppointment(1, 1, 0, 0);
@@ -86,8 +98,16 @@ public class ModelMockHelper {
         return jumpday;
     }
 
+    public static JumpdayDTO createJumpdayDto() {
+        return JUMPDAY_CONVERTER.convertToDto(createJumpday());
+    }
+
     public static Jumpday createJumpday() {
         return createJumpday(LocalDate.now());
+    }
+
+    public static TandemmasterDTO createTandemmasterDto() {
+        return TANDEMMASTER_CONVERTER.convertToDto(createTandemmaster());
     }
 
     public static Tandemmaster createTandemmaster() {
@@ -99,6 +119,10 @@ public class ModelMockHelper {
         tandemmaster.setFirstName(firstName);
         tandemmaster.setLastName(lastName);
         return tandemmaster;
+    }
+
+    public static VideoflyerDTO createVideoflyerDto() {
+        return VIDEOFLYER_CONVERTER.convertToDto(createVideoflyer());
     }
 
     public static Videoflyer createVideoflyer() {
@@ -129,6 +153,10 @@ public class ModelMockHelper {
         assignment.setAssigned(true);
         assignment.setFlyer(flyer);
         return assignment;
+    }
+
+    public static SettingsDTO createSettingsDto() {
+        return SETTINGS_CONVERTER.convertToDto(createSettings(Locale.GERMAN));
     }
 
     public static Settings createSettings() {

@@ -16,6 +16,9 @@ import org.springframework.security.oauth2.jwt.*;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 
+import static org.springframework.http.HttpMethod.GET;
+import static org.springframework.http.HttpMethod.POST;
+
 @Configuration
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true)
@@ -30,8 +33,15 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     public void configure(HttpSecurity http) throws Exception {
         http.authorizeRequests()
+                .mvcMatchers(POST, "/api/appointment").permitAll()
+                .mvcMatchers(GET, "/api/appointment/slots").permitAll()
+                .mvcMatchers(GET, "/api/appointment/{appointmentId}/confirm/{token}").permitAll()
+                .mvcMatchers(GET, "/api/settings/common").permitAll()
+                .mvcMatchers(GET, "/api/settings/waiver").permitAll()
+                .mvcMatchers(POST, "/api/waivers").permitAll()
                 .mvcMatchers("/docs/**").permitAll()
-            .and()
+                .anyRequest().authenticated()
+                .and()
                 .csrf().disable()
                 .oauth2ResourceServer()
                     .jwt()
