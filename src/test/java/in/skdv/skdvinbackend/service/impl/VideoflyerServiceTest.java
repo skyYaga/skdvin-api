@@ -80,6 +80,24 @@ class VideoflyerServiceTest extends AbstractSkdvinTest {
         assertFalse(videoflyerDetails.getAssignments().get(nowPlus1).isAssigned());
     }
 
+    @Test
+    void testGetVideoflyerById_DoesNotContainPastDates() {
+        Videoflyer videoflyer = videoflyerRepository.save(ModelMockHelper.createVideoflyer());
+        LocalDate yesterday = LocalDate.now().minus(1, ChronoUnit.DAYS);
+
+        Jumpday jumpday1 = ModelMockHelper.createJumpday();
+        Jumpday jumpday2 = ModelMockHelper.createJumpday(yesterday);
+        jumpday1.getVideoflyer().add(createAssignment(videoflyer));
+        jumpday2.getVideoflyer().add(createAssignment(videoflyer, false));
+        jumpdayRepository.save(jumpday1);
+        jumpdayRepository.save(jumpday2);
+
+        VideoflyerDetails videoflyerDetails = videoflyerService.getById(videoflyer.getId());
+
+        assertNotNull(videoflyerDetails);
+        assertEquals(1, videoflyerDetails.getAssignments().size());
+        assertTrue(videoflyerDetails.getAssignments().get(LocalDate.now()).isAssigned());
+    }
 
     @Test
     void testGetVideoflyerByEmail() {
@@ -102,6 +120,28 @@ class VideoflyerServiceTest extends AbstractSkdvinTest {
         assertEquals(2, videoflyerDetails.getAssignments().size());
         assertTrue(videoflyerDetails.getAssignments().get(LocalDate.now()).isAssigned());
         assertFalse(videoflyerDetails.getAssignments().get(nowPlus1).isAssigned());
+    }
+
+    @Test
+    void testGetVideoflyerByEmail_DoesNotContainPastDates() {
+        Videoflyer videoflyer1 = ModelMockHelper.createVideoflyer();
+        videoflyer1.setEmail(MockJwtDecoder.EXAMPLE_EMAIL);
+
+        Videoflyer videoflyer = videoflyerRepository.save(videoflyer1);
+        LocalDate yesterday = LocalDate.now().minus(1, ChronoUnit.DAYS);
+
+        Jumpday jumpday1 = ModelMockHelper.createJumpday();
+        Jumpday jumpday2 = ModelMockHelper.createJumpday(yesterday);
+        jumpday1.getVideoflyer().add(createAssignment(videoflyer));
+        jumpday2.getVideoflyer().add(createAssignment(videoflyer));
+        jumpdayRepository.save(jumpday1);
+        jumpdayRepository.save(jumpday2);
+
+        VideoflyerDetails videoflyerDetails = videoflyerService.getByEmail(videoflyer.getEmail());
+
+        assertNotNull(videoflyerDetails);
+        assertEquals(1, videoflyerDetails.getAssignments().size());
+        assertTrue(videoflyerDetails.getAssignments().get(LocalDate.now()).isAssigned());
     }
 
 

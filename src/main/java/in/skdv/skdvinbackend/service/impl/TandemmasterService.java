@@ -67,7 +67,7 @@ public class TandemmasterService implements ITandemmasterService {
     private TandemmasterDetails getDetails(Tandemmaster tandemmaster) {
         Map<LocalDate, SimpleAssignment> assignments = new HashMap<>();
 
-        jumpdayRepository.findAll().forEach(j -> {
+        jumpdayRepository.findAllAfterIncludingDate(LocalDate.now()).forEach(j -> {
             Optional<Assignment<Tandemmaster>> localAssignment = j.getTandemmaster().stream()
                     .filter(t -> t != null && t.getFlyer() != null && t.getFlyer().getId().equals(tandemmaster.getId())).findFirst();
             localAssignment

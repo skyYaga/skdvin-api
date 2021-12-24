@@ -66,7 +66,7 @@ public class VideoflyerService implements IVideoflyerService {
     private VideoflyerDetails getDetails(Videoflyer videoflyer) {
         Map<LocalDate, SimpleAssignment> assignments = new HashMap<>();
 
-        jumpdayRepository.findAll().forEach(j -> {
+        jumpdayRepository.findAllAfterIncludingDate(LocalDate.now()).forEach(j -> {
             Optional<Assignment<Videoflyer>> localAssignment = j.getVideoflyer().stream()
                     .filter(t -> t != null && t.getFlyer() != null && t.getFlyer().getId().equals(videoflyer.getId())).findFirst();
             localAssignment
