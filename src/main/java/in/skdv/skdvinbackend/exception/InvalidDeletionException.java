@@ -1,9 +1,9 @@
 package in.skdv.skdvinbackend.exception;
 
-public class InvalidDeletionException extends Exception {
+public class InvalidDeletionException extends InvalidRequestException {
 
-    public InvalidDeletionException(final String message) {
-        super(message);
+    public InvalidDeletionException(final ErrorMessage errorMessage) {
+        super(errorMessage);
     }
 
 }

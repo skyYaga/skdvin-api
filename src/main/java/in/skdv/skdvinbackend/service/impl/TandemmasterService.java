@@ -1,68 +1,73 @@
 package in.skdv.skdvinbackend.service.impl;
 
 import in.skdv.skdvinbackend.exception.ErrorMessage;
+import in.skdv.skdvinbackend.exception.InvalidRequestException;
+import in.skdv.skdvinbackend.exception.NotFoundException;
 import in.skdv.skdvinbackend.model.common.SimpleAssignment;
 import in.skdv.skdvinbackend.model.converter.AssignmentConverter;
 import in.skdv.skdvinbackend.model.converter.TandemmasterConverter;
-import in.skdv.skdvinbackend.model.dto.TandemmasterDetailsDTO;
 import in.skdv.skdvinbackend.model.entity.Assignment;
 import in.skdv.skdvinbackend.model.entity.Jumpday;
 import in.skdv.skdvinbackend.model.entity.Tandemmaster;
+import in.skdv.skdvinbackend.model.entity.TandemmasterDetails;
 import in.skdv.skdvinbackend.model.entity.settings.SelfAssignmentMode;
 import in.skdv.skdvinbackend.repository.JumpdayRepository;
 import in.skdv.skdvinbackend.repository.TandemmasterRepository;
 import in.skdv.skdvinbackend.service.ISettingsService;
 import in.skdv.skdvinbackend.service.ITandemmasterService;
-import in.skdv.skdvinbackend.util.GenericResult;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import java.time.LocalDate;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
-public class MongoTandemmasterService implements ITandemmasterService {
+@Slf4j
+@RequiredArgsConstructor
+public class TandemmasterService implements ITandemmasterService {
 
-    private JumpdayRepository jumpdayRepository;
-    private TandemmasterRepository tandemmasterRepository;
-    private ISettingsService settingsService;
-    private TandemmasterConverter tandemmasterConverter = new TandemmasterConverter();
-    private AssignmentConverter assignmentConverter = new AssignmentConverter();
+    private final JumpdayRepository jumpdayRepository;
+    private final TandemmasterRepository tandemmasterRepository;
+    private final ISettingsService settingsService;
+    private final TandemmasterConverter tandemmasterConverter = new TandemmasterConverter();
+    private final AssignmentConverter assignmentConverter = new AssignmentConverter();
 
-
-    @Autowired
-    public MongoTandemmasterService(JumpdayRepository jumpdayRepository, TandemmasterRepository tandemmasterRepository,
-                                    ISettingsService settingsService) {
-        this.jumpdayRepository = jumpdayRepository;
-        this.tandemmasterRepository = tandemmasterRepository;
-        this.settingsService = settingsService;
+    @Override
+    public Tandemmaster save(Tandemmaster input) {
+        return tandemmasterRepository.save(input);
     }
 
     @Override
-    public TandemmasterDetailsDTO getById(String id) {
+    public List<Tandemmaster> findAll() {
+        return tandemmasterRepository.findAll();
+    }
+
+    @Override
+    public TandemmasterDetails getById(String id) {
         Optional<Tandemmaster> tandemmaster = tandemmasterRepository.findById(id);
         if (tandemmaster.isEmpty()) {
-            return null;
+            log.error("Tandemmaster {} not found", id);
+            throw new NotFoundException(ErrorMessage.TANDEMMASTER_NOT_FOUND);
         }
 
         return getDetails(tandemmaster.get());
     }
 
     @Override
-    public TandemmasterDetailsDTO getByEmail(String email) {
+    public TandemmasterDetails getByEmail(String email) {
         Optional<Tandemmaster> tandemmaster = tandemmasterRepository.findByEmail(email);
         if (tandemmaster.isEmpty()) {
-            return null;
+            log.error("Tandemmaster with email {} not found", email);
+            throw new NotFoundException(ErrorMessage.TANDEMMASTER_NOT_FOUND);
         }
 
         return getDetails(tandemmaster.get());
     }
 
-    private TandemmasterDetailsDTO getDetails(Tandemmaster tandemmaster) {
+
+    private TandemmasterDetails getDetails(Tandemmaster tandemmaster) {
         Map<LocalDate, SimpleAssignment> assignments = new HashMap<>();
 
-        jumpdayRepository.findAll().forEach(j -> {
+        jumpdayRepository.findAllAfterIncludingDate(LocalDate.now()).forEach(j -> {
             Optional<Assignment<Tandemmaster>> localAssignment = j.getTandemmaster().stream()
                     .filter(t -> t != null && t.getFlyer() != null && t.getFlyer().getId().equals(tandemmaster.getId())).findFirst();
             localAssignment
@@ -70,68 +75,81 @@ public class MongoTandemmasterService implements ITandemmasterService {
                             () -> assignments.put(j.getDate(), new SimpleAssignment(false)));
         });
 
-        return tandemmasterConverter.convertToDetailsDto(tandemmaster, assignments);
+        return tandemmasterConverter.convertToDetails(tandemmaster, assignments);
     }
 
     @Override
-    public GenericResult<Void> assignTandemmasterToJumpday(LocalDate date, String tandemmasterId, SimpleAssignment assignment) {
+    public void assignTandemmasterToJumpday(LocalDate date, String tandemmasterId, SimpleAssignment assignment) {
         Optional<Tandemmaster> tandemmaster = tandemmasterRepository.findById(tandemmasterId);
 
-        if (tandemmaster.isPresent()) {
-            Jumpday jumpday = jumpdayRepository.findByDate(date);
-            if (jumpday != null) {
-                manageTandemmasterAssignment(jumpday, tandemmaster.get(), assignment);
-                return new GenericResult<>(true);
-            }
-            return new GenericResult<>(false, ErrorMessage.JUMPDAY_NOT_FOUND_MSG);
+        if (tandemmaster.isEmpty()) {
+            log.error("Tandemmaster {} not found", tandemmasterId);
+            throw new NotFoundException(ErrorMessage.TANDEMMASTER_NOT_FOUND);
         }
-        return new GenericResult<>(false, ErrorMessage.TANDEMMASTER_NOT_FOUND);
+        Jumpday jumpday = jumpdayRepository.findByDate(date);
+        if (jumpday == null) {
+            log.error("Jumpday is null");
+            throw new NotFoundException(ErrorMessage.JUMPDAY_NOT_FOUND_MSG);
+        }
+        manageTandemmasterAssignment(jumpday, tandemmaster.get(), assignment);
     }
 
     @Override
-    public GenericResult<Void> assignTandemmaster(TandemmasterDetailsDTO tandemmasterDetails, boolean selfAssign) {
+    public void assignTandemmaster(TandemmasterDetails tandemmasterDetails, boolean selfAssign) {
         if (selfAssign) {
-            ErrorMessage errorMessage = checkSelfAssignPrerequisites(tandemmasterDetails);
-            if (errorMessage != null) {
-                return new GenericResult<>(false, errorMessage);
-            }
+            checkSelfAssignPrerequisites(tandemmasterDetails);
         }
         for (LocalDate date : tandemmasterDetails.getAssignments().keySet()) {
-            GenericResult<Void> result = assignTandemmasterToJumpday(date, tandemmasterDetails.getId(), tandemmasterDetails.getAssignments().get(date));
-            if (!result.isSuccess()) {
-                return new GenericResult<>(false, result.getMessage());
-            }
+            assignTandemmasterToJumpday(date, tandemmasterDetails.getId(), tandemmasterDetails.getAssignments().get(date));
         }
-        return new GenericResult<>(true);
     }
 
-    private ErrorMessage checkSelfAssignPrerequisites(TandemmasterDetailsDTO newTandemmasterDetails) {
+    private void checkSelfAssignPrerequisites(TandemmasterDetails newTandemmasterDetails) {
         SelfAssignmentMode selfAssignmentMode = settingsService.getCommonSettingsByLanguage(Locale.GERMAN.getLanguage()).getSelfAssignmentMode();
         if (SelfAssignmentMode.READONLY.equals(selfAssignmentMode)) {
-            return ErrorMessage.SELFASSIGNMENT_READONLY;
+            log.error("Selfassignment is in read-only mode.");
+            throw new InvalidRequestException(ErrorMessage.SELFASSIGNMENT_READONLY);
         }
         if (SelfAssignmentMode.NODELETE.equals(selfAssignmentMode)) {
-            TandemmasterDetailsDTO currentDetails = getById(newTandemmasterDetails.getId());
+            TandemmasterDetails currentDetails = getById(newTandemmasterDetails.getId());
             for (Map.Entry<LocalDate, SimpleAssignment> currentEntry : currentDetails.getAssignments().entrySet()) {
                 SimpleAssignment newAssignment = newTandemmasterDetails.getAssignments().get(currentEntry.getKey());
                 if (currentEntry.getValue().isAssigned() && (newAssignment == null || !newAssignment.isAssigned())
                         || currentEntry.getValue().isAssigned() && newAssignment.isAllday() != currentEntry.getValue().isAllday()) {
-                    return ErrorMessage.SELFASSIGNMENT_NODELETE;
+                    log.error("Selfassignment is in no-delete mode.");
+                    throw new InvalidRequestException(ErrorMessage.SELFASSIGNMENT_NODELETE);
                 }
             }
         }
-        return null;
     }
 
     @Override
     public void delete(String id) {
+        Optional<Tandemmaster> tandemmaster = tandemmasterRepository.findById(id);
+
+        if (tandemmaster.isEmpty()) {
+            log.error("Tandemmaster {} not found.", id);
+            throw new NotFoundException(ErrorMessage.TANDEMMASTER_NOT_FOUND);
+        }
+
         // Unassign Tandemmaster
-        TandemmasterDetailsDTO detailsDTO = getById(id);
-        detailsDTO.getAssignments().forEach((key, value) -> value.setAssigned(false));
-        assignTandemmaster(detailsDTO, false);
+        TandemmasterDetails details = getById(id);
+        details.getAssignments().forEach((key, value) -> value.setAssigned(false));
+        assignTandemmaster(details, false);
 
         // Delete Tandemmaster
         tandemmasterRepository.deleteById(id);
+    }
+
+    @Override
+    public Tandemmaster updateTandemmaster(Tandemmaster input) {
+        Optional<Tandemmaster> tandemmaster = tandemmasterRepository.findById(input.getId());
+
+        if (tandemmaster.isEmpty()) {
+            log.error("Tandemmaster {} not found.", input.getId());
+            throw new NotFoundException(ErrorMessage.TANDEMMASTER_NOT_FOUND);
+        }
+        return tandemmasterRepository.save(input);
     }
 
     private void manageTandemmasterAssignment(Jumpday jumpday, Tandemmaster tandemmaster, SimpleAssignment simpleAssignment) {

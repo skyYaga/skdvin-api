@@ -1,8 +1,14 @@
 package in.skdv.skdvinbackend.exception;
 
+import lombok.Getter;
+
+@Getter
 public class JumpdayInternalException extends RuntimeException {
 
-    public JumpdayInternalException(String errorCode) {
-        super(errorCode);
+    private final ErrorMessage errorMessage;
+
+    public JumpdayInternalException(ErrorMessage errorMessage) {
+        super(errorMessage.toString());
+        this.errorMessage = errorMessage;
     }
 }

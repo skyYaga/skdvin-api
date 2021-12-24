@@ -289,7 +289,7 @@ class TandemmasterControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    void testAssignTandemmaster_BadRequest() throws Exception {
+    void testAssignTandemmaster_NotExisting() throws Exception {
         Tandemmaster tandemmaster = tandemmasterRepository.save(ModelMockHelper.createTandemmaster());
         Jumpday jumpday = ModelMockHelper.createJumpday();
         jumpdayService.saveJumpday(jumpday);
@@ -301,7 +301,7 @@ class TandemmasterControllerTest extends AbstractSkdvinTest {
                 .header("Authorization", MockJwtDecoder.addHeader(UPDATE_TANDEMMASTER))
                 .contentType(contentType)
                 .content(tandemmasterJson))
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.success", is(false)));
     }
 

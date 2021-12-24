@@ -1,14 +1,12 @@
 package in.skdv.skdvinbackend.model.common;
 
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+
+@Data
+@EqualsAndHashCode(callSuper = true)
 public abstract class AbstractTandemmaster extends AbstractFlyer {
 
     private boolean handcam;
 
-    public boolean isHandcam() {
-        return handcam;
-    }
-
-    public void setHandcam(boolean handcam) {
-        this.handcam = handcam;
-    }
 }

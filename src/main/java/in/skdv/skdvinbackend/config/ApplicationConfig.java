@@ -2,6 +2,7 @@ package in.skdv.skdvinbackend.config;
 
 import com.auth0.client.mgmt.ManagementAPI;
 import in.skdv.skdvinbackend.repository.*;
+import in.skdv.skdvinbackend.repository.impl.SequenceRepository;
 import in.skdv.skdvinbackend.service.*;
 import in.skdv.skdvinbackend.service.impl.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +11,7 @@ import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support.ResourceBundleMessageSource;
+import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.http.HttpMethod;
 import org.springframework.web.servlet.LocaleResolver;
@@ -35,57 +37,50 @@ public class ApplicationConfig implements WebMvcConfigurer {
     private AppointmentRepository appointmentRepository;
 
     @Autowired
-    private TandemmasterRepository tandemmasterRepository;
-
-    @Autowired
-    private VideoflyerRepository videoflyerRepository;
-
-    @Autowired
-    private SettingsRepository settingsRepository;
-
-    @Autowired
-    private WaiverRepository waiverRepository;
-
-    @Autowired
     private MongoTemplate mongoTemplate;
 
+    @Autowired
+    private MongoOperations mongoOperations;
+
     @Bean
-    public ISequenceService getSequenceService() {
-        return new SequenceService();
+    @Autowired
+    public ISequenceRepository getSequenceService(MongoOperations mongoOperations) {
+        return new SequenceRepository(mongoOperations);
     }
 
     @Bean
     @Autowired
-    public IAppointmentService getAppointmentService(ISequenceService sequenceService) {
-        return new MongoAppointmentService(jumpdayRepository, appointmentRepository, sequenceService, mongoTemplate);
+    public IAppointmentService getAppointmentService(ISequenceRepository sequenceService) {
+        return new AppointmentService(jumpdayRepository, sequenceService);
     }
 
     @Bean
     @Autowired
-    public IVideoflyerService getVideoflyerService(ISettingsService settingsService) {
-        return new MongoVideoflyerService(jumpdayRepository, videoflyerRepository, settingsService);
+    public IVideoflyerService getVideoflyerService(VideoflyerRepository videoflyerRepository, ISettingsService settingsService) {
+        return new VideoflyerService(jumpdayRepository, videoflyerRepository, settingsService);
     }
 
     @Bean
     public IJumpdayService getJumpdayService() {
-        return new MongoJumpdayService(jumpdayRepository);
+        return new JumpdayService(jumpdayRepository);
     }
 
     @Bean
     @Autowired
-    public ITandemmasterService getTandemmasterService(ISettingsService settingsService) {
-        return new MongoTandemmasterService(jumpdayRepository, tandemmasterRepository, settingsService);
-    }
-
-    @Bean
-    public ISettingsService getSettingsService() {
-        return new MongoSettingsService(settingsRepository);
+    public ITandemmasterService getTandemmasterService(TandemmasterRepository tandemmasterRepository, ISettingsService settingsService) {
+        return new TandemmasterService(jumpdayRepository, tandemmasterRepository, settingsService);
     }
 
     @Bean
     @Autowired
-    public IWaiverService getWaiverService(ISettingsService settingsService) {
-        return new MongoWaiverService(waiverRepository, settingsService);
+    public ISettingsService getSettingsService(SettingsRepository settingsRepository) {
+        return new SettingsService(settingsRepository);
+    }
+
+    @Bean
+    @Autowired
+    public IWaiverService getWaiverService(WaiverRepository waiverRepository, ISettingsService settingsService) {
+        return new WaiverService(waiverRepository, settingsService);
     }
 
     @Bean

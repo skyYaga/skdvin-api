@@ -3,7 +3,10 @@ package in.skdv.skdvinbackend.model.converter;
 import in.skdv.skdvinbackend.model.common.SimpleAssignment;
 import in.skdv.skdvinbackend.model.dto.TandemmasterDTO;
 import in.skdv.skdvinbackend.model.dto.TandemmasterDetailsDTO;
+import in.skdv.skdvinbackend.model.dto.TandemmasterDetailsInputDTO;
+import in.skdv.skdvinbackend.model.dto.TandemmasterInputDTO;
 import in.skdv.skdvinbackend.model.entity.Tandemmaster;
+import in.skdv.skdvinbackend.model.entity.TandemmasterDetails;
 import org.modelmapper.ModelMapper;
 
 import java.time.LocalDate;
@@ -39,6 +42,13 @@ public class TandemmasterConverter {
         return modelMapper.map(tandemmasterDTO, Tandemmaster.class);
     }
 
+    public TandemmasterDetails convertToEntity(TandemmasterDetailsDTO tandemmasterDetailsDTO) {
+        if (tandemmasterDetailsDTO == null) {
+            return null;
+        }
+        return modelMapper.map(tandemmasterDetailsDTO, TandemmasterDetails.class);
+    }
+
     public TandemmasterDetailsDTO convertToDetailsDto(Tandemmaster tandemmaster, Map<LocalDate, SimpleAssignment> assignments) {
         if (tandemmaster == null) {
             return null;
@@ -47,4 +57,30 @@ public class TandemmasterConverter {
         tandemmasterDetailsDTO.setAssignments(assignments);
         return tandemmasterDetailsDTO;
     }
+
+    public TandemmasterDetails convertToDetails(Tandemmaster tandemmaster, Map<LocalDate, SimpleAssignment> assignments) {
+        if (tandemmaster == null) {
+            return null;
+        }
+        TandemmasterDetails tandemmasterDetails = modelMapper.map(tandemmaster, TandemmasterDetails.class);
+        tandemmasterDetails.setAssignments(assignments);
+        return tandemmasterDetails;
+    }
+
+    public TandemmasterDetails convertToEntity(String id, TandemmasterDetailsInputDTO input) {
+        TandemmasterDetails details = modelMapper.map(input, TandemmasterDetails.class);
+        details.setId(id);
+        return details;
+    }
+
+    public Tandemmaster convertToEntity(String id, TandemmasterInputDTO input) {
+        Tandemmaster details = modelMapper.map(input, Tandemmaster.class);
+        details.setId(id);
+        return details;
+    }
+
+    public TandemmasterDetailsDTO convertToDto(TandemmasterDetails tandemmaster) {
+        return modelMapper.map(tandemmaster, TandemmasterDetailsDTO.class);
+    }
+
 }

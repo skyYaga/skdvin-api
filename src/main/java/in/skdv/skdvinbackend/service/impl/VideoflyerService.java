@@ -1,66 +1,72 @@
 package in.skdv.skdvinbackend.service.impl;
 
 import in.skdv.skdvinbackend.exception.ErrorMessage;
+import in.skdv.skdvinbackend.exception.InvalidRequestException;
+import in.skdv.skdvinbackend.exception.NotFoundException;
 import in.skdv.skdvinbackend.model.common.SimpleAssignment;
 import in.skdv.skdvinbackend.model.converter.AssignmentConverter;
 import in.skdv.skdvinbackend.model.converter.VideoflyerConverter;
-import in.skdv.skdvinbackend.model.dto.VideoflyerDetailsDTO;
 import in.skdv.skdvinbackend.model.entity.Assignment;
 import in.skdv.skdvinbackend.model.entity.Jumpday;
 import in.skdv.skdvinbackend.model.entity.Videoflyer;
+import in.skdv.skdvinbackend.model.entity.VideoflyerDetails;
 import in.skdv.skdvinbackend.model.entity.settings.SelfAssignmentMode;
 import in.skdv.skdvinbackend.repository.JumpdayRepository;
 import in.skdv.skdvinbackend.repository.VideoflyerRepository;
 import in.skdv.skdvinbackend.service.ISettingsService;
 import in.skdv.skdvinbackend.service.IVideoflyerService;
-import in.skdv.skdvinbackend.util.GenericResult;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import java.time.LocalDate;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
-public class MongoVideoflyerService implements IVideoflyerService {
+@Slf4j
+@RequiredArgsConstructor
+public class VideoflyerService implements IVideoflyerService {
 
-    private JumpdayRepository jumpdayRepository;
-    private VideoflyerRepository videoflyerRepository;
-    private ISettingsService settingsService;
-    private VideoflyerConverter videoflyerConverter = new VideoflyerConverter();
-    private AssignmentConverter assignmentConverter = new AssignmentConverter();
+    private final JumpdayRepository jumpdayRepository;
+    private final VideoflyerRepository videoflyerRepository;
+    private final ISettingsService settingsService;
+    private final VideoflyerConverter videoflyerConverter = new VideoflyerConverter();
+    private final AssignmentConverter assignmentConverter = new AssignmentConverter();
 
-    @Autowired
-    public MongoVideoflyerService(JumpdayRepository jumpdayRepository, VideoflyerRepository videoflyerRepository, ISettingsService settingsService) {
-        this.jumpdayRepository = jumpdayRepository;
-        this.videoflyerRepository = videoflyerRepository;
-        this.settingsService = settingsService;
+    @Override
+    public Videoflyer save(Videoflyer input) {
+        return videoflyerRepository.save(input);
     }
 
     @Override
-    public VideoflyerDetailsDTO getById(String id) {
+    public List<Videoflyer> findAll() {
+        return videoflyerRepository.findAll();
+    }
+
+    @Override
+    public VideoflyerDetails getById(String id) {
         Optional<Videoflyer> videoflyer = videoflyerRepository.findById(id);
         if (videoflyer.isEmpty()) {
-            return null;
+            log.error("Videoflyer {} not found", id);
+            throw new NotFoundException(ErrorMessage.VIDEOFLYER_NOT_FOUND);
         }
 
         return getDetails(videoflyer.get());
     }
 
     @Override
-    public VideoflyerDetailsDTO getByEmail(String email) {
+    public VideoflyerDetails getByEmail(String email) {
         Optional<Videoflyer> videoflyer = videoflyerRepository.findByEmail(email);
         if (videoflyer.isEmpty()) {
-            return null;
+            log.error("Videoflyer with email {} not found", email);
+            throw new NotFoundException(ErrorMessage.VIDEOFLYER_NOT_FOUND);
         }
 
         return getDetails(videoflyer.get());
     }
 
-    private VideoflyerDetailsDTO getDetails(Videoflyer videoflyer) {
+    private VideoflyerDetails getDetails(Videoflyer videoflyer) {
         Map<LocalDate, SimpleAssignment> assignments = new HashMap<>();
 
-        jumpdayRepository.findAll().forEach(j -> {
+        jumpdayRepository.findAllAfterIncludingDate(LocalDate.now()).forEach(j -> {
             Optional<Assignment<Videoflyer>> localAssignment = j.getVideoflyer().stream()
                     .filter(t -> t != null && t.getFlyer() != null && t.getFlyer().getId().equals(videoflyer.getId())).findFirst();
             localAssignment
@@ -68,68 +74,81 @@ public class MongoVideoflyerService implements IVideoflyerService {
                             () -> assignments.put(j.getDate(), new SimpleAssignment(false)));
         });
 
-        return videoflyerConverter.convertToDetailsDto(videoflyer, assignments);
+        return videoflyerConverter.convertToDetails(videoflyer, assignments);
     }
 
     @Override
-    public GenericResult<Void> assignVideoflyerToJumpday(LocalDate date, String videoflyerId, SimpleAssignment simpleAssignment) {
+    public void assignVideoflyerToJumpday(LocalDate date, String videoflyerId, SimpleAssignment simpleAssignment) {
         Optional<Videoflyer> videoflyer = videoflyerRepository.findById(videoflyerId);
 
-        if (videoflyer.isPresent()) {
-            Jumpday jumpday = jumpdayRepository.findByDate(date);
-            if (jumpday != null) {
-                manageVideoflyerAssignment(jumpday, videoflyer.get(), simpleAssignment);
-                return new GenericResult<>(true);
-            }
-            return new GenericResult<>(false, ErrorMessage.JUMPDAY_NOT_FOUND_MSG);
+        if (videoflyer.isEmpty()) {
+            log.error("Videoflyer {} not found", videoflyerId);
+            throw new NotFoundException(ErrorMessage.VIDEOFLYER_NOT_FOUND);
         }
-        return new GenericResult<>(false, ErrorMessage.VIDEOFLYER_NOT_FOUND);
+        Jumpday jumpday = jumpdayRepository.findByDate(date);
+        if (jumpday == null) {
+            log.error("Jumpday is null");
+            throw new NotFoundException(ErrorMessage.JUMPDAY_NOT_FOUND_MSG);
+        }
+        manageVideoflyerAssignment(jumpday, videoflyer.get(), simpleAssignment);
     }
 
     @Override
-    public GenericResult<Void> assignVideoflyer(VideoflyerDetailsDTO videoflyerDetails, boolean selfAssign) {
+    public void assignVideoflyer(VideoflyerDetails videoflyerDetails, boolean selfAssign) {
         if (selfAssign) {
-            ErrorMessage errorMessage = checkSelfAssignPrerequisites(videoflyerDetails);
-            if (errorMessage != null) {
-                return new GenericResult<>(false, errorMessage);
-            }
+            checkSelfAssignPrerequisites(videoflyerDetails);
         }
         for (LocalDate date : videoflyerDetails.getAssignments().keySet()) {
-            GenericResult<Void> result = assignVideoflyerToJumpday(date, videoflyerDetails.getId(), videoflyerDetails.getAssignments().get(date));
-            if (!result.isSuccess()) {
-                return new GenericResult<>(false, result.getMessage());
-            }
+            assignVideoflyerToJumpday(date, videoflyerDetails.getId(), videoflyerDetails.getAssignments().get(date));
         }
-        return new GenericResult<>(true);
     }
 
-    private ErrorMessage checkSelfAssignPrerequisites(VideoflyerDetailsDTO newVideoflyerDetails) {
+    private void checkSelfAssignPrerequisites(VideoflyerDetails newVideoflyerDetails) {
         SelfAssignmentMode selfAssignmentMode = settingsService.getCommonSettingsByLanguage(Locale.GERMAN.getLanguage()).getSelfAssignmentMode();
         if (SelfAssignmentMode.READONLY.equals(selfAssignmentMode)) {
-            return ErrorMessage.SELFASSIGNMENT_READONLY;
+            log.error("Selfassignment is in read-only mode.");
+            throw new InvalidRequestException(ErrorMessage.SELFASSIGNMENT_READONLY);
         }
         if (SelfAssignmentMode.NODELETE.equals(selfAssignmentMode)) {
-            VideoflyerDetailsDTO currentDetails = getById(newVideoflyerDetails.getId());
+            VideoflyerDetails currentDetails = getById(newVideoflyerDetails.getId());
             for (Map.Entry<LocalDate, SimpleAssignment> currentEntry : currentDetails.getAssignments().entrySet()) {
                 SimpleAssignment newAssignment = newVideoflyerDetails.getAssignments().get(currentEntry.getKey());
                 if (currentEntry.getValue().isAssigned() && (newAssignment == null || !newAssignment.isAssigned())
                         || currentEntry.getValue().isAssigned() && newAssignment.isAllday() != currentEntry.getValue().isAllday()) {
-                    return ErrorMessage.SELFASSIGNMENT_NODELETE;
+                    log.error("Selfassignment is in no-delete mode.");
+                    throw new InvalidRequestException(ErrorMessage.SELFASSIGNMENT_NODELETE);
                 }
             }
         }
-        return null;
     }
 
     @Override
     public void delete(String id) {
+        Optional<Videoflyer> videoflyer = videoflyerRepository.findById(id);
+
+        if (videoflyer.isEmpty()) {
+            log.error("Videoflyer {} not found", id);
+            throw new NotFoundException(ErrorMessage.VIDEOFLYER_NOT_FOUND);
+        }
+
         // Unassign Videoflyer
-        VideoflyerDetailsDTO detailsDTO = getById(id);
-        detailsDTO.getAssignments().forEach((key, value) -> value.setAssigned(false));
-        assignVideoflyer(detailsDTO, false);
+        VideoflyerDetails details = getById(id);
+        details.getAssignments().forEach((key, value) -> value.setAssigned(false));
+        assignVideoflyer(details, false);
 
         // Delete Videoflyer
         videoflyerRepository.deleteById(id);
+    }
+
+    @Override
+    public Videoflyer updateVideoflyer(Videoflyer input) {
+        Optional<Videoflyer> videoflyer = videoflyerRepository.findById(input.getId());
+
+        if (videoflyer.isEmpty()) {
+            log.error("Videoflyer {} not found.", input.getId());
+            throw new NotFoundException(ErrorMessage.VIDEOFLYER_NOT_FOUND);
+        }
+        return videoflyerRepository.save(input);
     }
 
     private void manageVideoflyerAssignment(Jumpday jumpday, Videoflyer videoflyer, SimpleAssignment simpleAssignment) {

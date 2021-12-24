@@ -1,11 +1,13 @@
 package in.skdv.skdvinbackend.controller.api;
 
+import in.skdv.skdvinbackend.model.converter.WaiverConverter;
 import in.skdv.skdvinbackend.model.dto.WaiverDTO;
+import in.skdv.skdvinbackend.model.dto.WaiverInputDTO;
+import in.skdv.skdvinbackend.model.entity.waiver.Waiver;
 import in.skdv.skdvinbackend.service.IWaiverService;
 import in.skdv.skdvinbackend.util.GenericResult;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.MessageSource;
-import org.springframework.context.i18n.LocaleContextHolder;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -14,46 +16,38 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/waivers")
+@RequiredArgsConstructor
 public class WaiverController {
 
-    private IWaiverService waiverService;
-    private MessageSource messageSource;
-
-    @Autowired
-    public WaiverController(IWaiverService waiverService, MessageSource messageSource) {
-        this.waiverService = waiverService;
-        this.messageSource = messageSource;
-    }
+    private final WaiverConverter waiverConverter = new WaiverConverter();
+    private final IWaiverService waiverService;
 
     @GetMapping
     @PreAuthorize("hasAuthority('SCOPE_read:waivers')")
-    public ResponseEntity<GenericResult<List<WaiverDTO>>> getAllWaivers() {
-        List<WaiverDTO> waiverList = waiverService.getWaivers();
-        return ResponseEntity.ok(new GenericResult<>(true, waiverList));
+    public GenericResult<List<WaiverDTO>> getAllWaivers() {
+        log.info("Getting all waivers");
+        List<Waiver> waiverList = waiverService.getWaivers();
+        return new GenericResult<>(true, waiverConverter.convertToDto(waiverList));
     }
 
     @PostMapping
     @PreAuthorize("permitAll")
     public ResponseEntity<GenericResult<WaiverDTO>> saveWaiver(@RequestBody @Valid WaiverDTO input) {
-        GenericResult<WaiverDTO> waiverResult = waiverService.saveWaiver(input);
-        if (waiverResult.isSuccess()) {
-            return ResponseEntity.status(HttpStatus.CREATED).body(waiverResult);
-        }
-        return ResponseEntity.badRequest().body(new GenericResult<>(false,
-                messageSource.getMessage(waiverResult.getMessage(), null, LocaleContextHolder.getLocale())));
+        log.info("Saving waiver {}", input);
+        Waiver waiverResult = waiverService.saveWaiver(waiverConverter.convertToEntity(input));
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(new GenericResult<>(true, waiverConverter.convertToDto(waiverResult)));
     }
 
-    @PutMapping
+    @PutMapping("/{id}")
     @PreAuthorize("hasAuthority('SCOPE_update:waivers')")
-    public ResponseEntity<GenericResult<WaiverDTO>> updateWaiver(@RequestBody @Valid WaiverDTO input) {
-        GenericResult<WaiverDTO> waiverResult = waiverService.updateWaiver(input);
-        if (waiverResult.isSuccess()) {
-            return ResponseEntity.status(HttpStatus.OK).body(waiverResult);
-        }
-        return ResponseEntity.badRequest().body(new GenericResult<>(false,
-                messageSource.getMessage(waiverResult.getMessage(), null, LocaleContextHolder.getLocale())));
+    public GenericResult<WaiverDTO> updateWaiver(@PathVariable String id, @RequestBody @Valid WaiverInputDTO input) {
+        log.info("Updating waiver {}", input);
+        Waiver waiverResult = waiverService.updateWaiver(waiverConverter.convertToEntity(id, input));
+        return new GenericResult<>(true, waiverConverter.convertToDto(waiverResult));
     }
 
 }

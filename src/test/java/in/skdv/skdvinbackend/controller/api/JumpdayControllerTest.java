@@ -16,7 +16,6 @@ import in.skdv.skdvinbackend.repository.TandemmasterRepository;
 import in.skdv.skdvinbackend.repository.VideoflyerRepository;
 import in.skdv.skdvinbackend.service.IAppointmentService;
 import in.skdv.skdvinbackend.service.IJumpdayService;
-import in.skdv.skdvinbackend.util.GenericResult;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +31,7 @@ import org.springframework.web.context.WebApplicationContext;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.Collections;
@@ -40,7 +40,6 @@ import static in.skdv.skdvinbackend.config.Authorities.*;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -175,25 +174,39 @@ class JumpdayControllerTest extends AbstractSkdvinTest {
 
     @Test
     void testGetAll() throws Exception {
-        GenericResult<Jumpday> result = jumpdayService.saveJumpday(ModelMockHelper.createJumpday());
-        assertTrue(result.isSuccess());
-        GenericResult<Jumpday> result2 = jumpdayService.saveJumpday(ModelMockHelper.createJumpday(LocalDate.now().plusDays(1)));
-        assertTrue(result2.isSuccess());
+        Jumpday result = jumpdayService.saveJumpday(ModelMockHelper.createJumpday());
+        Jumpday result2 = jumpdayService.saveJumpday(ModelMockHelper.createJumpday(LocalDate.now().plusDays(1)));
 
         mockMvc.perform(get("/api/jumpday/")
                 .header("Authorization", MockJwtDecoder.addHeader(READ_JUMPDAYS)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success", is(true)))
                 .andExpect(jsonPath("$.payload", hasSize(2)))
-                .andExpect(jsonPath("$.payload[0].date", is(result.getPayload().getDate().toString())))
-                .andExpect(jsonPath("$.payload[1].date", is(result2.getPayload().getDate().toString())));
+                .andExpect(jsonPath("$.payload[0].date", is(result.getDate().toString())))
+                .andExpect(jsonPath("$.payload[1].date", is(result2.getDate().toString())));
+    }
+
+    @Test
+    void testGetByMonth() throws Exception {
+        Jumpday result = jumpdayService.saveJumpday(ModelMockHelper.createJumpday());
+        jumpdayService.saveJumpday(ModelMockHelper.createJumpday(LocalDate.now().plusMonths(1)));
+        jumpdayService.saveJumpday(ModelMockHelper.createJumpday(LocalDate.now().minusMonths(1)));
+
+        String formattedYearMonth = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM"));
+
+        mockMvc.perform(get("/api/jumpday")
+                        .queryParam("month", formattedYearMonth)
+                .header("Authorization", MockJwtDecoder.addHeader(READ_JUMPDAYS)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success", is(true)))
+                .andExpect(jsonPath("$.payload", hasSize(1)))
+                .andExpect(jsonPath("$.payload[0].date", is(result.getDate().toString())));
     }
 
 
     @Test
     void testGetAll_OneResult() throws Exception {
-        GenericResult<Jumpday> result = jumpdayService.saveJumpday(ModelMockHelper.createJumpday());
-        Jumpday jumpday = result.getPayload();
+        Jumpday jumpday = jumpdayService.saveJumpday(ModelMockHelper.createJumpday());
 
         mockMvc.perform(get("/api/jumpday/")
                 .header("Authorization", MockJwtDecoder.addHeader(READ_JUMPDAYS)))
@@ -222,8 +235,7 @@ class JumpdayControllerTest extends AbstractSkdvinTest {
 
     @Test
     void testGetByDate() throws Exception {
-        GenericResult<Jumpday> result = jumpdayService.saveJumpday(ModelMockHelper.createJumpday());
-        Jumpday jumpday = result.getPayload();
+        Jumpday jumpday = jumpdayService.saveJumpday(ModelMockHelper.createJumpday());
 
         mockMvc.perform(get("/api/jumpday/{date}", jumpday.getDate().toString())
                 .header("Authorization", MockJwtDecoder.addHeader(READ_JUMPDAYS)))
@@ -244,8 +256,7 @@ class JumpdayControllerTest extends AbstractSkdvinTest {
         Tandemmaster tandemmaster = tandemmasterRepository.save(ModelMockHelper.createTandemmaster());
         Jumpday unsavedJumpday = ModelMockHelper.createJumpday();
         unsavedJumpday.setTandemmaster(Collections.singletonList(ModelMockHelper.createAssignment(tandemmaster)));
-        GenericResult<Jumpday> result = jumpdayService.saveJumpday(unsavedJumpday);
-        Jumpday jumpday = result.getPayload();
+        Jumpday jumpday = jumpdayService.saveJumpday(unsavedJumpday);
 
         mockMvc.perform(get("/api/jumpday/{date}", jumpday.getDate().toString())
                 .header("Authorization", MockJwtDecoder.addHeader(READ_JUMPDAYS)))
@@ -267,8 +278,7 @@ class JumpdayControllerTest extends AbstractSkdvinTest {
         Videoflyer videoflyer = videoflyerRepository.save(ModelMockHelper.createVideoflyer());
         Jumpday unsavedJumpday = ModelMockHelper.createJumpday();
         unsavedJumpday.setVideoflyer(Collections.singletonList(ModelMockHelper.createAssignment(videoflyer)));
-        GenericResult<Jumpday> result = jumpdayService.saveJumpday(unsavedJumpday);
-        Jumpday jumpday = result.getPayload();
+        Jumpday jumpday = jumpdayService.saveJumpday(unsavedJumpday);
 
         mockMvc.perform(get("/api/jumpday/{date}", jumpday.getDate().toString())
                 .header("Authorization", MockJwtDecoder.addHeader(READ_JUMPDAYS)))
@@ -338,7 +348,7 @@ class JumpdayControllerTest extends AbstractSkdvinTest {
         mockMvc.perform(get("/api/jumpday/{date}", LocalDate.now().toString())
                 .header("Authorization", MockJwtDecoder.addHeader(READ_JUMPDAYS))
                 .header("Accept-Language", "de-DE"))
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.success", is(false)))
                 .andExpect(jsonPath("$.message", is("Sprungtag nicht gefunden")));
     }
@@ -348,7 +358,7 @@ class JumpdayControllerTest extends AbstractSkdvinTest {
         mockMvc.perform(get("/api/jumpday/{date}", LocalDate.now().toString())
                 .header("Authorization", MockJwtDecoder.addHeader(READ_JUMPDAYS))
                 .header("Accept-Language", "en-US"))
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.success", is(false)))
                 .andExpect(jsonPath("$.message", is("Jumpday not found")));
     }
@@ -378,8 +388,7 @@ class JumpdayControllerTest extends AbstractSkdvinTest {
         Tandemmaster tandemmaster = tandemmasterRepository.save(ModelMockHelper.createTandemmaster());
         Jumpday unsavedJumpday = ModelMockHelper.createJumpday();
         unsavedJumpday.setTandemmaster(Collections.singletonList(ModelMockHelper.createAssignment(tandemmaster)));
-        GenericResult<Jumpday> result = jumpdayService.saveJumpday(unsavedJumpday);
-        Jumpday jumpday = result.getPayload();
+        Jumpday jumpday = jumpdayService.saveJumpday(unsavedJumpday);
 
         JumpdayDTO jumpdayDTO = jumpdayConverter.convertToDto(jumpday);
 
@@ -408,8 +417,7 @@ class JumpdayControllerTest extends AbstractSkdvinTest {
         Videoflyer videoflyer = videoflyerRepository.save(ModelMockHelper.createVideoflyer());
         Jumpday unsavedJumpday = ModelMockHelper.createJumpday();
         unsavedJumpday.setVideoflyer(Collections.singletonList(ModelMockHelper.createAssignment(videoflyer)));
-        GenericResult<Jumpday> result = jumpdayService.saveJumpday(unsavedJumpday);
-        Jumpday jumpday = result.getPayload();
+        Jumpday jumpday = jumpdayService.saveJumpday(unsavedJumpday);
 
         JumpdayDTO jumpdayDTO = jumpdayConverter.convertToDto(jumpday);
 
@@ -536,8 +544,7 @@ class JumpdayControllerTest extends AbstractSkdvinTest {
     void testDeleteJumpday_AppointmentExists() throws Exception {
         Jumpday jumpday = ModelMockHelper.createJumpday();
         Jumpday savedJumpday = jumpdayRepository.save(jumpday);
-        GenericResult<Appointment> result = appointmentService.saveAppointment(ModelMockHelper.createSingleAppointment());
-        assertTrue(result.isSuccess());
+        appointmentService.saveAppointment(ModelMockHelper.createSingleAppointment());
 
         mockMvc.perform(delete("/api/jumpday/{date}", savedJumpday.getDate())
                 .header("Accept-Language", "en-US")

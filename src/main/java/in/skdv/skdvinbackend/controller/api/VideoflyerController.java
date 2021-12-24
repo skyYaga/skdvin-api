@@ -2,47 +2,42 @@ package in.skdv.skdvinbackend.controller.api;
 
 import in.skdv.skdvinbackend.config.Claims;
 import in.skdv.skdvinbackend.exception.ErrorMessage;
+import in.skdv.skdvinbackend.exception.InvalidRequestException;
 import in.skdv.skdvinbackend.model.converter.VideoflyerConverter;
 import in.skdv.skdvinbackend.model.dto.VideoflyerDTO;
 import in.skdv.skdvinbackend.model.dto.VideoflyerDetailsDTO;
+import in.skdv.skdvinbackend.model.dto.VideoflyerDetailsInputDTO;
+import in.skdv.skdvinbackend.model.dto.VideoflyerInputDTO;
 import in.skdv.skdvinbackend.model.entity.Videoflyer;
-import in.skdv.skdvinbackend.repository.VideoflyerRepository;
+import in.skdv.skdvinbackend.model.entity.VideoflyerDetails;
 import in.skdv.skdvinbackend.service.IVideoflyerService;
-import in.skdv.skdvinbackend.util.ControllerUtil;
 import in.skdv.skdvinbackend.util.GenericResult;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.MessageSource;
-import org.springframework.context.i18n.LocaleContextHolder;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 import java.util.List;
-import java.util.Optional;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/videoflyer")
+@RequiredArgsConstructor
 public class VideoflyerController {
 
-    private final VideoflyerRepository videoflyerRepository;
-    private VideoflyerConverter videoflyerConverter = new VideoflyerConverter();
-    private IVideoflyerService videoflyerService;
-    private MessageSource messageSource;
-
-    @Autowired
-    public VideoflyerController(VideoflyerRepository videoflyerRepository, IVideoflyerService videoflyerService, MessageSource messageSource) {
-        this.videoflyerRepository = videoflyerRepository;
-        this.videoflyerService = videoflyerService;
-        this.messageSource = messageSource;
-    }
+    private final VideoflyerConverter videoflyerConverter = new VideoflyerConverter();
+    private final IVideoflyerService videoflyerService;
 
     @PostMapping
     @PreAuthorize("hasAuthority('SCOPE_create:videoflyer')")
     public ResponseEntity<GenericResult<VideoflyerDTO>> addVideoflyer(@RequestBody @Valid VideoflyerDTO input) {
+        log.info("Adding videoflyer {}", input);
         Videoflyer convertedInput = videoflyerConverter.convertToEntity(input);
-        Videoflyer videoflyer = videoflyerRepository.save(convertedInput);
+        Videoflyer videoflyer = videoflyerService.save(convertedInput);
 
         return ResponseEntity.status(HttpStatus.CREATED)
                     .body(new GenericResult<>(true, videoflyerConverter.convertToDto(videoflyer)));
@@ -50,93 +45,66 @@ public class VideoflyerController {
 
     @GetMapping
     @PreAuthorize("hasAuthority('SCOPE_read:videoflyer')")
-    public ResponseEntity<GenericResult<List<VideoflyerDTO>>> getAllVideoflyers() {
-        List<Videoflyer> videoflyers = videoflyerRepository.findAll();
-
-        return ResponseEntity.ok(new GenericResult<>(true, videoflyerConverter.convertToDto(videoflyers)));
+    public GenericResult<List<VideoflyerDTO>> getAllVideoflyers() {
+        log.info("Getting all videoflyers");
+        List<Videoflyer> videoflyers = videoflyerService.findAll();
+        return new GenericResult<>(true, videoflyerConverter.convertToDto(videoflyers));
     }
 
     @GetMapping(value = "/{id}")
     @PreAuthorize("hasAuthority('SCOPE_read:videoflyer')")
-    public ResponseEntity<GenericResult<VideoflyerDetailsDTO>> getVideoflyer(@PathVariable String id) {
-        VideoflyerDetailsDTO videoflyer = videoflyerService.getById(id);
-
-        if (videoflyer == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(new GenericResult<>(false, messageSource.getMessage(ErrorMessage.VIDEOFLYER_NOT_FOUND.toString(), null, LocaleContextHolder.getLocale())));
-        }
-
-        return ResponseEntity.ok(new GenericResult<>(true, videoflyer));
+    public GenericResult<VideoflyerDetailsDTO> getVideoflyer(@PathVariable String id) {
+        log.info("Getting videoflyer by id {}", id);
+        VideoflyerDetails videoflyer = videoflyerService.getById(id);
+        return new GenericResult<>(true, videoflyerConverter.convertToDto(videoflyer));
     }
 
     @GetMapping(value = "/me")
     @PreAuthorize("hasAuthority('SCOPE_videoflyer')")
-    public ResponseEntity<GenericResult<VideoflyerDetailsDTO>> getMeVideoflyer() {
-        VideoflyerDetailsDTO videoflyer = videoflyerService.getByEmail(Claims.getEmail());
-
-        if (videoflyer == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(new GenericResult<>(false, messageSource.getMessage(ErrorMessage.VIDEOFLYER_NOT_FOUND.toString(), null, LocaleContextHolder.getLocale())));
-        }
-
-        return ResponseEntity.ok(new GenericResult<>(true, videoflyer));
+    public GenericResult<VideoflyerDetailsDTO> getMeVideoflyer() {
+        log.info("Getting me videoflyer");
+        VideoflyerDetails videoflyer = videoflyerService.getByEmail(Claims.getEmail());
+        return new GenericResult<>(true, videoflyerConverter.convertToDto(videoflyer));
     }
 
     @PatchMapping(value = "/me/assign")
     @PreAuthorize("hasAuthority('SCOPE_videoflyer')")
-    public ResponseEntity<GenericResult<Void>> selfAssignVideoflyerToJumpdays(@RequestBody @Valid VideoflyerDetailsDTO input) {
+    public GenericResult<Void> selfAssignVideoflyerToJumpdays(@RequestBody @Valid VideoflyerDetailsDTO input) {
+        log.info("Self assigning videoflyer to jumpdays {}", input);
         if (input.getEmail() == null || !input.getEmail().equals(Claims.getEmail())) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new GenericResult<>(false));
+            log.error("Input email doesn't match claims email");
+            throw new InvalidRequestException(ErrorMessage.SELFASSIGNMENT_NODELETE);
         }
 
-        return assignVideoflyer(input, true);
+        videoflyerService.assignVideoflyer(videoflyerConverter.convertToEntity(input), true);
+        return new GenericResult<>(true);
     }
 
     @PutMapping(value = "/{id}")
     @PreAuthorize("hasAuthority('SCOPE_update:videoflyer')")
-    public ResponseEntity<GenericResult<VideoflyerDTO>> updateVideoflyer(@PathVariable String id, @RequestBody @Valid VideoflyerDTO input) {
-        Optional<Videoflyer> videoflyer = videoflyerRepository.findById(id);
-
-        if (videoflyer.isPresent() && input.getId().equals(id)) {
-            Videoflyer savedVideoflyer = videoflyerRepository.save(videoflyerConverter.convertToEntity(input));
-            return ResponseEntity.ok(new GenericResult<>(true, videoflyerConverter.convertToDto(savedVideoflyer)));
-
-        }
-
-        return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(new GenericResult<>(false, messageSource.getMessage(ErrorMessage.VIDEOFLYER_NOT_FOUND.toString(), null, LocaleContextHolder.getLocale())));
+    public GenericResult<VideoflyerDTO> updateVideoflyer(@PathVariable String id, @RequestBody @Valid VideoflyerInputDTO input) {
+        log.info("Updating videoflyer {}: {}", id, input);
+        Videoflyer savedVideoflyer = videoflyerService.updateVideoflyer(videoflyerConverter.convertToEntity(id, input));
+        return new GenericResult<>(true, videoflyerConverter.convertToDto(savedVideoflyer));
     }
 
     @DeleteMapping(value = "/{id}")
     @PreAuthorize("hasAuthority('SCOPE_delete:videoflyer')")
-    public ResponseEntity<GenericResult<Void>> deleteVideoflyer(@PathVariable String id) {
-        Optional<Videoflyer> videoflyer = videoflyerRepository.findById(id);
-
-        if (videoflyer.isPresent()) {
-            videoflyerService.delete(id);
-            return ResponseEntity.ok(new GenericResult<>(true));
-
-        }
-
-        return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(new GenericResult<>(false, messageSource.getMessage(ErrorMessage.VIDEOFLYER_NOT_FOUND.toString(), null, LocaleContextHolder.getLocale())));
+    public GenericResult<Void> deleteVideoflyer(@PathVariable String id) {
+        log.info("Deleting videoflyer {}", id);
+        videoflyerService.delete(id);
+        return new GenericResult<>(true);
     }
 
 
     @PatchMapping(value = "/{id}/assign")
     @PreAuthorize("hasAuthority('SCOPE_update:videoflyer')")
-    public ResponseEntity<GenericResult<Void>> assignVideoflyerToJumpdays(@PathVariable String id, @RequestBody @Valid VideoflyerDetailsDTO input) {
-        if (!id.equals(input.getId())) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new GenericResult<>(false));
-        }
-
-        return assignVideoflyer(input, false);
-    }
-
-    private ResponseEntity<GenericResult<Void>> assignVideoflyer(VideoflyerDetailsDTO videoflyer, boolean selfAssign) {
-        GenericResult<Void> result = videoflyerService.assignVideoflyer(videoflyer, selfAssign);
-
-        return ControllerUtil.parseAssignmentResult(result, messageSource);
+    public GenericResult<Void> assignVideoflyerToJumpdays(
+            @PathVariable @NotNull @Valid String id,
+            @RequestBody @Valid VideoflyerDetailsInputDTO input) {
+        log.info("Assigning videoflyer {} to jumpdays {}", id, input);
+        videoflyerService.assignVideoflyer(videoflyerConverter.convertToEntity(id, input), false);
+        return new GenericResult<>(true);
     }
 
 }

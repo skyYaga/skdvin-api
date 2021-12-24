@@ -62,11 +62,6 @@ class VideoflyerConverterTest {
     }
 
     @Test
-    void convertToEntity_Null() {
-        assertNull(converter.convertToEntity(null));
-    }
-
-    @Test
     void convertToDetailsDto() {
         Videoflyer videoflyer = ModelMockHelper.createVideoflyer();
         Map<LocalDate, SimpleAssignment> assignments = Map.of(LocalDate.now(), new SimpleAssignment(true));

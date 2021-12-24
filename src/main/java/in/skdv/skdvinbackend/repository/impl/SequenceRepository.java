@@ -1,8 +1,8 @@
-package in.skdv.skdvinbackend.service.impl;
+package in.skdv.skdvinbackend.repository.impl;
 
 import in.skdv.skdvinbackend.model.entity.Sequence;
-import in.skdv.skdvinbackend.service.ISequenceService;
-import org.springframework.beans.factory.annotation.Autowired;
+import in.skdv.skdvinbackend.repository.ISequenceRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.mongodb.core.FindAndModifyOptions;
 import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -14,10 +14,10 @@ import org.springframework.data.mongodb.core.query.Update;
  * @see <a href="https://www.mkyong.com/mongodb/spring-data-mongodb-auto-sequence-id-example/">
  *     https://www.mkyong.com/mongodb/spring-data-mongodb-auto-sequence-id-example/</a>
  */
-public class SequenceService implements ISequenceService {
+@RequiredArgsConstructor
+public class SequenceRepository implements ISequenceRepository {
 
-    @Autowired
-    private MongoOperations mongoOperations;
+    private final MongoOperations mongoOperations;
 
     @Override
     public int getNextSequence(String sequenceName) {

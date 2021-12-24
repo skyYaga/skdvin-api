@@ -1,12 +1,10 @@
 package in.skdv.skdvinbackend.model.common;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
 import javax.validation.constraints.NotNull;
 
-@Getter
-@Setter
+@Data
 public class AbstractCustomer {
 
     @NotNull

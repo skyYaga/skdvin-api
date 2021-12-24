@@ -13,7 +13,6 @@ import in.skdv.skdvinbackend.repository.JumpdayRepository;
 import in.skdv.skdvinbackend.service.IAppointmentService;
 import in.skdv.skdvinbackend.service.IEmailService;
 import in.skdv.skdvinbackend.service.ISettingsService;
-import in.skdv.skdvinbackend.util.GenericResult;
 import in.skdv.skdvinbackend.util.VerificationTokenUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -102,7 +101,7 @@ class AppointmentControllerTest extends AbstractSkdvinTest {
     @BeforeEach
     void setup() {
         // Set mock clock
-        Clock mockClock = Clock.fixed(Instant.parse(LocalDate.now().toString() + "T00:00:00Z"), ZoneOffset.UTC);
+        Clock mockClock = Clock.fixed(Instant.parse(LocalDate.now() + "T00:00:00Z"), ZoneOffset.UTC);
         ReflectionTestUtils.setField(appointmentService, "clock", mockClock);
 
         this.mockMvc = webAppContextSetup(webApplicationContext)
@@ -124,8 +123,7 @@ class AppointmentControllerTest extends AbstractSkdvinTest {
 
     @Test
     void testGetOne() throws Exception {
-        GenericResult<Appointment> appointmentGenericResult = appointmentService.saveAppointment(ModelMockHelper.createSingleAppointment());
-        Appointment appointment = appointmentGenericResult.getPayload();
+        Appointment appointment = appointmentService.saveAppointment(ModelMockHelper.createSingleAppointment());
 
         mockMvc.perform(get("/api/appointment/{id}", appointment.getAppointmentId())
                 .header("Authorization", MockJwtDecoder.addHeader(READ_APPOINTMENTS)))
@@ -145,8 +143,7 @@ class AppointmentControllerTest extends AbstractSkdvinTest {
 
     @Test
     void testGetOneUnauthorized() throws Exception {
-        GenericResult<Appointment> appointmentGenericResult = appointmentService.saveAppointment(ModelMockHelper.createSingleAppointment());
-        Appointment appointment = appointmentGenericResult.getPayload();
+        Appointment appointment = appointmentService.saveAppointment(ModelMockHelper.createSingleAppointment());
 
         mockMvc.perform(get("/api/appointment/" + appointment.getAppointmentId()))
                 .andExpect(status().isUnauthorized());
@@ -171,14 +168,13 @@ class AppointmentControllerTest extends AbstractSkdvinTest {
 
     @Test
     void testAddAppointment_NoSlotLeft() throws Exception {
-        appointmentService.saveAppointment(ModelMockHelper.createAppointment(3, 0, 0, 0));
-
         String appointmentJson = json(ModelMockHelper.createAppointment(2, 0, 0, 0));
 
         mockMvc.perform(post("/api/appointment")
                 .header("Accept-Language", "de-DE")
                 .contentType(contentType)
                 .content(appointmentJson))
+                .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.message", is("Sprungtag hat nicht genügend freie Slots")));
     }
@@ -194,7 +190,7 @@ class AppointmentControllerTest extends AbstractSkdvinTest {
                 .header("Accept-Language", "de-DE")
                 .contentType(contentType)
                 .content(appointmentJson))
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.success", is(false)))
                 .andExpect(jsonPath("$.message", is("Sprungtag nicht gefunden")));
     }
@@ -358,7 +354,8 @@ class AppointmentControllerTest extends AbstractSkdvinTest {
                 .header("Authorization", MockJwtDecoder.addHeader(UPDATE_APPOINTMENTS))
                 .contentType(contentType)
                 .content(appointmentJson))
-                .andExpect(status().isInternalServerError())
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.success", is(false)))
                 .andExpect(jsonPath("$.message", is("Appointment not found")));
     }
@@ -392,16 +389,16 @@ class AppointmentControllerTest extends AbstractSkdvinTest {
                 .header("Authorization", MockJwtDecoder.addHeader(UPDATE_APPOINTMENTS))
                 .contentType(contentType)
                 .content(appointmentJson))
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.success", is(false)))
                 .andExpect(jsonPath("$.message", is("Sprungtag nicht gefunden")));
     }
 
     @Test
     void testUpdateAppointment_MorePicAndVidThanTandemSlots() throws Exception {
-        GenericResult<Appointment> result = appointmentService.saveAppointment(ModelMockHelper.createAppointment(1, 0, 1, 0));
+        Appointment result = appointmentService.saveAppointment(ModelMockHelper.createAppointment(1, 0, 1, 0));
         AppointmentConverter appointmentConverter = new AppointmentConverter();
-        AppointmentDTO appointment = appointmentConverter.convertToDto(appointmentService.findAppointment(result.getPayload().getAppointmentId()));
+        AppointmentDTO appointment = appointmentConverter.convertToDto(appointmentService.findAppointment(result.getAppointmentId()));
 
         appointment.setPicOrVid(appointment.getPicAndVid() + 1);
 
@@ -419,9 +416,9 @@ class AppointmentControllerTest extends AbstractSkdvinTest {
 
     @Test
     void testUpdateAppointment_MorePicOrVidThanTandemSlots() throws Exception {
-        GenericResult<Appointment> result = appointmentService.saveAppointment(ModelMockHelper.createAppointment(1, 1, 0, 0));
+        Appointment result = appointmentService.saveAppointment(ModelMockHelper.createAppointment(1, 1, 0, 0));
         AppointmentConverter appointmentConverter = new AppointmentConverter();
-        AppointmentDTO appointment = appointmentConverter.convertToDto(appointmentService.findAppointment(result.getPayload().getAppointmentId()));
+        AppointmentDTO appointment = appointmentConverter.convertToDto(appointmentService.findAppointment(result.getAppointmentId()));
 
         appointment.setPicOrVid(appointment.getPicOrVid() + 1);
 
@@ -439,9 +436,9 @@ class AppointmentControllerTest extends AbstractSkdvinTest {
 
     @Test
     void testUpdateAppointment_MoreHandcamThanTandemSlots() throws Exception {
-        GenericResult<Appointment> result = appointmentService.saveAppointment(ModelMockHelper.createAppointment(1, 0, 0, 1));
+        Appointment result = appointmentService.saveAppointment(ModelMockHelper.createAppointment(1, 0, 0, 1));
         AppointmentConverter appointmentConverter = new AppointmentConverter();
-        AppointmentDTO appointment = appointmentConverter.convertToDto(appointmentService.findAppointment(result.getPayload().getAppointmentId()));
+        AppointmentDTO appointment = appointmentConverter.convertToDto(appointmentService.findAppointment(result.getAppointmentId()));
 
         appointment.setPicOrVid(appointment.getHandcam() + 1);
 
@@ -459,9 +456,9 @@ class AppointmentControllerTest extends AbstractSkdvinTest {
 
     @Test
     void testUpdateAppointment_MorePicVidHandcamThanTandemSlots() throws Exception {
-        GenericResult<Appointment> result = appointmentService.saveAppointment(ModelMockHelper.createAppointment(1, 0, 1, 0));
+        Appointment result = appointmentService.saveAppointment(ModelMockHelper.createAppointment(1, 0, 1, 0));
         AppointmentConverter appointmentConverter = new AppointmentConverter();
-        AppointmentDTO appointment = appointmentConverter.convertToDto(appointmentService.findAppointment(result.getPayload().getAppointmentId()));
+        AppointmentDTO appointment = appointmentConverter.convertToDto(appointmentService.findAppointment(result.getAppointmentId()));
 
         appointment.setPicOrVid(appointment.getPicOrVid() + 1);
         appointment.setPicOrVid(appointment.getHandcam() + 1);
@@ -493,6 +490,7 @@ class AppointmentControllerTest extends AbstractSkdvinTest {
                 .header("Authorization", MockJwtDecoder.addHeader(UPDATE_APPOINTMENTS))
                 .contentType(contentType)
                 .content(appointmentJson))
+                .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.success", is(false)))
                 .andExpect(jsonPath("$.message", is("Jumpday has not enough free slots")));
@@ -564,8 +562,7 @@ class AppointmentControllerTest extends AbstractSkdvinTest {
     void testConfirmAppointment() throws Exception {
         Appointment appointment = ModelMockHelper.createSingleAppointment();
         appointment.setVerificationToken(VerificationTokenUtil.generate());
-        GenericResult<Appointment> result = appointmentService.saveAppointment(appointment);
-        Appointment savedAppointment = result.getPayload();
+        Appointment savedAppointment = appointmentService.saveAppointment(appointment);
 
         mockMvc.perform(get("/api/appointment/{appointmentId}/confirm/{token}",
                 appointment.getAppointmentId(), savedAppointment.getVerificationToken().getToken())
@@ -632,7 +629,7 @@ class AppointmentControllerTest extends AbstractSkdvinTest {
         Appointment appointment = ModelMockHelper.createSingleAppointment();
         appointment.setVerificationToken(VerificationTokenUtil.generate());
         appointment.getVerificationToken().setExpiryDate(LocalDateTime.now().minus(1, ChronoUnit.HOURS));
-        GenericResult<Appointment> result = appointmentService.saveAppointment(appointment);
+        appointmentService.saveAppointment(appointment);
 
         mockMvc.perform(get("/api/appointment/{appointmentId}/confirm/{token}",
                 9999999, appointment.getVerificationToken().getToken())
@@ -667,8 +664,7 @@ class AppointmentControllerTest extends AbstractSkdvinTest {
     @Test
     void testUpdateAppointmentState() throws Exception {
         Appointment appointment = ModelMockHelper.createSingleAppointment();
-        GenericResult<Appointment> result = appointmentService.saveAppointment(appointment);
-        Appointment savedAppointment = result.getPayload();
+        Appointment savedAppointment = appointmentService.saveAppointment(appointment);
 
         AppointmentStateOnlyDTO appointmentStateOnly = new AppointmentStateOnlyDTO();
         appointmentStateOnly.setState(AppointmentState.ACTIVE);
@@ -688,8 +684,7 @@ class AppointmentControllerTest extends AbstractSkdvinTest {
     @Test
     void testUpdateAppointmentState_Unauthorized() throws Exception {
         Appointment appointment = ModelMockHelper.createSingleAppointment();
-        GenericResult<Appointment> result = appointmentService.saveAppointment(appointment);
-        Appointment savedAppointment = result.getPayload();
+        Appointment savedAppointment = appointmentService.saveAppointment(appointment);
 
         AppointmentStateOnlyDTO appointmentStateOnly = new AppointmentStateOnlyDTO();
         appointmentStateOnly.setState(AppointmentState.ACTIVE);
@@ -705,8 +700,7 @@ class AppointmentControllerTest extends AbstractSkdvinTest {
     @Test
     void testUpdateAppointmentState_AppointmentNotFound() throws Exception {
         Appointment appointment = ModelMockHelper.createSingleAppointment();
-        GenericResult<Appointment> result = appointmentService.saveAppointment(appointment);
-        Appointment savedAppointment = result.getPayload();
+        Appointment savedAppointment = appointmentService.saveAppointment(appointment);
 
         AppointmentStateOnlyDTO appointmentStateOnly = new AppointmentStateOnlyDTO();
         appointmentStateOnly.setState(AppointmentState.ACTIVE);
@@ -726,14 +720,15 @@ class AppointmentControllerTest extends AbstractSkdvinTest {
     @Test
     void testDeleteAppointment() throws Exception {
         Appointment appointment = ModelMockHelper.createSingleAppointment();
-        GenericResult<Appointment> result = appointmentService.saveAppointment(appointment);
-        int appointmentId = result.getPayload().getAppointmentId();
+        Appointment result = appointmentService.saveAppointment(appointment);
+        int appointmentId = result.getAppointmentId();
 
 
         mockMvc.perform(delete("/api/appointment/{appointmentId}", appointmentId)
                 .header("Accept-Language", "en-US")
                 .header("Authorization", MockJwtDecoder.addHeader(UPDATE_APPOINTMENTS))
                 .contentType(contentType))
+                .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success", is(true)));
 
@@ -746,8 +741,8 @@ class AppointmentControllerTest extends AbstractSkdvinTest {
     @Test
     void testDeleteAppointment_Unauthorized() throws Exception {
         Appointment appointment = ModelMockHelper.createSingleAppointment();
-        GenericResult<Appointment> result = appointmentService.saveAppointment(appointment);
-        int appointmentId = result.getPayload().getAppointmentId();
+        Appointment result = appointmentService.saveAppointment(appointment);
+        int appointmentId = result.getAppointmentId();
 
 
         mockMvc.perform(delete("/api/appointment/{appointmentId}", appointmentId)

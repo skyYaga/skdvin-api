@@ -5,28 +5,27 @@ import in.skdv.skdvinbackend.model.common.GroupSlot;
 import in.skdv.skdvinbackend.model.common.SlotQuery;
 import in.skdv.skdvinbackend.model.entity.Appointment;
 import in.skdv.skdvinbackend.model.entity.AppointmentState;
-import in.skdv.skdvinbackend.util.GenericResult;
 
 import java.time.LocalDate;
 import java.util.List;
 
 public interface IAppointmentService {
 
-    GenericResult<Appointment> saveAppointment(Appointment appointment);
+    Appointment saveAppointment(Appointment appointment);
 
-    GenericResult<Appointment> saveAdminAppointment(Appointment appointment);
+    Appointment saveAdminAppointment(Appointment appointment);
 
-    GenericResult<Appointment> updateAppointment(Appointment appointment);
+    Appointment updateAppointment(Appointment appointment);
 
-    GenericResult<Appointment> updateAdminAppointment(Appointment appointment);
+    Appointment updateAdminAppointment(Appointment appointment);
 
     Appointment findAppointment(int id);
 
     List<Appointment> findAppointmentsByDay(LocalDate date);
 
-    GenericResult<List<FreeSlot>> findFreeSlots(SlotQuery slotQuery);
+    List<FreeSlot> findFreeSlots(SlotQuery slotQuery);
 
-    GenericResult<Void> updateAppointmentState(Appointment appointment, AppointmentState appointmentState);
+    void updateAppointmentState(Appointment appointment, AppointmentState appointmentState);
 
     List<Appointment> findUnconfirmedAppointments();
 
@@ -37,4 +36,6 @@ public interface IAppointmentService {
     List<Appointment> findAppointmentsWithinNextWeek();
 
     void reminderSent(Appointment appointment);
+
+    Appointment confirmAppointment(int appointmentId, String token);
 }

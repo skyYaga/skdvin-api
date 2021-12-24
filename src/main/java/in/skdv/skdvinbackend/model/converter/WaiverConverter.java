@@ -1,6 +1,7 @@
 package in.skdv.skdvinbackend.model.converter;
 
 import in.skdv.skdvinbackend.model.dto.WaiverDTO;
+import in.skdv.skdvinbackend.model.dto.WaiverInputDTO;
 import in.skdv.skdvinbackend.model.entity.waiver.Waiver;
 import org.modelmapper.ModelMapper;
 
@@ -35,4 +36,9 @@ public class WaiverConverter {
         return modelMapper.map(waiverDTO, Waiver.class);
     }
 
+    public Waiver convertToEntity(String id, WaiverInputDTO input) {
+        Waiver waiver = modelMapper.map(input, Waiver.class);
+        waiver.setId(id);
+        return waiver;
+    }
 }

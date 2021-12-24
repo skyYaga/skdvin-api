@@ -4,12 +4,14 @@ import in.skdv.skdvinbackend.AbstractSkdvinTest;
 import in.skdv.skdvinbackend.MockJwtDecoder;
 import in.skdv.skdvinbackend.ModelMockHelper;
 import in.skdv.skdvinbackend.exception.ErrorMessage;
+import in.skdv.skdvinbackend.exception.InvalidRequestException;
+import in.skdv.skdvinbackend.exception.NotFoundException;
 import in.skdv.skdvinbackend.model.common.SimpleAssignment;
 import in.skdv.skdvinbackend.model.converter.TandemmasterConverter;
-import in.skdv.skdvinbackend.model.dto.TandemmasterDetailsDTO;
 import in.skdv.skdvinbackend.model.entity.Assignment;
 import in.skdv.skdvinbackend.model.entity.Jumpday;
 import in.skdv.skdvinbackend.model.entity.Tandemmaster;
+import in.skdv.skdvinbackend.model.entity.TandemmasterDetails;
 import in.skdv.skdvinbackend.model.entity.settings.CommonSettings;
 import in.skdv.skdvinbackend.model.entity.settings.SelfAssignmentMode;
 import in.skdv.skdvinbackend.repository.JumpdayRepository;
@@ -17,7 +19,6 @@ import in.skdv.skdvinbackend.repository.TandemmasterRepository;
 import in.skdv.skdvinbackend.service.IJumpdayService;
 import in.skdv.skdvinbackend.service.ISettingsService;
 import in.skdv.skdvinbackend.service.ITandemmasterService;
-import in.skdv.skdvinbackend.util.GenericResult;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,7 +37,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
 @SpringBootTest
-class MongoTandemmasterServiceTest extends AbstractSkdvinTest {
+class TandemmasterServiceTest extends AbstractSkdvinTest {
 
     @MockBean
     ISettingsService settingsService;
@@ -71,12 +72,31 @@ class MongoTandemmasterServiceTest extends AbstractSkdvinTest {
         jumpdayRepository.save(jumpday1);
         jumpdayRepository.save(jumpday2);
 
-        TandemmasterDetailsDTO tandemmasterDetails = tandemmasterService.getById(tandemmaster.getId());
+        TandemmasterDetails tandemmasterDetails = tandemmasterService.getById(tandemmaster.getId());
 
         assertNotNull(tandemmasterDetails);
         assertEquals(2, tandemmasterDetails.getAssignments().size());
         assertTrue(tandemmasterDetails.getAssignments().get(LocalDate.now()).isAssigned());
         assertFalse(tandemmasterDetails.getAssignments().get(nowPlus1).isAssigned());
+    }
+
+    @Test
+    void testGetTandemmasterById_DoesNotContainPastDates() {
+        Tandemmaster tandemmaster = tandemmasterRepository.save(ModelMockHelper.createTandemmaster());
+        LocalDate yesterday = LocalDate.now().minus(1, ChronoUnit.DAYS);
+
+        Jumpday jumpday1 = ModelMockHelper.createJumpday();
+        Jumpday jumpday2 = ModelMockHelper.createJumpday(yesterday);
+        jumpday1.getTandemmaster().add(createAssignment(tandemmaster));
+        jumpday2.getTandemmaster().add(createAssignment(tandemmaster));
+        jumpdayRepository.save(jumpday1);
+        jumpdayRepository.save(jumpday2);
+
+        TandemmasterDetails tandemmasterDetails = tandemmasterService.getById(tandemmaster.getId());
+
+        assertNotNull(tandemmasterDetails);
+        assertEquals(1, tandemmasterDetails.getAssignments().size());
+        assertTrue(tandemmasterDetails.getAssignments().get(LocalDate.now()).isAssigned());
     }
 
     @Test
@@ -94,12 +114,34 @@ class MongoTandemmasterServiceTest extends AbstractSkdvinTest {
         jumpdayRepository.save(jumpday1);
         jumpdayRepository.save(jumpday2);
 
-        TandemmasterDetailsDTO tandemmasterDetails = tandemmasterService.getByEmail(tandemmaster.getEmail());
+        TandemmasterDetails tandemmasterDetails = tandemmasterService.getByEmail(tandemmaster.getEmail());
 
         assertNotNull(tandemmasterDetails);
         assertEquals(2, tandemmasterDetails.getAssignments().size());
         assertTrue(tandemmasterDetails.getAssignments().get(LocalDate.now()).isAssigned());
         assertFalse(tandemmasterDetails.getAssignments().get(nowPlus1).isAssigned());
+    }
+
+    @Test
+    void testGetTandemmasterByEmail_DoesNotContainPastDates() {
+        Tandemmaster tandemmaster1 = ModelMockHelper.createTandemmaster();
+        tandemmaster1.setEmail(MockJwtDecoder.EXAMPLE_EMAIL);
+
+        Tandemmaster tandemmaster = tandemmasterRepository.save(tandemmaster1);
+        LocalDate yesterday = LocalDate.now().minus(1, ChronoUnit.DAYS);
+
+        Jumpday jumpday1 = ModelMockHelper.createJumpday();
+        Jumpday jumpday2 = ModelMockHelper.createJumpday(yesterday);
+        jumpday1.getTandemmaster().add(createAssignment(tandemmaster));
+        jumpday2.getTandemmaster().add(createAssignment(tandemmaster));
+        jumpdayRepository.save(jumpday1);
+        jumpdayRepository.save(jumpday2);
+
+        TandemmasterDetails tandemmasterDetails = tandemmasterService.getByEmail(tandemmaster.getEmail());
+
+        assertNotNull(tandemmasterDetails);
+        assertEquals(1, tandemmasterDetails.getAssignments().size());
+        assertTrue(tandemmasterDetails.getAssignments().get(LocalDate.now()).isAssigned());
     }
 
     private Assignment<Tandemmaster> createAssignment(Tandemmaster tandemmaster, boolean assigned) {
@@ -115,14 +157,19 @@ class MongoTandemmasterServiceTest extends AbstractSkdvinTest {
 
     @Test
     void testGetTandemmasterById_NotFound() {
-        TandemmasterDetailsDTO tandemmasterDetails = tandemmasterService.getById("99999999999");
-        assertNull(tandemmasterDetails);
+        NotFoundException ex = assertThrows(NotFoundException.class, () ->
+                tandemmasterService.getById("99999999999"));
+
+        assertEquals(ErrorMessage.TANDEMMASTER_NOT_FOUND, ex.getErrorMessage());
     }
 
     @Test
     void testGetTandemmasterByEmail_NotFound() {
-        TandemmasterDetailsDTO tandemmasterDetails = tandemmasterService.getByEmail("foo@example.com");
-        assertNull(tandemmasterDetails);
+        NotFoundException notFoundException = assertThrows(NotFoundException.class, () ->
+            tandemmasterService.getByEmail("foo@example.com")
+        );
+
+        assertEquals(ErrorMessage.TANDEMMASTER_NOT_FOUND, notFoundException.getErrorMessage());
     }
 
     @Test
@@ -134,9 +181,9 @@ class MongoTandemmasterServiceTest extends AbstractSkdvinTest {
     void testAssignTandemmasterToJumpday_EditTandemmaster_CheckAssignment() {
         assignTandemmaster(ModelMockHelper.createJumpday());
 
-        GenericResult<Jumpday> jumpday = jumpdayService.findJumpday(LocalDate.now());
-        assertFalse(jumpday.getPayload().getTandemmaster().get(0).getFlyer().isHandcam());
-        Optional<Tandemmaster> tandemmasterOptional = tandemmasterRepository.findById(jumpday.getPayload().getTandemmaster().get(0).getFlyer().getId());
+        Jumpday jumpday = jumpdayService.findJumpday(LocalDate.now());
+        assertFalse(jumpday.getTandemmaster().get(0).getFlyer().isHandcam());
+        Optional<Tandemmaster> tandemmasterOptional = tandemmasterRepository.findById(jumpday.getTandemmaster().get(0).getFlyer().getId());
         assertTrue(tandemmasterOptional.isPresent());
         Tandemmaster tandemmaster = tandemmasterOptional.get();
         assertFalse(tandemmaster.isHandcam());
@@ -145,7 +192,7 @@ class MongoTandemmasterServiceTest extends AbstractSkdvinTest {
         Tandemmaster updatedTandemmaster = tandemmasterRepository.save(tandemmaster);
         assertTrue(updatedTandemmaster.isHandcam());
         jumpday = jumpdayService.findJumpday(LocalDate.now());
-        assertTrue(jumpday.getPayload().getTandemmaster().get(0).getFlyer().isHandcam());
+        assertTrue(jumpday.getTandemmaster().get(0).getFlyer().isHandcam());
     }
 
     @Test
@@ -153,40 +200,39 @@ class MongoTandemmasterServiceTest extends AbstractSkdvinTest {
         Jumpday jumpday = ModelMockHelper.createJumpday();
         String tandemmasterId = assignTandemmaster(jumpday);
 
-        GenericResult<Void> result = tandemmasterService.assignTandemmasterToJumpday(
+        tandemmasterService.assignTandemmasterToJumpday(
                 jumpday.getDate(), tandemmasterId, new SimpleAssignment(true));
-        GenericResult<Jumpday> assignedResult = jumpdayService.findJumpday(jumpday.getDate());
+        Jumpday assignedResult = jumpdayService.findJumpday(jumpday.getDate());
 
-        assertNotNull(result);
-        assertTrue(result.isSuccess());
-        assertTrue(assignedResult.isSuccess());
-        assertEquals(1,assignedResult.getPayload().getTandemmaster().size());
-        assertEquals(tandemmasterId, assignedResult.getPayload().getTandemmaster().get(0).getFlyer().getId());
+        assertEquals(1,assignedResult.getTandemmaster().size());
+        assertEquals(tandemmasterId, assignedResult.getTandemmaster().get(0).getFlyer().getId());
     }
 
     @Test
     void testAssignTandemmasterToJumpday_TandemmasterNotFound() {
-        GenericResult<Jumpday> initialResult = jumpdayService.saveJumpday(ModelMockHelper.createJumpday());
-        assertTrue(initialResult.isSuccess());
+        Jumpday initialResult = jumpdayService.saveJumpday(ModelMockHelper.createJumpday());
+        LocalDate date = initialResult.getDate();
+        SimpleAssignment assignment = new SimpleAssignment(true);
 
-        GenericResult<Void> result = tandemmasterService.assignTandemmasterToJumpday(
-                initialResult.getPayload().getDate(), "99999999", new SimpleAssignment(true));
+        NotFoundException ex = assertThrows(NotFoundException.class, () ->
+            tandemmasterService.assignTandemmasterToJumpday(date, "99999999", assignment)
+        );
 
-        assertNotNull(result);
-        assertFalse(result.isSuccess());
-        assertEquals(ErrorMessage.TANDEMMASTER_NOT_FOUND.toString(), result.getMessage());
+        assertEquals(ErrorMessage.TANDEMMASTER_NOT_FOUND, ex.getErrorMessage());
     }
 
     @Test
     void testAssignTandemmasterToJumpday_JumpdayNotFound() {
         Tandemmaster tandemmaster = tandemmasterRepository.save(ModelMockHelper.createTandemmaster());
+        LocalDate date = LocalDate.now().plus(1, ChronoUnit.YEARS);
+        String tandemmasterId = tandemmaster.getId();
+        SimpleAssignment assignment = new SimpleAssignment(true);
 
-        GenericResult<Void> result = tandemmasterService.assignTandemmasterToJumpday(
-                LocalDate.now().plus(1, ChronoUnit.YEARS), tandemmaster.getId(), new SimpleAssignment(true));
+        NotFoundException notFoundException = assertThrows(NotFoundException.class, () ->
+            tandemmasterService.assignTandemmasterToJumpday(date, tandemmasterId, assignment)
+        );
 
-        assertNotNull(result);
-        assertFalse(result.isSuccess());
-        assertEquals(ErrorMessage.JUMPDAY_NOT_FOUND_MSG.toString(), result.getMessage());
+        assertEquals(ErrorMessage.JUMPDAY_NOT_FOUND_MSG, notFoundException.getErrorMessage());
     }
 
     @Test
@@ -194,13 +240,10 @@ class MongoTandemmasterServiceTest extends AbstractSkdvinTest {
         Jumpday jumpday = ModelMockHelper.createJumpday();
         String tandemmasterId = assignTandemmaster(jumpday);
 
-        GenericResult<Void> result = tandemmasterService.assignTandemmasterToJumpday(jumpday.getDate(), tandemmasterId, new SimpleAssignment(false));
-        GenericResult<Jumpday> assignedResult = jumpdayService.findJumpday(jumpday.getDate());
+        tandemmasterService.assignTandemmasterToJumpday(jumpday.getDate(), tandemmasterId, new SimpleAssignment(false));
+        Jumpday assignedResult = jumpdayService.findJumpday(jumpday.getDate());
 
-        assertNotNull(result);
-        assertTrue(result.isSuccess());
-        assertTrue(assignedResult.isSuccess());
-        assertEquals(0, assignedResult.getPayload().getTandemmaster().size());
+        assertEquals(0, assignedResult.getTandemmaster().size());
     }
 
     @Test
@@ -209,81 +252,75 @@ class MongoTandemmasterServiceTest extends AbstractSkdvinTest {
         jumpdayService.saveJumpday(jumpday);
         Tandemmaster tandemmaster = tandemmasterRepository.save(ModelMockHelper.createTandemmaster());
 
-        GenericResult<Void> result = tandemmasterService.assignTandemmasterToJumpday(jumpday.getDate(), tandemmaster.getId(), new SimpleAssignment(false));
-        GenericResult<Jumpday> assignedResult = jumpdayService.findJumpday(jumpday.getDate());
+        tandemmasterService.assignTandemmasterToJumpday(jumpday.getDate(), tandemmaster.getId(), new SimpleAssignment(false));
+        Jumpday assignedResult = jumpdayService.findJumpday(jumpday.getDate());
 
-        assertNotNull(result);
-        assertTrue(result.isSuccess());
-        assertTrue(assignedResult.isSuccess());
-        assertEquals(0, assignedResult.getPayload().getTandemmaster().size());
+        assertEquals(0, assignedResult.getTandemmaster().size());
     }
 
     private String assignTandemmaster(Jumpday jumpday) {
-        GenericResult<Jumpday> initialResult = jumpdayService.saveJumpday(jumpday);
-        assertTrue(initialResult.isSuccess());
+        Jumpday initialResult = jumpdayService.saveJumpday(jumpday);
         Tandemmaster tandemmaster = tandemmasterRepository.save(ModelMockHelper.createTandemmaster());
 
-        GenericResult<Void> result = tandemmasterService.assignTandemmasterToJumpday(
-                initialResult.getPayload().getDate(), tandemmaster.getId(), new SimpleAssignment(true));
-        GenericResult<Jumpday> assignedResult = jumpdayService.findJumpday(initialResult.getPayload().getDate());
+        tandemmasterService.assignTandemmasterToJumpday(
+                initialResult.getDate(), tandemmaster.getId(), new SimpleAssignment(true));
+        Jumpday assignedResult = jumpdayService.findJumpday(initialResult.getDate());
 
-        assertNotNull(result);
-        assertTrue(result.isSuccess());
-        assertTrue(assignedResult.isSuccess());
-        assertEquals(1, assignedResult.getPayload().getTandemmaster().size());
-        assertEquals(tandemmaster.getId(), assignedResult.getPayload().getTandemmaster().get(0).getFlyer().getId());
+        assertEquals(1, assignedResult.getTandemmaster().size());
+        assertEquals(tandemmaster.getId(), assignedResult.getTandemmaster().get(0).getFlyer().getId());
 
         return tandemmaster.getId();
     }
 
     @Test
     void testAssignTandemmasterToJumpday_Remove_TandemmasterNotFound() {
-        GenericResult<Jumpday> initialResult = jumpdayService.saveJumpday(ModelMockHelper.createJumpday());
-        assertTrue(initialResult.isSuccess());
+        Jumpday initialResult = jumpdayService.saveJumpday(ModelMockHelper.createJumpday());
+        LocalDate date = initialResult.getDate();
+        SimpleAssignment assignment = new SimpleAssignment(true);
 
-        GenericResult<Void> result = tandemmasterService.assignTandemmasterToJumpday(
-                initialResult.getPayload().getDate(), "99999999", new SimpleAssignment(true));
+        NotFoundException ex = assertThrows(NotFoundException.class, () ->
+            tandemmasterService.assignTandemmasterToJumpday(date, "99999999", assignment)
+        );
 
-        assertNotNull(result);
-        assertFalse(result.isSuccess());
-        assertEquals(ErrorMessage.TANDEMMASTER_NOT_FOUND.toString(), result.getMessage());
+        assertEquals(ErrorMessage.TANDEMMASTER_NOT_FOUND, ex.getErrorMessage());
     }
 
     @Test
     void testAssignTandemmasterToJumpday_Remove_JumpdayNotFound() {
         Tandemmaster tandemmaster = tandemmasterRepository.save(ModelMockHelper.createTandemmaster());
+        LocalDate date = LocalDate.now().plus(1, ChronoUnit.YEARS);
+        String tandemmasterId = tandemmaster.getId();
+        SimpleAssignment assignment = new SimpleAssignment(true);
 
-        GenericResult<Void> result = tandemmasterService.assignTandemmasterToJumpday(
-                LocalDate.now().plus(1, ChronoUnit.YEARS), tandemmaster.getId(), new SimpleAssignment(true));
+        NotFoundException notFoundException = assertThrows(NotFoundException.class, () ->
+            tandemmasterService.assignTandemmasterToJumpday(date, tandemmasterId, assignment)
+        );
 
-        assertNotNull(result);
-        assertFalse(result.isSuccess());
-        assertEquals(ErrorMessage.JUMPDAY_NOT_FOUND_MSG.toString(), result.getMessage());
+        assertEquals(ErrorMessage.JUMPDAY_NOT_FOUND_MSG, notFoundException.getErrorMessage());
     }
 
     @Test
     void testAssignTandemmaster_Addition() {
-        TandemmasterDetailsDTO tandemmasterDetails = prepareJumpdaysAndTandemmaster();
+        TandemmasterDetails tandemmasterDetails = prepareJumpdaysAndTandemmaster();
         SimpleAssignment assignmentDTO = new SimpleAssignment(true);
         tandemmasterDetails.setAssignments(Map.of(LocalDate.now(), assignmentDTO, LocalDate.now().plus(1, ChronoUnit.DAYS), assignmentDTO));
 
         saveAssignment(tandemmasterDetails);
 
-        GenericResult<Jumpday> assignedResult1 = jumpdayService.findJumpday(LocalDate.now());
-        GenericResult<Jumpday> assignedResult2 = jumpdayService.findJumpday(LocalDate.now().plus(1, ChronoUnit.DAYS));
+        Jumpday assignedResult1 = jumpdayService.findJumpday(LocalDate.now());
+        Jumpday assignedResult2 = jumpdayService.findJumpday(LocalDate.now().plus(1, ChronoUnit.DAYS));
 
-        assertEquals(1, assignedResult1.getPayload().getTandemmaster().size());
-        assertEquals(1, assignedResult2.getPayload().getTandemmaster().size());
+        assertEquals(1, assignedResult1.getTandemmaster().size());
+        assertEquals(1, assignedResult2.getTandemmaster().size());
     }
 
-    private void saveAssignment(TandemmasterDetailsDTO tandemmasterDetails) {
-        GenericResult<Void> result = tandemmasterService.assignTandemmaster(tandemmasterDetails, false);
-        assertTrue(result.isSuccess());
+    private void saveAssignment(TandemmasterDetails tandemmasterDetails) {
+        tandemmasterService.assignTandemmaster(tandemmasterDetails, false);
     }
 
     @Test
     void testAssignTandemmaster_FromAlldayToTime() {
-        TandemmasterDetailsDTO tandemmasterDetails = prepareJumpdaysAndTandemmaster();
+        TandemmasterDetails tandemmasterDetails = prepareJumpdaysAndTandemmaster();
 
         saveAndCheckDayBasedAssignment(tandemmasterDetails);
 
@@ -292,81 +329,81 @@ class MongoTandemmasterServiceTest extends AbstractSkdvinTest {
 
     @Test
     void testAssignTandemmaster_FromTimeToAllday() {
-        TandemmasterDetailsDTO tandemmaster = prepareJumpdaysAndTandemmaster();
+        TandemmasterDetails tandemmaster = prepareJumpdaysAndTandemmaster();
 
         saveAndCheckTimeBasedAssignment(tandemmaster);
 
         saveAndCheckDayBasedAssignment(tandemmaster);
     }
 
-    private void saveAndCheckTimeBasedAssignment(TandemmasterDetailsDTO tandemmasterDetails) {
+    private void saveAndCheckTimeBasedAssignment(TandemmasterDetails tandemmasterDetails) {
         SimpleAssignment assignmentDTO = new SimpleAssignment(true, false, LocalTime.of(13, 0), LocalTime.of(20, 0));
         tandemmasterDetails.setAssignments(Map.of(LocalDate.now(), assignmentDTO));
 
         saveAssignment(tandemmasterDetails);
-        GenericResult<Jumpday> assignedResult = jumpdayService.findJumpday(LocalDate.now());
+        Jumpday assignedResult = jumpdayService.findJumpday(LocalDate.now());
 
-        assertEquals(1, assignedResult.getPayload().getTandemmaster().size());
-        assertFalse(assignedResult.getPayload().getTandemmaster().get(0).isAllday());
-        assertEquals(LocalTime.of(13, 0), assignedResult.getPayload().getTandemmaster().get(0).getFrom());
-        assertEquals(LocalTime.of(20, 0), assignedResult.getPayload().getTandemmaster().get(0).getTo());
+        assertEquals(1, assignedResult.getTandemmaster().size());
+        assertFalse(assignedResult.getTandemmaster().get(0).isAllday());
+        assertEquals(LocalTime.of(13, 0), assignedResult.getTandemmaster().get(0).getFrom());
+        assertEquals(LocalTime.of(20, 0), assignedResult.getTandemmaster().get(0).getTo());
     }
 
-    private void saveAndCheckDayBasedAssignment(TandemmasterDetailsDTO tandemmasterDetails) {
+    private void saveAndCheckDayBasedAssignment(TandemmasterDetails tandemmasterDetails) {
         SimpleAssignment assignmentDTO = new SimpleAssignment(true);
         tandemmasterDetails.setAssignments(Map.of(LocalDate.now(), assignmentDTO));
 
         saveAssignment(tandemmasterDetails);
-        GenericResult<Jumpday> assignedResult = jumpdayService.findJumpday(LocalDate.now());
-        assertEquals(1, assignedResult.getPayload().getTandemmaster().size());
-        assertTrue(assignedResult.getPayload().getTandemmaster().get(0).isAllday());
+        Jumpday assignedResult = jumpdayService.findJumpday(LocalDate.now());
+        assertEquals(1, assignedResult.getTandemmaster().size());
+        assertTrue(assignedResult.getTandemmaster().get(0).isAllday());
     }
 
-    private TandemmasterDetailsDTO prepareJumpdaysAndTandemmaster() {
+    private TandemmasterDetails prepareJumpdaysAndTandemmaster() {
         Jumpday jumpday1 = ModelMockHelper.createJumpday();
         Jumpday jumpday2 = ModelMockHelper.createJumpday(LocalDate.now().plus(1, ChronoUnit.DAYS));
         jumpdayRepository.save(jumpday1);
         jumpdayRepository.save(jumpday2);
         Tandemmaster tandemmaster = tandemmasterRepository.save(ModelMockHelper.createTandemmaster());
         TandemmasterConverter converter = new TandemmasterConverter();
-        return converter.convertToDetailsDto(tandemmaster, Map.of());
+        return converter.convertToDetails(tandemmaster, Map.of());
     }
 
     @Test
     void testAssignTandemmaster_Removal() {
-        TandemmasterDetailsDTO tandemmasterDetails = prepareJumpdaysAndTandemmaster();
+        TandemmasterDetails tandemmasterDetails = prepareJumpdaysAndTandemmaster();
         tandemmasterService.assignTandemmasterToJumpday(LocalDate.now(), tandemmasterDetails.getId(), new SimpleAssignment(true));
         tandemmasterService.assignTandemmasterToJumpday(LocalDate.now().plus(1, ChronoUnit.DAYS), tandemmasterDetails.getId(), new SimpleAssignment(true));
 
-        GenericResult<Jumpday> assignedResult1 = jumpdayService.findJumpday(LocalDate.now());
-        GenericResult<Jumpday> assignedResult2 = jumpdayService.findJumpday(LocalDate.now().plus(1, ChronoUnit.DAYS));
+        Jumpday assignedResult1 = jumpdayService.findJumpday(LocalDate.now());
+        Jumpday assignedResult2 = jumpdayService.findJumpday(LocalDate.now().plus(1, ChronoUnit.DAYS));
 
-        assertEquals(1, assignedResult1.getPayload().getTandemmaster().size());
-        assertEquals(1, assignedResult2.getPayload().getTandemmaster().size());
+        assertEquals(1, assignedResult1.getTandemmaster().size());
+        assertEquals(1, assignedResult2.getTandemmaster().size());
 
 
         tandemmasterDetails.setAssignments(Map.of(LocalDate.now(), new SimpleAssignment(false), LocalDate.now().plus(1, ChronoUnit.DAYS), new SimpleAssignment(false)));
-        GenericResult<Void> result = tandemmasterService.assignTandemmaster(tandemmasterDetails, false);
+        tandemmasterService.assignTandemmaster(tandemmasterDetails, false);
 
         assignedResult1 = jumpdayService.findJumpday(LocalDate.now());
         assignedResult2 = jumpdayService.findJumpday(LocalDate.now().plus(1, ChronoUnit.DAYS));
 
-        assertTrue(result.isSuccess());
-        assertEquals(0, assignedResult1.getPayload().getTandemmaster().size());
-        assertEquals(0, assignedResult2.getPayload().getTandemmaster().size());
+        assertEquals(0, assignedResult1.getTandemmaster().size());
+        assertEquals(0, assignedResult2.getTandemmaster().size());
     }
 
     @Test
     void testAssignTandemmaster_Error() {
         Tandemmaster tandemmaster = tandemmasterRepository.save(ModelMockHelper.createTandemmaster());
         TandemmasterConverter converter = new TandemmasterConverter();
-        TandemmasterDetailsDTO tandemmasterDetails = converter.convertToDetailsDto(tandemmaster, Map.of());
+        TandemmasterDetails tandemmasterDetails = converter.convertToDetails(tandemmaster, Map.of());
         tandemmasterDetails.setAssignments(Map.of(LocalDate.now(), new SimpleAssignment(false), LocalDate.now().plus(1, ChronoUnit.DAYS), new SimpleAssignment(false)));
 
-        GenericResult<Void> result = tandemmasterService.assignTandemmaster(tandemmasterDetails, false);
+        NotFoundException notFoundException = assertThrows(NotFoundException.class, () ->
+            tandemmasterService.assignTandemmaster(tandemmasterDetails, false)
+        );
 
-        assertFalse(result.isSuccess());
-        assertEquals(ErrorMessage.JUMPDAY_NOT_FOUND_MSG.toString(), result.getMessage());
+        assertEquals(ErrorMessage.JUMPDAY_NOT_FOUND_MSG, notFoundException.getErrorMessage());
     }
 
     @Test
@@ -375,25 +412,34 @@ class MongoTandemmasterServiceTest extends AbstractSkdvinTest {
 
         tandemmasterService.delete(id);
 
-        assertNull(tandemmasterService.getById(id));
+        NotFoundException notFoundException = assertThrows(NotFoundException.class, () ->
+            tandemmasterService.getById(id)
+        );
+
+        assertEquals(ErrorMessage.TANDEMMASTER_NOT_FOUND, notFoundException.getErrorMessage());
     }
 
     @Test
     void testDeleteTandemmaster_DeletesAssignments() {
-        TandemmasterDetailsDTO tandemmasterDetails = prepareJumpdaysAndTandemmaster();
+        TandemmasterDetails tandemmasterDetails = prepareJumpdaysAndTandemmaster();
         SimpleAssignment assignmentDTO = new SimpleAssignment(true);
         tandemmasterDetails.setAssignments(Map.of(LocalDate.now(), assignmentDTO));
 
         saveAssignment(tandemmasterDetails);
 
-        GenericResult<Jumpday> assignedResult = jumpdayService.findJumpday(LocalDate.now());
-        assertEquals(1, assignedResult.getPayload().getTandemmaster().size());
+        Jumpday assignedResult = jumpdayService.findJumpday(LocalDate.now());
+        assertEquals(1, assignedResult.getTandemmaster().size());
 
-        tandemmasterService.delete(tandemmasterDetails.getId());
+        String tandemmasterId = tandemmasterDetails.getId();
+        tandemmasterService.delete(tandemmasterId);
         assignedResult = jumpdayService.findJumpday(LocalDate.now());
 
-        assertNull(tandemmasterService.getById(tandemmasterDetails.getId()));
-        assertEquals(0, assignedResult.getPayload().getTandemmaster().size());
+        NotFoundException notFoundException = assertThrows(NotFoundException.class, () ->
+            tandemmasterService.getById(tandemmasterId)
+        );
+
+        assertEquals(ErrorMessage.TANDEMMASTER_NOT_FOUND, notFoundException.getErrorMessage());
+        assertEquals(0, assignedResult.getTandemmaster().size());
     }
 
 
@@ -403,13 +449,15 @@ class MongoTandemmasterServiceTest extends AbstractSkdvinTest {
         commonSettings.setSelfAssignmentMode(SelfAssignmentMode.READONLY);
         when(settingsService.getCommonSettingsByLanguage(Locale.GERMAN.getLanguage())).thenReturn(commonSettings);
 
-        TandemmasterDetailsDTO tandemmasterDetails = prepareJumpdaysAndTandemmaster();
+        TandemmasterDetails tandemmasterDetails = prepareJumpdaysAndTandemmaster();
         SimpleAssignment assignmentDTO = new SimpleAssignment(true);
         tandemmasterDetails.setAssignments(Map.of(LocalDate.now(), assignmentDTO, LocalDate.now().plus(1, ChronoUnit.DAYS), assignmentDTO));
 
-        GenericResult<Void> result = tandemmasterService.assignTandemmaster(tandemmasterDetails, true);
-        assertFalse(result.isSuccess());
-        assertEquals(ErrorMessage.SELFASSIGNMENT_READONLY.toString(), result.getMessage());
+        InvalidRequestException ex = assertThrows(InvalidRequestException.class, () ->
+            tandemmasterService.assignTandemmaster(tandemmasterDetails, true)
+        );
+
+        assertEquals(ErrorMessage.SELFASSIGNMENT_READONLY, ex.getErrorMessage());
     }
 
     @Test
@@ -418,14 +466,16 @@ class MongoTandemmasterServiceTest extends AbstractSkdvinTest {
         commonSettings.setSelfAssignmentMode(SelfAssignmentMode.NODELETE);
         when(settingsService.getCommonSettingsByLanguage(Locale.GERMAN.getLanguage())).thenReturn(commonSettings);
 
-        TandemmasterDetailsDTO tandemmasterDetails = prepareJumpdaysAndTandemmaster();
+        TandemmasterDetails tandemmasterDetails = prepareJumpdaysAndTandemmaster();
         tandemmasterService.assignTandemmasterToJumpday(LocalDate.now(), tandemmasterDetails.getId(), new SimpleAssignment(true));
 
         tandemmasterDetails.setAssignments(Map.of(LocalDate.now(), new SimpleAssignment(false), LocalDate.now().plus(1, ChronoUnit.DAYS), new SimpleAssignment(false)));
 
-        GenericResult<Void> result = tandemmasterService.assignTandemmaster(tandemmasterDetails, true);
-        assertFalse(result.isSuccess());
-        assertEquals(ErrorMessage.SELFASSIGNMENT_NODELETE.toString(), result.getMessage());
+        InvalidRequestException ex = assertThrows(InvalidRequestException.class, () ->
+            tandemmasterService.assignTandemmaster(tandemmasterDetails, true)
+        );
+
+        assertEquals(ErrorMessage.SELFASSIGNMENT_NODELETE, ex.getErrorMessage());
     }
 
     @Test
@@ -434,15 +484,17 @@ class MongoTandemmasterServiceTest extends AbstractSkdvinTest {
         commonSettings.setSelfAssignmentMode(SelfAssignmentMode.NODELETE);
         when(settingsService.getCommonSettingsByLanguage(Locale.GERMAN.getLanguage())).thenReturn(commonSettings);
 
-        TandemmasterDetailsDTO tandemmasterDetails = prepareJumpdaysAndTandemmaster();
+        TandemmasterDetails tandemmasterDetails = prepareJumpdaysAndTandemmaster();
         tandemmasterService.assignTandemmasterToJumpday(LocalDate.now(), tandemmasterDetails.getId(), new SimpleAssignment(true));
 
         tandemmasterDetails.setAssignments(Map.of(LocalDate.now(),
                 new SimpleAssignment(true, false, LocalTime.of(12, 0), LocalTime.of(20, 0))));
 
-        GenericResult<Void> result = tandemmasterService.assignTandemmaster(tandemmasterDetails, true);
-        assertFalse(result.isSuccess());
-        assertEquals(ErrorMessage.SELFASSIGNMENT_NODELETE.toString(), result.getMessage());
+        InvalidRequestException ex = assertThrows(InvalidRequestException.class, () ->
+            tandemmasterService.assignTandemmaster(tandemmasterDetails, true)
+        );
+
+        assertEquals(ErrorMessage.SELFASSIGNMENT_NODELETE, ex.getErrorMessage());
     }
 
     @Test
@@ -451,14 +503,16 @@ class MongoTandemmasterServiceTest extends AbstractSkdvinTest {
         commonSettings.setSelfAssignmentMode(SelfAssignmentMode.NODELETE);
         when(settingsService.getCommonSettingsByLanguage(Locale.GERMAN.getLanguage())).thenReturn(commonSettings);
 
-        TandemmasterDetailsDTO tandemmasterDetails = prepareJumpdaysAndTandemmaster();
+        TandemmasterDetails tandemmasterDetails = prepareJumpdaysAndTandemmaster();
         tandemmasterService.assignTandemmasterToJumpday(LocalDate.now(), tandemmasterDetails.getId(), new SimpleAssignment(true));
 
         tandemmasterDetails.setAssignments(new HashMap<>());
 
-        GenericResult<Void> result = tandemmasterService.assignTandemmaster(tandemmasterDetails, true);
-        assertFalse(result.isSuccess());
-        assertEquals(ErrorMessage.SELFASSIGNMENT_NODELETE.toString(), result.getMessage());
+        InvalidRequestException ex = assertThrows(InvalidRequestException.class, () ->
+            tandemmasterService.assignTandemmaster(tandemmasterDetails, true)
+        );
+
+        assertEquals(ErrorMessage.SELFASSIGNMENT_NODELETE, ex.getErrorMessage());
     }
 
 }
