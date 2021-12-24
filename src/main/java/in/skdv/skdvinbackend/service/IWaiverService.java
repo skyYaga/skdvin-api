@@ -1,14 +1,13 @@
 package in.skdv.skdvinbackend.service;
 
-import in.skdv.skdvinbackend.model.dto.WaiverDTO;
-import in.skdv.skdvinbackend.util.GenericResult;
+import in.skdv.skdvinbackend.model.entity.waiver.Waiver;
 
 import java.util.List;
 
 public interface IWaiverService {
-    List<WaiverDTO> getWaivers();
+    List<Waiver> getWaivers();
 
-    GenericResult<WaiverDTO> saveWaiver(WaiverDTO waiver);
+    Waiver saveWaiver(Waiver waiver);
 
-    GenericResult<WaiverDTO> updateWaiver(WaiverDTO waiver);
+    Waiver updateWaiver(Waiver waiver);
 }

@@ -289,7 +289,7 @@ class VideoflyerControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    void testAssignVideoflyer_BadRequest() throws Exception {
+    void testAssignVideoflyer_NotExisting() throws Exception {
         Videoflyer videoflyer = videoflyerRepository.save(ModelMockHelper.createVideoflyer());
         Jumpday jumpday = ModelMockHelper.createJumpday();
         jumpdayService.saveJumpday(jumpday);
@@ -301,7 +301,7 @@ class VideoflyerControllerTest extends AbstractSkdvinTest {
                 .header("Authorization", MockJwtDecoder.addHeader(UPDATE_VIDEOFLYER))
                 .contentType(contentType)
                 .content(videoflyerJson))
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.success", is(false)));
     }
 

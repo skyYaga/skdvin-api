@@ -1,20 +1,27 @@
 package in.skdv.skdvinbackend.service;
 
 import in.skdv.skdvinbackend.model.common.SimpleAssignment;
-import in.skdv.skdvinbackend.model.dto.TandemmasterDetailsDTO;
-import in.skdv.skdvinbackend.util.GenericResult;
+import in.skdv.skdvinbackend.model.entity.Tandemmaster;
+import in.skdv.skdvinbackend.model.entity.TandemmasterDetails;
 
 import java.time.LocalDate;
+import java.util.List;
 
 public interface ITandemmasterService {
 
-    TandemmasterDetailsDTO getById(String id);
+    Tandemmaster save(Tandemmaster convertedInput);
 
-    TandemmasterDetailsDTO getByEmail(String email);
+    Tandemmaster updateTandemmaster(Tandemmaster tandemmaster);
 
-    GenericResult<Void> assignTandemmasterToJumpday(LocalDate date, String tandemmasterId, SimpleAssignment assignment);
+    List<Tandemmaster> findAll();
 
-    GenericResult<Void> assignTandemmaster(TandemmasterDetailsDTO tandemmasterDetails, boolean selfAssign);
+    TandemmasterDetails getById(String id);
+
+    TandemmasterDetails getByEmail(String email);
+
+    void assignTandemmasterToJumpday(LocalDate date, String tandemmasterId, SimpleAssignment assignment);
+
+    void assignTandemmaster(TandemmasterDetails tandemmasterDetails, boolean selfAssign);
 
     void delete(String id);
 

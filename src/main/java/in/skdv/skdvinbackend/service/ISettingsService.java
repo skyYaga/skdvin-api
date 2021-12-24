@@ -11,7 +11,11 @@ public interface ISettingsService {
 
     Settings saveSettings(Settings settings);
 
+    Settings updateSettings(Settings settings);
+
     Settings getSettings();
+
+    Settings findById(String id);
 
     AdminSettings getAdminSettings();
 
@@ -22,4 +26,5 @@ public interface ISettingsService {
     Map<String, WaiverSettings> getWaiverSettings();
 
     WaiverSettings getWaiverSettingsByLanguage(String language);
+
 }

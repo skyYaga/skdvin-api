@@ -1,15 +1,14 @@
 package in.skdv.skdvinbackend.model.dto;
 
 import in.skdv.skdvinbackend.model.common.waiver.AbstractWaiver;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 
-@Getter
-@Setter
+@Data
+@EqualsAndHashCode(callSuper = true)
 public class WaiverDTO extends AbstractWaiver {
 
     private String id;
-
     private String waiverText;
 
 }

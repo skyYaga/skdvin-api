@@ -1,13 +1,11 @@
 package in.skdv.skdvinbackend.model.common.waiver;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
-@Getter
-@Setter
+@Data
 public class AbstractWaiver {
 
     private int appointmentId;

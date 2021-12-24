@@ -1,6 +1,7 @@
 package in.skdv.skdvinbackend.model.converter;
 
 import in.skdv.skdvinbackend.model.dto.SettingsDTO;
+import in.skdv.skdvinbackend.model.dto.SettingsInputDTO;
 import in.skdv.skdvinbackend.model.entity.settings.Settings;
 import org.modelmapper.ModelMapper;
 
@@ -22,4 +23,9 @@ public class SettingsConverter {
         return modelMapper.map(settingsDTO, Settings.class);
     }
 
+    public Settings convertToEntity(String id, SettingsInputDTO input) {
+        Settings settings = modelMapper.map(input, Settings.class);
+        settings.setId(id);
+        return settings;
+    }
 }

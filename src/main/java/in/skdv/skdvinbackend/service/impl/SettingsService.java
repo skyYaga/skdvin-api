@@ -1,26 +1,27 @@
 package in.skdv.skdvinbackend.service.impl;
 
+import in.skdv.skdvinbackend.exception.ErrorMessage;
+import in.skdv.skdvinbackend.exception.NotFoundException;
 import in.skdv.skdvinbackend.model.entity.settings.AdminSettings;
 import in.skdv.skdvinbackend.model.entity.settings.CommonSettings;
 import in.skdv.skdvinbackend.model.entity.settings.Settings;
 import in.skdv.skdvinbackend.model.entity.settings.WaiverSettings;
 import in.skdv.skdvinbackend.repository.SettingsRepository;
 import in.skdv.skdvinbackend.service.ISettingsService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 
-public class MongoSettingsService implements ISettingsService {
+@Slf4j
+@RequiredArgsConstructor
+public class SettingsService implements ISettingsService {
 
     private static final Locale DEFAULT_LOCALE = Locale.GERMAN;
-    private SettingsRepository settingsRepository;
-
-    @Autowired
-    public MongoSettingsService(SettingsRepository settingsRepository) {
-        this.settingsRepository = settingsRepository;
-    }
+    private final SettingsRepository settingsRepository;
 
     @Override
     public Settings saveSettings(Settings settings) {
@@ -32,8 +33,31 @@ public class MongoSettingsService implements ISettingsService {
     }
 
     @Override
+    public Settings updateSettings(Settings input) {
+        Optional<Settings> settings = settingsRepository.findById(input.getId());
+
+        if (settings.isEmpty()) {
+            log.error("Settings {} not found.", input.getId());
+            throw new NotFoundException(ErrorMessage.SETTINGS_NOT_FOUND);
+        }
+
+        return settingsRepository.save(input);
+    }
+
+    @Override
     public Settings getSettings() {
         return settingsRepository.findAll().stream().findFirst().orElse(null);
+    }
+
+    @Override
+    public Settings findById(String id) {
+        Optional<Settings> settings = settingsRepository.findById(id);
+
+        if (settings.isEmpty()) {
+            log.error("Settings {} not found.", id);
+            throw new NotFoundException(ErrorMessage.SETTINGS_NOT_FOUND);
+        }
+        return settings.get();
     }
 
     @Override

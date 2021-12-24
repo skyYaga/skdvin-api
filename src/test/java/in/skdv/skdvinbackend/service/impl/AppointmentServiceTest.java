@@ -3,13 +3,15 @@ package in.skdv.skdvinbackend.service.impl;
 import in.skdv.skdvinbackend.AbstractSkdvinTest;
 import in.skdv.skdvinbackend.ModelMockHelper;
 import in.skdv.skdvinbackend.exception.ErrorMessage;
+import in.skdv.skdvinbackend.exception.InvalidRequestException;
+import in.skdv.skdvinbackend.exception.NoSlotsLeftException;
+import in.skdv.skdvinbackend.exception.NotFoundException;
 import in.skdv.skdvinbackend.model.common.FreeSlot;
 import in.skdv.skdvinbackend.model.common.GroupSlot;
 import in.skdv.skdvinbackend.model.common.SlotQuery;
 import in.skdv.skdvinbackend.model.entity.*;
 import in.skdv.skdvinbackend.repository.JumpdayRepository;
 import in.skdv.skdvinbackend.service.IAppointmentService;
-import in.skdv.skdvinbackend.util.GenericResult;
 import in.skdv.skdvinbackend.util.VerificationTokenUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,11 +24,12 @@ import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.List;
 
+import static in.skdv.skdvinbackend.exception.ErrorMessage.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 
 @SpringBootTest
-class MongoAppointmentServiceTest extends AbstractSkdvinTest {
+class AppointmentServiceTest extends AbstractSkdvinTest {
 
     @Autowired
     private JumpdayRepository jumpdayRepository;
@@ -37,7 +40,7 @@ class MongoAppointmentServiceTest extends AbstractSkdvinTest {
     @BeforeEach
     void setup() {
         // Set mock clock
-        Clock mockClock = Clock.fixed(Instant.parse(LocalDate.now().toString() + "T00:00:00Z"), ZoneOffset.UTC);
+        Clock mockClock = Clock.fixed(Instant.parse(LocalDate.now() + "T00:00:00Z"), ZoneOffset.UTC);
         ReflectionTestUtils.setField(appointmentService, "clock", mockClock);
 
         jumpdayRepository.deleteAll();
@@ -51,11 +54,10 @@ class MongoAppointmentServiceTest extends AbstractSkdvinTest {
         assertNull(appointment.getCreatedOn());
         assertEquals(0, appointment.getAppointmentId());
 
-        GenericResult<Appointment> savedAppointment = appointmentService.saveAppointment(appointment);
+        Appointment savedAppointment = appointmentService.saveAppointment(appointment);
 
-        assertTrue(savedAppointment.isSuccess());
-        assertNotNull(savedAppointment.getPayload().getCreatedOn());
-        assertNotEquals(0, savedAppointment.getPayload().getAppointmentId());
+        assertNotNull(savedAppointment.getCreatedOn());
+        assertNotEquals(0, savedAppointment.getAppointmentId());
     }
 
 
@@ -67,10 +69,9 @@ class MongoAppointmentServiceTest extends AbstractSkdvinTest {
         assertNull(appointment.getCreatedOn());
         assertEquals(0, appointment.getAppointmentId());
 
-        GenericResult<Appointment> savedAppointment = appointmentService.saveAdminAppointment(appointment);
+        Appointment savedAppointment = appointmentService.saveAdminAppointment(appointment);
 
-        assertTrue(savedAppointment.isSuccess());
-        assertEquals(AppointmentState.CONFIRMED, savedAppointment.getPayload().getState());
+        assertEquals(AppointmentState.CONFIRMED, savedAppointment.getState());
     }
 
     @Test
@@ -79,10 +80,9 @@ class MongoAppointmentServiceTest extends AbstractSkdvinTest {
         Appointment appointment = ModelMockHelper.createSingleAppointment();
         appointment.setNote(note);
 
-        GenericResult<Appointment> savedAppointment = appointmentService.saveAppointment(appointment);
+        Appointment savedAppointment = appointmentService.saveAppointment(appointment);
 
-        assertTrue(savedAppointment.isSuccess());
-        assertEquals(note, savedAppointment.getPayload().getNote());
+        assertEquals(note, savedAppointment.getNote());
     }
 
     @Test
@@ -90,129 +90,131 @@ class MongoAppointmentServiceTest extends AbstractSkdvinTest {
         Appointment appointment = ModelMockHelper.createSingleAppointment();
         appointment.setDate(LocalDateTime.now().plusDays(1));
 
-        GenericResult<Appointment> savedAppointment = appointmentService.saveAppointment(appointment);
+        NotFoundException notFoundException = assertThrows(NotFoundException.class, () ->
+            appointmentService.saveAppointment(appointment)
+        );
 
-        assertFalse(savedAppointment.isSuccess());
-        assertEquals(ErrorMessage.JUMPDAY_NOT_FOUND_MSG.toString(), savedAppointment.getMessage());
+        assertEquals(ErrorMessage.JUMPDAY_NOT_FOUND_MSG, notFoundException.getErrorMessage());
     }
 
     @Test
     void testSaveAppointment_NoTandemSlotsAvailable() {
         Appointment appointment = ModelMockHelper.createAppointment(5, 0, 0, 0);
 
-        GenericResult<Appointment> savedAppointment = appointmentService.saveAppointment(appointment);
+        NoSlotsLeftException ex = assertThrows(NoSlotsLeftException.class, () ->
+                appointmentService.saveAppointment(appointment));
 
-        assertFalse(savedAppointment.isSuccess());
-        assertEquals(ErrorMessage.JUMPDAY_NO_FREE_SLOTS.toString(), savedAppointment.getMessage());
+        assertEquals(JUMPDAY_NO_FREE_SLOTS, ex.getErrorMessage());
     }
 
     @Test
     void testSaveAppointment_NoSlotsAvailable() {
         Appointment appointment = ModelMockHelper.createAppointment(5, 3, 0, 0);
 
-        GenericResult<Appointment> savedAppointment = appointmentService.saveAppointment(appointment);
+        NoSlotsLeftException ex = assertThrows(NoSlotsLeftException.class, () ->
+                appointmentService.saveAppointment(appointment));
 
-        assertFalse(savedAppointment.isSuccess());
-        assertEquals(ErrorMessage.JUMPDAY_NO_FREE_SLOTS.toString(), savedAppointment.getMessage());
+        assertEquals(JUMPDAY_NO_FREE_SLOTS, ex.getErrorMessage());
     }
 
     @Test
     void testSaveAppointment_PicOrVid_NoSlotsAvailable() {
         Appointment appointment = ModelMockHelper.createAppointment(3, 3, 0, 0);
 
-        GenericResult<Appointment> savedAppointment = appointmentService.saveAppointment(appointment);
+        NoSlotsLeftException ex = assertThrows(NoSlotsLeftException.class, () ->
+                appointmentService.saveAppointment(appointment));
 
-        assertFalse(savedAppointment.isSuccess());
-        assertEquals(ErrorMessage.JUMPDAY_NO_FREE_SLOTS.toString(), savedAppointment.getMessage());
+        assertEquals(JUMPDAY_NO_FREE_SLOTS, ex.getErrorMessage());
     }
 
     @Test
     void testSaveAppointment_PicOrVid_MoreVideoThanTandemSlots() {
         Appointment appointment = ModelMockHelper.createAppointment(3, 5, 0, 0);
 
-        GenericResult<Appointment> savedAppointment = appointmentService.saveAppointment(appointment);
+        InvalidRequestException ex = assertThrows(InvalidRequestException.class, () ->
+                appointmentService.saveAppointment(appointment));
 
-        assertFalse(savedAppointment.isSuccess());
-        assertEquals(ErrorMessage.APPOINTMENT_MORE_VIDEO_THAN_TAMDEM_SLOTS.toString(), savedAppointment.getMessage());
+        assertEquals(APPOINTMENT_MORE_VIDEO_THAN_TAMDEM_SLOTS, ex.getErrorMessage());
     }
 
     @Test
     void testSaveAppointment_PicAndVid_NoSlotsAvailable() {
         Appointment appointment = ModelMockHelper.createAppointment(3, 0, 3, 0);
 
-        GenericResult<Appointment> savedAppointment = appointmentService.saveAppointment(appointment);
+        NoSlotsLeftException ex = assertThrows(NoSlotsLeftException.class, () ->
+                appointmentService.saveAppointment(appointment));
 
-        assertFalse(savedAppointment.isSuccess());
-        assertEquals(ErrorMessage.JUMPDAY_NO_FREE_SLOTS.toString(), savedAppointment.getMessage());
+        assertEquals(JUMPDAY_NO_FREE_SLOTS, ex.getErrorMessage());
     }
 
     @Test
     void testSaveAppointment_PicAndVid_MoreVideoThanTandemSlots() {
         Appointment appointment = ModelMockHelper.createAppointment(3, 0, 5, 0);
 
-        GenericResult<Appointment> savedAppointment = appointmentService.saveAppointment(appointment);
+        InvalidRequestException ex = assertThrows(InvalidRequestException.class, () ->
+                appointmentService.saveAppointment(appointment));
 
-        assertFalse(savedAppointment.isSuccess());
-        assertEquals(ErrorMessage.APPOINTMENT_MORE_VIDEO_THAN_TAMDEM_SLOTS.toString(), savedAppointment.getMessage());
+        assertEquals(APPOINTMENT_MORE_VIDEO_THAN_TAMDEM_SLOTS, ex.getErrorMessage());
     }
 
     @Test
     void testSaveAppointment_Handcam_NoSlotsAvailable() {
         Appointment appointment = ModelMockHelper.createAppointment(3, 0, 0, 3);
 
-        GenericResult<Appointment> savedAppointment = appointmentService.saveAppointment(appointment);
+        NoSlotsLeftException ex = assertThrows(NoSlotsLeftException.class, () ->
+                appointmentService.saveAppointment(appointment));
 
-        assertFalse(savedAppointment.isSuccess());
-        assertEquals(ErrorMessage.JUMPDAY_NO_FREE_SLOTS.toString(), savedAppointment.getMessage());
+        assertEquals(JUMPDAY_NO_FREE_SLOTS, ex.getErrorMessage());
     }
 
     @Test
     void testSaveAppointment_Handcam_MoreVideoThanTandemSlots() {
         Appointment appointment = ModelMockHelper.createAppointment(3, 0, 0, 5);
 
-        GenericResult<Appointment> savedAppointment = appointmentService.saveAppointment(appointment);
+        InvalidRequestException ex = assertThrows(InvalidRequestException.class, () ->
+                appointmentService.saveAppointment(appointment));
 
-        assertFalse(savedAppointment.isSuccess());
-        assertEquals(ErrorMessage.APPOINTMENT_MORE_VIDEO_THAN_TAMDEM_SLOTS.toString(), savedAppointment.getMessage());
+        assertEquals(APPOINTMENT_MORE_VIDEO_THAN_TAMDEM_SLOTS, ex.getErrorMessage());
     }
 
     @Test
     void testSaveAppointment_PicVidHandcam_MoreVideoThanTandemSlots() {
         Appointment appointment = ModelMockHelper.createAppointment(3, 2, 1, 1);
 
-        GenericResult<Appointment> savedAppointment = appointmentService.saveAppointment(appointment);
+        InvalidRequestException ex = assertThrows(InvalidRequestException.class, () ->
+                appointmentService.saveAppointment(appointment));
 
-        assertFalse(savedAppointment.isSuccess());
-        assertEquals(ErrorMessage.APPOINTMENT_MORE_VIDEO_THAN_TAMDEM_SLOTS.toString(), savedAppointment.getMessage());
+        assertEquals(APPOINTMENT_MORE_VIDEO_THAN_TAMDEM_SLOTS, ex.getErrorMessage());
     }
 
     @Test
     void testSaveAppointment_PicAndVid_MoreCombinedVideoSlotsThanAvailable() {
         Appointment appointment = ModelMockHelper.createAppointment(4, 2, 1, 0);
 
-        GenericResult<Appointment> savedAppointment = appointmentService.saveAppointment(appointment);
+        NoSlotsLeftException ex = assertThrows(NoSlotsLeftException.class, () ->
+                appointmentService.saveAppointment(appointment));
 
-        assertFalse(savedAppointment.isSuccess());
-        assertEquals(ErrorMessage.JUMPDAY_NO_FREE_SLOTS.toString(), savedAppointment.getMessage());
+        assertEquals(JUMPDAY_NO_FREE_SLOTS, ex.getErrorMessage());
     }
 
     @Test
     void testFindAppointment() {
-        GenericResult<Appointment> appointment = appointmentService.saveAppointment(ModelMockHelper.createSecondAppointment());
+        Appointment appointment = appointmentService.saveAppointment(ModelMockHelper.createSecondAppointment());
         appointmentService.saveAppointment(ModelMockHelper.createSingleAppointment());
-        assertTrue(appointment.isSuccess());
 
-        Appointment foundAppointment = appointmentService.findAppointment(appointment.getPayload().getAppointmentId());
+        Appointment foundAppointment = appointmentService.findAppointment(appointment.getAppointmentId());
 
-        assertEquals(appointment.getPayload().getAppointmentId(), foundAppointment.getAppointmentId());
-        assertEquals(appointment.getPayload().getTandem(), foundAppointment.getTandem());
-        assertEquals(appointment.getPayload().getCustomer().getFirstName(), foundAppointment.getCustomer().getFirstName());
+        assertEquals(appointment.getAppointmentId(), foundAppointment.getAppointmentId());
+        assertEquals(appointment.getTandem(), foundAppointment.getTandem());
+        assertEquals(appointment.getCustomer().getFirstName(), foundAppointment.getCustomer().getFirstName());
     }
 
     @Test
     void testFindAppointment_InvalidId() {
-        Appointment foundAppointment = appointmentService.findAppointment(9999999);
-        assertNull(foundAppointment);
+        NotFoundException notFoundException = assertThrows(NotFoundException.class, () ->
+                appointmentService.findAppointment(9999999));
+
+        assertEquals(APPOINTMENT_NOT_FOUND, notFoundException.getErrorMessage());
     }
 
     @Test
@@ -238,185 +240,161 @@ class MongoAppointmentServiceTest extends AbstractSkdvinTest {
 
     @Test
     void testUpdateAppointment() {
-        GenericResult<Appointment> appointment = appointmentService.saveAppointment(ModelMockHelper.createSecondAppointment());
-        assertTrue(appointment.isSuccess());
-        int appointmentId = appointment.getPayload().getAppointmentId();
-        appointment.getPayload().getCustomer().setFirstName("Unitbob");
+        Appointment appointment = appointmentService.saveAppointment(ModelMockHelper.createSecondAppointment());
+        int appointmentId = appointment.getAppointmentId();
+        appointment.getCustomer().setFirstName("Unitbob");
 
-        GenericResult<Appointment> updatedAppointment = appointmentService.updateAppointment(appointment.getPayload());
+        Appointment updatedAppointment = appointmentService.updateAppointment(appointment);
 
-        assertTrue(updatedAppointment.isSuccess());
-        assertEquals(appointmentId, updatedAppointment.getPayload().getAppointmentId());
-        assertEquals("Unitbob", updatedAppointment.getPayload().getCustomer().getFirstName());
+        assertEquals(appointmentId, updatedAppointment.getAppointmentId());
+        assertEquals("Unitbob", updatedAppointment.getCustomer().getFirstName());
     }
 
     @Test
     void testUpdateAppointment_WithNote() {
         String note = "Price is 10% off";
 
-        GenericResult<Appointment> savedAppointment = appointmentService.saveAppointment(ModelMockHelper.createSingleAppointment());
-        assertTrue(savedAppointment.isSuccess());
-        assertTrue(savedAppointment.getPayload().getNote().isEmpty());
-        savedAppointment.getPayload().setNote(note);
+        Appointment savedAppointment = appointmentService.saveAppointment(ModelMockHelper.createSingleAppointment());
+        assertTrue(savedAppointment.getNote().isEmpty());
+        savedAppointment.setNote(note);
 
-        GenericResult<Appointment> updatedAppointment = appointmentService.updateAppointment(savedAppointment.getPayload());
+        Appointment updatedAppointment = appointmentService.updateAppointment(savedAppointment);
 
-        assertTrue(updatedAppointment.isSuccess());
-        assertEquals(note, updatedAppointment.getPayload().getNote());
+        assertEquals(note, updatedAppointment.getNote());
     }
 
     @Test
     void testUpdateAppointment_ChangeTime() {
-        GenericResult<Appointment> appointmentResult = appointmentService.saveAppointment(ModelMockHelper.createSecondAppointment());
-        assertTrue(appointmentResult.isSuccess());
-        Appointment appointment = appointmentResult.getPayload();
+        Appointment appointment = appointmentService.saveAppointment(ModelMockHelper.createSecondAppointment());
         int appointmentId = appointment.getAppointmentId();
         LocalDateTime newDate = LocalDateTime.of(LocalDate.now(), LocalTime.of(11, 30));
         appointment.setDate(newDate);
 
-        GenericResult<Appointment> updatedAppointment = appointmentService.updateAppointment(appointment);
+        Appointment updatedAppointment = appointmentService.updateAppointment(appointment);
 
-        assertTrue(updatedAppointment.isSuccess());
-        assertEquals(appointmentId, updatedAppointment.getPayload().getAppointmentId());
-        assertEquals("Jane", updatedAppointment.getPayload().getCustomer().getFirstName());
-        assertEquals(newDate, updatedAppointment.getPayload().getDate());
+        assertEquals(appointmentId, updatedAppointment.getAppointmentId());
+        assertEquals("Jane", updatedAppointment.getCustomer().getFirstName());
+        assertEquals(newDate, updatedAppointment.getDate());
     }
 
     @Test
     void testUpdateAppointment_ChangeDate() {
         jumpdayRepository.save(ModelMockHelper.createJumpday(LocalDate.now().plusDays(1)));
-        GenericResult<Appointment> appointmentResult = appointmentService.saveAppointment(ModelMockHelper.createSecondAppointment());
-        assertTrue(appointmentResult.isSuccess());
-        Appointment appointment = appointmentResult.getPayload();
+        Appointment appointment = appointmentService.saveAppointment(ModelMockHelper.createSecondAppointment());
         int appointmentId = appointment.getAppointmentId();
         LocalDateTime newDate = appointment.getDate().plusDays(1);
         appointment.setDate(newDate);
 
-        GenericResult<Appointment> updatedAppointment = appointmentService.updateAppointment(appointment);
+        Appointment updatedAppointment = appointmentService.updateAppointment(appointment);
 
-        assertTrue(updatedAppointment.isSuccess());
-        assertEquals(appointmentId, updatedAppointment.getPayload().getAppointmentId());
-        assertEquals("Jane", updatedAppointment.getPayload().getCustomer().getFirstName());
-        assertEquals(newDate, updatedAppointment.getPayload().getDate());
+        assertEquals(appointmentId, updatedAppointment.getAppointmentId());
+        assertEquals("Jane", updatedAppointment.getCustomer().getFirstName());
+        assertEquals(newDate, updatedAppointment.getDate());
     }
 
     @Test
     void testUpdateAppointment_ChangeDateAndTime() {
         jumpdayRepository.save(ModelMockHelper.createJumpday(LocalDate.now().plusDays(1)));
-        GenericResult<Appointment> appointmentResult = appointmentService.saveAppointment(ModelMockHelper.createSecondAppointment());
-        assertTrue(appointmentResult.isSuccess());
-        Appointment appointment = appointmentResult.getPayload();
+        Appointment appointment = appointmentService.saveAppointment(ModelMockHelper.createSecondAppointment());
         int appointmentId = appointment.getAppointmentId();
         LocalDateTime newDate = LocalDateTime.of(LocalDate.now().plusDays(1), LocalTime.of(11, 30));
         appointment.setDate(newDate);
 
-        GenericResult<Appointment> updatedAppointment = appointmentService.updateAppointment(appointment);
+        Appointment updatedAppointment = appointmentService.updateAppointment(appointment);
 
-        assertTrue(updatedAppointment.isSuccess());
-        assertEquals(appointmentId, updatedAppointment.getPayload().getAppointmentId());
-            assertEquals("Jane", updatedAppointment.getPayload().getCustomer().getFirstName());
-        assertEquals(newDate, updatedAppointment.getPayload().getDate());
+        assertEquals(appointmentId, updatedAppointment.getAppointmentId());
+            assertEquals("Jane", updatedAppointment.getCustomer().getFirstName());
+        assertEquals(newDate, updatedAppointment.getDate());
     }
 
     @Test
     void testUpdateAdminAppointment() {
-        GenericResult<Appointment> appointment = appointmentService.saveAppointment(ModelMockHelper.createSecondAppointment());
-        assertTrue(appointment.isSuccess());
-        int appointmentId = appointment.getPayload().getAppointmentId();
-        appointment.getPayload().getCustomer().setJumpers(Collections.emptyList());
-        appointment.getPayload().setTandem(3);
+        Appointment appointment = appointmentService.saveAppointment(ModelMockHelper.createSecondAppointment());
+        int appointmentId = appointment.getAppointmentId();
+        appointment.getCustomer().setJumpers(Collections.emptyList());
+        appointment.setTandem(3);
 
-        GenericResult<Appointment> updatedAppointment = appointmentService.updateAdminAppointment(appointment.getPayload());
+        Appointment updatedAppointment = appointmentService.updateAdminAppointment(appointment);
 
-        assertTrue(updatedAppointment.isSuccess());
-        assertEquals(appointmentId, updatedAppointment.getPayload().getAppointmentId());
-        assertEquals(0, updatedAppointment.getPayload().getCustomer().getJumpers().size());
-        assertEquals(3, updatedAppointment.getPayload().getTandem());
+        assertEquals(appointmentId, updatedAppointment.getAppointmentId());
+        assertEquals(0, updatedAppointment.getCustomer().getJumpers().size());
+        assertEquals(3, updatedAppointment.getTandem());
     }
 
     @Test
     void testUpdateAdminAppointment_ChangeDate() {
         jumpdayRepository.save(ModelMockHelper.createJumpday(LocalDate.now().plusDays(1)));
-        GenericResult<Appointment> appointment = appointmentService.saveAppointment(ModelMockHelper.createSecondAppointment());
-        assertTrue(appointment.isSuccess());
-        int appointmentId = appointment.getPayload().getAppointmentId();
-        appointment.getPayload().getCustomer().setJumpers(Collections.emptyList());
-        LocalDateTime newDate = appointment.getPayload().getDate().plusDays(1);
-        appointment.getPayload().setDate(newDate);
+        Appointment appointment = appointmentService.saveAppointment(ModelMockHelper.createSecondAppointment());
+        int appointmentId = appointment.getAppointmentId();
+        appointment.getCustomer().setJumpers(Collections.emptyList());
+        LocalDateTime newDate = appointment.getDate().plusDays(1);
+        appointment.setDate(newDate);
 
-        GenericResult<Appointment> updatedAppointment = appointmentService.updateAdminAppointment(appointment.getPayload());
+        Appointment updatedAppointment = appointmentService.updateAdminAppointment(appointment);
 
-        assertTrue(updatedAppointment.isSuccess());
-        assertEquals(appointmentId, updatedAppointment.getPayload().getAppointmentId());
-        assertEquals(0, updatedAppointment.getPayload().getCustomer().getJumpers().size());
-        assertEquals(newDate, updatedAppointment.getPayload().getDate());
+        assertEquals(appointmentId, updatedAppointment.getAppointmentId());
+        assertEquals(0, updatedAppointment.getCustomer().getJumpers().size());
+        assertEquals(newDate, updatedAppointment.getDate());
     }
 
     @Test
     void testFindFreeSlots() {
         SlotQuery slotQuery = new SlotQuery(2, 1, 0, 0);
 
-        GenericResult<List<FreeSlot>> freeSlots = appointmentService.findFreeSlots(slotQuery);
+        List<FreeSlot> freeSlots = appointmentService.findFreeSlots(slotQuery);
 
-        assertTrue(freeSlots.isSuccess());
-        assertNotNull(freeSlots.getPayload());
-        assertEquals(1, freeSlots.getPayload().size());
-        assertEquals(LocalDate.now(), freeSlots.getPayload().get(0).getDate());
-        assertEquals(2, freeSlots.getPayload().get(0).getTimes().size());
-        assertEquals(LocalTime.of(10, 0), freeSlots.getPayload().get(0).getTimes().get(0));
-        assertEquals(LocalTime.of(11, 30), freeSlots.getPayload().get(0).getTimes().get(1));
+        assertNotNull(freeSlots);
+        assertEquals(1, freeSlots.size());
+        assertEquals(LocalDate.now(), freeSlots.get(0).getDate());
+        assertEquals(2, freeSlots.get(0).getTimes().size());
+        assertEquals(LocalTime.of(10, 0), freeSlots.get(0).getTimes().get(0));
+        assertEquals(LocalTime.of(11, 30), freeSlots.get(0).getTimes().get(1));
     }
 
     @Test
     void testFindFreeSlots_TooManyTandems() {
         SlotQuery slotQuery = new SlotQuery(5, 1, 0, 0);
 
-        GenericResult<List<FreeSlot>> freeSlots = appointmentService.findFreeSlots(slotQuery);
+        List<FreeSlot> freeSlots = appointmentService.findFreeSlots(slotQuery);
 
-        assertFalse(freeSlots.isSuccess());
-        assertNull(freeSlots.getPayload());
-        assertEquals(ErrorMessage.APPOINTMENT_NO_FREE_SLOTS.toString(), freeSlots.getMessage());
+        assertEquals(0, freeSlots.size());
     }
 
     @Test
     void testFindFreeSlots_TooManyVids() {
         SlotQuery slotQuery = new SlotQuery(4, 4, 0, 0);
 
-        GenericResult<List<FreeSlot>> freeSlots = appointmentService.findFreeSlots(slotQuery);
+        List<FreeSlot> freeSlots = appointmentService.findFreeSlots(slotQuery);
 
-        assertFalse(freeSlots.isSuccess());
-        assertNull(freeSlots.getPayload());
-        assertEquals(ErrorMessage.APPOINTMENT_NO_FREE_SLOTS.toString(), freeSlots.getMessage());
+        assertEquals(0, freeSlots.size());
     }
 
     @Test
     void testFindFreeSlots_TooManyCombinedPicVids() {
         SlotQuery slotQuery = new SlotQuery(4, 2, 1, 0);
 
-        GenericResult<List<FreeSlot>> freeSlots = appointmentService.findFreeSlots(slotQuery);
+        List<FreeSlot> freeSlots = appointmentService.findFreeSlots(slotQuery);
 
-        assertFalse(freeSlots.isSuccess());
-        assertNull(freeSlots.getPayload());
-        assertEquals(ErrorMessage.APPOINTMENT_NO_FREE_SLOTS.toString(), freeSlots.getMessage());
+        assertEquals(0, freeSlots.size());
     }
 
     @Test
     void testUpdateAppointmentState() {
-        GenericResult<Appointment> result = appointmentService.saveAppointment(ModelMockHelper.createSingleAppointment());
-        GenericResult<Void> stateResult = appointmentService.updateAppointmentState(result.getPayload(), AppointmentState.CONFIRMED);
-        Appointment appointment = appointmentService.findAppointment(result.getPayload().getAppointmentId());
+        Appointment result = appointmentService.saveAppointment(ModelMockHelper.createSingleAppointment());
+        appointmentService.updateAppointmentState(result, AppointmentState.CONFIRMED);
+        Appointment appointment = appointmentService.findAppointment(result.getAppointmentId());
 
-        assertTrue(stateResult.isSuccess());
         assertEquals(AppointmentState.CONFIRMED, appointment.getState());
     }
 
     @Test
     void testUpdateAppointmentState_InvalidAppointment() {
         Appointment invalidAppointment = ModelMockHelper.createSingleAppointment();
-        GenericResult<Void> result = appointmentService.updateAppointmentState(invalidAppointment, AppointmentState.CONFIRMED);
 
-        assertFalse(result.isSuccess());
-        assertEquals(ErrorMessage.APPOINTMENT_NOT_FOUND.toString(), result.getMessage());
+        NotFoundException ex = assertThrows(NotFoundException.class, () ->
+                appointmentService.updateAppointmentState(invalidAppointment, AppointmentState.CONFIRMED));
+
+        assertEquals(APPOINTMENT_NOT_FOUND, ex.getErrorMessage());
     }
 
     @Test
@@ -461,10 +439,15 @@ class MongoAppointmentServiceTest extends AbstractSkdvinTest {
     void testDeleteAppointment() {
         Appointment appointment = ModelMockHelper.createSingleAppointment();
         appointmentService.saveAppointment(appointment);
+        int appointmentId = appointment.getAppointmentId();
 
-        appointmentService.deleteAppointment(appointment.getAppointmentId());
+        appointmentService.deleteAppointment(appointmentId);
 
-        assertNull(appointmentService.findAppointment(appointment.getAppointmentId()));
+        NotFoundException notFoundException = assertThrows(NotFoundException.class, () ->
+            appointmentService.findAppointment(appointmentId)
+        );
+
+        assertEquals(APPOINTMENT_NOT_FOUND, notFoundException.getErrorMessage());
     }
 
     @Test
@@ -556,11 +539,11 @@ class MongoAppointmentServiceTest extends AbstractSkdvinTest {
 
     @Test
     void testReminderSent() {
-        GenericResult<Appointment> savedAppointment = appointmentService.saveAppointment(ModelMockHelper.createSingleAppointment());
+        Appointment savedAppointment = appointmentService.saveAppointment(ModelMockHelper.createSingleAppointment());
 
-        appointmentService.reminderSent(savedAppointment.getPayload());
+        appointmentService.reminderSent(savedAppointment);
 
-        Appointment appointment = appointmentService.findAppointment(savedAppointment.getPayload().getAppointmentId());
+        Appointment appointment = appointmentService.findAppointment(savedAppointment.getAppointmentId());
 
         assertTrue(appointment.isReminderSent());
     }
@@ -569,11 +552,11 @@ class MongoAppointmentServiceTest extends AbstractSkdvinTest {
     void testReminderSent_AdminAppointment() {
         Appointment singleAppointment = ModelMockHelper.createSingleAppointment();
         singleAppointment.getCustomer().setJumpers(Collections.emptyList());
-        GenericResult<Appointment> savedAppointment = appointmentService.saveAdminAppointment(singleAppointment);
+        Appointment savedAppointment = appointmentService.saveAdminAppointment(singleAppointment);
 
-        appointmentService.reminderSent(savedAppointment.getPayload());
+        appointmentService.reminderSent(savedAppointment);
 
-        Appointment appointment = appointmentService.findAppointment(savedAppointment.getPayload().getAppointmentId());
+        Appointment appointment = appointmentService.findAppointment(savedAppointment.getAppointmentId());
 
         assertTrue(appointment.isReminderSent());
     }
