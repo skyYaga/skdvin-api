@@ -81,6 +81,25 @@ class TandemmasterServiceTest extends AbstractSkdvinTest {
     }
 
     @Test
+    void testGetTandemmasterById_DoesNotContainPastDates() {
+        Tandemmaster tandemmaster = tandemmasterRepository.save(ModelMockHelper.createTandemmaster());
+        LocalDate yesterday = LocalDate.now().minus(1, ChronoUnit.DAYS);
+
+        Jumpday jumpday1 = ModelMockHelper.createJumpday();
+        Jumpday jumpday2 = ModelMockHelper.createJumpday(yesterday);
+        jumpday1.getTandemmaster().add(createAssignment(tandemmaster));
+        jumpday2.getTandemmaster().add(createAssignment(tandemmaster));
+        jumpdayRepository.save(jumpday1);
+        jumpdayRepository.save(jumpday2);
+
+        TandemmasterDetails tandemmasterDetails = tandemmasterService.getById(tandemmaster.getId());
+
+        assertNotNull(tandemmasterDetails);
+        assertEquals(1, tandemmasterDetails.getAssignments().size());
+        assertTrue(tandemmasterDetails.getAssignments().get(LocalDate.now()).isAssigned());
+    }
+
+    @Test
     void testGetTandemmasterByEmail() {
         Tandemmaster tandemmaster1 = ModelMockHelper.createTandemmaster();
         tandemmaster1.setEmail(MockJwtDecoder.EXAMPLE_EMAIL);
@@ -101,6 +120,28 @@ class TandemmasterServiceTest extends AbstractSkdvinTest {
         assertEquals(2, tandemmasterDetails.getAssignments().size());
         assertTrue(tandemmasterDetails.getAssignments().get(LocalDate.now()).isAssigned());
         assertFalse(tandemmasterDetails.getAssignments().get(nowPlus1).isAssigned());
+    }
+
+    @Test
+    void testGetTandemmasterByEmail_DoesNotContainPastDates() {
+        Tandemmaster tandemmaster1 = ModelMockHelper.createTandemmaster();
+        tandemmaster1.setEmail(MockJwtDecoder.EXAMPLE_EMAIL);
+
+        Tandemmaster tandemmaster = tandemmasterRepository.save(tandemmaster1);
+        LocalDate yesterday = LocalDate.now().minus(1, ChronoUnit.DAYS);
+
+        Jumpday jumpday1 = ModelMockHelper.createJumpday();
+        Jumpday jumpday2 = ModelMockHelper.createJumpday(yesterday);
+        jumpday1.getTandemmaster().add(createAssignment(tandemmaster));
+        jumpday2.getTandemmaster().add(createAssignment(tandemmaster));
+        jumpdayRepository.save(jumpday1);
+        jumpdayRepository.save(jumpday2);
+
+        TandemmasterDetails tandemmasterDetails = tandemmasterService.getByEmail(tandemmaster.getEmail());
+
+        assertNotNull(tandemmasterDetails);
+        assertEquals(1, tandemmasterDetails.getAssignments().size());
+        assertTrue(tandemmasterDetails.getAssignments().get(LocalDate.now()).isAssigned());
     }
 
     private Assignment<Tandemmaster> createAssignment(Tandemmaster tandemmaster, boolean assigned) {
