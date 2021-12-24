@@ -31,6 +31,7 @@ import org.springframework.web.context.WebApplicationContext;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.Collections;
@@ -183,6 +184,23 @@ class JumpdayControllerTest extends AbstractSkdvinTest {
                 .andExpect(jsonPath("$.payload", hasSize(2)))
                 .andExpect(jsonPath("$.payload[0].date", is(result.getDate().toString())))
                 .andExpect(jsonPath("$.payload[1].date", is(result2.getDate().toString())));
+    }
+
+    @Test
+    void testGetByMonth() throws Exception {
+        Jumpday result = jumpdayService.saveJumpday(ModelMockHelper.createJumpday());
+        jumpdayService.saveJumpday(ModelMockHelper.createJumpday(LocalDate.now().plusMonths(1)));
+        jumpdayService.saveJumpday(ModelMockHelper.createJumpday(LocalDate.now().minusMonths(1)));
+
+        String formattedYearMonth = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM"));
+
+        mockMvc.perform(get("/api/jumpday")
+                        .queryParam("month", formattedYearMonth)
+                .header("Authorization", MockJwtDecoder.addHeader(READ_JUMPDAYS)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success", is(true)))
+                .andExpect(jsonPath("$.payload", hasSize(1)))
+                .andExpect(jsonPath("$.payload[0].date", is(result.getDate().toString())));
     }
 
 

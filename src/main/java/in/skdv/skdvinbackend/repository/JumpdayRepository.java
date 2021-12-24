@@ -18,4 +18,7 @@ public interface JumpdayRepository extends MongoRepository<Jumpday, Integer> {
     @Query("{'date': {$gte: ?0}}")
     List<Jumpday> findAllAfterIncludingDate(LocalDate date);
 
+    @Query("{$and: [ {'date': {$gte: ?0}}, {'date': {$lte: ?1}} ] }")
+    List<Jumpday> findInRange(LocalDate firstDayOfMonth, LocalDate lastDayOfMonth);
+
 }
