@@ -21,7 +21,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -131,7 +130,7 @@ public class AppointmentService implements IAppointmentService {
         Jumpday jumpday = jumpdayRepository.findByDate(date);
         if (jumpday != null && jumpday.getSlots() != null) {
             return jumpday.getSlots().stream()
-                    .flatMap(s -> s.getAppointments().stream().filter(Objects::nonNull)).collect(Collectors.toList());
+                    .flatMap(s -> s.getAppointments().stream().filter(Objects::nonNull)).toList();
         }
         return new ArrayList<>();
     }
@@ -154,7 +153,7 @@ public class AppointmentService implements IAppointmentService {
                                         && slot.isValidForQuery(slotQuery)
                         )
                         .map(Slot::getTime)
-                        .collect(Collectors.toList());
+                        .toList();
 
                 if (!slotTimes.isEmpty()) {
                     resultList.add(new FreeSlot(jumpday.getDate(), slotTimes));
@@ -173,7 +172,7 @@ public class AppointmentService implements IAppointmentService {
 
     @Override
     public List<Appointment> findUnconfirmedAppointments() {
-        List<Jumpday> jumpdayList = jumpdayRepository.findAll();
+        List<Jumpday> jumpdayList = jumpdayRepository.findAllAfterIncludingDate(LocalDate.now());
 
         return jumpdayList.stream()
                 .flatMap(day -> day.getSlots().stream())
@@ -181,7 +180,7 @@ public class AppointmentService implements IAppointmentService {
                 .filter(a -> a != null && a.getVerificationToken() != null
                         && a.getVerificationToken().getExpiryDate().isBefore(LocalDateTime.now())
                         && a.getState().equals(AppointmentState.UNCONFIRMED))
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override
