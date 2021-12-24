@@ -3,15 +3,15 @@ package in.skdv.skdvinbackend.service.impl;
 import in.skdv.skdvinbackend.AbstractSkdvinTest;
 import in.skdv.skdvinbackend.ModelMockHelper;
 import in.skdv.skdvinbackend.exception.ErrorMessage;
+import in.skdv.skdvinbackend.exception.InvalidRequestException;
+import in.skdv.skdvinbackend.exception.NotFoundException;
 import in.skdv.skdvinbackend.model.common.waiver.WaiverState;
 import in.skdv.skdvinbackend.model.converter.WaiverConverter;
-import in.skdv.skdvinbackend.model.dto.WaiverDTO;
 import in.skdv.skdvinbackend.model.entity.settings.WaiverSettings;
 import in.skdv.skdvinbackend.model.entity.waiver.Waiver;
 import in.skdv.skdvinbackend.repository.WaiverRepository;
 import in.skdv.skdvinbackend.service.ISettingsService;
 import in.skdv.skdvinbackend.service.IWaiverService;
-import in.skdv.skdvinbackend.util.GenericResult;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -29,7 +29,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 @SpringBootTest
-class MongoWaiverServiceTest extends AbstractSkdvinTest {
+class WaiverServiceTest extends AbstractSkdvinTest {
 
     private WaiverConverter converter = new WaiverConverter();
 
@@ -56,10 +56,9 @@ class MongoWaiverServiceTest extends AbstractSkdvinTest {
     void saveWaiver() {
         Waiver waiver = ModelMockHelper.createWaiver();
 
-        GenericResult<WaiverDTO> savedWaiver = waiverService.saveWaiver(converter.convertToDto(waiver));
+        Waiver savedWaiver = waiverService.saveWaiver(waiver);
 
-        Assertions.assertTrue(savedWaiver.isSuccess());
-        Assertions.assertNotNull(savedWaiver.getPayload().getId());
+        Assertions.assertNotNull(savedWaiver.getId());
         Assertions.assertEquals(1, waiverService.getWaivers().size());
     }
 
@@ -67,10 +66,9 @@ class MongoWaiverServiceTest extends AbstractSkdvinTest {
     void saveWaiver_AddsText() {
         Waiver waiver = ModelMockHelper.createWaiver();
 
-        GenericResult<WaiverDTO> savedWaiver = waiverService.saveWaiver(converter.convertToDto(waiver));
+        Waiver savedWaiver = waiverService.saveWaiver(waiver);
 
-        Assertions.assertTrue(savedWaiver.isSuccess());
-        Assertions.assertEquals(waiverSettings.getTandemwaiver(), savedWaiver.getPayload().getWaiverText());
+        Assertions.assertEquals(waiverSettings.getTandemwaiver(), savedWaiver.getWaiverText());
     }
 
     @Test
@@ -80,10 +78,8 @@ class MongoWaiverServiceTest extends AbstractSkdvinTest {
         waiver.setParentSignature1("data:signatureParent1");
         waiver.setParentSignature2("data:signatureParent2");
 
-        GenericResult<WaiverDTO> savedWaiver = waiverService.saveWaiver(converter.convertToDto(waiver));
+        Waiver savedWaiver = waiverService.saveWaiver(waiver);
 
-        Assertions.assertTrue(savedWaiver.isSuccess());
-        Assertions.assertNotNull(savedWaiver.getPayload().getId());
         Assertions.assertEquals(1, waiverService.getWaivers().size());
     }
 
@@ -95,53 +91,50 @@ class MongoWaiverServiceTest extends AbstractSkdvinTest {
         waiver.setParentSignature1(sig1);
         waiver.setParentSignature2(sig2);
 
-        GenericResult<WaiverDTO> savedWaiver = waiverService.saveWaiver(converter.convertToDto(waiver));
+        InvalidRequestException ex = Assertions.assertThrows(InvalidRequestException.class, () ->
+                waiverService.saveWaiver(waiver));
 
-        Assertions.assertFalse(savedWaiver.isSuccess());
-        Assertions.assertEquals(ErrorMessage.WAIVER_MINOR_MISSING_SIGNATURES.toString(), savedWaiver.getMessage());
-        Assertions.assertNull(savedWaiver.getPayload());
+        Assertions.assertEquals(ErrorMessage.WAIVER_MINOR_MISSING_SIGNATURES, ex.getErrorMessage());
     }
 
     @Test
     void updateWaiver_AssignTandemmaster() {
         Waiver waiver = ModelMockHelper.createWaiver();
-        WaiverDTO savedWaiver = waiverService.saveWaiver(converter.convertToDto(waiver)).getPayload();
+        Waiver savedWaiver = waiverService.saveWaiver(waiver);
 
         Assertions.assertEquals(WaiverState.NEW, savedWaiver.getState());
         savedWaiver.setTandemmaster("foo");
 
-        GenericResult<WaiverDTO> updatedWaiver = waiverService.updateWaiver(savedWaiver);
-        Assertions.assertTrue(updatedWaiver.isSuccess());
-        Assertions.assertEquals("foo", updatedWaiver.getPayload().getTandemmaster());
+        Waiver updatedWaiver = waiverService.updateWaiver(savedWaiver);
+        Assertions.assertEquals("foo", updatedWaiver.getTandemmaster());
         Assertions.assertEquals(WaiverState.ASSIGNED, savedWaiver.getState());
     }
 
     @Test
     void updateWaiver_TandemmasterSigned() {
         Waiver waiver = ModelMockHelper.createWaiver();
-        WaiverDTO savedWaiver = waiverService.saveWaiver(converter.convertToDto(waiver)).getPayload();
+        Waiver savedWaiver = waiverService.saveWaiver(waiver);
         savedWaiver.setTandemmaster("foo");
-        savedWaiver = waiverService.updateWaiver(savedWaiver).getPayload();
+        savedWaiver = waiverService.updateWaiver(savedWaiver);
 
         Assertions.assertEquals(WaiverState.ASSIGNED, savedWaiver.getState());
 
         savedWaiver.setTandemmasterSignature("data:signatureTM");
 
-        GenericResult<WaiverDTO> updatedWaiver = waiverService.updateWaiver(savedWaiver);
-        Assertions.assertTrue(updatedWaiver.isSuccess());
-        Assertions.assertEquals("data:signatureTM", updatedWaiver.getPayload().getTandemmasterSignature());
+        Waiver updatedWaiver = waiverService.updateWaiver(savedWaiver);
+        Assertions.assertEquals("data:signatureTM", updatedWaiver.getTandemmasterSignature());
         Assertions.assertEquals(WaiverState.CONFIRMED, savedWaiver.getState());
     }
 
     @Test
     void updateWaiver_ErrorWhenWaiverNotExisting() {
-        WaiverDTO waiverDTO = converter.convertToDto(ModelMockHelper.createWaiver());
+        Waiver waiverDTO = ModelMockHelper.createWaiver();
         waiverDTO.setId("anyID");
-        GenericResult<WaiverDTO> updatedWaiver = waiverService.updateWaiver(waiverDTO);
 
-        Assertions.assertFalse(updatedWaiver.isSuccess());
-        Assertions.assertEquals(ErrorMessage.WAIVER_NOT_EXISTING.toString(), updatedWaiver.getMessage());
-        Assertions.assertNull(updatedWaiver.getPayload());
+        NotFoundException notFoundException = Assertions.assertThrows(NotFoundException.class, () ->
+                waiverService.updateWaiver(waiverDTO));
+
+        Assertions.assertEquals(ErrorMessage.WAIVER_NOT_EXISTING, notFoundException.getErrorMessage());
     }
 
     private static Stream<Arguments> provideStringsForMinorAndParentSignaturesMissing() {

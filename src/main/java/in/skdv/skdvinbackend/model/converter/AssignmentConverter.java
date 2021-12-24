@@ -18,16 +18,16 @@ import java.util.List;
 
 public class AssignmentConverter {
 
-    private ModelMapper modelMapper = new ModelMapper();
-    private ModelMapper videoflyerMapper = new ModelMapper();
-    private ModelMapper tandemmasterMapper = new ModelMapper();
+    private final ModelMapper modelMapper = new ModelMapper();
+    private final ModelMapper videoflyerMapper = new ModelMapper();
+    private final ModelMapper tandemmasterMapper = new ModelMapper();
 
     public AssignmentConverter() {
         initTandemmasterMapper();
         initVideoflyerMapper();
     }
 
-    public SimpleAssignment convertToSimpleAssignment(Assignment assignment) {
+    public <T extends AbstractFlyer> SimpleAssignment convertToSimpleAssignment(Assignment<T> assignment) {
         if (assignment == null) {
             return null;
         }

@@ -4,10 +4,8 @@ import in.skdv.skdvinbackend.model.entity.Appointment;
 import in.skdv.skdvinbackend.model.entity.settings.CommonSettings;
 import in.skdv.skdvinbackend.service.IEmailService;
 import in.skdv.skdvinbackend.service.ISettingsService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.MessageSource;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -21,15 +19,16 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
+@Slf4j
+@RequiredArgsConstructor
 public class EmailService implements IEmailService {
 
-    private static final Logger LOG = LoggerFactory.getLogger(EmailService.class);
     private static final String APPOINTMENT_CONFIRMATION_ENDPOINT = "/%s/appointment/verify?id=%d&token=%s";
 
-    private ISettingsService settingsService;
-    private JavaMailSender mailSender;
-    private TemplateEngine emailTemplateEngine;
-    private MessageSource emailMessageSource;
+    private final ISettingsService settingsService;
+    private final JavaMailSender mailSender;
+    private final TemplateEngine emailTemplateEngine;
+    private final MessageSource emailMessageSource;
 
     @Value("${skdvin.from}")
     private String fromEmail;
@@ -37,14 +36,6 @@ public class EmailService implements IEmailService {
     @Value("${skdvin.baseurl}")
     private String baseurl;
 
-
-    @Autowired
-    public EmailService(ISettingsService settingsService, JavaMailSender mailSender, TemplateEngine emailTemplateEngine, @Qualifier("emailMessageSource") MessageSource emailMessageSource) {
-        this.settingsService = settingsService;
-        this.mailSender = mailSender;
-        this.emailTemplateEngine = emailTemplateEngine;
-        this.emailMessageSource = emailMessageSource;
-    }
 
     @Override
     public void sendAppointmentVerification(Appointment appointment) throws MessagingException {
@@ -61,7 +52,7 @@ public class EmailService implements IEmailService {
 
         prepareAppointmentMessage(mimeMessage, appointment, subject, template, contextVariables);
 
-        LOG.info("Sending appointment verification mail to {}", appointment.getCustomer().getEmail());
+        log.info("Sending appointment verification mail to {}", appointment.getCustomer().getEmail());
 
         mailSender.send(mimeMessage);
     }
@@ -75,7 +66,7 @@ public class EmailService implements IEmailService {
 
         prepareAppointmentMessage(mimeMessage, appointment, subject, template, null);
 
-        LOG.info("Sending appointment confirmation mail to {}", appointment.getCustomer().getEmail());
+        log.info("Sending appointment confirmation mail to {}", appointment.getCustomer().getEmail());
 
         mailSender.send(mimeMessage);
     }
@@ -89,7 +80,7 @@ public class EmailService implements IEmailService {
 
         prepareAppointmentMessage(mimeMessage, appointment, subject, template, null);
 
-        LOG.info("Sending appointment unconfirmed cancellation mail to {}", appointment.getCustomer().getEmail());
+        log.info("Sending appointment unconfirmed cancellation mail to {}", appointment.getCustomer().getEmail());
 
         mailSender.send(mimeMessage);
     }
@@ -103,7 +94,7 @@ public class EmailService implements IEmailService {
 
         prepareAppointmentMessage(mimeMessage, appointment, subject, template, null);
 
-        LOG.info("Sending appointment updated mail to {}", appointment.getCustomer().getEmail());
+        log.info("Sending appointment updated mail to {}", appointment.getCustomer().getEmail());
 
         mailSender.send(mimeMessage);
     }
@@ -117,7 +108,7 @@ public class EmailService implements IEmailService {
 
         prepareAppointmentMessage(mimeMessage, appointment, subject, template, null);
 
-        LOG.info("Sending appointment deleted mail to {}", appointment.getCustomer().getEmail());
+        log.info("Sending appointment deleted mail to {}", appointment.getCustomer().getEmail());
 
         mailSender.send(mimeMessage);
     }
@@ -131,7 +122,7 @@ public class EmailService implements IEmailService {
 
         prepareAppointmentMessage(mimeMessage, appointment, subject, template, null);
 
-        LOG.info("Sending appointment reminder mail to {}", appointment.getCustomer().getEmail());
+        log.info("Sending appointment reminder mail to {}", appointment.getCustomer().getEmail());
 
         mailSender.send(mimeMessage);
     }

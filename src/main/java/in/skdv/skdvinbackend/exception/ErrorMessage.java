@@ -5,6 +5,8 @@ package in.skdv.skdvinbackend.exception;
  */
 public enum ErrorMessage {
 
+    INTERNAL_SERVICE_EXCEPTION("internal.service.exception"),
+
     APPOINTMENT_MORE_VIDEO_THAN_TAMDEM_SLOTS("appointment.more.video.than.tandem"),
     APPOINTMENT_SERVICE_ERROR_MSG("appointment.service.error"),
     APPOINTMENT_NO_FREE_SLOTS("appointment.no.free.slots"),
@@ -27,8 +29,9 @@ public enum ErrorMessage {
 
     SETTINGS_NOT_FOUND("settings.not.found"),
 
-    SELFASSIGNMENT_READONLY("selfassignment.readonly"),
+    SELFASSIGNMENT_INVALID("selfassignment.invalid"),
     SELFASSIGNMENT_NODELETE("selfassignment.nodelete"),
+    SELFASSIGNMENT_READONLY("selfassignment.readonly"),
 
     WAIVER_MINOR_MISSING_SIGNATURES("waiver.minor.missing.signatures"),
     WAIVER_NOT_EXISTING("waiver.not.existing");

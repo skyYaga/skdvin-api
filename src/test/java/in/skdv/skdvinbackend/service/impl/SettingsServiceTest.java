@@ -20,7 +20,7 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
-class MongoSettingsServiceTest extends AbstractSkdvinTest {
+class SettingsServiceTest extends AbstractSkdvinTest {
 
     @Autowired
     private ISettingsService settingsService;

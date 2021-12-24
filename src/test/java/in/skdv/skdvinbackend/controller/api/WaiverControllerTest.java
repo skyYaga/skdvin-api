@@ -6,10 +6,10 @@ import in.skdv.skdvinbackend.ModelMockHelper;
 import in.skdv.skdvinbackend.model.converter.WaiverConverter;
 import in.skdv.skdvinbackend.model.dto.WaiverDTO;
 import in.skdv.skdvinbackend.model.entity.settings.WaiverSettings;
+import in.skdv.skdvinbackend.model.entity.waiver.Waiver;
 import in.skdv.skdvinbackend.repository.WaiverRepository;
 import in.skdv.skdvinbackend.service.ISettingsService;
 import in.skdv.skdvinbackend.service.IWaiverService;
-import in.skdv.skdvinbackend.util.GenericResult;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -92,8 +92,8 @@ class WaiverControllerTest extends AbstractSkdvinTest {
 
     @Test
     void testGetAllWaivers() throws Exception {
-        waiverService.saveWaiver(converter.convertToDto(ModelMockHelper.createWaiver()));
-        waiverService.saveWaiver(converter.convertToDto(ModelMockHelper.createWaiver()));
+        waiverService.saveWaiver(ModelMockHelper.createWaiver());
+        waiverService.saveWaiver(ModelMockHelper.createWaiver());
 
         mockMvc.perform(get("/api/waivers")
                 .header("Authorization", MockJwtDecoder.addHeader(READ_WAIVERS))
@@ -157,12 +157,11 @@ class WaiverControllerTest extends AbstractSkdvinTest {
 
     @Test
     void testUpdateWaiver() throws Exception {
-        WaiverDTO waiver1 = converter.convertToDto(ModelMockHelper.createWaiver());
-        GenericResult<WaiverDTO> result = waiverService.saveWaiver(waiver1);
+        Waiver result = waiverService.saveWaiver(ModelMockHelper.createWaiver());
 
-        String userJson = json(result.getPayload());
+        String userJson = json(result);
 
-        mockMvc.perform(put("/api/waivers")
+        mockMvc.perform(put("/api/waivers/{id}", result.getId())
                 .header("Authorization", MockJwtDecoder.addHeader(UPDATE_WAIVERS))
                 .contentType(contentType)
                 .content(userJson))
@@ -171,36 +170,36 @@ class WaiverControllerTest extends AbstractSkdvinTest {
 
     @Test
     void testUpdateWaiver_NotExisting_DE() throws Exception {
-        WaiverDTO waiver1 = converter.convertToDto(ModelMockHelper.createWaiver());
-        waiver1.setTandemmaster("12345");
-        waiver1.setId("12345");
+        WaiverDTO waiver = converter.convertToDto(ModelMockHelper.createWaiver());
+        waiver.setTandemmaster("12345");
+        waiver.setId("12345");
 
-        String userJson = json(waiver1);
+        String userJson = json(waiver);
 
-        mockMvc.perform(put("/api/waivers")
+        mockMvc.perform(put("/api/waivers/{id}", waiver.getId())
                 .header("Authorization", MockJwtDecoder.addHeader(UPDATE_WAIVERS))
                 .header("Accept-Language", "de")
                 .contentType(contentType)
                 .content(userJson))
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.success", is(false)))
                 .andExpect(jsonPath("$.message", is("Haftungsvereinbarung existiert nicht")));
     }
 
     @Test
     void testUpdateWaiver_NotExisting_EN() throws Exception {
-        WaiverDTO waiver1 = converter.convertToDto(ModelMockHelper.createWaiver());
-        waiver1.setTandemmaster("12345");
-        waiver1.setId("12345");
+        WaiverDTO waiver = converter.convertToDto(ModelMockHelper.createWaiver());
+        waiver.setTandemmaster("12345");
+        waiver.setId("12345");
 
-        String userJson = json(waiver1);
+        String userJson = json(waiver);
 
-        mockMvc.perform(put("/api/waivers")
+        mockMvc.perform(put("/api/waivers/{id}", waiver.getId())
                 .header("Authorization", MockJwtDecoder.addHeader(UPDATE_WAIVERS))
                 .header("Accept-Language", "en")
                 .contentType(contentType)
                 .content(userJson))
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.success", is(false)))
                 .andExpect(jsonPath("$.message", is("Waiver does not exist")));
     }

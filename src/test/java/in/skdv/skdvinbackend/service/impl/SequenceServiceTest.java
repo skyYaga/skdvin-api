@@ -2,7 +2,7 @@ package in.skdv.skdvinbackend.service.impl;
 
 import in.skdv.skdvinbackend.AbstractSkdvinTest;
 import in.skdv.skdvinbackend.model.entity.Sequence;
-import in.skdv.skdvinbackend.service.ISequenceService;
+import in.skdv.skdvinbackend.repository.ISequenceRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -14,7 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class SequenceServiceTest extends AbstractSkdvinTest {
 
     @Autowired
-    private ISequenceService sequenceService;
+    private ISequenceRepository sequenceService;
 
     @Autowired
     private MongoOperations mongoOperations;

@@ -62,11 +62,6 @@ class TandemmasterConverterTest {
     }
 
     @Test
-    void convertToEntity_Null() {
-        assertNull(converter.convertToEntity(null));
-    }
-
-    @Test
     void convertToDetailsDto() {
         Tandemmaster tandemmaster = ModelMockHelper.createTandemmaster();
         Map<LocalDate, SimpleAssignment> assignments = Map.of(LocalDate.now(), new SimpleAssignment(true));

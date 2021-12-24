@@ -1,6 +1,7 @@
 package in.skdv.skdvinbackend.model.common;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import lombok.Data;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -8,18 +9,11 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
+@Data
 public class GroupSlot {
 
     private LocalDate date;
     private List<SimpleSlot> slots = new ArrayList<>();
-
-    public LocalDate getDate() {
-        return date;
-    }
-
-    public void setDate(LocalDate date) {
-        this.date = date;
-    }
 
     @JsonFormat(pattern = "HH:mm")
     public LocalTime getFirstTime() {
@@ -33,14 +27,6 @@ public class GroupSlot {
 
     public int getTimeCount() {
         return slots.size();
-    }
-
-    public List<SimpleSlot> getSlots() {
-        return slots;
-    }
-
-    public void setSlots(List<SimpleSlot> slots) {
-        this.slots = slots;
     }
 
     public int getTandemAvailable() {

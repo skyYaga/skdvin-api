@@ -2,9 +2,11 @@ package in.skdv.skdvinbackend.model.common;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import in.skdv.skdvinbackend.model.entity.Slot;
+import lombok.Data;
 
 import java.time.LocalTime;
 
+@Data
 public class SimpleSlot {
 
     @JsonFormat(pattern = "HH:mm")
@@ -13,46 +15,6 @@ public class SimpleSlot {
     private int picOrVidAvailable;
     private int picAndVidAvailable;
     private int handcamAvailable;
-
-    public LocalTime getTime() {
-        return time;
-    }
-
-    public void setTime(LocalTime time) {
-        this.time = time;
-    }
-
-    public int getTandemAvailable() {
-        return tandemAvailable;
-    }
-
-    public void setTandemAvailable(int tandemAvailable) {
-        this.tandemAvailable = tandemAvailable;
-    }
-
-    public int getPicOrVidAvailable() {
-        return picOrVidAvailable;
-    }
-
-    public void setPicOrVidAvailable(int picOrVidAvailable) {
-        this.picOrVidAvailable = picOrVidAvailable;
-    }
-
-    public int getPicAndVidAvailable() {
-        return picAndVidAvailable;
-    }
-
-    public void setPicAndVidAvailable(int picAndVidAvailable) {
-        this.picAndVidAvailable = picAndVidAvailable;
-    }
-
-    public int getHandcamAvailable() {
-        return handcamAvailable;
-    }
-
-    public void setHandcamAvailable(int handcamAvailable) {
-        this.handcamAvailable = handcamAvailable;
-    }
 
     public static SimpleSlot fromSlot(Slot slot) {
         SimpleSlot simpleSlot = new SimpleSlot();

@@ -5,7 +5,8 @@ import in.skdv.skdvinbackend.model.dto.RoleDTO;
 import in.skdv.skdvinbackend.model.dto.UserDTO;
 import in.skdv.skdvinbackend.service.IUserService;
 import in.skdv.skdvinbackend.util.GenericResult;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -13,24 +14,22 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/users")
+@RequiredArgsConstructor
 public class UserController {
 
-    private IUserService userService;
-
-    @Autowired
-    public UserController(IUserService userService) {
-        this.userService = userService;
-    }
+    private final IUserService userService;
 
     @GetMapping
     @PreAuthorize("hasAuthority('SCOPE_read:users')")
-    public ResponseEntity<GenericResult<UserListResult>> getAllUsers(
+    public GenericResult<UserListResult> getAllUsers(
             @RequestParam(value = "page", defaultValue = "0") Integer pageNumber,
             @RequestParam(value = "per_page", defaultValue = "5") Integer amountPerPage) {
+        log.info("Getting users page {}, perPage: {}", pageNumber, amountPerPage);
         UserListResult userList = userService.getUsers(pageNumber, amountPerPage);
-        return ResponseEntity.ok(new GenericResult<>(true, userList));
+        return new GenericResult<>(true, userList);
     }
 
     @PutMapping
@@ -42,8 +41,9 @@ public class UserController {
 
     @GetMapping("/roles")
     @PreAuthorize("hasAuthority('SCOPE_read:users')")
-    public ResponseEntity<GenericResult<List<RoleDTO>>> getRoles() {
+    public GenericResult<List<RoleDTO>> getRoles() {
+        log.info("Getting roles");
         List<RoleDTO> roles = userService.getRoles();
-        return ResponseEntity.ok(new GenericResult<>(true, roles));
+        return new GenericResult<>(true, roles);
     }
 }

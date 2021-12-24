@@ -14,17 +14,15 @@ import in.skdv.skdvinbackend.model.common.user.UserListResult;
 import in.skdv.skdvinbackend.model.dto.RoleDTO;
 import in.skdv.skdvinbackend.model.dto.UserDTO;
 import in.skdv.skdvinbackend.service.IUserService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 public class Auth0UserService implements IUserService {
-
-    private static final Logger LOG = LoggerFactory.getLogger(Auth0UserService.class);
 
     private final ManagementAPI managementAPI;
 
@@ -41,6 +39,7 @@ public class Auth0UserService implements IUserService {
             userListResult.getUsers().forEach(userDTO -> userDTO.setRoles(retrieveRoles(userDTO.getUserId())));
             return userListResult;
         } catch (Auth0Exception e) {
+            log.error("Error retrieving users from auth0", e);
             throw new AuthConnectionException("Error retrieving users from auth0", e);
         }
     }
@@ -61,6 +60,7 @@ public class Auth0UserService implements IUserService {
                 managementAPI.users().removeRoles(user.getUserId(), roleIdsToRemove).execute();
             }
         } catch (Auth0Exception e) {
+            log.error("Error updating roles from auth0", e);
             throw new AuthConnectionException("Error updating roles from auth0", e);
         }
     }
@@ -79,6 +79,7 @@ public class Auth0UserService implements IUserService {
 
             return returnList;
         } catch (Auth0Exception e) {
+            log.error("Error retrieving roles from auth0", e);
             throw new AuthConnectionException("Error retrieving roles from auth0", e);
         }
     }
@@ -115,6 +116,7 @@ public class Auth0UserService implements IUserService {
             RolesPage rolesPage = managementAPI.users().listRoles(userId, new PageFilter()).execute();
             return rolesPage.getItems().stream().map(role -> new RoleDTO(role.getId(), role.getName())).collect(Collectors.toList());
         } catch (Auth0Exception e) {
+            log.error("Error retrieving roles from auth0", e);
             throw new AuthConnectionException("Error retrieving roles from auth0", e);
         }
     }
