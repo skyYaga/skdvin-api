@@ -18,6 +18,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.YearMonth;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
@@ -121,6 +122,36 @@ class JumpdayServiceTest extends AbstractSkdvinTest {
     @Test
     void testFindJumpdays_empty() {
         List<Jumpday> jumpdays = jumpdayService.findJumpdays();
+        assertNotNull(jumpdays);
+        assertEquals(0, jumpdays.size());
+    }
+
+    @Test
+    void testFindJumpdaysByMonth() {
+        LocalDate now = LocalDate.now();
+        Jumpday jumpday1 = ModelMockHelper.createJumpday();
+        Jumpday jumpday2 = ModelMockHelper.createJumpday(now.plusMonths(1));
+        Jumpday jumpday3 = ModelMockHelper.createJumpday(now.minusMonths(1));
+
+        jumpdayService.saveJumpday(jumpday1);
+        jumpdayService.saveJumpday(jumpday2);
+        jumpdayService.saveJumpday(jumpday3);
+
+        List<Jumpday> jumpdays = jumpdayService.findJumpdaysByMonth(YearMonth.now());
+        assertNotNull(jumpdays);
+        assertEquals(1, jumpdays.size());
+        assertEquals(now, jumpdays.get(0).getDate());
+    }
+
+    @Test
+    void testFindJumpdaysByMonth_NotFound() {
+        LocalDate now = LocalDate.now();
+        Jumpday jumpday = ModelMockHelper.createJumpday(now.plusMonths(1));
+
+        jumpdayService.saveJumpday(jumpday);
+
+        List<Jumpday> jumpdays = jumpdayService.findJumpdaysByMonth(YearMonth.now());
+
         assertNotNull(jumpdays);
         assertEquals(0, jumpdays.size());
     }

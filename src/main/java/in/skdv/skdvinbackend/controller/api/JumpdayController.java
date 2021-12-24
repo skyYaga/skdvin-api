@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.time.LocalDate;
+import java.time.YearMonth;
 import java.util.List;
 
 
@@ -28,8 +29,12 @@ public class JumpdayController {
 
     @GetMapping
     @PreAuthorize("hasAuthority('SCOPE_read:jumpdays')")
-    public GenericResult<List<JumpdayDTO>> readJumpdays() {
+    public GenericResult<List<JumpdayDTO>> readJumpdays(@RequestParam(required = false) YearMonth month) {
         log.info("Reading jumpdays");
+        if (month != null) {
+            List<Jumpday> jumpdaysByMonth = jumpdayService.findJumpdaysByMonth(month);
+            return new GenericResult<>(true, jumpdayConverter.convertToDto(jumpdaysByMonth));
+        }
         return new GenericResult<>(true, jumpdayConverter.convertToDto(jumpdayService.findJumpdays()));
     }
 

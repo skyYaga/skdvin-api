@@ -12,6 +12,7 @@ spring:
   data:
     mongodb:
       uri: ${DB_URI:mongodb://localhost/test}
+      auto-index-creation: true
   mail:
     default-encoding: UTF-8
     host: ${MAIL_HOST:}

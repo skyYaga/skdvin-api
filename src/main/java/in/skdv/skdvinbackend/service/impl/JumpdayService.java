@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.time.LocalDate;
+import java.time.YearMonth;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
@@ -26,6 +27,13 @@ public class JumpdayService implements IJumpdayService {
     @Override
     public List<Jumpday> findJumpdays() {
         return jumpdayRepository.findAll();
+    }
+
+    @Override
+    public List<Jumpday> findJumpdaysByMonth(YearMonth yearMonth) {
+        LocalDate firstDayOfMonth = yearMonth.atDay(1);
+        LocalDate lastDayOfMonth = yearMonth.atEndOfMonth();
+        return jumpdayRepository.findInRange(firstDayOfMonth, lastDayOfMonth);
     }
 
     @Override
