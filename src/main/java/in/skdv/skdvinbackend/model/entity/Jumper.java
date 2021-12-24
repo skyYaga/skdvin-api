@@ -1,21 +1,21 @@
 package in.skdv.skdvinbackend.model.entity;
 
 import lombok.Data;
-import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
+import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 
 @Data
 @RequiredArgsConstructor
 public class Jumper {
 
-    @NonNull
-    private String firstName;
-    @NonNull
-    private String lastName;
-    @NonNull
-    private LocalDate dateOfBirth;
+    @NotNull
+    private final String firstName;
+    @NotNull
+    private final String lastName;
+    @NotNull
+    private final LocalDate dateOfBirth;
 
     private boolean voucher = false;
 
