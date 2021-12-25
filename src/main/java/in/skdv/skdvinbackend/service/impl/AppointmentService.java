@@ -142,22 +142,20 @@ public class AppointmentService implements IAppointmentService {
             throw new InvalidRequestException(ErrorMessage.APPOINTMENT_MORE_VIDEO_THAN_TAMDEM_SLOTS);
         }
 
-        List<Jumpday> jumpdayList = jumpdayRepository.findAll();
+        List<Jumpday> jumpdayList = jumpdayRepository.findAllAfterIncludingDate(LocalDate.now());
         List<FreeSlot> resultList = new ArrayList<>();
 
         jumpdayList.forEach(jumpday -> {
-            if (!jumpday.getDate().isBefore(LocalDate.now())) {
-                List<LocalTime> slotTimes = jumpday.getSlots().stream()
-                        .filter(slot ->
-                                (isTodayButTimeInFuture(jumpday, slot) || isInFuture(jumpday))
-                                        && slot.isValidForQuery(slotQuery)
-                        )
-                        .map(Slot::getTime)
-                        .toList();
+            List<LocalTime> slotTimes = jumpday.getSlots().stream()
+                    .filter(slot ->
+                            (isTodayButTimeInFuture(jumpday, slot) || isInFuture(jumpday))
+                                    && slot.isValidForQuery(slotQuery)
+                    )
+                    .map(Slot::getTime)
+                    .toList();
 
-                if (!slotTimes.isEmpty()) {
-                    resultList.add(new FreeSlot(jumpday.getDate(), slotTimes));
-                }
+            if (!slotTimes.isEmpty()) {
+                resultList.add(new FreeSlot(jumpday.getDate(), slotTimes));
             }
         });
 
@@ -188,7 +186,7 @@ public class AppointmentService implements IAppointmentService {
         List<Jumpday> jumpdays = jumpdayRepository.findBySlotsAppointmentsAppointmentId(appointmentId);
 
         jumpdays.forEach(jumpday -> jumpday.getSlots().forEach(slot ->
-            slot.getAppointments().removeIf(appointment -> appointment.getAppointmentId() == appointmentId)
+                slot.getAppointments().removeIf(appointment -> appointment.getAppointmentId() == appointmentId)
         ));
 
         jumpdayRepository.saveAll(jumpdays);
@@ -196,10 +194,10 @@ public class AppointmentService implements IAppointmentService {
 
     @Override
     public List<GroupSlot> findGroupSlots(SlotQuery slotQuery) {
-        List<Jumpday> jumpdayList = jumpdayRepository.findAll();
+        List<Jumpday> jumpdayList = jumpdayRepository.findAllAfterIncludingDate(LocalDate.now());
         List<GroupSlot> groupSlots = new ArrayList<>();
 
-        jumpdayList.stream().filter(j -> !isInPast(j)).forEach(jumpday -> {
+        jumpdayList.forEach(jumpday -> {
             int slotCount = jumpday.getSlots().size();
             for (int i = 0; i < slotCount; i++) {
                 GroupSlot groupSlot = calculateGroupSlot(jumpday, i, slotQuery.getTandem());
@@ -277,10 +275,6 @@ public class AppointmentService implements IAppointmentService {
 
     private boolean isInFuture(Jumpday jumpday) {
         return jumpday.getDate().isAfter(LocalDate.now());
-    }
-
-    private boolean isInPast(Jumpday jumpday) {
-        return jumpday.getDate().isBefore(LocalDate.now());
     }
 
     private boolean isTodayButTimeInFuture(Jumpday jumpday, Slot slot) {

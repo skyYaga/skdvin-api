@@ -18,7 +18,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -47,8 +46,9 @@ public class AppointmentController {
     }
 
     @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("permitAll")
-    public ResponseEntity<GenericResult<AppointmentDTO>> addAppointment(@RequestBody @Valid AppointmentDTO input) {
+    public GenericResult<AppointmentDTO> addAppointment(@RequestBody @Valid AppointmentDTO input) {
         log.info("Adding appointment {}", input);
 
         Appointment appointment = appointmentConverter.convertToEntity(input);
@@ -61,20 +61,19 @@ public class AppointmentController {
         } catch (MessagingException e) {
             log.error("Error sending appointment verification mail", e);
         }
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(new GenericResult<>(true, appointmentConverter.convertToDto(result)));
+        return new GenericResult<>(true, appointmentConverter.convertToDto(result));
     }
 
     @PostMapping("/admin")
+    @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("hasAuthority('SCOPE_create:appointments')")
-    public ResponseEntity<GenericResult<AppointmentDTO>> addAdminAppointment(@RequestBody @Valid AppointmentDTO input) {
+    public GenericResult<AppointmentDTO> addAdminAppointment(@RequestBody @Valid AppointmentDTO input) {
         log.info("Adding admin appointment {}", input);
 
         Appointment appointment = appointmentConverter.convertToEntity(input);
         Appointment result = appointmentService.saveAdminAppointment(appointment);
 
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(new GenericResult<>(true, appointmentConverter.convertToDto(result)));
+        return new GenericResult<>(true, appointmentConverter.convertToDto(result));
     }
 
     @PutMapping
@@ -157,20 +156,20 @@ public class AppointmentController {
 
     @PatchMapping(value = "/{appointmentId}")
     @PreAuthorize("hasAuthority('SCOPE_update:appointments')")
-    public ResponseEntity<GenericResult<Void>> updateAppointmentState(@PathVariable int appointmentId, @RequestBody @Valid AppointmentStateOnlyDTO appointmentStateOnly) {
+    public GenericResult<Void> updateAppointmentState(@PathVariable int appointmentId, @RequestBody @Valid AppointmentStateOnlyDTO appointmentStateOnly) {
         log.info("Updating appointment {} state {}", appointmentId, appointmentStateOnly);
         Appointment appointment = appointmentService.findAppointment(appointmentId);
         appointmentService.updateAppointmentState(appointment, appointmentStateOnly.getState());
-        return ResponseEntity.ok(new GenericResult<>(true));
+        return new GenericResult<>(true);
     }
 
 
     @GetMapping(value = "/groupslots")
     @PreAuthorize("hasAuthority('SCOPE_read:appointments')")
-    public ResponseEntity<GenericResult<List<GroupSlot>>> findGroupSlots(@RequestParam("tandem") Integer tandemCount) {
+    public GenericResult<List<GroupSlot>> findGroupSlots(@RequestParam("tandem") Integer tandemCount) {
         log.info("Finding group slot with tandem count {}", tandemCount);
         SlotQuery slotQuery = new SlotQuery(tandemCount, 0, 0, 0);
         List<GroupSlot> result = appointmentService.findGroupSlots(slotQuery);
-        return ResponseEntity.ok(new GenericResult<>(true, result));
+        return new GenericResult<>(true, result);
     }
 }
