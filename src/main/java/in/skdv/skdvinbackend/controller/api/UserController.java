@@ -7,7 +7,7 @@ import in.skdv.skdvinbackend.service.IUserService;
 import in.skdv.skdvinbackend.util.GenericResult;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -33,10 +33,11 @@ public class UserController {
     }
 
     @PutMapping
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     @PreAuthorize("hasAuthority('SCOPE_update:users')")
-    public ResponseEntity<Void> updateUser(@RequestBody @Valid UserDTO input) {
+    public GenericResult<Void> updateUser(@RequestBody @Valid UserDTO input) {
         userService.updateUser(input);
-        return ResponseEntity.noContent().build();
+        return new GenericResult<>(true);
     }
 
     @GetMapping("/roles")

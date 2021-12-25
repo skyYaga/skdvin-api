@@ -9,7 +9,6 @@ import in.skdv.skdvinbackend.util.GenericResult;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -34,12 +33,12 @@ public class WaiverController {
     }
 
     @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("permitAll")
-    public ResponseEntity<GenericResult<WaiverDTO>> saveWaiver(@RequestBody @Valid WaiverDTO input) {
+    public GenericResult<WaiverDTO> saveWaiver(@RequestBody @Valid WaiverDTO input) {
         log.info("Saving waiver {}", input);
         Waiver waiverResult = waiverService.saveWaiver(waiverConverter.convertToEntity(input));
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(new GenericResult<>(true, waiverConverter.convertToDto(waiverResult)));
+        return new GenericResult<>(true, waiverConverter.convertToDto(waiverResult));
     }
 
     @PutMapping("/{id}")

@@ -15,7 +15,6 @@ import in.skdv.skdvinbackend.util.GenericResult;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -33,14 +32,13 @@ public class VideoflyerController {
     private final IVideoflyerService videoflyerService;
 
     @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("hasAuthority('SCOPE_create:videoflyer')")
-    public ResponseEntity<GenericResult<VideoflyerDTO>> addVideoflyer(@RequestBody @Valid VideoflyerDTO input) {
+    public GenericResult<VideoflyerDTO> addVideoflyer(@RequestBody @Valid VideoflyerDTO input) {
         log.info("Adding videoflyer {}", input);
         Videoflyer convertedInput = videoflyerConverter.convertToEntity(input);
         Videoflyer videoflyer = videoflyerService.save(convertedInput);
-
-        return ResponseEntity.status(HttpStatus.CREATED)
-                    .body(new GenericResult<>(true, videoflyerConverter.convertToDto(videoflyer)));
+        return new GenericResult<>(true, videoflyerConverter.convertToDto(videoflyer));
     }
 
     @GetMapping

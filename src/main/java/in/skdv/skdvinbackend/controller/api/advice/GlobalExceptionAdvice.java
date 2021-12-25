@@ -56,9 +56,8 @@ public class GlobalExceptionAdvice {
     @ResponseBody
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    GenericResult<Void> fallbackErrorHandler(Exception ex) {
+    GenericResult<Void> fallbackErrorHandler() {
         return new GenericResult<>(false, messageSource.getMessage(ErrorMessage.INTERNAL_SERVICE_EXCEPTION.toString(), null, LocaleContextHolder.getLocale()));
     }
-
 
 }

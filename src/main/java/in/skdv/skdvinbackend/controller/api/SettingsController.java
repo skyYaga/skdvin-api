@@ -12,7 +12,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -28,12 +27,12 @@ public class SettingsController {
     private final SettingsConverter converter = new SettingsConverter();
 
     @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("hasAuthority('SCOPE_create:settings')")
-    public ResponseEntity<GenericResult<SettingsDTO>> addSettings(@RequestBody @Valid SettingsDTO input) {
+    public GenericResult<SettingsDTO> addSettings(@RequestBody @Valid SettingsDTO input) {
         log.info("Adding settings {}", input);
         Settings settings = settingsService.saveSettings(converter.convertToEntity(input));
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(new GenericResult<>(true, converter.convertToDto(settings)));
+        return new GenericResult<>(true, converter.convertToDto(settings));
     }
 
     @GetMapping
