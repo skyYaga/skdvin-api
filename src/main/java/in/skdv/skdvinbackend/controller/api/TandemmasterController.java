@@ -15,7 +15,6 @@ import in.skdv.skdvinbackend.util.GenericResult;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -33,14 +32,14 @@ public class TandemmasterController {
     private final TandemmasterConverter tandemmasterConverter = new TandemmasterConverter();
 
     @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("hasAuthority('SCOPE_create:tandemmaster')")
-    public ResponseEntity<GenericResult<TandemmasterDTO>> addTandemmaster(@RequestBody @Valid TandemmasterDTO input) {
+    public GenericResult<TandemmasterDTO> addTandemmaster(@RequestBody @Valid TandemmasterDTO input) {
         log.info("Adding tandemmaster {}", input);
         Tandemmaster convertedInput = tandemmasterConverter.convertToEntity(input);
         Tandemmaster tandemmaster = tandemmasterService.save(convertedInput);
 
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(new GenericResult<>(true, tandemmasterConverter.convertToDto(tandemmaster)));
+        return new GenericResult<>(true, tandemmasterConverter.convertToDto(tandemmaster));
     }
 
     @GetMapping
