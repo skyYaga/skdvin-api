@@ -26,7 +26,7 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
       - name: Release
-        uses: qcastel/github-actions-maven-release@67ea2db
+        uses: qcastel/github-actions-maven-release@67ea2dbc4da003fc0441cb5de381bbda193393e5
         env:
           JAVA_HOME: /usr/lib/jvm/java-17-openjdk/
         with:
