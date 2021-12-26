@@ -5,6 +5,7 @@ import in.skdv.skdvinbackend.model.common.SimpleAssignment;
 import in.skdv.skdvinbackend.model.dto.VideoflyerDTO;
 import in.skdv.skdvinbackend.model.dto.VideoflyerDetailsDTO;
 import in.skdv.skdvinbackend.model.entity.Videoflyer;
+import in.skdv.skdvinbackend.model.entity.VideoflyerDetails;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
@@ -74,5 +75,22 @@ class VideoflyerConverterTest {
     @Test
     void convertToDetailsDto_Null() {
         assertNull(converter.convertToDto((Videoflyer) null));
+    }
+
+    @Test
+    void convertFromDetails() {
+        Videoflyer videoflyer = ModelMockHelper.createVideoflyer();
+        Map<LocalDate, SimpleAssignment> assignments = Map.of(LocalDate.now(), new SimpleAssignment(true));
+        VideoflyerDetails details = converter.convertToDetails(videoflyer, assignments);
+
+        Videoflyer convertedFromDetails = converter.convertFromDetails(details);
+
+        assertNotNull(convertedFromDetails);
+        assertEquals(videoflyer, convertedFromDetails);
+    }
+
+    @Test
+    void convertFromDetails_null() {
+        assertNull(converter.convertFromDetails(null));
     }
 }

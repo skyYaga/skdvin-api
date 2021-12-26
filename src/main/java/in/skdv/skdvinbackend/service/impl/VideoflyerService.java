@@ -77,20 +77,13 @@ public class VideoflyerService implements IVideoflyerService {
         return videoflyerConverter.convertToDetails(videoflyer, assignments);
     }
 
-    @Override
-    public void assignVideoflyerToJumpday(LocalDate date, String videoflyerId, SimpleAssignment simpleAssignment) {
-        Optional<Videoflyer> videoflyer = videoflyerRepository.findById(videoflyerId);
-
-        if (videoflyer.isEmpty()) {
-            log.error("Videoflyer {} not found", videoflyerId);
-            throw new NotFoundException(ErrorMessage.VIDEOFLYER_NOT_FOUND);
-        }
+    public void assignVideoflyerToJumpday(LocalDate date, Videoflyer videoflyer, SimpleAssignment simpleAssignment) {
         Jumpday jumpday = jumpdayRepository.findByDate(date);
         if (jumpday == null) {
             log.error("Jumpday is null");
             throw new NotFoundException(ErrorMessage.JUMPDAY_NOT_FOUND_MSG);
         }
-        manageVideoflyerAssignment(jumpday, videoflyer.get(), simpleAssignment);
+        manageVideoflyerAssignment(jumpday, videoflyer, simpleAssignment);
     }
 
     @Override
@@ -98,9 +91,15 @@ public class VideoflyerService implements IVideoflyerService {
         if (selfAssign) {
             checkSelfAssignPrerequisites(videoflyerDetails);
         }
-        for (LocalDate date : videoflyerDetails.getAssignments().keySet()) {
-            assignVideoflyerToJumpday(date, videoflyerDetails.getId(), videoflyerDetails.getAssignments().get(date));
+
+        Optional<Videoflyer> videoflyer = videoflyerRepository.findById(videoflyerDetails.getId());
+        if (videoflyer.isEmpty()) {
+            log.error("Videoflyer {} not found", videoflyerDetails.getId());
+            throw new NotFoundException(ErrorMessage.VIDEOFLYER_NOT_FOUND);
         }
+
+        videoflyerDetails.getAssignments().keySet().parallelStream().forEach(date ->
+                assignVideoflyerToJumpday(date, videoflyer.get(), videoflyerDetails.getAssignments().get(date)));
     }
 
     private void checkSelfAssignPrerequisites(VideoflyerDetails newVideoflyerDetails) {
