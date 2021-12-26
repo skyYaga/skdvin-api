@@ -67,6 +67,13 @@ public class TandemmasterConverter {
         return tandemmasterDetails;
     }
 
+    public Tandemmaster convertFromDetails(TandemmasterDetails tandemmasterDetails) {
+        if (tandemmasterDetails == null) {
+            return null;
+        }
+        return modelMapper.map(tandemmasterDetails, Tandemmaster.class);
+    }
+
     public TandemmasterDetails convertToEntity(String id, TandemmasterDetailsInputDTO input) {
         TandemmasterDetails details = modelMapper.map(input, TandemmasterDetails.class);
         details.setId(id);

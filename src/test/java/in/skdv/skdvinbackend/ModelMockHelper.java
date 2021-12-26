@@ -1,6 +1,7 @@
 package in.skdv.skdvinbackend;
 
 import in.skdv.skdvinbackend.model.common.AbstractFlyer;
+import in.skdv.skdvinbackend.model.common.SimpleAssignment;
 import in.skdv.skdvinbackend.model.common.waiver.WaiverCustomer;
 import in.skdv.skdvinbackend.model.converter.*;
 import in.skdv.skdvinbackend.model.dto.*;
@@ -236,5 +237,25 @@ public class ModelMockHelper {
         waiver.setGdprSocial(true);
 
         return waiver;
+    }
+
+    public static TandemmasterDetails addTandemmasterAssignment(Tandemmaster tandemmaster, LocalDate date) {
+        return TANDEMMASTER_CONVERTER.convertToDetails(tandemmaster, Map.of(date, new SimpleAssignment(true)));
+    }
+    public static TandemmasterDetails removeTandemmasterAssignment(Tandemmaster tandemmaster, LocalDate date) {
+        return TANDEMMASTER_CONVERTER.convertToDetails(tandemmaster, Map.of(date, new SimpleAssignment(false)));
+    }
+    public static void addTandemmasterAssignment(TandemmasterDetails tandemmasterDetails, LocalDate date) {
+        tandemmasterDetails.getAssignments().put(date, new SimpleAssignment(true));
+    }
+
+    public static VideoflyerDetails addVideoflyerAssignment(Videoflyer videoflyer, LocalDate date) {
+        return VIDEOFLYER_CONVERTER.convertToDetails(videoflyer, Map.of(date, new SimpleAssignment(true)));
+    }
+    public static VideoflyerDetails removeVideoflyerAssignment(Videoflyer videoflyer, LocalDate date) {
+        return VIDEOFLYER_CONVERTER.convertToDetails(videoflyer, Map.of(date, new SimpleAssignment(false)));
+    }
+    public static void addVideoflyerAssignment(VideoflyerDetails videoflyerDetails, LocalDate date) {
+        videoflyerDetails.getAssignments().put(date, new SimpleAssignment(true));
     }
 }

@@ -78,20 +78,13 @@ public class TandemmasterService implements ITandemmasterService {
         return tandemmasterConverter.convertToDetails(tandemmaster, assignments);
     }
 
-    @Override
-    public void assignTandemmasterToJumpday(LocalDate date, String tandemmasterId, SimpleAssignment assignment) {
-        Optional<Tandemmaster> tandemmaster = tandemmasterRepository.findById(tandemmasterId);
-
-        if (tandemmaster.isEmpty()) {
-            log.error("Tandemmaster {} not found", tandemmasterId);
-            throw new NotFoundException(ErrorMessage.TANDEMMASTER_NOT_FOUND);
-        }
+    protected void assignTandemmasterToJumpday(LocalDate date, Tandemmaster tandemmaster, SimpleAssignment assignment) {
         Jumpday jumpday = jumpdayRepository.findByDate(date);
         if (jumpday == null) {
             log.error("Jumpday is null");
             throw new NotFoundException(ErrorMessage.JUMPDAY_NOT_FOUND_MSG);
         }
-        manageTandemmasterAssignment(jumpday, tandemmaster.get(), assignment);
+        manageTandemmasterAssignment(jumpday, tandemmaster, assignment);
     }
 
     @Override
@@ -99,9 +92,15 @@ public class TandemmasterService implements ITandemmasterService {
         if (selfAssign) {
             checkSelfAssignPrerequisites(tandemmasterDetails);
         }
-        for (LocalDate date : tandemmasterDetails.getAssignments().keySet()) {
-            assignTandemmasterToJumpday(date, tandemmasterDetails.getId(), tandemmasterDetails.getAssignments().get(date));
+
+        Optional<Tandemmaster> tandemmaster = tandemmasterRepository.findById(tandemmasterDetails.getId());
+        if (tandemmaster.isEmpty()) {
+            log.error("Tandemmaster {} not found", tandemmasterDetails.getId());
+            throw new NotFoundException(ErrorMessage.TANDEMMASTER_NOT_FOUND);
         }
+
+        tandemmasterDetails.getAssignments().keySet().parallelStream().forEach(date ->
+                assignTandemmasterToJumpday(date, tandemmaster.get(), tandemmasterDetails.getAssignments().get(date)));
     }
 
     private void checkSelfAssignPrerequisites(TandemmasterDetails newTandemmasterDetails) {

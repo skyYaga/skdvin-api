@@ -5,6 +5,7 @@ import in.skdv.skdvinbackend.model.common.SimpleAssignment;
 import in.skdv.skdvinbackend.model.dto.TandemmasterDTO;
 import in.skdv.skdvinbackend.model.dto.TandemmasterDetailsDTO;
 import in.skdv.skdvinbackend.model.entity.Tandemmaster;
+import in.skdv.skdvinbackend.model.entity.TandemmasterDetails;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
@@ -74,5 +75,22 @@ class TandemmasterConverterTest {
     @Test
     void convertToDetailsDto_Null() {
         assertNull(converter.convertToDto((Tandemmaster) null));
+    }
+
+    @Test
+    void convertFromDetails() {
+        Tandemmaster tandemmaster = ModelMockHelper.createTandemmaster();
+        Map<LocalDate, SimpleAssignment> assignments = Map.of(LocalDate.now(), new SimpleAssignment(true));
+        TandemmasterDetails details = converter.convertToDetails(tandemmaster, assignments);
+
+        Tandemmaster convertedFromDetails = converter.convertFromDetails(details);
+
+        assertNotNull(convertedFromDetails);
+        assertEquals(tandemmaster, convertedFromDetails);
+    }
+
+    @Test
+    void convertFromDetails_null() {
+        assertNull(converter.convertFromDetails(null));
     }
 }
