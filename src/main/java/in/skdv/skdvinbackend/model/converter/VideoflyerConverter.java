@@ -67,6 +67,13 @@ public class VideoflyerConverter {
         return videoflyerDetails;
     }
 
+    public Videoflyer convertFromDetails(VideoflyerDetails videoflyerDetails) {
+        if (videoflyerDetails == null) {
+            return null;
+        }
+        return modelMapper.map(videoflyerDetails, Videoflyer.class);
+    }
+
     public VideoflyerDetails convertToEntity(String id, VideoflyerDetailsInputDTO input) {
         VideoflyerDetails details = modelMapper.map(input, VideoflyerDetails.class);
         details.setId(id);

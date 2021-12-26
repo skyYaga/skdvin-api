@@ -200,24 +200,26 @@ class VideoflyerServiceTest extends AbstractSkdvinTest {
     @Test
     void testAssignVideoflyerToJumpday_AlreadyAssigned() {
         Jumpday jumpday = ModelMockHelper.createJumpday();
-        String videoflyerId = assignVideoflyer(jumpday);
+        Videoflyer videoflyer = assignVideoflyer(jumpday);
 
-        videoflyerService.assignVideoflyerToJumpday(
-                jumpday.getDate(), videoflyerId, new SimpleAssignment(true));
+        VideoflyerDetails videoflyerDetails = ModelMockHelper.addVideoflyerAssignment(videoflyer, jumpday.getDate());
+        videoflyerService.assignVideoflyer(videoflyerDetails, false);
         Jumpday assignedResult = jumpdayService.findJumpday(jumpday.getDate());
 
         assertEquals(1,assignedResult.getVideoflyer().size());
-        assertEquals(videoflyerId, assignedResult.getVideoflyer().get(0).getFlyer().getId());
+        assertEquals(videoflyer.getId(), assignedResult.getVideoflyer().get(0).getFlyer().getId());
     }
 
     @Test
     void testAssignVideoflyerToJumpday_VideoflyerNotFound() {
         Jumpday initialResult = jumpdayService.saveJumpday(ModelMockHelper.createJumpday());
         LocalDate date = initialResult.getDate();
-        SimpleAssignment assignment = new SimpleAssignment(true);
+        Videoflyer videoflyer = new Videoflyer();
+        videoflyer.setId("99999999");
+        VideoflyerDetails videoflyerDetails = ModelMockHelper.addVideoflyerAssignment(videoflyer, date);
 
         NotFoundException ex = assertThrows(NotFoundException.class, () ->
-            videoflyerService.assignVideoflyerToJumpday(date, "99999999", assignment)
+            videoflyerService.assignVideoflyer(videoflyerDetails, false)
         );
 
         assertEquals(ErrorMessage.VIDEOFLYER_NOT_FOUND, ex.getErrorMessage());
@@ -227,12 +229,11 @@ class VideoflyerServiceTest extends AbstractSkdvinTest {
     void testAssignVideoflyerToJumpday_JumpdayNotFound() {
         Videoflyer videoflyer = videoflyerRepository.save(ModelMockHelper.createVideoflyer());
         LocalDate date = LocalDate.now().plus(1, ChronoUnit.YEARS);
-        String id = videoflyer.getId();
-        SimpleAssignment assignment = new SimpleAssignment(true);
+        VideoflyerDetails videoflyerDetails = ModelMockHelper.addVideoflyerAssignment(videoflyer, date);
 
 
         NotFoundException notFoundException = assertThrows(NotFoundException.class, () ->
-            videoflyerService.assignVideoflyerToJumpday(date, id, assignment)
+                videoflyerService.assignVideoflyer(videoflyerDetails, false)
         );
 
         assertEquals(ErrorMessage.JUMPDAY_NOT_FOUND_MSG, notFoundException.getErrorMessage());
@@ -241,9 +242,10 @@ class VideoflyerServiceTest extends AbstractSkdvinTest {
     @Test
     void testAssignVideoflyerToJumpday_Remove() {
         Jumpday jumpday = ModelMockHelper.createJumpday();
-        String videoflyerId = assignVideoflyer(jumpday);
+        Videoflyer videoflyer = assignVideoflyer(jumpday);
+        VideoflyerDetails videoflyerDetails = ModelMockHelper.removeVideoflyerAssignment(videoflyer, jumpday.getDate());
 
-        videoflyerService.assignVideoflyerToJumpday(jumpday.getDate(), videoflyerId, new SimpleAssignment(false));
+        videoflyerService.assignVideoflyer(videoflyerDetails, false);
         Jumpday assignedResult = jumpdayService.findJumpday(jumpday.getDate());
 
         assertEquals(0, assignedResult.getVideoflyer().size());
@@ -254,35 +256,38 @@ class VideoflyerServiceTest extends AbstractSkdvinTest {
         Jumpday jumpday = ModelMockHelper.createJumpday();
         jumpdayService.saveJumpday(jumpday);
         Videoflyer videoflyer = videoflyerRepository.save(ModelMockHelper.createVideoflyer());
+        VideoflyerDetails videoflyerDetails = ModelMockHelper.removeVideoflyerAssignment(videoflyer, jumpday.getDate());
 
-        videoflyerService.assignVideoflyerToJumpday(jumpday.getDate(), videoflyer.getId(), new SimpleAssignment(false));
+        videoflyerService.assignVideoflyer(videoflyerDetails, false);
         Jumpday assignedResult = jumpdayService.findJumpday(jumpday.getDate());
 
         assertEquals(0, assignedResult.getVideoflyer().size());
     }
 
-    private String assignVideoflyer(Jumpday jumpday) {
+    private Videoflyer assignVideoflyer(Jumpday jumpday) {
         Jumpday initialResult = jumpdayService.saveJumpday(jumpday);
         Videoflyer videoflyer = videoflyerRepository.save(ModelMockHelper.createVideoflyer());
 
-        videoflyerService.assignVideoflyerToJumpday(
-                initialResult.getDate(), videoflyer.getId(), new SimpleAssignment(true));
+        VideoflyerDetails videoflyerDetails = ModelMockHelper.addVideoflyerAssignment(videoflyer, initialResult.getDate());
+        videoflyerService.assignVideoflyer(videoflyerDetails, false);
         Jumpday assignedResult = jumpdayService.findJumpday(initialResult.getDate());
 
         assertEquals(1, assignedResult.getVideoflyer().size());
         assertEquals(videoflyer.getId(), assignedResult.getVideoflyer().get(0).getFlyer().getId());
 
-        return videoflyer.getId();
+        return videoflyer;
     }
 
     @Test
     void testAssignVideoflyerToJumpday_Remove_VideoflyerNotFound() {
         Jumpday initialResult = jumpdayService.saveJumpday(ModelMockHelper.createJumpday());
         LocalDate date = initialResult.getDate();
-        SimpleAssignment assignment = new SimpleAssignment(true);
+        Videoflyer videoflyer = new Videoflyer();
+        videoflyer.setId("99999999");
+        VideoflyerDetails videoflyerDetails = ModelMockHelper.addVideoflyerAssignment(videoflyer, date);
 
         NotFoundException ex = assertThrows(NotFoundException.class, () ->
-            videoflyerService.assignVideoflyerToJumpday(date, "99999999", assignment)
+                videoflyerService.assignVideoflyer(videoflyerDetails, false)
         );
 
         assertEquals(ErrorMessage.VIDEOFLYER_NOT_FOUND, ex.getErrorMessage());
@@ -292,12 +297,12 @@ class VideoflyerServiceTest extends AbstractSkdvinTest {
     void testAssignVideoflyerToJumpday_Remove_JumpdayNotFound() {
         Videoflyer videoflyer = videoflyerRepository.save(ModelMockHelper.createVideoflyer());
         LocalDate date = LocalDate.now().plus(1, ChronoUnit.YEARS);
-        String id = videoflyer.getId();
-        SimpleAssignment assignment = new SimpleAssignment(true);
+        VideoflyerDetails videoflyerDetails = ModelMockHelper.addVideoflyerAssignment(videoflyer, date);
 
         NotFoundException notFoundException = assertThrows(NotFoundException.class, () ->
-            videoflyerService.assignVideoflyerToJumpday(date, id, assignment));
-
+                videoflyerService.assignVideoflyer(videoflyerDetails, false)
+        );
+        
         assertEquals(ErrorMessage.JUMPDAY_NOT_FOUND_MSG, notFoundException.getErrorMessage());
     }
 
@@ -369,15 +374,18 @@ class VideoflyerServiceTest extends AbstractSkdvinTest {
         jumpdayRepository.save(jumpday2);
         Videoflyer videoflyer = videoflyerRepository.save(ModelMockHelper.createVideoflyer());
         VideoflyerConverter converter = new VideoflyerConverter();
-        return converter.convertToDetails(videoflyer, Map.of());
+        return converter.convertToDetails(videoflyer, new HashMap<>());
     }
 
     @Test
     void testAssignVideoflyer_Removal() {
         VideoflyerDetails videoflyerDetails = prepareJumpdaysAndVideoflyer();
-        videoflyerService.assignVideoflyerToJumpday(LocalDate.now(), videoflyerDetails.getId(), new SimpleAssignment(true));
-        videoflyerService.assignVideoflyerToJumpday(LocalDate.now().plus(1, ChronoUnit.DAYS), videoflyerDetails.getId(), new SimpleAssignment(true));
+        videoflyerDetails.setAssignments(Map.of(
+                LocalDate.now(), new SimpleAssignment(true),
+                LocalDate.now().plusDays(1), new SimpleAssignment(true)));
 
+        videoflyerService.assignVideoflyer(videoflyerDetails, false);
+        
         Jumpday assignedResult1 = jumpdayService.findJumpday(LocalDate.now());
         Jumpday assignedResult2 = jumpdayService.findJumpday(LocalDate.now().plus(1, ChronoUnit.DAYS));
 
@@ -469,7 +477,8 @@ class VideoflyerServiceTest extends AbstractSkdvinTest {
         when(settingsService.getCommonSettingsByLanguage(Locale.GERMAN.getLanguage())).thenReturn(commonSettings);
 
         VideoflyerDetails videoflyerDetails = prepareJumpdaysAndVideoflyer();
-        videoflyerService.assignVideoflyerToJumpday(LocalDate.now(), videoflyerDetails.getId(), new SimpleAssignment(true));
+        ModelMockHelper.addVideoflyerAssignment(videoflyerDetails, LocalDate.now());
+        videoflyerService.assignVideoflyer(videoflyerDetails, false);
 
         videoflyerDetails.setAssignments(Map.of(LocalDate.now(), new SimpleAssignment(false), LocalDate.now().plus(1, ChronoUnit.DAYS), new SimpleAssignment(false)));
 
@@ -487,7 +496,8 @@ class VideoflyerServiceTest extends AbstractSkdvinTest {
         when(settingsService.getCommonSettingsByLanguage(Locale.GERMAN.getLanguage())).thenReturn(commonSettings);
 
         VideoflyerDetails videoflyerDetails = prepareJumpdaysAndVideoflyer();
-        videoflyerService.assignVideoflyerToJumpday(LocalDate.now(), videoflyerDetails.getId(), new SimpleAssignment(true));
+        ModelMockHelper.addVideoflyerAssignment(videoflyerDetails, LocalDate.now());
+        videoflyerService.assignVideoflyer(videoflyerDetails, false);
 
         videoflyerDetails.setAssignments(Map.of(LocalDate.now(),
                 new SimpleAssignment(true, false, LocalTime.of(12, 0), LocalTime.of(20, 0))));
@@ -506,7 +516,8 @@ class VideoflyerServiceTest extends AbstractSkdvinTest {
         when(settingsService.getCommonSettingsByLanguage(Locale.GERMAN.getLanguage())).thenReturn(commonSettings);
 
         VideoflyerDetails videoflyerDetails = prepareJumpdaysAndVideoflyer();
-        videoflyerService.assignVideoflyerToJumpday(LocalDate.now(), videoflyerDetails.getId(), new SimpleAssignment(true));
+        ModelMockHelper.addVideoflyerAssignment(videoflyerDetails, LocalDate.now());
+        videoflyerService.assignVideoflyer(videoflyerDetails, false);
 
         videoflyerDetails.setAssignments(new HashMap<>());
 

@@ -8,6 +8,7 @@ import in.skdv.skdvinbackend.model.converter.TandemmasterConverter;
 import in.skdv.skdvinbackend.model.dto.TandemmasterDetailsDTO;
 import in.skdv.skdvinbackend.model.entity.Jumpday;
 import in.skdv.skdvinbackend.model.entity.Tandemmaster;
+import in.skdv.skdvinbackend.model.entity.TandemmasterDetails;
 import in.skdv.skdvinbackend.model.entity.settings.CommonSettings;
 import in.skdv.skdvinbackend.model.entity.settings.SelfAssignmentMode;
 import in.skdv.skdvinbackend.repository.JumpdayRepository;
@@ -232,7 +233,8 @@ class TandemmasterControllerTest extends AbstractSkdvinTest {
         Tandemmaster tandemmaster = tandemmasterRepository.save(ModelMockHelper.createTandemmaster());
         Jumpday jumpday = ModelMockHelper.createJumpday();
         jumpdayService.saveJumpday(jumpday);
-        tandemmasterService.assignTandemmasterToJumpday(jumpday.getDate(), tandemmaster.getId(), new SimpleAssignment(true));
+        TandemmasterDetails tandemmasterDetails = ModelMockHelper.addTandemmasterAssignment(tandemmaster, jumpday.getDate());
+        tandemmasterService.assignTandemmaster(tandemmasterDetails, false);
 
         mockMvc.perform(get("/api/tandemmaster/{id}", tandemmaster.getId())
                 .header("Authorization", MockJwtDecoder.addHeader(READ_TANDEMMASTER))
@@ -400,7 +402,8 @@ class TandemmasterControllerTest extends AbstractSkdvinTest {
         Tandemmaster tandemmaster = tandemmasterRepository.save(tandemmaster1);
         Jumpday jumpday = ModelMockHelper.createJumpday();
         jumpdayService.saveJumpday(jumpday);
-        tandemmasterService.assignTandemmasterToJumpday(jumpday.getDate(), tandemmaster.getId(), new SimpleAssignment(true));
+        TandemmasterDetails tandemmasterDetails = ModelMockHelper.addTandemmasterAssignment(tandemmaster, jumpday.getDate());
+        tandemmasterService.assignTandemmaster(tandemmasterDetails, false);
 
         mockMvc.perform(get("/api/tandemmaster/me")
                 .header("Authorization", MockJwtDecoder.addHeader(TANDEMMASTER))

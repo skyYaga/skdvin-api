@@ -8,6 +8,7 @@ import in.skdv.skdvinbackend.model.converter.VideoflyerConverter;
 import in.skdv.skdvinbackend.model.dto.VideoflyerDetailsDTO;
 import in.skdv.skdvinbackend.model.entity.Jumpday;
 import in.skdv.skdvinbackend.model.entity.Videoflyer;
+import in.skdv.skdvinbackend.model.entity.VideoflyerDetails;
 import in.skdv.skdvinbackend.model.entity.settings.CommonSettings;
 import in.skdv.skdvinbackend.model.entity.settings.SelfAssignmentMode;
 import in.skdv.skdvinbackend.repository.JumpdayRepository;
@@ -233,7 +234,8 @@ class VideoflyerControllerTest extends AbstractSkdvinTest {
         Videoflyer videoflyer = videoflyerRepository.save(ModelMockHelper.createVideoflyer());
         Jumpday jumpday = ModelMockHelper.createJumpday();
         jumpdayService.saveJumpday(jumpday);
-        videoflyerService.assignVideoflyerToJumpday(jumpday.getDate(), videoflyer.getId(), new SimpleAssignment(true));
+        VideoflyerDetails videoflyerDetails = ModelMockHelper.addVideoflyerAssignment(videoflyer, jumpday.getDate());
+        videoflyerService.assignVideoflyer(videoflyerDetails, false);
 
         mockMvc.perform(get("/api/videoflyer/{id}", videoflyer.getId())
                 .header("Authorization", MockJwtDecoder.addHeader(READ_VIDEOFLYER))
@@ -401,7 +403,8 @@ class VideoflyerControllerTest extends AbstractSkdvinTest {
         Videoflyer videoflyer = videoflyerRepository.save(videoflyer1);
         Jumpday jumpday = ModelMockHelper.createJumpday();
         jumpdayService.saveJumpday(jumpday);
-        videoflyerService.assignVideoflyerToJumpday(jumpday.getDate(), videoflyer.getId(), new SimpleAssignment(true));
+        VideoflyerDetails videoflyerDetails = ModelMockHelper.addVideoflyerAssignment(videoflyer, jumpday.getDate());
+        videoflyerService.assignVideoflyer(videoflyerDetails, false);
 
         mockMvc.perform(get("/api/videoflyer/me")
                 .header("Authorization", MockJwtDecoder.addHeader(VIDEOFLYER))
