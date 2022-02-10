@@ -5,7 +5,6 @@ import in.skdv.skdvinbackend.model.dto.SettingsDTO;
 import in.skdv.skdvinbackend.model.dto.SettingsInputDTO;
 import in.skdv.skdvinbackend.model.entity.settings.CommonSettings;
 import in.skdv.skdvinbackend.model.entity.settings.Settings;
-import in.skdv.skdvinbackend.model.entity.settings.WaiverSettings;
 import in.skdv.skdvinbackend.service.ISettingsService;
 import in.skdv.skdvinbackend.util.GenericResult;
 import lombok.RequiredArgsConstructor;
@@ -47,13 +46,6 @@ public class SettingsController {
     public GenericResult<CommonSettings> getCommonSettings() {
         log.info("Getting common settings");
         return new GenericResult<>(true, settingsService.getCommonSettingsByLanguage(LocaleContextHolder.getLocale().getLanguage()));
-    }
-
-    @GetMapping("/waiver")
-    @PreAuthorize("permitAll")
-    public GenericResult<WaiverSettings> getWaiverSettings() {
-        log.info("Getting waiver settings");
-        return new GenericResult<>(true, settingsService.getWaiverSettingsByLanguage(LocaleContextHolder.getLocale().getLanguage()));
     }
 
     @PutMapping("/{id}")
