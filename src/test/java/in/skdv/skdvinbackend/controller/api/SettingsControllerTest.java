@@ -7,7 +7,6 @@ import in.skdv.skdvinbackend.model.converter.SettingsConverter;
 import in.skdv.skdvinbackend.model.dto.SettingsDTO;
 import in.skdv.skdvinbackend.model.entity.settings.CommonSettings;
 import in.skdv.skdvinbackend.model.entity.settings.Settings;
-import in.skdv.skdvinbackend.model.entity.settings.WaiverSettings;
 import in.skdv.skdvinbackend.repository.SettingsRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -194,36 +193,6 @@ class SettingsControllerTest extends AbstractSkdvinTest {
                 .andExpect(jsonPath("$.success", is(true)))
                 .andExpect(jsonPath("$.payload.dropzone.name", is("Example DZ")));
     }
-
-    @Test
-    void testGetWaiverSettings_EN() throws Exception {
-        Settings settings = ModelMockHelper.createSettings();
-        WaiverSettings waiverSettingsEN = ModelMockHelper.createWaiverSettings();
-        waiverSettingsEN.setTandemwaiver("Please accept the terms and conditions.");
-        settings.getWaiverSettings().put(Locale.ENGLISH.getLanguage(), waiverSettingsEN);
-        settingsRepository.save(settings);
-
-        mockMvc.perform(get("/api/settings/waiver")
-                .header("Accept-Language", "en-US")
-                .contentType(contentType))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.success", is(true)))
-                .andExpect(jsonPath("$.payload.tandemwaiver", is("Please accept the terms and conditions.")));
-    }
-
-    @Test
-    void testGetWaiverSettings_DE() throws Exception {
-        Settings settings = ModelMockHelper.createSettings();
-        settingsRepository.save(settings);
-
-        mockMvc.perform(get("/api/settings/waiver/")
-                .header("Accept-Language", "de")
-                .contentType(contentType))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.success", is(true)))
-                .andExpect(jsonPath("$.payload.tandemwaiver", is("Bitte akzeptieren Sie die Bedingungen.")));
-    }
-
 
     private String json(Object o) throws IOException {
         MockHttpOutputMessage mockHttpOutputMessage = new MockHttpOutputMessage();
