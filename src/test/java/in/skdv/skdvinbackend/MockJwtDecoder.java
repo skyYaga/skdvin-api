@@ -43,9 +43,6 @@ public class MockJwtDecoder {
     private static final String SIMPLIFIED_READ_USERS = simplifyPermission(READ_USERS);
     private static final String SIMPLIFIED_UPDATE_USERS = simplifyPermission(UPDATE_USERS);
 
-    private static final String SIMPLIFIED_READ_WAIVERS = simplifyPermission(READ_WAIVERS);
-    private static final String SIMPLIFIED_UPDATE_WAIVERS = simplifyPermission(UPDATE_WAIVERS);
-
     public static Jwt decode(String permission) throws JwtException {
         return new Jwt(permission,
                 Instant.now(),
@@ -119,12 +116,6 @@ public class MockJwtDecoder {
         }
         if (SIMPLIFIED_UPDATE_USERS.equals(permission)) {
             convertedPermission = UPDATE_USERS;
-        }
-        if (SIMPLIFIED_READ_WAIVERS.equals(permission)) {
-            convertedPermission = READ_WAIVERS;
-        }
-        if (SIMPLIFIED_UPDATE_WAIVERS.equals(permission)) {
-            convertedPermission = UPDATE_WAIVERS;
         }
 
         return convertedPermission.replace("SCOPE_", "");

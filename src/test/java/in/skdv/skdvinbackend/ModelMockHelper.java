@@ -2,12 +2,10 @@ package in.skdv.skdvinbackend;
 
 import in.skdv.skdvinbackend.model.common.AbstractFlyer;
 import in.skdv.skdvinbackend.model.common.SimpleAssignment;
-import in.skdv.skdvinbackend.model.common.waiver.WaiverCustomer;
 import in.skdv.skdvinbackend.model.converter.*;
 import in.skdv.skdvinbackend.model.dto.*;
 import in.skdv.skdvinbackend.model.entity.*;
 import in.skdv.skdvinbackend.model.entity.settings.*;
-import in.skdv.skdvinbackend.model.entity.waiver.Waiver;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -176,21 +174,11 @@ public class ModelMockHelper {
 
         Map<String, CommonSettings> commonSettingsMap = new HashMap<>(Map.of(locale.getLanguage(), createCommonSettings()));
 
-        Map<String, WaiverSettings> waiverSettingsMap = new HashMap<>(Map.of(locale.getLanguage(), createWaiverSettings()));
-
         Settings settings = new Settings();
         settings.setAdminSettings(adminSettings);
         settings.setCommonSettings(commonSettingsMap);
-        settings.setWaiverSettings(waiverSettingsMap);
 
         return settings;
-    }
-
-    public static WaiverSettings createWaiverSettings() {
-        WaiverSettings waiverSettings = new WaiverSettings();
-        waiverSettings.setTandemwaiver("Bitte akzeptieren Sie die Bedingungen.");
-
-        return waiverSettings;
     }
 
     public static CommonSettings createCommonSettings() {
@@ -218,25 +206,6 @@ public class ModelMockHelper {
         commonSettings.setAdditionalReminderHint("<p>This is a additional hint</p><ul><li>Hint 1</li><li>Hint 2</li></ul>");
 
         return commonSettings;
-    }
-
-    public static Waiver createWaiver() {
-        WaiverCustomer waiverCustomer = new WaiverCustomer();
-        waiverCustomer.setFirstName("Jane");
-        waiverCustomer.setLastName("Doe");
-        waiverCustomer.setZip("54321");
-        waiverCustomer.setCity("Bar City");
-        waiverCustomer.setStreet("Evergreen Terrace 742");
-        waiverCustomer.setTel("01234567");
-        waiverCustomer.setDateOfBirth(LocalDate.now().minusYears(20));
-
-        Waiver waiver = new Waiver();
-        waiver.setAppointmentId(1);
-        waiver.setWaiverCustomer(waiverCustomer);
-        waiver.setSignature("data:signature");
-        waiver.setGdprSocial(true);
-
-        return waiver;
     }
 
     public static TandemmasterDetails addTandemmasterAssignment(Tandemmaster tandemmaster, LocalDate date) {

@@ -79,12 +79,6 @@ public class ApplicationConfig implements WebMvcConfigurer {
 
     @Bean
     @Autowired
-    public IWaiverService getWaiverService(WaiverRepository waiverRepository, ISettingsService settingsService) {
-        return new WaiverService(waiverRepository, settingsService);
-    }
-
-    @Bean
-    @Autowired
     public IUserService getUserService(ManagementAPI managementAPI) {
         return new Auth0UserService(managementAPI);
     }
