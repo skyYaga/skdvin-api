@@ -29,7 +29,7 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <java.version>17</java.version>
         <auth0.version>1.39.0</auth0.version>
-        <modelmapper.version>2.4.5</modelmapper.version>
+        <modelmapper.version>3.0.0</modelmapper.version>
         <okhttp3.version>4.9.1</okhttp3.version>
         <sentry.version>5.6.2</sentry.version>
         <springdoc.version>1.6.6</springdoc.version>
