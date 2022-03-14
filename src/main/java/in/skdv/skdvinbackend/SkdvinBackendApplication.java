@@ -4,6 +4,7 @@ import in.skdv.skdvinbackend.config.ApplicationConfig;
 import in.skdv.skdvinbackend.config.Auth0Config;
 import in.skdv.skdvinbackend.config.EmailConfig;
 import in.skdv.skdvinbackend.config.SecurityConfig;
+import io.mongock.runner.springboot.EnableMongock;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Configuration;
@@ -11,6 +12,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication
+@EnableMongock
 @EnableScheduling
 @Configuration
 @Import({ApplicationConfig.class, SecurityConfig.class, EmailConfig.class, Auth0Config.class})

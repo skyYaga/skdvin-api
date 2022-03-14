@@ -36,8 +36,9 @@ auth0:
     domain: ${AUTH0_MANAGEMENT_DOMAIN:}
     client-id: ${AUTH0_MANAGEMENT_CLIENT_ID:}
     client-secret: ${AUTH0_MANAGEMENT_CLIENT_SECRET:}
-
 skdvin:
+  timezone: Europe/Paris
+  dbname: ${SKDVIN_DBNAME}
   baseurl: ${SKDVIN_BASEURL:}
   from: ${SKDVIN_FROM:}
   cors:
@@ -53,3 +54,7 @@ springdoc:
     path: /docs/swagger-ui.html
     docExpansion: none
     tagsSorter: alpha
+
+mongock:
+  migration-scan-package:
+    - in.skdv.skdvinbackend.migration

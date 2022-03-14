@@ -13,7 +13,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 
 class AppointmentConverterTest {
 
-    private AppointmentConverter converter = new AppointmentConverter();
+    private final AppointmentConverter converter = new AppointmentConverter();
 
     @Test
     void convertToDto() {

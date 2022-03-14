@@ -87,7 +87,7 @@ class GlobalExceptionAdviceTest {
         Mockito.when(messageSource.getMessage(Mockito.eq(ErrorMessage.INTERNAL_SERVICE_EXCEPTION.toString()), Mockito.isNull(), Mockito.any()))
                 .thenReturn(ErrorMessage.INTERNAL_SERVICE_EXCEPTION.toString());
 
-        GenericResult<Void> result = globalExceptionAdvice.fallbackErrorHandler();
+        GenericResult<Void> result = globalExceptionAdvice.fallbackErrorHandler(new Exception());
 
         assertFalse(result.isSuccess());
         assertEquals(ErrorMessage.INTERNAL_SERVICE_EXCEPTION.toString(), result.getMessage());

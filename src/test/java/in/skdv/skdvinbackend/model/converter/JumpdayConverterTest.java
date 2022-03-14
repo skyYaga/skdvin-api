@@ -8,6 +8,7 @@ import in.skdv.skdvinbackend.model.entity.Jumpday;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -18,7 +19,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class JumpdayConverterTest {
 
-    private JumpdayConverter converter = new JumpdayConverter();
+    private final JumpdayConverter converter = new JumpdayConverter(ZoneId.of("Europe/Berlin"));
 
     @Test
     void convertToDto() {
