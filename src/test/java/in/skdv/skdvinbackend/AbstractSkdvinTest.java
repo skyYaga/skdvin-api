@@ -28,8 +28,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
         "auth0.management.domain=localhost",
         "auth0.management.client-id=foo",
         "auth0.management.client-secret=foo",
-        "spring.security.oauth2.resourceserver.jwt.issuer-uri=https://example.com",
-        "skdvin.dbname=junit"
+        "spring.security.oauth2.resourceserver.jwt.issuer-uri=https://example.com"
 })
 // Needed to use MongoDB Testcontainer with DynamicPropertySource
 @DirtiesContext

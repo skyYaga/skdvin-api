@@ -4,28 +4,25 @@ import in.skdv.skdvinbackend.repository.converter.LocalDateReadConverter;
 import in.skdv.skdvinbackend.repository.converter.LocalDateWriteConverter;
 import in.skdv.skdvinbackend.repository.converter.LocalTimeReadConverter;
 import in.skdv.skdvinbackend.repository.converter.LocalTimeWriteConverter;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.mongodb.config.AbstractMongoClientConfiguration;
 import org.springframework.data.mongodb.core.convert.MongoCustomConversions;
 
+import java.util.Arrays;
+
 @Configuration
-public class MongoConfig extends AbstractMongoClientConfiguration {
+public class MongoConfig {
 
-    @Value("${skdvin.dbname}")
-    private String dbName;
-
-    @Override
-    protected String getDatabaseName() {
-        return dbName;
+    @Bean
+    public MongoCustomConversions mongoCustomConversions() {
+        return new MongoCustomConversions(
+                Arrays.asList(
+                        new LocalDateWriteConverter(),
+                        new LocalDateReadConverter(),
+                        new LocalTimeWriteConverter(),
+                        new LocalTimeReadConverter()
+                )
+        );
     }
 
-    @Override
-    protected void configureConverters(MongoCustomConversions.MongoConverterConfigurationAdapter converterConfigurationAdapter) {
-        super.configureConverters(converterConfigurationAdapter);
-        converterConfigurationAdapter.registerConverter(new LocalDateWriteConverter());
-        converterConfigurationAdapter.registerConverter(new LocalDateReadConverter());
-        converterConfigurationAdapter.registerConverter(new LocalTimeWriteConverter());
-        converterConfigurationAdapter.registerConverter(new LocalTimeReadConverter());
-    }
 }
