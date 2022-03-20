@@ -60,7 +60,7 @@ public class ApplicationConfig implements WebMvcConfigurer {
     @Bean
     @Autowired
     public IAppointmentService getAppointmentService(ISequenceRepository sequenceService) {
-        return new AppointmentService(jumpdayRepository, sequenceService);
+        return new AppointmentService(zoneId(), jumpdayRepository, sequenceService);
     }
 
     @Bean

@@ -19,6 +19,8 @@ import org.springframework.test.util.ReflectionTestUtils;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
+import java.time.ZoneId;
+
 /**
  * Abstract Base Class for tests that sets default settings.
  */
@@ -33,6 +35,8 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 // Needed to use MongoDB Testcontainer with DynamicPropertySource
 @DirtiesContext
 public abstract class AbstractSkdvinTest {
+
+    protected final ZoneId zoneId = ZoneId.of("Europe/Berlin");
 
     @MockBean
     protected JwtDecoder jwtDecoder;

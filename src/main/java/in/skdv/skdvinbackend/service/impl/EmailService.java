@@ -15,6 +15,7 @@ import org.thymeleaf.context.Context;
 
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
+import java.time.ZoneId;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -29,6 +30,7 @@ public class EmailService implements IEmailService {
     private final JavaMailSender mailSender;
     private final TemplateEngine emailTemplateEngine;
     private final MessageSource emailMessageSource;
+    private final ZoneId zoneId;
 
     @Value("${skdvin.from}")
     private String fromEmail;
@@ -135,6 +137,7 @@ public class EmailService implements IEmailService {
         ctx.setVariable("appointment", appointment);
         ctx.setVariable("settings", settings);
         ctx.setVariable("baseurl", baseurl);
+        ctx.setVariable("zonedAppointmentDate", appointment.getDate().atZone(zoneId));
 
         if (contextVariables != null) {
             contextVariables.forEach(ctx::setVariable);

@@ -37,8 +37,6 @@ class AppointmentServiceTest extends AbstractSkdvinTest {
     @Autowired
     private IAppointmentService appointmentService;
 
-    private final ZoneId zoneId = ZoneId.of("Europe/Berlin");
-
     @BeforeEach
     void setup() {
         // Set mock clock

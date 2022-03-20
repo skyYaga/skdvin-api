@@ -25,7 +25,7 @@ public class AppointmentService implements IAppointmentService {
 
     private static final String APPOINTMENT_SEQUENCE = "appointment";
 
-    private final ZoneId zoneId = ZoneId.of("Europe/Berlin");
+    private final ZoneId zoneId;
     private final JumpdayRepository jumpdayRepository;
     private final ISequenceRepository sequenceService;
     private final Clock clock = Clock.systemDefaultZone();

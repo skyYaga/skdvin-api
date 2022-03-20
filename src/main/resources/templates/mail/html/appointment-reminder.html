@@ -15,7 +15,7 @@
 <p th:utext="${settings.additionalReminderHint}">
     additional text from settings
 </p>
-<p th:utext="#{appointment.confirmation.details(${#temporals.format(appointment.date, 'HH:mm')},
+<p th:utext="#{appointment.confirmation.details(${#temporals.format(zonedAppointmentDate, 'HH:mm')},
     ${settings.dropzone.email}, ${settings.dropzone.mobile}, ${settings.dropzone.phone})}">
     Melden Sie sich zum gebuchten Zeitpunkt (HH:mm Uhr) einfach vor Ort bei uns am Manifest.
     Die angegebenen Zeiten sind lediglich Richtzeiten, es besteht keine Garantie zur gebuchten Uhrzeit in die Luft zu
@@ -23,7 +23,7 @@
     Falls Sie noch Fragen haben oder Ihren Termin nicht wahrnehmen können, senden Sie eine Mail an dzmail@example.com
     oder melden Sie sich telefonisch mobile + phone.
 </p>
-<span th:text="#{date(${#temporals.format(appointment.date, 'dd.MM.yyyy / HH:mm')})}">
+<span th:text="#{date(${#temporals.format(zonedAppointmentDate, 'dd.MM.yyyy / HH:mm')})}">
     Datum: 01.01.2020 / 10:00 Uhr
 </span><br/>
 <span th:text="#{tandem(${appointment.tandem})}">
