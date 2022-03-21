@@ -11,16 +11,22 @@ import in.skdv.skdvinbackend.model.entity.Videoflyer;
 import org.modelmapper.Converter;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.PropertyMap;
+import org.springframework.stereotype.Component;
 
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+@Component
 public class JumpdayConverter {
 
     private ModelMapper modelMapper = new ModelMapper();
+    private ZoneId zoneId;
 
-    public JumpdayConverter() {
+    public JumpdayConverter(ZoneId zoneId) {
+        this.zoneId = zoneId;
+
         AssignmentConverter assignmentConverter = new AssignmentConverter();
         Converter<List<Assignment<Tandemmaster>>, List<AssignmentDTO<TandemmasterDTO>>> tandemmasterConverter =
                 context -> assignmentConverter.convertToTandemmasterAssignmentDTO(context.getSource());
@@ -59,6 +65,8 @@ public class JumpdayConverter {
         if (jumpdayDTO == null) {
             return null;
         }
-        return modelMapper.map(jumpdayDTO, Jumpday.class);
+        Jumpday jumpday = modelMapper.map(jumpdayDTO, Jumpday.class);
+        jumpday.setTimezone(zoneId);
+        return jumpday;
     }
 }

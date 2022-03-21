@@ -8,13 +8,15 @@ import in.skdv.skdvinbackend.model.entity.*;
 import in.skdv.skdvinbackend.model.entity.settings.*;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.*;
 
 public class ModelMockHelper {
 
-    private static final JumpdayConverter JUMPDAY_CONVERTER = new JumpdayConverter();
+    private static final ZoneId zoneId = ZoneId.of("Europe/Berlin");
+    private static final JumpdayConverter JUMPDAY_CONVERTER = new JumpdayConverter(zoneId);
     private static final VideoflyerConverter VIDEOFLYER_CONVERTER = new VideoflyerConverter();
     private static final AppointmentConverter APPOINTMENT_CONVERTER = new AppointmentConverter();
     private static final TandemmasterConverter TANDEMMASTER_CONVERTER = new TandemmasterConverter();
@@ -41,7 +43,7 @@ public class ModelMockHelper {
         Appointment appointment = new Appointment();
         appointment.setCustomer(customer);
         appointment.setState(AppointmentState.UNCONFIRMED);
-        appointment.setDate(LocalDateTime.of(LocalDate.now(), LocalTime.of(10, 0)));
+        appointment.setDate(ZonedDateTime.of(LocalDate.now(), LocalTime.of(10, 0), zoneId).toInstant());
         appointment.setTandem(tandemCount);
         appointment.setPicOrVid(picOrVid);
         appointment.setPicAndVid(picAndVid);
@@ -63,7 +65,7 @@ public class ModelMockHelper {
         Appointment appointment = new Appointment();
         appointment.setCustomer(customer);
         appointment.setState(AppointmentState.CONFIRMED);
-        appointment.setDate(LocalDateTime.of(LocalDate.now(), LocalTime.of(10, 0)));
+        appointment.setDate(ZonedDateTime.of(LocalDate.now(), LocalTime.of(10, 0), zoneId).toInstant());
         appointment.setTandem(2);
         appointment.setPicOrVid(0);
         appointment.setPicAndVid(0);
@@ -75,6 +77,7 @@ public class ModelMockHelper {
     public static Jumpday createJumpday(LocalDate date) {
         Jumpday jumpday = new Jumpday();
         jumpday.setDate(date);
+        jumpday.setTimezone(zoneId);
         jumpday.setJumping(true);
         jumpday.setVideoflyer(new ArrayList<>());
         jumpday.setTandemmaster(new ArrayList<>());

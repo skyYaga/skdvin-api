@@ -35,7 +35,7 @@ public class AppointmentController {
     private final IAppointmentService appointmentService;
     private final IEmailService emailService;
     private final MessageSource messageSource;
-    private final AppointmentConverter appointmentConverter = new AppointmentConverter();
+    private final AppointmentConverter appointmentConverter;
 
     @GetMapping(value = "/{appointmentId}")
     @PreAuthorize("hasAuthority('SCOPE_read:appointments')")

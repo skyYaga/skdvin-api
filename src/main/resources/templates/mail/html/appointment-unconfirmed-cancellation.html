@@ -15,7 +15,7 @@
     Wenn Sie einfach vergessen haben diesen zu bestätigen, können Sie auf skdv.in einfach einen neuen Termin buchen.
     Folgender Termin wurde gelöscht:
 </p>
-<span th:text="#{date(${#temporals.format(appointment.date, 'dd.MM.yyyy / HH:mm')})}">
+<span th:text="#{date(${#temporals.format(zonedAppointmentDate, 'dd.MM.yyyy / HH:mm')})}">
     Datum: 01.01.2020 / 10:00 Uhr
 </span><br/>
 <span th:text="#{tandem(${appointment.tandem})}">

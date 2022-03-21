@@ -16,10 +16,7 @@ import in.skdv.skdvinbackend.util.VerificationTokenUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import java.time.Clock;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
+import java.time.*;
 import java.util.*;
 
 @Slf4j
@@ -28,19 +25,20 @@ public class AppointmentService implements IAppointmentService {
 
     private static final String APPOINTMENT_SEQUENCE = "appointment";
 
+    private final ZoneId zoneId;
     private final JumpdayRepository jumpdayRepository;
     private final ISequenceRepository sequenceService;
     private final Clock clock = Clock.systemDefaultZone();
 
     @Override
     public Appointment saveAppointment(Appointment appointment) {
-        Jumpday jumpday = jumpdayRepository.findByDate(appointment.getDate().toLocalDate());
+        Jumpday jumpday = jumpdayRepository.findByDate(appointment.getDate().atZone(zoneId).toLocalDate());
         return saveAppointmentInternal(jumpday, appointment, false);
     }
 
     @Override
     public Appointment saveAdminAppointment(Appointment appointment) {
-        Jumpday jumpday = jumpdayRepository.findByDate(appointment.getDate().toLocalDate());
+        Jumpday jumpday = jumpdayRepository.findByDate(appointment.getDate().atZone(zoneId).toLocalDate());
         return saveAppointmentInternal(jumpday, appointment, true);
     }
 
@@ -80,7 +78,7 @@ public class AppointmentService implements IAppointmentService {
     }
 
     private void deleteOldAppointment(Appointment newAppointment, Appointment oldAppointment) {
-        Jumpday jumpday = jumpdayRepository.findByDate(oldAppointment.getDate().toLocalDate());
+        Jumpday jumpday = jumpdayRepository.findByDate(oldAppointment.getDate().atZone(zoneId).toLocalDate());
         for (Slot slot : jumpday.getSlots()) {
 
             for (Iterator<Appointment> iterator = slot.getAppointments().iterator(); iterator.hasNext(); ) {
@@ -95,7 +93,7 @@ public class AppointmentService implements IAppointmentService {
     }
 
     private Appointment replaceAppointment(Appointment newAppointment, boolean isAdminBooking) {
-        Jumpday jumpday = jumpdayRepository.findByDate(newAppointment.getDate().toLocalDate());
+        Jumpday jumpday = jumpdayRepository.findByDate(newAppointment.getDate().atZone(zoneId).toLocalDate());
         for (Slot slot : jumpday.getSlots()) {
             slot.getAppointments().removeIf(appointment -> appointment != null
                     && appointment.getAppointmentId() == newAppointment.getAppointmentId());
@@ -105,7 +103,7 @@ public class AppointmentService implements IAppointmentService {
     }
 
     private boolean isAtSameDateAndTime(Appointment newAppointment, Appointment oldAppointment) {
-        return oldAppointment.getDate().toLocalDate().equals(newAppointment.getDate().toLocalDate());
+        return oldAppointment.getDate().atZone(zoneId).toLocalDate().equals(newAppointment.getDate().atZone(zoneId).toLocalDate());
     }
 
     @Override

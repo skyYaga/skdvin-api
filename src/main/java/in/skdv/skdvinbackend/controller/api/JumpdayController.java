@@ -30,7 +30,7 @@ public class JumpdayController {
     private static final String DATE_PATTERN = "^[0-9]{4}-[0-9]{2}-[0-9]{2}$";
 
     private final IJumpdayService jumpdayService;
-    private final JumpdayConverter jumpdayConverter = new JumpdayConverter();
+    private final JumpdayConverter jumpdayConverter;
 
     @GetMapping
     @PreAuthorize("hasAuthority('SCOPE_read:jumpdays')")

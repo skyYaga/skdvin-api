@@ -57,7 +57,8 @@ class JumpdayControllerTest extends AbstractSkdvinTest {
 
     private MockMvc mockMvc;
 
-    private JumpdayConverter jumpdayConverter = new JumpdayConverter();
+    @Autowired
+    private JumpdayConverter jumpdayConverter;
 
     @Autowired
     private IJumpdayService jumpdayService;

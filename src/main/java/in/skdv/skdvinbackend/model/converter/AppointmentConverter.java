@@ -2,12 +2,16 @@ package in.skdv.skdvinbackend.model.converter;
 
 import in.skdv.skdvinbackend.model.dto.AppointmentDTO;
 import in.skdv.skdvinbackend.model.entity.Appointment;
+import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+@Component
+@RequiredArgsConstructor
 public class AppointmentConverter {
 
     private ModelMapper modelMapper = new ModelMapper();
@@ -33,6 +37,8 @@ public class AppointmentConverter {
         if (appointmentDto == null) {
             return null;
         }
-        return modelMapper.map(appointmentDto, Appointment.class);
+        Appointment appointment = modelMapper.map(appointmentDto, Appointment.class);
+        appointment.setDate(appointmentDto.getDate());
+        return appointment;
     }
 }
