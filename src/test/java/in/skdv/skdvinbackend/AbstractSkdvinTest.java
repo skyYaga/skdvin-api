@@ -19,6 +19,8 @@ import org.springframework.test.util.ReflectionTestUtils;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
+import java.time.ZoneId;
+
 /**
  * Abstract Base Class for tests that sets default settings.
  */
@@ -28,11 +30,13 @@ import org.testcontainers.junit.jupiter.Testcontainers;
         "auth0.management.domain=localhost",
         "auth0.management.client-id=foo",
         "auth0.management.client-secret=foo",
-        "spring.security.oauth2.resourceserver.jwt.issuer-uri=https://example.com",
+        "spring.security.oauth2.resourceserver.jwt.issuer-uri=https://example.com"
 })
 // Needed to use MongoDB Testcontainer with DynamicPropertySource
 @DirtiesContext
 public abstract class AbstractSkdvinTest {
+
+    protected final ZoneId zoneId = ZoneId.of("Europe/Berlin");
 
     @MockBean
     protected JwtDecoder jwtDecoder;

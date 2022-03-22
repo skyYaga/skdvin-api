@@ -24,7 +24,7 @@
 <p th:text="#{appointment.data.heading}">
     Zur Überprüfung hier ihre Termindaten
 </p>
-<span th:text="#{date(${#temporals.format(appointment.date, 'dd.MM.yyyy / HH:mm')})}">
+<span th:text="#{date(${#temporals.format(zonedAppointmentDate, 'dd.MM.yyyy / HH:mm')})}">
     Datum: 01.01.2020 / 10:00 Uhr
 </span><br/>
 <span th:text="#{tandem(${appointment.tandem})}">

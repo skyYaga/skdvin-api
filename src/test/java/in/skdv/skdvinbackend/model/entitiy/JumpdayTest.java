@@ -6,13 +6,16 @@ import in.skdv.skdvinbackend.model.entity.Jumpday;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class JumpdayTest {
+
+    private final ZoneId zoneId = ZoneId.of("Europe/Berlin");
 
     @Test
     void testAddAppointment_SlotExists() {
@@ -24,7 +27,7 @@ class JumpdayTest {
     void testAddAppointment_SlotNotExists() {
         Jumpday jumpday = ModelMockHelper.createJumpday();
         Appointment singleAppointment = ModelMockHelper.createSingleAppointment();
-        singleAppointment.setDate(LocalDateTime.of(LocalDate.now(), LocalTime.of(11, 0)));
+        singleAppointment.setDate(ZonedDateTime.of(LocalDate.now(), LocalTime.of(11, 0), zoneId).toInstant());
         assertFalse(jumpday.addAppointment(singleAppointment));
     }
 
@@ -38,7 +41,7 @@ class JumpdayTest {
     void testGetSlotForAppointment_SlotNotExists() {
         Jumpday jumpday = ModelMockHelper.createJumpday();
         Appointment singleAppointment = ModelMockHelper.createSingleAppointment();
-        singleAppointment.setDate(LocalDateTime.of(LocalDate.now(), LocalTime.of(11, 0)));
+        singleAppointment.setDate(ZonedDateTime.of(LocalDate.now(), LocalTime.of(11, 0), zoneId).toInstant());
         assertFalse(jumpday.getSlotForAppointment(singleAppointment).isPresent());
     }
 }

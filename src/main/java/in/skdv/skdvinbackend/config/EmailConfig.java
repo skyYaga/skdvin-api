@@ -18,6 +18,7 @@ import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver;
 import org.thymeleaf.templateresolver.ITemplateResolver;
 import org.thymeleaf.templateresolver.StringTemplateResolver;
 
+import java.time.ZoneId;
 import java.util.Collections;
 
 /**
@@ -30,8 +31,13 @@ public class EmailConfig {
 
     @Bean
     @Autowired
-    public IEmailService emailService(ISettingsService settingsService, JavaMailSender mailSender, TemplateEngine emailTemplateEngine, @Qualifier("emailMessageSource") MessageSource emailMessageSource) {
-        return new EmailService(settingsService, mailSender, emailTemplateEngine, emailMessageSource);
+    public IEmailService emailService(
+            ISettingsService settingsService,
+            JavaMailSender mailSender,
+            TemplateEngine emailTemplateEngine,
+            @Qualifier("emailMessageSource") MessageSource emailMessageSource,
+            ZoneId zoneId) {
+        return new EmailService(settingsService, mailSender, emailTemplateEngine, emailMessageSource, zoneId);
     }
 
     @Bean(name = "emailMessageSource")

@@ -88,7 +88,7 @@ class AppointmentServiceTest extends AbstractSkdvinTest {
     @Test
     void testSaveAppointment_NoJumpday() {
         Appointment appointment = ModelMockHelper.createSingleAppointment();
-        appointment.setDate(LocalDateTime.now().plusDays(1));
+        appointment.setDate(ZonedDateTime.now(zoneId).plusDays(1).toInstant());
 
         NotFoundException notFoundException = assertThrows(NotFoundException.class, () ->
             appointmentService.saveAppointment(appointment)
@@ -267,14 +267,14 @@ class AppointmentServiceTest extends AbstractSkdvinTest {
     void testUpdateAppointment_ChangeTime() {
         Appointment appointment = appointmentService.saveAppointment(ModelMockHelper.createSecondAppointment());
         int appointmentId = appointment.getAppointmentId();
-        LocalDateTime newDate = LocalDateTime.of(LocalDate.now(), LocalTime.of(11, 30));
-        appointment.setDate(newDate);
+        ZonedDateTime newDate = ZonedDateTime.of(LocalDate.now(), LocalTime.of(11, 30), zoneId);
+        appointment.setDate(newDate.toInstant());
 
         Appointment updatedAppointment = appointmentService.updateAppointment(appointment);
 
         assertEquals(appointmentId, updatedAppointment.getAppointmentId());
         assertEquals("Jane", updatedAppointment.getCustomer().getFirstName());
-        assertEquals(newDate, updatedAppointment.getDate());
+        assertEquals(newDate.toInstant(), updatedAppointment.getDate());
     }
 
     @Test
@@ -282,7 +282,7 @@ class AppointmentServiceTest extends AbstractSkdvinTest {
         jumpdayRepository.save(ModelMockHelper.createJumpday(LocalDate.now().plusDays(1)));
         Appointment appointment = appointmentService.saveAppointment(ModelMockHelper.createSecondAppointment());
         int appointmentId = appointment.getAppointmentId();
-        LocalDateTime newDate = appointment.getDate().plusDays(1);
+        Instant newDate = appointment.getDate().plus(1, ChronoUnit.DAYS);
         appointment.setDate(newDate);
 
         Appointment updatedAppointment = appointmentService.updateAppointment(appointment);
@@ -297,14 +297,14 @@ class AppointmentServiceTest extends AbstractSkdvinTest {
         jumpdayRepository.save(ModelMockHelper.createJumpday(LocalDate.now().plusDays(1)));
         Appointment appointment = appointmentService.saveAppointment(ModelMockHelper.createSecondAppointment());
         int appointmentId = appointment.getAppointmentId();
-        LocalDateTime newDate = LocalDateTime.of(LocalDate.now().plusDays(1), LocalTime.of(11, 30));
-        appointment.setDate(newDate);
+        ZonedDateTime newDate = ZonedDateTime.of(LocalDate.now().plusDays(1), LocalTime.of(11, 30), zoneId);
+        appointment.setDate(newDate.toInstant());
 
         Appointment updatedAppointment = appointmentService.updateAppointment(appointment);
 
         assertEquals(appointmentId, updatedAppointment.getAppointmentId());
             assertEquals("Jane", updatedAppointment.getCustomer().getFirstName());
-        assertEquals(newDate, updatedAppointment.getDate());
+        assertEquals(newDate.toInstant(), updatedAppointment.getDate());
     }
 
     @Test
@@ -327,7 +327,7 @@ class AppointmentServiceTest extends AbstractSkdvinTest {
         Appointment appointment = appointmentService.saveAppointment(ModelMockHelper.createSecondAppointment());
         int appointmentId = appointment.getAppointmentId();
         appointment.getCustomer().setJumpers(Collections.emptyList());
-        LocalDateTime newDate = appointment.getDate().plusDays(1);
+        Instant newDate = appointment.getDate().plus(1, ChronoUnit.DAYS);
         appointment.setDate(newDate);
 
         Appointment updatedAppointment = appointmentService.updateAdminAppointment(appointment);
@@ -521,9 +521,9 @@ class AppointmentServiceTest extends AbstractSkdvinTest {
         Appointment thisWeekAppointment = ModelMockHelper.createSingleAppointment();
         Appointment futureAppointment = ModelMockHelper.createSingleAppointment();
 
-        pastAppointment.setDate(LocalDateTime.of(LocalDate.now().minusDays(1), LocalTime.of(10, 0)));
-        thisWeekAppointment.setDate(LocalDateTime.of(LocalDate.now().plusDays(5), LocalTime.of(10, 0)));
-        futureAppointment.setDate(LocalDateTime.of(LocalDate.now().plusDays(10), LocalTime.of(10, 0)));
+        pastAppointment.setDate(ZonedDateTime.of(LocalDate.now().minusDays(1), LocalTime.of(10, 0), zoneId).toInstant());
+        thisWeekAppointment.setDate(ZonedDateTime.of(LocalDate.now().plusDays(5), LocalTime.of(10, 0), zoneId).toInstant());
+        futureAppointment.setDate(ZonedDateTime.of(LocalDate.now().plusDays(10), LocalTime.of(10, 0), zoneId).toInstant());
 
         appointmentService.saveAppointment(pastAppointment);
         appointmentService.saveAppointment(todayAppointment);
@@ -533,8 +533,8 @@ class AppointmentServiceTest extends AbstractSkdvinTest {
         List<Appointment> appointmentsWithinNextWeek = appointmentService.findAppointmentsWithinNextWeek();
 
         assertEquals(2, appointmentsWithinNextWeek.size());
-        assertEquals(LocalDateTime.of(LocalDate.now(), LocalTime.of(10, 0)), appointmentsWithinNextWeek.get(0).getDate());
-        assertEquals(LocalDateTime.of(LocalDate.now().plusDays(5), LocalTime.of(10, 0)), appointmentsWithinNextWeek.get(1).getDate());
+        assertEquals(ZonedDateTime.of(LocalDate.now(), LocalTime.of(10, 0), zoneId).toInstant(), appointmentsWithinNextWeek.get(0).getDate());
+        assertEquals(ZonedDateTime.of(LocalDate.now().plusDays(5), LocalTime.of(10, 0), zoneId).toInstant(), appointmentsWithinNextWeek.get(1).getDate());
     }
 
     @Test

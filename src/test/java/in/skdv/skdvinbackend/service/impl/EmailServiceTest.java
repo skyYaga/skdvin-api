@@ -57,7 +57,7 @@ class EmailServiceTest extends AbstractSkdvinTest {
         Mockito.reset(settingsService);
 
         mailSender = spy(new JavaMailSenderImpl());
-        emailService = new EmailService(settingsService, mailSender, emailTemplateEngine, emailMessageSource);
+        emailService = new EmailService(settingsService, mailSender, emailTemplateEngine, emailMessageSource, zoneId);
         ReflectionTestUtils.setField(emailService, "fromEmail", FROM_EMAIL);
         ReflectionTestUtils.setField(emailService, "baseurl", BASE_URL);
 

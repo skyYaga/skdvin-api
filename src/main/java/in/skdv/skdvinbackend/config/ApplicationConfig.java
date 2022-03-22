@@ -19,6 +19,7 @@ import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.i18n.AcceptHeaderLocaleResolver;
 
+import java.time.ZoneId;
 import java.util.Locale;
 
 @Configuration
@@ -29,6 +30,9 @@ public class ApplicationConfig implements WebMvcConfigurer {
 
     @Value("${skdvin.baseurl:}")
     private String corsUrl;
+
+    @Value("${skdvin.timezone}")
+    private String timezone;
 
     @Autowired
     private JumpdayRepository jumpdayRepository;
@@ -43,6 +47,11 @@ public class ApplicationConfig implements WebMvcConfigurer {
     private MongoOperations mongoOperations;
 
     @Bean
+    public ZoneId zoneId() {
+        return ZoneId.of(timezone);
+    }
+
+    @Bean
     @Autowired
     public ISequenceRepository getSequenceService(MongoOperations mongoOperations) {
         return new SequenceRepository(mongoOperations);
@@ -51,7 +60,7 @@ public class ApplicationConfig implements WebMvcConfigurer {
     @Bean
     @Autowired
     public IAppointmentService getAppointmentService(ISequenceRepository sequenceService) {
-        return new AppointmentService(jumpdayRepository, sequenceService);
+        return new AppointmentService(zoneId(), jumpdayRepository, sequenceService);
     }
 
     @Bean

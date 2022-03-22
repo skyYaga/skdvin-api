@@ -21,6 +21,7 @@ class SequenceServiceTest extends AbstractSkdvinTest {
 
     @Test
     void generateNotExistingId() {
+        mongoOperations.dropCollection(Sequence.class);
         int foo = sequenceService.getNextSequence("foo");
         assertEquals(1, foo);
     }

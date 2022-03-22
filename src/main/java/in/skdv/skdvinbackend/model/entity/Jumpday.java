@@ -32,7 +32,7 @@ public class Jumpday extends AbstractJumpday {
     }
 
     public Optional<Slot> getSlotForAppointment(Appointment appointment) {
-        return getSlots().stream().filter(s -> s.getTime().equals(appointment.getDate().toLocalTime())).findFirst();
+        return getSlots().stream().filter(s -> s.getTime().equals(appointment.getDate().atZone(getTimezone()).toLocalTime())).findFirst();
     }
 
 }

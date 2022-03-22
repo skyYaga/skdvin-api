@@ -6,6 +6,7 @@ import lombok.Data;
 
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
+import java.time.Instant;
 import java.time.LocalDateTime;
 
 import static in.skdv.skdvinbackend.model.entity.AppointmentState.UNCONFIRMED;
@@ -14,10 +15,10 @@ import static in.skdv.skdvinbackend.model.entity.AppointmentState.UNCONFIRMED;
 public abstract class AbstractAppointment {
 
     @NotNull
-    private Customer customer;
+    private Instant date;
 
     @NotNull
-    private LocalDateTime date;
+    private Customer customer;
 
     @NotNull
     @Min(1)
