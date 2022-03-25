@@ -88,7 +88,7 @@ public class JumpdayService implements IJumpdayService {
     private void checkJumpdayHasNoAppointments(Jumpday jumpday) {
         for (Slot slot : jumpday.getSlots()) {
             if (!slot.getAppointments().isEmpty()) {
-                log.error("Jumpday {} still hast appointments", jumpday);
+                log.error("Jumpday {} still has appointments", jumpday);
                 throw new InvalidDeletionException(ErrorMessage.JUMPDAY_HAS_APPOINTMENTS);
             }
         }

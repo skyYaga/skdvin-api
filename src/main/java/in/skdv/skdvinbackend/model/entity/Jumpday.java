@@ -3,6 +3,7 @@ package in.skdv.skdvinbackend.model.entity;
 import in.skdv.skdvinbackend.model.common.AbstractJumpday;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.ToString;
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -13,6 +14,7 @@ import java.util.Optional;
 @Data
 @Document
 @EqualsAndHashCode(callSuper = true)
+@ToString(callSuper = true)
 public class Jumpday extends AbstractJumpday {
 
     @Id
