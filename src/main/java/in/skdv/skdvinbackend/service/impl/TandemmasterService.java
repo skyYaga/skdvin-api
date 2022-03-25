@@ -17,6 +17,7 @@ import in.skdv.skdvinbackend.service.ISettingsService;
 import in.skdv.skdvinbackend.service.ITandemmasterService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.*;
@@ -32,6 +33,7 @@ public class TandemmasterService implements ITandemmasterService {
     private final AssignmentConverter assignmentConverter = new AssignmentConverter();
 
     @Override
+    @Transactional
     public Tandemmaster save(Tandemmaster input) {
         return tandemmasterRepository.save(input);
     }
@@ -63,6 +65,53 @@ public class TandemmasterService implements ITandemmasterService {
         return getDetails(tandemmaster.get());
     }
 
+    @Override
+    @Transactional
+    public void assignTandemmaster(TandemmasterDetails tandemmasterDetails, boolean selfAssign) {
+        if (selfAssign) {
+            checkSelfAssignPrerequisites(tandemmasterDetails);
+        }
+
+        Optional<Tandemmaster> tandemmaster = tandemmasterRepository.findById(tandemmasterDetails.getId());
+        if (tandemmaster.isEmpty()) {
+            log.error("Tandemmaster {} not found", tandemmasterDetails.getId());
+            throw new NotFoundException(ErrorMessage.TANDEMMASTER_NOT_FOUND);
+        }
+
+        tandemmasterDetails.getAssignments().keySet().parallelStream().forEach(date ->
+                assignTandemmasterToJumpday(date, tandemmaster.get(), tandemmasterDetails.getAssignments().get(date)));
+    }
+
+    @Override
+    @Transactional
+    public void delete(String id) {
+        Optional<Tandemmaster> tandemmaster = tandemmasterRepository.findById(id);
+
+        if (tandemmaster.isEmpty()) {
+            log.error("Tandemmaster {} not found.", id);
+            throw new NotFoundException(ErrorMessage.TANDEMMASTER_NOT_FOUND);
+        }
+
+        // Unassign Tandemmaster
+        TandemmasterDetails details = getById(id);
+        details.getAssignments().forEach((key, value) -> value.setAssigned(false));
+        assignTandemmaster(details, false);
+
+        // Delete Tandemmaster
+        tandemmasterRepository.deleteById(id);
+    }
+
+    @Override
+    @Transactional
+    public Tandemmaster updateTandemmaster(Tandemmaster input) {
+        Optional<Tandemmaster> tandemmaster = tandemmasterRepository.findById(input.getId());
+
+        if (tandemmaster.isEmpty()) {
+            log.error("Tandemmaster {} not found.", input.getId());
+            throw new NotFoundException(ErrorMessage.TANDEMMASTER_NOT_FOUND);
+        }
+        return tandemmasterRepository.save(input);
+    }
 
     private TandemmasterDetails getDetails(Tandemmaster tandemmaster) {
         Map<LocalDate, SimpleAssignment> assignments = new HashMap<>();
@@ -87,22 +136,6 @@ public class TandemmasterService implements ITandemmasterService {
         manageTandemmasterAssignment(jumpday, tandemmaster, assignment);
     }
 
-    @Override
-    public void assignTandemmaster(TandemmasterDetails tandemmasterDetails, boolean selfAssign) {
-        if (selfAssign) {
-            checkSelfAssignPrerequisites(tandemmasterDetails);
-        }
-
-        Optional<Tandemmaster> tandemmaster = tandemmasterRepository.findById(tandemmasterDetails.getId());
-        if (tandemmaster.isEmpty()) {
-            log.error("Tandemmaster {} not found", tandemmasterDetails.getId());
-            throw new NotFoundException(ErrorMessage.TANDEMMASTER_NOT_FOUND);
-        }
-
-        tandemmasterDetails.getAssignments().keySet().parallelStream().forEach(date ->
-                assignTandemmasterToJumpday(date, tandemmaster.get(), tandemmasterDetails.getAssignments().get(date)));
-    }
-
     private void checkSelfAssignPrerequisites(TandemmasterDetails newTandemmasterDetails) {
         SelfAssignmentMode selfAssignmentMode = settingsService.getCommonSettingsByLanguage(Locale.GERMAN.getLanguage()).getSelfAssignmentMode();
         if (SelfAssignmentMode.READONLY.equals(selfAssignmentMode)) {
@@ -120,35 +153,6 @@ public class TandemmasterService implements ITandemmasterService {
                 }
             }
         }
-    }
-
-    @Override
-    public void delete(String id) {
-        Optional<Tandemmaster> tandemmaster = tandemmasterRepository.findById(id);
-
-        if (tandemmaster.isEmpty()) {
-            log.error("Tandemmaster {} not found.", id);
-            throw new NotFoundException(ErrorMessage.TANDEMMASTER_NOT_FOUND);
-        }
-
-        // Unassign Tandemmaster
-        TandemmasterDetails details = getById(id);
-        details.getAssignments().forEach((key, value) -> value.setAssigned(false));
-        assignTandemmaster(details, false);
-
-        // Delete Tandemmaster
-        tandemmasterRepository.deleteById(id);
-    }
-
-    @Override
-    public Tandemmaster updateTandemmaster(Tandemmaster input) {
-        Optional<Tandemmaster> tandemmaster = tandemmasterRepository.findById(input.getId());
-
-        if (tandemmaster.isEmpty()) {
-            log.error("Tandemmaster {} not found.", input.getId());
-            throw new NotFoundException(ErrorMessage.TANDEMMASTER_NOT_FOUND);
-        }
-        return tandemmasterRepository.save(input);
     }
 
     private void manageTandemmasterAssignment(Jumpday jumpday, Tandemmaster tandemmaster, SimpleAssignment simpleAssignment) {
