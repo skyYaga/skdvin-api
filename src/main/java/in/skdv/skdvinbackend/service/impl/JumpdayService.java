@@ -10,6 +10,7 @@ import in.skdv.skdvinbackend.repository.JumpdayRepository;
 import in.skdv.skdvinbackend.service.IJumpdayService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.YearMonth;
@@ -47,6 +48,7 @@ public class JumpdayService implements IJumpdayService {
     }
 
     @Override
+    @Transactional
     public Jumpday saveJumpday(Jumpday jumpday) {
         checkValidJumpday(jumpday);
 
@@ -60,6 +62,7 @@ public class JumpdayService implements IJumpdayService {
     }
 
     @Override
+    @Transactional
     public Jumpday updateJumpday(LocalDate date, Jumpday changedJumpday) {
         checkValidJumpday(changedJumpday);
 
@@ -74,6 +77,7 @@ public class JumpdayService implements IJumpdayService {
     }
 
     @Override
+    @Transactional
     public void deleteJumpday(LocalDate date) {
         Jumpday jumpday = jumpdayRepository.findByDate(date);
         if (jumpday == null) {
