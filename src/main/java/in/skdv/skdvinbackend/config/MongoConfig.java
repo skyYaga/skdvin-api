@@ -6,6 +6,8 @@ import in.skdv.skdvinbackend.repository.converter.LocalTimeReadConverter;
 import in.skdv.skdvinbackend.repository.converter.LocalTimeWriteConverter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.mongodb.MongoDatabaseFactory;
+import org.springframework.data.mongodb.MongoTransactionManager;
 import org.springframework.data.mongodb.core.convert.MongoCustomConversions;
 
 import java.util.Arrays;
@@ -23,6 +25,11 @@ public class MongoConfig {
                         new LocalTimeReadConverter()
                 )
         );
+    }
+
+    @Bean
+    MongoTransactionManager transactionManager(MongoDatabaseFactory dbFactory) {
+        return new MongoTransactionManager(dbFactory);
     }
 
 }

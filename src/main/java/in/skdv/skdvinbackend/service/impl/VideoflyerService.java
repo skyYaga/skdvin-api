@@ -17,6 +17,7 @@ import in.skdv.skdvinbackend.service.ISettingsService;
 import in.skdv.skdvinbackend.service.IVideoflyerService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.*;
@@ -32,6 +33,7 @@ public class VideoflyerService implements IVideoflyerService {
     private final AssignmentConverter assignmentConverter = new AssignmentConverter();
 
     @Override
+    @Transactional
     public Videoflyer save(Videoflyer input) {
         return videoflyerRepository.save(input);
     }
@@ -63,6 +65,54 @@ public class VideoflyerService implements IVideoflyerService {
         return getDetails(videoflyer.get());
     }
 
+    @Override
+    @Transactional
+    public void assignVideoflyer(VideoflyerDetails videoflyerDetails, boolean selfAssign) {
+        if (selfAssign) {
+            checkSelfAssignPrerequisites(videoflyerDetails);
+        }
+
+        Optional<Videoflyer> videoflyer = videoflyerRepository.findById(videoflyerDetails.getId());
+        if (videoflyer.isEmpty()) {
+            log.error("Videoflyer {} not found", videoflyerDetails.getId());
+            throw new NotFoundException(ErrorMessage.VIDEOFLYER_NOT_FOUND);
+        }
+
+        videoflyerDetails.getAssignments().keySet().parallelStream().forEach(date ->
+                assignVideoflyerToJumpday(date, videoflyer.get(), videoflyerDetails.getAssignments().get(date)));
+    }
+
+    @Override
+    @Transactional
+    public void delete(String id) {
+        Optional<Videoflyer> videoflyer = videoflyerRepository.findById(id);
+
+        if (videoflyer.isEmpty()) {
+            log.error("Videoflyer {} not found", id);
+            throw new NotFoundException(ErrorMessage.VIDEOFLYER_NOT_FOUND);
+        }
+
+        // Unassign Videoflyer
+        VideoflyerDetails details = getById(id);
+        details.getAssignments().forEach((key, value) -> value.setAssigned(false));
+        assignVideoflyer(details, false);
+
+        // Delete Videoflyer
+        videoflyerRepository.deleteById(id);
+    }
+
+    @Override
+    @Transactional
+    public Videoflyer updateVideoflyer(Videoflyer input) {
+        Optional<Videoflyer> videoflyer = videoflyerRepository.findById(input.getId());
+
+        if (videoflyer.isEmpty()) {
+            log.error("Videoflyer {} not found.", input.getId());
+            throw new NotFoundException(ErrorMessage.VIDEOFLYER_NOT_FOUND);
+        }
+        return videoflyerRepository.save(input);
+    }
+
     private VideoflyerDetails getDetails(Videoflyer videoflyer) {
         Map<LocalDate, SimpleAssignment> assignments = new HashMap<>();
 
@@ -86,22 +136,6 @@ public class VideoflyerService implements IVideoflyerService {
         manageVideoflyerAssignment(jumpday, videoflyer, simpleAssignment);
     }
 
-    @Override
-    public void assignVideoflyer(VideoflyerDetails videoflyerDetails, boolean selfAssign) {
-        if (selfAssign) {
-            checkSelfAssignPrerequisites(videoflyerDetails);
-        }
-
-        Optional<Videoflyer> videoflyer = videoflyerRepository.findById(videoflyerDetails.getId());
-        if (videoflyer.isEmpty()) {
-            log.error("Videoflyer {} not found", videoflyerDetails.getId());
-            throw new NotFoundException(ErrorMessage.VIDEOFLYER_NOT_FOUND);
-        }
-
-        videoflyerDetails.getAssignments().keySet().parallelStream().forEach(date ->
-                assignVideoflyerToJumpday(date, videoflyer.get(), videoflyerDetails.getAssignments().get(date)));
-    }
-
     private void checkSelfAssignPrerequisites(VideoflyerDetails newVideoflyerDetails) {
         SelfAssignmentMode selfAssignmentMode = settingsService.getCommonSettingsByLanguage(Locale.GERMAN.getLanguage()).getSelfAssignmentMode();
         if (SelfAssignmentMode.READONLY.equals(selfAssignmentMode)) {
@@ -119,35 +153,6 @@ public class VideoflyerService implements IVideoflyerService {
                 }
             }
         }
-    }
-
-    @Override
-    public void delete(String id) {
-        Optional<Videoflyer> videoflyer = videoflyerRepository.findById(id);
-
-        if (videoflyer.isEmpty()) {
-            log.error("Videoflyer {} not found", id);
-            throw new NotFoundException(ErrorMessage.VIDEOFLYER_NOT_FOUND);
-        }
-
-        // Unassign Videoflyer
-        VideoflyerDetails details = getById(id);
-        details.getAssignments().forEach((key, value) -> value.setAssigned(false));
-        assignVideoflyer(details, false);
-
-        // Delete Videoflyer
-        videoflyerRepository.deleteById(id);
-    }
-
-    @Override
-    public Videoflyer updateVideoflyer(Videoflyer input) {
-        Optional<Videoflyer> videoflyer = videoflyerRepository.findById(input.getId());
-
-        if (videoflyer.isEmpty()) {
-            log.error("Videoflyer {} not found.", input.getId());
-            throw new NotFoundException(ErrorMessage.VIDEOFLYER_NOT_FOUND);
-        }
-        return videoflyerRepository.save(input);
     }
 
     private void manageVideoflyerAssignment(Jumpday jumpday, Videoflyer videoflyer, SimpleAssignment simpleAssignment) {

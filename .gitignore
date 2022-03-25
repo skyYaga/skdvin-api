@@ -40,4 +40,6 @@ nbbuild/
 dist/
 nbdist/
 .nb-gradle/
+
 /src/main/resources/application-localdev.yml
+/mongo-local/data/

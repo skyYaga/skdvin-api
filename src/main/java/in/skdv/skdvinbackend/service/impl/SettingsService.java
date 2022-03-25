@@ -9,6 +9,7 @@ import in.skdv.skdvinbackend.repository.SettingsRepository;
 import in.skdv.skdvinbackend.service.ISettingsService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashMap;
 import java.util.Locale;
@@ -23,6 +24,7 @@ public class SettingsService implements ISettingsService {
     private final SettingsRepository settingsRepository;
 
     @Override
+    @Transactional
     public Settings saveSettings(Settings settings) {
         Settings existingSettings = getSettings();
         if (existingSettings != null) {
@@ -32,6 +34,7 @@ public class SettingsService implements ISettingsService {
     }
 
     @Override
+    @Transactional
     public Settings updateSettings(Settings input) {
         Optional<Settings> settings = settingsRepository.findById(input.getId());
 

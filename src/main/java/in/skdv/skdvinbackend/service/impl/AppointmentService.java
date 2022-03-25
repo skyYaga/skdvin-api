@@ -15,6 +15,7 @@ import in.skdv.skdvinbackend.service.IAppointmentService;
 import in.skdv.skdvinbackend.util.VerificationTokenUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.*;
 import java.util.*;
@@ -31,79 +32,29 @@ public class AppointmentService implements IAppointmentService {
     private final Clock clock = Clock.systemDefaultZone();
 
     @Override
+    @Transactional
     public Appointment saveAppointment(Appointment appointment) {
         Jumpday jumpday = jumpdayRepository.findByDate(appointment.getDate().atZone(zoneId).toLocalDate());
         return saveAppointmentInternal(jumpday, appointment, false);
     }
 
     @Override
+    @Transactional
     public Appointment saveAdminAppointment(Appointment appointment) {
         Jumpday jumpday = jumpdayRepository.findByDate(appointment.getDate().atZone(zoneId).toLocalDate());
         return saveAppointmentInternal(jumpday, appointment, true);
     }
 
     @Override
+    @Transactional
     public Appointment updateAppointment(Appointment newAppointment) {
         return updateAppointment(newAppointment, false);
     }
 
     @Override
+    @Transactional
     public Appointment updateAdminAppointment(Appointment appointment) {
         return updateAppointment(appointment, true);
-    }
-
-
-    private Appointment updateAppointment(Appointment newAppointment, boolean isAdminBooking) {
-        Appointment oldAppointment = findAppointment(newAppointment.getAppointmentId());
-
-        if (oldAppointment == null) {
-            log.error("Appointment {} not found", newAppointment.getAppointmentId());
-            throw new NotFoundException(ErrorMessage.APPOINTMENT_NOT_FOUND);
-        }
-
-        if (isAtSameDateAndTime(newAppointment, oldAppointment)) {
-            // Delete Appointment in this jumpday and create a new one, then save
-            return replaceAppointment(newAppointment, isAdminBooking);
-        }
-
-        // Create new Appointment and save it and then delete old one and save
-        Appointment appointmentResult;
-        if (isAdminBooking) {
-            appointmentResult = saveAdminAppointment(newAppointment);
-        } else {
-            appointmentResult = saveAppointment(newAppointment);
-        }
-        deleteOldAppointment(newAppointment, oldAppointment);
-        return appointmentResult;
-    }
-
-    private void deleteOldAppointment(Appointment newAppointment, Appointment oldAppointment) {
-        Jumpday jumpday = jumpdayRepository.findByDate(oldAppointment.getDate().atZone(zoneId).toLocalDate());
-        for (Slot slot : jumpday.getSlots()) {
-
-            for (Iterator<Appointment> iterator = slot.getAppointments().iterator(); iterator.hasNext(); ) {
-                Appointment appointment = iterator.next();
-
-                if (appointment != null && appointment.getAppointmentId() == newAppointment.getAppointmentId()) {
-                    iterator.remove();
-                    jumpdayRepository.save(jumpday);
-                }
-            }
-        }
-    }
-
-    private Appointment replaceAppointment(Appointment newAppointment, boolean isAdminBooking) {
-        Jumpday jumpday = jumpdayRepository.findByDate(newAppointment.getDate().atZone(zoneId).toLocalDate());
-        for (Slot slot : jumpday.getSlots()) {
-            slot.getAppointments().removeIf(appointment -> appointment != null
-                    && appointment.getAppointmentId() == newAppointment.getAppointmentId());
-        }
-
-        return saveAppointmentInternal(jumpday, newAppointment, isAdminBooking);
-    }
-
-    private boolean isAtSameDateAndTime(Appointment newAppointment, Appointment oldAppointment) {
-        return oldAppointment.getDate().atZone(zoneId).toLocalDate().equals(newAppointment.getDate().atZone(zoneId).toLocalDate());
     }
 
     @Override
@@ -161,6 +112,7 @@ public class AppointmentService implements IAppointmentService {
     }
 
     @Override
+    @Transactional
     public void updateAppointmentState(Appointment appointment, AppointmentState appointmentState) {
         appointment.setState(appointmentState);
         updateAppointment(appointment);
@@ -180,6 +132,7 @@ public class AppointmentService implements IAppointmentService {
     }
 
     @Override
+    @Transactional
     public void deleteAppointment(int appointmentId) {
         List<Jumpday> jumpdays = jumpdayRepository.findBySlotsAppointmentsAppointmentId(appointmentId);
 
@@ -221,12 +174,14 @@ public class AppointmentService implements IAppointmentService {
     }
 
     @Override
+    @Transactional
     public void reminderSent(Appointment appointment) {
         appointment.setReminderSent(true);
         updateAppointment(appointment, true);
     }
 
     @Override
+    @Transactional
     public Appointment confirmAppointment(int appointmentId, String token) {
         Appointment appointment = findAppointment(appointmentId);
 
@@ -248,6 +203,61 @@ public class AppointmentService implements IAppointmentService {
         updateAppointmentState(appointment, AppointmentState.CONFIRMED);
 
         return appointment;
+    }
+
+
+
+    private Appointment updateAppointment(Appointment newAppointment, boolean isAdminBooking) {
+        Appointment oldAppointment = findAppointment(newAppointment.getAppointmentId());
+
+        if (oldAppointment == null) {
+            log.error("Appointment {} not found", newAppointment.getAppointmentId());
+            throw new NotFoundException(ErrorMessage.APPOINTMENT_NOT_FOUND);
+        }
+
+        if (isAtSameDateAndTime(newAppointment, oldAppointment)) {
+            // Delete Appointment in this jumpday and create a new one, then save
+            return replaceAppointment(newAppointment, isAdminBooking);
+        }
+
+        // Create new Appointment and save it and then delete old one and save
+        Appointment appointmentResult;
+        if (isAdminBooking) {
+            appointmentResult = saveAdminAppointment(newAppointment);
+        } else {
+            appointmentResult = saveAppointment(newAppointment);
+        }
+        deleteOldAppointment(newAppointment, oldAppointment);
+        return appointmentResult;
+    }
+
+    private void deleteOldAppointment(Appointment newAppointment, Appointment oldAppointment) {
+        Jumpday jumpday = jumpdayRepository.findByDate(oldAppointment.getDate().atZone(zoneId).toLocalDate());
+        for (Slot slot : jumpday.getSlots()) {
+
+            for (Iterator<Appointment> iterator = slot.getAppointments().iterator(); iterator.hasNext(); ) {
+                Appointment appointment = iterator.next();
+
+                if (appointment != null && appointment.getAppointmentId() == newAppointment.getAppointmentId()) {
+                    iterator.remove();
+                    jumpdayRepository.save(jumpday);
+                }
+            }
+        }
+    }
+
+    private Appointment replaceAppointment(Appointment newAppointment, boolean isAdminBooking) {
+        Jumpday jumpday = jumpdayRepository.findByDate(newAppointment.getDate().atZone(zoneId).toLocalDate());
+        for (Slot slot : jumpday.getSlots()) {
+            slot.getAppointments().removeIf(appointment -> appointment != null
+                    && appointment.getAppointmentId() == newAppointment.getAppointmentId());
+        }
+
+        return saveAppointmentInternal(jumpday, newAppointment, isAdminBooking);
+    }
+
+    private boolean isAtSameDateAndTime(Appointment newAppointment, Appointment oldAppointment) {
+        return oldAppointment.getDate().atZone(zoneId).toLocalDate().equals(newAppointment.getDate().atZone(zoneId).toLocalDate());
     }
 
     private GroupSlot calculateGroupSlot(Jumpday jumpday, int slotIndex, int minTandemAvailable) {
