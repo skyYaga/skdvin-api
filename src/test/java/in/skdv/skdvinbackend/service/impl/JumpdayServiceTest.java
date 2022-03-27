@@ -67,7 +67,7 @@ class JumpdayServiceTest extends AbstractSkdvinTest {
             jumpdayService.saveJumpday(jumpday)
         );
 
-        assertEquals(ErrorMessage.JUMPDAY_INVALID, invalidRequestException.getErrorMessage());
+        assertEquals(ErrorMessage.JUMPDAY_INVALID_MORE_VIDEO_THAN_TANDEM, invalidRequestException.getErrorMessage());
     }
 
     @Test
@@ -80,7 +80,7 @@ class JumpdayServiceTest extends AbstractSkdvinTest {
             jumpdayService.saveJumpday(jumpday)
         );
 
-        assertEquals(ErrorMessage.JUMPDAY_INVALID, invalidRequestException.getErrorMessage());
+        assertEquals(ErrorMessage.JUMPDAY_INVALID_MORE_PICANDVID_THAN_PICORVID, invalidRequestException.getErrorMessage());
     }
 
     @Test
@@ -252,7 +252,7 @@ class JumpdayServiceTest extends AbstractSkdvinTest {
             jumpdayService.updateJumpday(date, changedJumpday)
         );
 
-        assertEquals(ErrorMessage.JUMPDAY_INVALID, invalidRequestException.getErrorMessage());
+        assertEquals(ErrorMessage.JUMPDAY_INVALID_MORE_VIDEO_THAN_TANDEM, invalidRequestException.getErrorMessage());
     }
 
     @Test
@@ -267,7 +267,7 @@ class JumpdayServiceTest extends AbstractSkdvinTest {
             jumpdayService.updateJumpday(date, changedJumpday)
         );
 
-        assertEquals(ErrorMessage.JUMPDAY_INVALID, invalidRequestException.getErrorMessage());
+        assertEquals(ErrorMessage.JUMPDAY_INVALID_MORE_PICANDVID_THAN_PICORVID, invalidRequestException.getErrorMessage());
     }
 
     @Test
