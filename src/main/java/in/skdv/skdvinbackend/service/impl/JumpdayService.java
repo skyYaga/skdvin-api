@@ -170,10 +170,13 @@ public class JumpdayService implements IJumpdayService {
         for (Slot slot : jumpday.getSlots()) {
             if (slot.getTandemTotal() < slot.getPicOrVidTotal() ||
                     slot.getTandemTotal() < slot.getPicAndVidTotal() ||
-                    slot.getPicOrVidTotal() < slot.getPicAndVidTotal() ||
                     slot.getTandemTotal() < slot.getHandcamTotal()) {
-                log.error("Jumpday is invalid: {}", jumpday);
-                throw new InvalidRequestException(ErrorMessage.JUMPDAY_INVALID);
+                log.error("Jumpday has more video than tandem slots: {}", jumpday);
+                throw new InvalidRequestException(ErrorMessage.JUMPDAY_INVALID_MORE_VIDEO_THAN_TANDEM);
+            }
+            if (slot.getPicOrVidTotal() < slot.getPicAndVidTotal()) {
+                log.error("Jumpday has more pic and vid than pic or vid slots: {}", jumpday);
+                throw new InvalidRequestException(ErrorMessage.JUMPDAY_INVALID_MORE_PICANDVID_THAN_PICORVID);
             }
         }
     }

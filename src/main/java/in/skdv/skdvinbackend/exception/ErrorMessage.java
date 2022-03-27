@@ -19,7 +19,8 @@ public enum ErrorMessage {
     JUMPDAY_NOT_FOUND_MSG("jumpday.not.found"),
     JUMPDAY_ALREADY_EXISTS_MSG("jumpday.already.exists"),
     JUMPDAY_NO_FREE_SLOTS("jumpday.no.free.slots"),
-    JUMPDAY_INVALID("jumpday.invalid"),
+    JUMPDAY_INVALID_MORE_VIDEO_THAN_TANDEM("jumpday.invalid.more.video.than.tandem"),
+    JUMPDAY_INVALID_MORE_PICANDVID_THAN_PICORVID("jumpday.invalid.more.picandvid.than.picorvid"),
     JUMPDAY_SLOT_HAS_APPOINTMENTS("jumpday.slot.has.apointments"),
     JUMPDAY_HAS_APPOINTMENTS("jumpday.has.apointments"),
 
