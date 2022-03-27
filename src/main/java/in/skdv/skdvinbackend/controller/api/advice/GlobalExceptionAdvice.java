@@ -56,7 +56,7 @@ public class GlobalExceptionAdvice {
     @ExceptionHandler({AlreadyConfirmedException.class, NoSlotsLeftException.class})
     @ResponseStatus(HttpStatus.CONFLICT)
     GenericResult<Void> alreadyConfirmedHandler(ConflictException ex) {
-        log.error("Exception: Conflict.", ex);
+        log.warn("Exception: Conflict.", ex);
         return new GenericResult<>(false, messageSource.getMessage(ex.getErrorMessage().toString(), null, LocaleContextHolder.getLocale()));
     }
 

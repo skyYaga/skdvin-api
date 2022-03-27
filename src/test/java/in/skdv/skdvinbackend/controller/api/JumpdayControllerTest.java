@@ -485,7 +485,7 @@ class JumpdayControllerTest extends AbstractSkdvinTest {
                 .content(jumpdayJson))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.success", is(false)))
-                .andExpect(jsonPath("$.message", is("Jumpday invalid")));
+                .andExpect(jsonPath("$.message", is("Jumpday has more video than tandem slots")));
     }
 
     @Test
