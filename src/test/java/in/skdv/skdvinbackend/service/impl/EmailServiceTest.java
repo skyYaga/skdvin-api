@@ -3,8 +3,12 @@ package in.skdv.skdvinbackend.service.impl;
 import in.skdv.skdvinbackend.AbstractSkdvinTest;
 import in.skdv.skdvinbackend.ModelMockHelper;
 import in.skdv.skdvinbackend.model.entity.Appointment;
+import in.skdv.skdvinbackend.model.entity.EmailType;
+import in.skdv.skdvinbackend.model.entity.OutgoingMail;
+import in.skdv.skdvinbackend.model.entity.Status;
 import in.skdv.skdvinbackend.model.entity.settings.CommonSettings;
 import in.skdv.skdvinbackend.model.entity.settings.Dropzone;
+import in.skdv.skdvinbackend.repository.EmailOutboxRepository;
 import in.skdv.skdvinbackend.service.IEmailService;
 import in.skdv.skdvinbackend.service.ISettingsService;
 import in.skdv.skdvinbackend.util.VerificationTokenUtil;
@@ -25,6 +29,7 @@ import org.thymeleaf.TemplateEngine;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 import java.io.IOException;
+import java.util.List;
 import java.util.Locale;
 import java.util.regex.Pattern;
 
@@ -47,6 +52,9 @@ class EmailServiceTest extends AbstractSkdvinTest {
     private ISettingsService settingsService;
 
     @Autowired
+    private EmailOutboxRepository emailOutboxRepository;
+
+    @Autowired
     private TemplateEngine emailTemplateEngine;
 
     @Autowired
@@ -55,22 +63,37 @@ class EmailServiceTest extends AbstractSkdvinTest {
     @BeforeEach
     void setup() {
         Mockito.reset(settingsService);
+        emailOutboxRepository.deleteAll();
 
         mailSender = spy(new JavaMailSenderImpl());
-        emailService = new EmailService(settingsService, mailSender, emailTemplateEngine, emailMessageSource, zoneId);
+        emailService = new EmailService(settingsService, emailOutboxRepository, mailSender, emailTemplateEngine, emailMessageSource, zoneId);
         ReflectionTestUtils.setField(emailService, "fromEmail", FROM_EMAIL);
         ReflectionTestUtils.setField(emailService, "baseurl", BASE_URL);
 
         when(settingsService.getCommonSettingsByLanguage(Locale.GERMAN.getLanguage())).
                 thenReturn(ModelMockHelper.createCommonSettings());
+        when(settingsService.getCommonSettingsByLanguage(Locale.ENGLISH.getLanguage())).
+                thenReturn(ModelMockHelper.createCommonSettings());
+    }
+
+    @Test
+    void testSaveMailInOutbox() {
+        emailService.saveMailInOutbox(1, EmailType.APPOINTMENT_VERIFICATION);
+
+        List<OutgoingMail> outgoingMails = emailOutboxRepository.findAll();
+        assertEquals(1, outgoingMails.size());
+        assertEquals(1, outgoingMails.get(0).getAppointmentId());
+        assertEquals(EmailType.APPOINTMENT_VERIFICATION, outgoingMails.get(0).getEmailType());
+        assertEquals(Status.OPEN, outgoingMails.get(0).getStatus());
     }
 
     @Test
     void testAppointmentVerificationMail() throws MessagingException, IOException {
-        LocaleContextHolder.setLocale(Locale.GERMAN);
+        LocaleContextHolder.setLocale(Locale.ENGLISH);
         doNothing().when(mailSender).send(Mockito.any(MimeMessage.class));
 
         Appointment appointment = ModelMockHelper.createSingleAppointment();
+        appointment.setLang(LocaleContextHolder.getLocale().getLanguage());
         appointment.setVerificationToken(VerificationTokenUtil.generate());
 
         emailService.sendAppointmentVerification(appointment);
@@ -80,8 +103,9 @@ class EmailServiceTest extends AbstractSkdvinTest {
 
         assertEquals(FROM_EMAIL, argument.getValue().getFrom()[0].toString());
         assertEquals(appointment.getCustomer().getEmail(), argument.getValue().getAllRecipients()[0].toString());
+        assertTrue(argument.getValue().getSubject().startsWith("Confirm your booking"));
 
-        Pattern pattern = Pattern.compile(".*" + BASE_URL + "/de/appointment/verify\\?id=[0-9]+&token=[A-Za-z0-9-]{36}.*", Pattern.DOTALL);
+        Pattern pattern = Pattern.compile(".*" + BASE_URL + "/en/appointment/verify\\?id=[0-9]+&token=[A-Za-z0-9-]{36}.*", Pattern.DOTALL);
         assertTrue(pattern.matcher(argument.getValue().getContent().toString()).matches());
     }
 
@@ -90,6 +114,7 @@ class EmailServiceTest extends AbstractSkdvinTest {
         doNothing().when(mailSender).send(Mockito.any(MimeMessage.class));
 
         Appointment appointment = ModelMockHelper.createSingleAppointment();
+        appointment.setAppointmentId(1);
         appointment.setVerificationToken(VerificationTokenUtil.generate());
 
         emailService.sendAppointmentConfirmation(appointment);
@@ -99,6 +124,8 @@ class EmailServiceTest extends AbstractSkdvinTest {
 
         assertEquals(FROM_EMAIL, argument.getValue().getFrom()[0].toString());
         assertEquals(appointment.getCustomer().getEmail(), argument.getValue().getAllRecipients()[0].toString());
+        // Appointment was initially created in german
+        assertEquals("Buchungsbestätigung #" + appointment.getAppointmentId(), argument.getValue().getSubject());
 
         assertFalse(argument.getValue().getContent().toString().isEmpty());
     }
@@ -133,6 +160,8 @@ class EmailServiceTest extends AbstractSkdvinTest {
 
         assertEquals(FROM_EMAIL, argument.getValue().getFrom()[0].toString());
         assertEquals(appointment.getCustomer().getEmail(), argument.getValue().getAllRecipients()[0].toString());
+        // Appointment was initially created in german
+        assertTrue(argument.getValue().getSubject().startsWith("Deine Buchung wurde aktualisiert (#"));
 
         assertFalse(argument.getValue().getContent().toString().isEmpty());
     }
@@ -150,6 +179,8 @@ class EmailServiceTest extends AbstractSkdvinTest {
 
         assertEquals(FROM_EMAIL, argument.getValue().getFrom()[0].toString());
         assertEquals(appointment.getCustomer().getEmail(), argument.getValue().getAllRecipients()[0].toString());
+        // Appointment was initially created in german
+        assertTrue(argument.getValue().getSubject().startsWith("Dein Termin wurde gelöscht (#"));
 
         assertFalse(argument.getValue().getContent().toString().isEmpty());
     }

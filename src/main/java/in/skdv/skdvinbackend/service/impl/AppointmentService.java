@@ -5,16 +5,15 @@ import in.skdv.skdvinbackend.model.common.FreeSlot;
 import in.skdv.skdvinbackend.model.common.GroupSlot;
 import in.skdv.skdvinbackend.model.common.SimpleSlot;
 import in.skdv.skdvinbackend.model.common.SlotQuery;
-import in.skdv.skdvinbackend.model.entity.Appointment;
-import in.skdv.skdvinbackend.model.entity.AppointmentState;
-import in.skdv.skdvinbackend.model.entity.Jumpday;
-import in.skdv.skdvinbackend.model.entity.Slot;
+import in.skdv.skdvinbackend.model.entity.*;
 import in.skdv.skdvinbackend.repository.ISequenceRepository;
 import in.skdv.skdvinbackend.repository.JumpdayRepository;
 import in.skdv.skdvinbackend.service.IAppointmentService;
+import in.skdv.skdvinbackend.service.IEmailService;
 import in.skdv.skdvinbackend.util.VerificationTokenUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.*;
@@ -29,11 +28,20 @@ public class AppointmentService implements IAppointmentService {
     private final ZoneId zoneId;
     private final JumpdayRepository jumpdayRepository;
     private final ISequenceRepository sequenceService;
+    private final IEmailService emailService;
     private final Clock clock = Clock.systemDefaultZone();
 
     @Override
     @Transactional
     public Appointment saveAppointment(Appointment appointment) {
+        appointment.setVerificationToken(VerificationTokenUtil.generate());
+        appointment.setLang(LocaleContextHolder.getLocale().getLanguage());
+        Appointment savedAppointment = saveAppointmentWithoutMail(appointment);
+        emailService.saveMailInOutbox(savedAppointment.getAppointmentId(), EmailType.APPOINTMENT_VERIFICATION);
+        return savedAppointment;
+    }
+
+    private Appointment saveAppointmentWithoutMail(Appointment appointment) {
         Jumpday jumpday = jumpdayRepository.findByDate(appointment.getDate().atZone(zoneId).toLocalDate());
         return saveAppointmentInternal(jumpday, appointment, false);
     }
@@ -48,6 +56,12 @@ public class AppointmentService implements IAppointmentService {
     @Override
     @Transactional
     public Appointment updateAppointment(Appointment newAppointment) {
+        Appointment updatedAppointment = updateAppointmentWithoutMail(newAppointment);
+        emailService.saveMailInOutbox(updatedAppointment.getAppointmentId(), EmailType.APPOINTMENT_UPDATED);
+        return updatedAppointment;
+    }
+
+    private Appointment updateAppointmentWithoutMail(Appointment newAppointment) {
         return updateAppointment(newAppointment, false);
     }
 
@@ -115,7 +129,7 @@ public class AppointmentService implements IAppointmentService {
     @Transactional
     public void updateAppointmentState(Appointment appointment, AppointmentState appointmentState) {
         appointment.setState(appointmentState);
-        updateAppointment(appointment);
+        updateAppointmentWithoutMail(appointment);
     }
 
     @Override
@@ -133,9 +147,14 @@ public class AppointmentService implements IAppointmentService {
 
     @Override
     @Transactional
+    public void deleteAppointment(Appointment appointment) {
+        emailService.saveMailInOutbox(appointment.getAppointmentId(), EmailType.APPOINTMENT_DELETED, appointment);
+        deleteAppointment(appointment.getAppointmentId());
+    }
+
+    @Override
     public void deleteAppointment(int appointmentId) {
         List<Jumpday> jumpdays = jumpdayRepository.findBySlotsAppointmentsAppointmentId(appointmentId);
-
         jumpdays.forEach(jumpday -> jumpday.getSlots().forEach(slot ->
                 slot.getAppointments().removeIf(appointment -> appointment.getAppointmentId() == appointmentId)
         ));
@@ -182,7 +201,7 @@ public class AppointmentService implements IAppointmentService {
 
     @Override
     @Transactional
-    public Appointment confirmAppointment(int appointmentId, String token) {
+    public void confirmAppointment(int appointmentId, String token) {
         Appointment appointment = findAppointment(appointmentId);
 
         if (appointment == null) {
@@ -191,7 +210,7 @@ public class AppointmentService implements IAppointmentService {
         }
 
         if (!AppointmentState.UNCONFIRMED.equals(appointment.getState())) {
-            log.error("Appointment {} already confirmed", appointmentId);
+            log.warn("Appointment {} already confirmed", appointmentId);
             throw new AlreadyConfirmedException(ErrorMessage.APPOINTMENT_ALREADY_CONFIRMED);
         }
 
@@ -201,8 +220,7 @@ public class AppointmentService implements IAppointmentService {
         }
 
         updateAppointmentState(appointment, AppointmentState.CONFIRMED);
-
-        return appointment;
+        emailService.saveMailInOutbox(appointment.getAppointmentId(), EmailType.APPOINTMENT_CONFIRMATION);
     }
 
 
@@ -225,7 +243,7 @@ public class AppointmentService implements IAppointmentService {
         if (isAdminBooking) {
             appointmentResult = saveAdminAppointment(newAppointment);
         } else {
-            appointmentResult = saveAppointment(newAppointment);
+            appointmentResult = saveAppointmentWithoutMail(newAppointment);
         }
         deleteOldAppointment(newAppointment, oldAppointment);
         return appointmentResult;

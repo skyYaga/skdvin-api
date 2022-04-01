@@ -12,7 +12,6 @@ import in.skdv.skdvinbackend.model.entity.Appointment;
 import in.skdv.skdvinbackend.service.IAppointmentService;
 import in.skdv.skdvinbackend.service.IEmailService;
 import in.skdv.skdvinbackend.util.GenericResult;
-import in.skdv.skdvinbackend.util.VerificationTokenUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.MessageSource;
@@ -21,7 +20,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import javax.mail.MessagingException;
 import javax.validation.Valid;
 import java.time.LocalDate;
 import java.util.List;
@@ -50,17 +48,10 @@ public class AppointmentController {
     @PreAuthorize("permitAll")
     public GenericResult<AppointmentDTO> addAppointment(@RequestBody @Valid AppointmentDTO input) {
         log.info("Adding appointment {}", input);
-
         Appointment appointment = appointmentConverter.convertToEntity(input);
-        appointment.setVerificationToken(VerificationTokenUtil.generate());
-        appointment.setLang(LocaleContextHolder.getLocale().getLanguage());
+
         Appointment result = appointmentService.saveAppointment(appointment);
 
-        try {
-            emailService.sendAppointmentVerification(result);
-        } catch (MessagingException e) {
-            log.error("Error sending appointment verification mail", e);
-        }
         return new GenericResult<>(true, appointmentConverter.convertToDto(result));
     }
 
@@ -81,12 +72,6 @@ public class AppointmentController {
     public GenericResult<AppointmentDTO> updateAppointment(@RequestBody @Valid AppointmentDTO input) {
         log.info("Updating appointment {}", input);
         Appointment result = appointmentService.updateAppointment(appointmentConverter.convertToEntity(input));
-
-        try {
-            emailService.sendAppointmentUpdated(result);
-        } catch (MessagingException e) {
-            log.error("Error sending appointment update mail", e);
-        }
         return new GenericResult<>(true, appointmentConverter.convertToDto(result));
     }
 
@@ -109,13 +94,7 @@ public class AppointmentController {
             throw new NotFoundException(ErrorMessage.APPOINTMENT_NOT_FOUND);
         }
 
-        appointmentService.deleteAppointment(appointmentId);
-        try {
-            emailService.sendAppointmentDeleted(appointment);
-        } catch (MessagingException e) {
-            log.error("Error sending appointment deletion mail", e);
-        }
-
+        appointmentService.deleteAppointment(appointment);
         return new GenericResult<>(true);
     }
 
@@ -135,13 +114,7 @@ public class AppointmentController {
     @PreAuthorize("permitAll")
     public GenericResult<Void> confirmAppointment(@PathVariable int appointmentId, @PathVariable String token) {
         log.info("Confirm appointment {} with token {}", appointmentId, token);
-        Appointment appointment = appointmentService.confirmAppointment(appointmentId, token);
-
-        try {
-            emailService.sendAppointmentConfirmation(appointment);
-        } catch (MessagingException e) {
-            log.error("Error sending confirmAppointment mail", e);
-        }
+        appointmentService.confirmAppointment(appointmentId, token);
         return new GenericResult<>(true);
     }
 

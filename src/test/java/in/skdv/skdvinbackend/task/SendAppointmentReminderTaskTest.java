@@ -4,6 +4,7 @@ import in.skdv.skdvinbackend.AbstractSkdvinTest;
 import in.skdv.skdvinbackend.ModelMockHelper;
 import in.skdv.skdvinbackend.model.entity.Appointment;
 import in.skdv.skdvinbackend.model.entity.AppointmentState;
+import in.skdv.skdvinbackend.model.entity.Jumpday;
 import in.skdv.skdvinbackend.repository.JumpdayRepository;
 import in.skdv.skdvinbackend.service.IAppointmentService;
 import in.skdv.skdvinbackend.service.IEmailService;
@@ -21,6 +22,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
+import java.time.LocalDate;
 import java.util.Locale;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -81,7 +83,10 @@ class SendAppointmentReminderTaskTest extends AbstractSkdvinTest {
         Appointment appointment = ModelMockHelper.createSingleAppointment();
         appointment.setLang(Locale.ENGLISH.getLanguage());
         appointment.setState(AppointmentState.CONFIRMED);
-        appointmentService.saveAppointment(appointment);
+
+        Jumpday jumpday = jumpdayRepository.findByDate(LocalDate.now());
+        jumpday.addAppointment(appointment);
+        jumpdayRepository.save(jumpday);
 
         task.sendReminder();
 

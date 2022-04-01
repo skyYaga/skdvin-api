@@ -1,5 +1,6 @@
 package in.skdv.skdvinbackend.config;
 
+import in.skdv.skdvinbackend.repository.EmailOutboxRepository;
 import in.skdv.skdvinbackend.service.IEmailService;
 import in.skdv.skdvinbackend.service.ISettingsService;
 import in.skdv.skdvinbackend.service.impl.EmailService;
@@ -33,11 +34,12 @@ public class EmailConfig {
     @Autowired
     public IEmailService emailService(
             ISettingsService settingsService,
+            EmailOutboxRepository emailOutboxRepository,
             JavaMailSender mailSender,
             TemplateEngine emailTemplateEngine,
             @Qualifier("emailMessageSource") MessageSource emailMessageSource,
             ZoneId zoneId) {
-        return new EmailService(settingsService, mailSender, emailTemplateEngine, emailMessageSource, zoneId);
+        return new EmailService(settingsService, emailOutboxRepository, mailSender, emailTemplateEngine, emailMessageSource, zoneId);
     }
 
     @Bean(name = "emailMessageSource")
