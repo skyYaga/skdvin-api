@@ -1,10 +1,15 @@
 package in.skdv.skdvinbackend.service;
 
 import in.skdv.skdvinbackend.model.entity.Appointment;
+import in.skdv.skdvinbackend.model.entity.EmailType;
 
 import javax.mail.MessagingException;
 
 public interface IEmailService {
+
+    void saveMailInOutbox(int appointmentId, EmailType emailType);
+
+    void saveMailInOutbox(int appointmentId, EmailType emailType, Appointment appointment);
 
     void sendAppointmentVerification(Appointment appointment) throws MessagingException;
 

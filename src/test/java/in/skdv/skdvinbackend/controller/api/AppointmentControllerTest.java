@@ -1,5 +1,6 @@
 package in.skdv.skdvinbackend.controller.api;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import in.skdv.skdvinbackend.AbstractSkdvinTest;
 import in.skdv.skdvinbackend.MockJwtDecoder;
 import in.skdv.skdvinbackend.ModelMockHelper;
@@ -9,6 +10,7 @@ import in.skdv.skdvinbackend.model.dto.AppointmentDTO;
 import in.skdv.skdvinbackend.model.dto.AppointmentStateOnlyDTO;
 import in.skdv.skdvinbackend.model.entity.Appointment;
 import in.skdv.skdvinbackend.model.entity.AppointmentState;
+import in.skdv.skdvinbackend.model.entity.Jumpday;
 import in.skdv.skdvinbackend.repository.JumpdayRepository;
 import in.skdv.skdvinbackend.service.IAppointmentService;
 import in.skdv.skdvinbackend.service.IEmailService;
@@ -16,56 +18,49 @@ import in.skdv.skdvinbackend.service.ISettingsService;
 import in.skdv.skdvinbackend.util.VerificationTokenUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
-import org.springframework.http.converter.HttpMessageConverter;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
-import org.springframework.mock.http.MockHttpOutputMessage;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
-import org.springframework.web.context.WebApplicationContext;
 
-import javax.mail.internet.MimeMessage;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import java.util.Arrays;
 import java.util.Collections;
 
 import static in.skdv.skdvinbackend.config.Authorities.*;
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.*;
-import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
-import static org.springframework.test.util.AssertionErrors.assertNotNull;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppContextSetup;
-
 
 @SpringBootTest
+@AutoConfigureMockMvc
 class AppointmentControllerTest extends AbstractSkdvinTest {
 
     private static final String FROM_EMAIL = "skdvin@example.com";
     private static final String BASE_URL = "https://example.com";
 
-    private MediaType contentType = new MediaType(MediaType.APPLICATION_JSON.getType(),
+    private final MediaType contentType = new MediaType(MediaType.APPLICATION_JSON.getType(),
             MediaType.APPLICATION_JSON.getSubtype(),
             StandardCharsets.UTF_8);
 
-    private HttpMessageConverter mappingJackson2HttpMessageConverter;
+    @Autowired
+    private ObjectMapper objectMapper;
 
+    @Autowired
     private MockMvc mockMvc;
 
     @MockBean
@@ -84,32 +79,13 @@ class AppointmentControllerTest extends AbstractSkdvinTest {
     private IAppointmentService appointmentService;
 
     @Autowired
-    private WebApplicationContext webApplicationContext;
-
-    @Autowired
     private AppointmentConverter appointmentConverter;
-
-    @Autowired
-    void setConverters(HttpMessageConverter<?>[] converters) {
-
-        this.mappingJackson2HttpMessageConverter = Arrays.stream(converters)
-                .filter(hmc -> hmc instanceof MappingJackson2HttpMessageConverter)
-                .findAny()
-                .orElse(null);
-
-        assertNotNull("the JSON message converter must not be null",
-                this.mappingJackson2HttpMessageConverter);
-    }
 
     @BeforeEach
     void setup() {
         // Set mock clock
         Clock mockClock = Clock.fixed(Instant.parse(LocalDate.now() + "T00:00:00Z"), ZoneOffset.UTC);
         ReflectionTestUtils.setField(appointmentService, "clock", mockClock);
-
-        this.mockMvc = webAppContextSetup(webApplicationContext)
-                .apply(springSecurity())
-                .build();
 
         jumpdayRepository.deleteAll();
         jumpdayRepository.save(ModelMockHelper.createJumpday());
@@ -163,10 +139,6 @@ class AppointmentControllerTest extends AbstractSkdvinTest {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.success", is(true)))
                 .andExpect(jsonPath("$.payload.customer.firstName", is("Max")));
-
-        ArgumentCaptor<MimeMessage> argument = ArgumentCaptor.forClass(MimeMessage.class);
-        verify(mailSender).send(argument.capture());
-        assertTrue(argument.getValue().getSubject().startsWith("Confirm your booking"));
     }
 
     @Test
@@ -314,11 +286,6 @@ class AppointmentControllerTest extends AbstractSkdvinTest {
                 .andExpect(jsonPath("$.payload.tandem", is(newCount)))
                 .andExpect(jsonPath("$.payload.customer.firstName", is("Unitjane")))
                 .andExpect(jsonPath("$.payload.customer.jumpers", hasSize(2)));
-
-        ArgumentCaptor<MimeMessage> argument = ArgumentCaptor.forClass(MimeMessage.class);
-        verify(mailSender).send(argument.capture());
-        // Appointment was initially created in german
-        assertTrue(argument.getValue().getSubject().startsWith("Deine Buchung wurde aktualisiert (#"));
     }
 
     @Test
@@ -565,11 +532,6 @@ class AppointmentControllerTest extends AbstractSkdvinTest {
                 .contentType(contentType))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success", is(true)));
-
-        ArgumentCaptor<MimeMessage> argument = ArgumentCaptor.forClass(MimeMessage.class);
-        verify(mailSender).send(argument.capture());
-        // Appointment was initially created in german
-        assertEquals("Buchungsbestätigung #" + savedAppointment.getAppointmentId(), argument.getValue().getSubject());
     }
 
     @Test
@@ -592,7 +554,10 @@ class AppointmentControllerTest extends AbstractSkdvinTest {
         Appointment appointment = ModelMockHelper.createSingleAppointment();
         appointment.setVerificationToken(VerificationTokenUtil.generate());
         appointment.getVerificationToken().setExpiryDate(LocalDateTime.now().minus(1, ChronoUnit.HOURS));
-        appointmentService.saveAppointment(appointment);
+
+        Jumpday jumpday = jumpdayRepository.findByDate(LocalDate.now());
+        jumpday.addAppointment(appointment);
+        jumpdayRepository.save(jumpday);
 
         mockMvc.perform(get("/api/appointment/{appointmentId}/confirm/{token}",
                 appointment.getAppointmentId(), appointment.getVerificationToken().getToken())
@@ -695,7 +660,7 @@ class AppointmentControllerTest extends AbstractSkdvinTest {
     @Test
     void testUpdateAppointmentState_AppointmentNotFound() throws Exception {
         Appointment appointment = ModelMockHelper.createSingleAppointment();
-        Appointment savedAppointment = appointmentService.saveAppointment(appointment);
+        appointmentService.saveAppointment(appointment);
 
         AppointmentStateOnlyDTO appointmentStateOnly = new AppointmentStateOnlyDTO();
         appointmentStateOnly.setState(AppointmentState.ACTIVE);
@@ -718,7 +683,6 @@ class AppointmentControllerTest extends AbstractSkdvinTest {
         Appointment result = appointmentService.saveAppointment(appointment);
         int appointmentId = result.getAppointmentId();
 
-
         mockMvc.perform(delete("/api/appointment/{appointmentId}", appointmentId)
                 .header("Accept-Language", "en-US")
                 .header("Authorization", MockJwtDecoder.addHeader(UPDATE_APPOINTMENTS))
@@ -726,11 +690,18 @@ class AppointmentControllerTest extends AbstractSkdvinTest {
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success", is(true)));
+    }
 
-        ArgumentCaptor<MimeMessage> argument = ArgumentCaptor.forClass(MimeMessage.class);
-        verify(mailSender).send(argument.capture());
-        // Appointment was initially created in german
-        assertTrue(argument.getValue().getSubject().startsWith("Dein Termin wurde gelöscht (#"));
+    @Test
+    void testDeleteAppointment_NotFound() throws Exception {
+        mockMvc.perform(delete("/api/appointment/{appointmentId}", 999)
+                .header("Accept-Language", "en-US")
+                .header("Authorization", MockJwtDecoder.addHeader(UPDATE_APPOINTMENTS))
+                .contentType(contentType))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.message", is("Appointment not found")));
     }
 
     @Test
@@ -780,9 +751,6 @@ class AppointmentControllerTest extends AbstractSkdvinTest {
     }
 
     private String json(Object o) throws IOException {
-        MockHttpOutputMessage mockHttpOutputMessage = new MockHttpOutputMessage();
-        this.mappingJackson2HttpMessageConverter.write(
-                o, MediaType.APPLICATION_JSON, mockHttpOutputMessage);
-        return mockHttpOutputMessage.getBodyAsString();
+        return objectMapper.writeValueAsString(o);
     }
 }

@@ -29,6 +29,8 @@ public interface IAppointmentService {
 
     List<Appointment> findUnconfirmedAppointments();
 
+    void deleteAppointment(Appointment appointment);
+
     void deleteAppointment(int appointmentId);
 
     List<GroupSlot> findGroupSlots(SlotQuery slotQuery);
@@ -37,5 +39,5 @@ public interface IAppointmentService {
 
     void reminderSent(Appointment appointment);
 
-    Appointment confirmAppointment(int appointmentId, String token);
+    void confirmAppointment(int appointmentId, String token);
 }

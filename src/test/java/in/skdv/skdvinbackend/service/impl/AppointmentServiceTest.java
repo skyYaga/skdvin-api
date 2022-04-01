@@ -10,6 +10,7 @@ import in.skdv.skdvinbackend.model.common.FreeSlot;
 import in.skdv.skdvinbackend.model.common.GroupSlot;
 import in.skdv.skdvinbackend.model.common.SlotQuery;
 import in.skdv.skdvinbackend.model.entity.*;
+import in.skdv.skdvinbackend.repository.EmailOutboxRepository;
 import in.skdv.skdvinbackend.repository.JumpdayRepository;
 import in.skdv.skdvinbackend.service.IAppointmentService;
 import in.skdv.skdvinbackend.util.VerificationTokenUtil;
@@ -17,6 +18,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.*;
@@ -33,9 +35,10 @@ class AppointmentServiceTest extends AbstractSkdvinTest {
 
     @Autowired
     private JumpdayRepository jumpdayRepository;
-
     @Autowired
     private IAppointmentService appointmentService;
+    @Autowired
+    private EmailOutboxRepository emailOutboxRepository;
 
     @BeforeEach
     void setup() {
@@ -45,6 +48,7 @@ class AppointmentServiceTest extends AbstractSkdvinTest {
 
         jumpdayRepository.deleteAll();
         jumpdayRepository.save(ModelMockHelper.createJumpday());
+        emailOutboxRepository.deleteAll();
     }
 
     @Test
@@ -55,11 +59,16 @@ class AppointmentServiceTest extends AbstractSkdvinTest {
         assertEquals(0, appointment.getAppointmentId());
 
         Appointment savedAppointment = appointmentService.saveAppointment(appointment);
+        List<OutgoingMail> outgoingMails = emailOutboxRepository.findAll();
 
         assertNotNull(savedAppointment.getCreatedOn());
         assertNotEquals(0, savedAppointment.getAppointmentId());
+        assertEquals(1, outgoingMails.size());
+        assertEquals(appointment.getAppointmentId(), outgoingMails.get(0).getAppointmentId());
+        assertEquals(EmailType.APPOINTMENT_VERIFICATION, outgoingMails.get(0).getEmailType());
+        assertEquals(Status.OPEN, outgoingMails.get(0).getStatus());
+        assertNotNull(outgoingMails.get(0).getCreatedAt());
     }
-
 
     @Test
     void testSaveAdminAppointment() {
@@ -91,7 +100,7 @@ class AppointmentServiceTest extends AbstractSkdvinTest {
         appointment.setDate(ZonedDateTime.now(zoneId).plusDays(1).toInstant());
 
         NotFoundException notFoundException = assertThrows(NotFoundException.class, () ->
-            appointmentService.saveAppointment(appointment)
+                appointmentService.saveAppointment(appointment)
         );
 
         assertEquals(ErrorMessage.JUMPDAY_NOT_FOUND_MSG, notFoundException.getErrorMessage());
@@ -198,6 +207,32 @@ class AppointmentServiceTest extends AbstractSkdvinTest {
     }
 
     @Test
+    void testConfirmAppointment() {
+        Appointment appointment = ModelMockHelper.createSingleAppointment();
+        appointment.setVerificationToken(VerificationTokenUtil.generate());
+        appointment.setLang(LocaleContextHolder.getLocale().getLanguage());
+
+        Appointment savedAppointment = appointmentService.saveAppointment(appointment);
+        appointmentService.confirmAppointment(savedAppointment.getAppointmentId(), savedAppointment.getVerificationToken().getToken());
+        List<OutgoingMail> outgoingMails = emailOutboxRepository.findAll();
+        Appointment confirmedAppointment = appointmentService.findAppointment(savedAppointment.getAppointmentId());
+
+        assertEquals(AppointmentState.CONFIRMED, confirmedAppointment.getState());
+        assertEquals(2, outgoingMails.size()); // Verification & confirmation
+        assertEquals(appointment.getAppointmentId(), outgoingMails.get(1).getAppointmentId());
+        assertEquals(EmailType.APPOINTMENT_CONFIRMATION, outgoingMails.get(1).getEmailType());
+        assertEquals(Status.OPEN, outgoingMails.get(1).getStatus());
+        assertNotNull(outgoingMails.get(1).getCreatedAt());
+    }
+
+    @Test
+    void testConfirmAppointment_NotFound() {
+        NotFoundException notFoundException = assertThrows(NotFoundException.class, () -> appointmentService.confirmAppointment(999, "any-token"));
+
+        assertEquals(APPOINTMENT_NOT_FOUND, notFoundException.getErrorMessage());
+    }
+
+    @Test
     void testFindAppointment() {
         Appointment appointment = appointmentService.saveAppointment(ModelMockHelper.createSecondAppointment());
         appointmentService.saveAppointment(ModelMockHelper.createSingleAppointment());
@@ -245,9 +280,25 @@ class AppointmentServiceTest extends AbstractSkdvinTest {
         appointment.getCustomer().setFirstName("Unitbob");
 
         Appointment updatedAppointment = appointmentService.updateAppointment(appointment);
+        List<OutgoingMail> outgoingMails = emailOutboxRepository.findAll();
 
         assertEquals(appointmentId, updatedAppointment.getAppointmentId());
         assertEquals("Unitbob", updatedAppointment.getCustomer().getFirstName());
+        assertEquals(2, outgoingMails.size()); // Verification & Update
+        assertEquals(appointment.getAppointmentId(), outgoingMails.get(1).getAppointmentId());
+        assertEquals(EmailType.APPOINTMENT_UPDATED, outgoingMails.get(1).getEmailType());
+        assertEquals(Status.OPEN, outgoingMails.get(1).getStatus());
+        assertNotNull(outgoingMails.get(1).getCreatedAt());
+    }
+
+    @Test
+    void testUpdateAppointment_NotFound() {
+        Appointment appointment = ModelMockHelper.createSingleAppointment();
+        appointment.setAppointmentId(999);
+
+        NotFoundException notFoundException = assertThrows(NotFoundException.class, () -> appointmentService.updateAppointment(appointment));
+
+        assertEquals(APPOINTMENT_NOT_FOUND, notFoundException.getErrorMessage());
     }
 
     @Test
@@ -303,7 +354,7 @@ class AppointmentServiceTest extends AbstractSkdvinTest {
         Appointment updatedAppointment = appointmentService.updateAppointment(appointment);
 
         assertEquals(appointmentId, updatedAppointment.getAppointmentId());
-            assertEquals("Jane", updatedAppointment.getCustomer().getFirstName());
+        assertEquals("Jane", updatedAppointment.getCustomer().getFirstName());
         assertEquals(newDate.toInstant(), updatedAppointment.getDate());
     }
 
@@ -403,7 +454,10 @@ class AppointmentServiceTest extends AbstractSkdvinTest {
         VerificationToken verificationToken = VerificationTokenUtil.generate();
         verificationToken.setExpiryDate(LocalDateTime.now().minus(25, ChronoUnit.HOURS));
         appointment.setVerificationToken(verificationToken);
-        appointmentService.saveAppointment(appointment);
+
+        Jumpday jumpday = jumpdayRepository.findByDate(LocalDate.now());
+        jumpday.addAppointment(appointment);
+        jumpdayRepository.save(jumpday);
 
         List<Appointment> unconfirmedAppointments = appointmentService.findUnconfirmedAppointments();
 
@@ -441,13 +495,20 @@ class AppointmentServiceTest extends AbstractSkdvinTest {
         appointmentService.saveAppointment(appointment);
         int appointmentId = appointment.getAppointmentId();
 
-        appointmentService.deleteAppointment(appointmentId);
+        appointmentService.deleteAppointment(appointment);
 
         NotFoundException notFoundException = assertThrows(NotFoundException.class, () ->
-            appointmentService.findAppointment(appointmentId)
+                appointmentService.findAppointment(appointmentId)
         );
+        List<OutgoingMail> outgoingMails = emailOutboxRepository.findAll();
 
         assertEquals(APPOINTMENT_NOT_FOUND, notFoundException.getErrorMessage());
+        assertEquals(2, outgoingMails.size()); // Verification & Deletion
+        assertEquals(appointment.getAppointmentId(), outgoingMails.get(1).getAppointmentId());
+        assertEquals(appointment.getCustomer(), outgoingMails.get(1).getAppointment().getCustomer());
+        assertEquals(EmailType.APPOINTMENT_DELETED, outgoingMails.get(1).getEmailType());
+        assertEquals(Status.OPEN, outgoingMails.get(1).getStatus());
+        assertNotNull(outgoingMails.get(1).getCreatedAt());
     }
 
     @Test
@@ -509,7 +570,7 @@ class AppointmentServiceTest extends AbstractSkdvinTest {
         assertNotNull(groupSlots);
         assertEquals(0, groupSlots.size());
     }
-    
+
     @Test
     void testFindAppointmentsWithinNextWeek() {
         jumpdayRepository.save(ModelMockHelper.createJumpday(LocalDate.now().minusDays(1)));
