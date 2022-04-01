@@ -15,6 +15,7 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -78,8 +79,8 @@ class SendAppointmentReminderTaskTest extends AbstractSkdvinTest {
 
     @Test
     void testEmailIsSend_EN() throws MessagingException {
+        LocaleContextHolder.setLocale(Locale.ENGLISH);
         Appointment appointment = ModelMockHelper.createSingleAppointment();
-        appointment.setLang(Locale.ENGLISH.getLanguage());
         appointment.setState(AppointmentState.CONFIRMED);
         appointmentService.saveAppointment(appointment);
 
@@ -87,13 +88,13 @@ class SendAppointmentReminderTaskTest extends AbstractSkdvinTest {
 
         ArgumentCaptor<MimeMessage> argument = ArgumentCaptor.forClass(MimeMessage.class);
         verify(mailSender).send(argument.capture());
-        assertEquals(argument.getValue().getSubject(), "Appointment reminder (#" + appointment.getAppointmentId() + ")");
+        assertEquals("Appointment reminder (#" + appointment.getAppointmentId() + ")", argument.getValue().getSubject());
     }
 
     @Test
     void testEmailIsSend_DE() throws MessagingException {
+        LocaleContextHolder.setLocale(Locale.GERMAN);
         Appointment appointment = ModelMockHelper.createSingleAppointment();
-        appointment.setLang(Locale.GERMAN.getLanguage());
         appointment.setState(AppointmentState.CONFIRMED);
         appointmentService.saveAppointment(appointment);
 
@@ -101,6 +102,6 @@ class SendAppointmentReminderTaskTest extends AbstractSkdvinTest {
 
         ArgumentCaptor<MimeMessage> argument = ArgumentCaptor.forClass(MimeMessage.class);
         verify(mailSender).send(argument.capture());
-        assertEquals(argument.getValue().getSubject(), "Terminerinnerung (#" + appointment.getAppointmentId() + ")");
+        assertEquals("Terminerinnerung (#" + appointment.getAppointmentId() + ")", argument.getValue().getSubject());
     }
 }

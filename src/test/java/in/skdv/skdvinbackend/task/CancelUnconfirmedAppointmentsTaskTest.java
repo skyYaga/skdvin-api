@@ -3,6 +3,7 @@ package in.skdv.skdvinbackend.task;
 import in.skdv.skdvinbackend.AbstractSkdvinTest;
 import in.skdv.skdvinbackend.ModelMockHelper;
 import in.skdv.skdvinbackend.model.entity.Appointment;
+import in.skdv.skdvinbackend.model.entity.Jumpday;
 import in.skdv.skdvinbackend.repository.JumpdayRepository;
 import in.skdv.skdvinbackend.service.IAppointmentService;
 import in.skdv.skdvinbackend.service.IEmailService;
@@ -70,10 +71,14 @@ class CancelUnconfirmedAppointmentsTaskTest extends AbstractSkdvinTest {
     void testAppointmentIsCanceled() {
         Appointment appointment1 = ModelMockHelper.createSingleAppointment();
         Appointment appointment2 = ModelMockHelper.createSecondAppointment();
-        appointment1.setVerificationToken(VerificationTokenUtil.generate());
-        appointment1.getVerificationToken().setExpiryDate(LocalDateTime.now().minus(25, ChronoUnit.HOURS));
         appointmentService.saveAppointment(appointment1);
         appointmentService.saveAppointment(appointment2);
+
+        Jumpday jumpday = jumpdayRepository.findByDate(LocalDate.now());
+        Appointment appointmentToCancel = jumpday.getSlots().get(0).getAppointments().get(0);
+        appointmentToCancel.setVerificationToken(VerificationTokenUtil.generate());
+        appointmentToCancel.getVerificationToken().setExpiryDate(LocalDateTime.now().minus(25, ChronoUnit.HOURS));
+        jumpdayRepository.save(jumpday);
 
         task.cancelAppointments();
 
@@ -87,7 +92,10 @@ class CancelUnconfirmedAppointmentsTaskTest extends AbstractSkdvinTest {
         appointment.setLang(Locale.ENGLISH.getLanguage());
         appointment.setVerificationToken(VerificationTokenUtil.generate());
         appointment.getVerificationToken().setExpiryDate(LocalDateTime.now().minus(25, ChronoUnit.HOURS));
-        appointmentService.saveAppointment(appointment);
+
+        Jumpday jumpday = jumpdayRepository.findByDate(LocalDate.now());
+        jumpday.addAppointment(appointment);
+        jumpdayRepository.save(jumpday);
 
         task.cancelAppointments();
 
@@ -102,7 +110,10 @@ class CancelUnconfirmedAppointmentsTaskTest extends AbstractSkdvinTest {
         appointment.setLang(Locale.GERMAN.getLanguage());
         appointment.setVerificationToken(VerificationTokenUtil.generate());
         appointment.getVerificationToken().setExpiryDate(LocalDateTime.now().minus(25, ChronoUnit.HOURS));
-        appointmentService.saveAppointment(appointment);
+
+        Jumpday jumpday = jumpdayRepository.findByDate(LocalDate.now());
+        jumpday.addAppointment(appointment);
+        jumpdayRepository.save(jumpday);
 
         task.cancelAppointments();
 

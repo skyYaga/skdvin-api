@@ -1,7 +1,10 @@
 package in.skdv.skdvinbackend.service.impl;
 
 import in.skdv.skdvinbackend.model.entity.Appointment;
+import in.skdv.skdvinbackend.model.entity.EmailType;
+import in.skdv.skdvinbackend.model.entity.OutgoingMail;
 import in.skdv.skdvinbackend.model.entity.settings.CommonSettings;
+import in.skdv.skdvinbackend.repository.EmailOutboxRepository;
 import in.skdv.skdvinbackend.service.IEmailService;
 import in.skdv.skdvinbackend.service.ISettingsService;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +30,7 @@ public class EmailService implements IEmailService {
     private static final String APPOINTMENT_CONFIRMATION_ENDPOINT = "/%s/appointment/verify?id=%d&token=%s";
 
     private final ISettingsService settingsService;
+    private final EmailOutboxRepository emailOutboxRepository;
     private final JavaMailSender mailSender;
     private final TemplateEngine emailTemplateEngine;
     private final MessageSource emailMessageSource;
@@ -38,6 +42,18 @@ public class EmailService implements IEmailService {
     @Value("${skdvin.baseurl}")
     private String baseurl;
 
+
+    @Override
+    public void saveMailInOutbox(int appointmentId, EmailType emailType) {
+        saveMailInOutbox(appointmentId, emailType, null);
+    }
+
+    @Override
+    public void saveMailInOutbox(int appointmentId, EmailType emailType, Appointment appointment) {
+        OutgoingMail outgoingMail = new OutgoingMail(emailType, appointmentId);
+        outgoingMail.setAppointment(appointment);
+        emailOutboxRepository.save(outgoingMail);
+    }
 
     @Override
     public void sendAppointmentVerification(Appointment appointment) throws MessagingException {

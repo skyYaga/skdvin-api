@@ -38,9 +38,6 @@ public class ApplicationConfig implements WebMvcConfigurer {
     private JumpdayRepository jumpdayRepository;
 
     @Autowired
-    private AppointmentRepository appointmentRepository;
-
-    @Autowired
     private MongoTemplate mongoTemplate;
 
     @Autowired
@@ -59,8 +56,8 @@ public class ApplicationConfig implements WebMvcConfigurer {
 
     @Bean
     @Autowired
-    public IAppointmentService getAppointmentService(ISequenceRepository sequenceService) {
-        return new AppointmentService(zoneId(), jumpdayRepository, sequenceService);
+    public IAppointmentService getAppointmentService(ISequenceRepository sequenceService, IEmailService emailService) {
+        return new AppointmentService(zoneId(), jumpdayRepository, sequenceService, emailService);
     }
 
     @Bean
