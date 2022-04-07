@@ -5,6 +5,7 @@ import in.skdv.skdvinbackend.repository.*;
 import in.skdv.skdvinbackend.repository.impl.SequenceRepository;
 import in.skdv.skdvinbackend.service.*;
 import in.skdv.skdvinbackend.service.impl.*;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.MessageSource;
@@ -46,6 +47,11 @@ public class ApplicationConfig implements WebMvcConfigurer {
     @Bean
     public ZoneId zoneId() {
         return ZoneId.of(timezone);
+    }
+
+    @Bean
+    public ModelMapper modelMapper() {
+        return new ModelMapper();
     }
 
     @Bean

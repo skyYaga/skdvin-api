@@ -14,7 +14,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AppointmentConverter {
 
-    private ModelMapper modelMapper = new ModelMapper();
+    private final ModelMapper modelMapper;
 
     public AppointmentDTO convertToDto(Appointment appointment) {
         if (appointment == null) {
