@@ -224,7 +224,6 @@ public class AppointmentService implements IAppointmentService {
     }
 
 
-
     private Appointment updateAppointment(Appointment newAppointment, boolean isAdminBooking) {
         Appointment oldAppointment = findAppointment(newAppointment.getAppointmentId());
 
@@ -232,6 +231,8 @@ public class AppointmentService implements IAppointmentService {
             log.error("Appointment {} not found", newAppointment.getAppointmentId());
             throw new NotFoundException(ErrorMessage.APPOINTMENT_NOT_FOUND);
         }
+
+        newAppointment.setLang(oldAppointment.getLang());
 
         if (isAtSameDateAndTime(newAppointment, oldAppointment)) {
             // Delete Appointment in this jumpday and create a new one, then save

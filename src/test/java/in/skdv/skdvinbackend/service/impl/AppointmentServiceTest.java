@@ -9,6 +9,8 @@ import in.skdv.skdvinbackend.exception.NotFoundException;
 import in.skdv.skdvinbackend.model.common.FreeSlot;
 import in.skdv.skdvinbackend.model.common.GroupSlot;
 import in.skdv.skdvinbackend.model.common.SlotQuery;
+import in.skdv.skdvinbackend.model.converter.AppointmentConverter;
+import in.skdv.skdvinbackend.model.dto.AppointmentDTO;
 import in.skdv.skdvinbackend.model.entity.*;
 import in.skdv.skdvinbackend.repository.EmailOutboxRepository;
 import in.skdv.skdvinbackend.repository.JumpdayRepository;
@@ -25,6 +27,7 @@ import java.time.*;
 import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 
 import static in.skdv.skdvinbackend.exception.ErrorMessage.*;
 import static org.junit.jupiter.api.Assertions.*;
@@ -39,6 +42,8 @@ class AppointmentServiceTest extends AbstractSkdvinTest {
     private IAppointmentService appointmentService;
     @Autowired
     private EmailOutboxRepository emailOutboxRepository;
+    @Autowired
+    private AppointmentConverter appointmentConverter;
 
     @BeforeEach
     void setup() {
@@ -289,6 +294,21 @@ class AppointmentServiceTest extends AbstractSkdvinTest {
         assertEquals(EmailType.APPOINTMENT_UPDATED, outgoingMails.get(1).getEmailType());
         assertEquals(Status.OPEN, outgoingMails.get(1).getStatus());
         assertNotNull(outgoingMails.get(1).getCreatedAt());
+    }
+
+    @Test
+    void testUpdateAppointment_DoesNotChangeLang() {
+        LocaleContextHolder.setLocale(Locale.ENGLISH);
+        Appointment appointment = ModelMockHelper.createSecondAppointment();
+        appointment.setLang(Locale.ENGLISH.getLanguage());
+        Appointment oldAppointment = appointmentService.saveAppointment(appointment);
+
+        AppointmentDTO appointmentDTO = appointmentConverter.convertToDto(oldAppointment);
+        LocaleContextHolder.setLocale(Locale.GERMAN);
+        Appointment appointmentToUpdate = appointmentConverter.convertToEntity(appointmentDTO);
+
+        Appointment updatedAppointment = appointmentService.updateAppointment(appointmentToUpdate);
+        assertEquals(Locale.ENGLISH.getLanguage(), updatedAppointment.getLang());
     }
 
     @Test
