@@ -6,6 +6,7 @@ import in.skdv.skdvinbackend.model.converter.*;
 import in.skdv.skdvinbackend.model.dto.*;
 import in.skdv.skdvinbackend.model.entity.*;
 import in.skdv.skdvinbackend.model.entity.settings.*;
+import org.modelmapper.ModelMapper;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -18,7 +19,7 @@ public class ModelMockHelper {
     private static final ZoneId zoneId = ZoneId.of("Europe/Berlin");
     private static final JumpdayConverter JUMPDAY_CONVERTER = new JumpdayConverter(zoneId);
     private static final VideoflyerConverter VIDEOFLYER_CONVERTER = new VideoflyerConverter();
-    private static final AppointmentConverter APPOINTMENT_CONVERTER = new AppointmentConverter();
+    private static final AppointmentConverter APPOINTMENT_CONVERTER = new AppointmentConverter(new ModelMapper());
     private static final TandemmasterConverter TANDEMMASTER_CONVERTER = new TandemmasterConverter();
     private static final SettingsConverter SETTINGS_CONVERTER = new SettingsConverter();
 

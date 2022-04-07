@@ -4,6 +4,7 @@ import in.skdv.skdvinbackend.ModelMockHelper;
 import in.skdv.skdvinbackend.model.dto.AppointmentDTO;
 import in.skdv.skdvinbackend.model.entity.Appointment;
 import org.junit.jupiter.api.Test;
+import org.modelmapper.ModelMapper;
 
 import java.util.Arrays;
 import java.util.List;
@@ -13,7 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 
 class AppointmentConverterTest {
 
-    private final AppointmentConverter converter = new AppointmentConverter();
+    private final AppointmentConverter converter = new AppointmentConverter(new ModelMapper());
 
     @Test
     void convertToDto() {
