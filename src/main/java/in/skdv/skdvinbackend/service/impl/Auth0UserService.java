@@ -19,7 +19,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 public class Auth0UserService implements IUserService {
@@ -79,21 +78,21 @@ public class Auth0UserService implements IUserService {
 
             return returnList;
         } catch (Auth0Exception e) {
-            log.error("Error retrieving roles from auth0", e);
-            throw new AuthConnectionException("Error retrieving roles from auth0", e);
+            log.error("Error retrieving roles from auth0", e); //NOSONAR would be confusing to have it as constant
+            throw new AuthConnectionException("Error retrieving roles from auth0", e); //NOSONAR would be confusing to have it as constant
         }
     }
 
     protected List<String> findRolesToAdd(List<RoleDTO> existingRoles, List<RoleDTO> updatedRoles) {
         List<RoleDTO> rolesToAdd = new ArrayList<>(updatedRoles);
         rolesToAdd.removeAll(existingRoles);
-        return rolesToAdd.stream().map(RoleDTO::getId).collect(Collectors.toList());
+        return rolesToAdd.stream().map(RoleDTO::getId).toList();
     }
 
     protected List<String> findRolesToRemove(List<RoleDTO> existingRoles, List<RoleDTO> updatedRoles) {
         List<RoleDTO> rolesToRemove = new ArrayList<>(existingRoles);
         rolesToRemove.removeAll(updatedRoles);
-        return rolesToRemove.stream().map(RoleDTO::getId).collect(Collectors.toList());
+        return rolesToRemove.stream().map(RoleDTO::getId).toList();
     }
 
     private void retrieveUsers(UserListResult returnList, int pageNumber, int amountPerPage) throws Auth0Exception {
@@ -114,10 +113,10 @@ public class Auth0UserService implements IUserService {
     private List<RoleDTO> retrieveRoles(String userId) {
         try {
             RolesPage rolesPage = managementAPI.users().listRoles(userId, new PageFilter()).execute();
-            return rolesPage.getItems().stream().map(role -> new RoleDTO(role.getId(), role.getName())).collect(Collectors.toList());
+            return rolesPage.getItems().stream().map(role -> new RoleDTO(role.getId(), role.getName())).toList();
         } catch (Auth0Exception e) {
-            log.error("Error retrieving roles from auth0", e);
-            throw new AuthConnectionException("Error retrieving roles from auth0", e);
+            log.error("Error retrieving roles from auth0", e); //NOSONAR would be confusing to have it as constant
+            throw new AuthConnectionException("Error retrieving roles from auth0", e); //NOSONAR would be confusing to have it as constant
         }
     }
 }
