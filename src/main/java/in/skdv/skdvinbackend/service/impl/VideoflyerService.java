@@ -47,7 +47,7 @@ public class VideoflyerService implements IVideoflyerService {
     public VideoflyerDetails getById(String id) {
         Optional<Videoflyer> videoflyer = videoflyerRepository.findById(id);
         if (videoflyer.isEmpty()) {
-            log.error("Videoflyer {} not found", id);
+            log.error("Videoflyer {} not found", id); //NOSONAR would be confusing to have it as constant
             throw new NotFoundException(ErrorMessage.VIDEOFLYER_NOT_FOUND);
         }
 
@@ -74,7 +74,7 @@ public class VideoflyerService implements IVideoflyerService {
 
         Optional<Videoflyer> videoflyer = videoflyerRepository.findById(videoflyerDetails.getId());
         if (videoflyer.isEmpty()) {
-            log.error("Videoflyer {} not found", videoflyerDetails.getId());
+            log.error("Videoflyer {} not found", videoflyerDetails.getId()); //NOSONAR would be confusing to have it as constant
             throw new NotFoundException(ErrorMessage.VIDEOFLYER_NOT_FOUND);
         }
 
@@ -88,7 +88,7 @@ public class VideoflyerService implements IVideoflyerService {
         Optional<Videoflyer> videoflyer = videoflyerRepository.findById(id);
 
         if (videoflyer.isEmpty()) {
-            log.error("Videoflyer {} not found", id);
+            log.error("Videoflyer {} not found", id); //NOSONAR would be confusing to have it as constant
             throw new NotFoundException(ErrorMessage.VIDEOFLYER_NOT_FOUND);
         }
 
@@ -107,7 +107,7 @@ public class VideoflyerService implements IVideoflyerService {
         Optional<Videoflyer> videoflyer = videoflyerRepository.findById(input.getId());
 
         if (videoflyer.isEmpty()) {
-            log.error("Videoflyer {} not found.", input.getId());
+            log.error("Videoflyer {} not found.", input.getId()); //NOSONAR would be confusing to have it as constant
             throw new NotFoundException(ErrorMessage.VIDEOFLYER_NOT_FOUND);
         }
         return videoflyerRepository.save(input);
