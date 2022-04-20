@@ -81,7 +81,7 @@ public class AppointmentService implements IAppointmentService {
                 .filter(a -> a != null && a.getAppointmentId() == id).findFirst();
 
         if (appointment.isEmpty()) {
-            log.error("Appointment {} not found", id);
+            log.error("Appointment {} not found", id); //NOSONAR would be confusing to have it as constant
             throw new NotFoundException(ErrorMessage.APPOINTMENT_NOT_FOUND);
         }
 
@@ -205,7 +205,7 @@ public class AppointmentService implements IAppointmentService {
         Appointment appointment = findAppointment(appointmentId);
 
         if (appointment == null) {
-            log.error("Appointment {} not found", appointmentId);
+            log.error("Appointment {} not found", appointmentId); //NOSONAR would be confusing to have it as constant
             throw new NotFoundException(ErrorMessage.APPOINTMENT_NOT_FOUND);
         }
 
@@ -228,7 +228,7 @@ public class AppointmentService implements IAppointmentService {
         Appointment oldAppointment = findAppointment(newAppointment.getAppointmentId());
 
         if (oldAppointment == null) {
-            log.error("Appointment {} not found", newAppointment.getAppointmentId());
+            log.error("Appointment {} not found", newAppointment.getAppointmentId()); //NOSONAR would be confusing to have it as constant
             throw new NotFoundException(ErrorMessage.APPOINTMENT_NOT_FOUND);
         }
 

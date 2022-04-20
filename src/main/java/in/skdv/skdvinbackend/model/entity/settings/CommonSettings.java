@@ -5,7 +5,6 @@ import lombok.Data;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Data
 public class CommonSettings {
@@ -20,6 +19,6 @@ public class CommonSettings {
 
 
     public List<Faq> getFaq() {
-        return faq.stream().sorted(Comparator.comparing(Faq::getId)).collect(Collectors.toList());
+        return faq.stream().sorted(Comparator.comparing(Faq::getId)).toList();
     }
 }
