@@ -36,7 +36,7 @@ class AssignmentConverterTest {
         SimpleAssignment simpleAssignment = new SimpleAssignment(true);
         Tandemmaster tandemmaster = ModelMockHelper.createTandemmaster();
 
-        Assignment assignment = converter.convertToAssignment(simpleAssignment, tandemmaster);
+        Assignment<Tandemmaster> assignment = converter.convertToAssignment(simpleAssignment, tandemmaster);
 
         assertNotNull(assignment);
         assertEquals(tandemmaster.getFirstName(), assignment.getFlyer().getFirstName());

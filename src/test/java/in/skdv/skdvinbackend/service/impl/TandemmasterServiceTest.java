@@ -343,7 +343,7 @@ class TandemmasterServiceTest extends AbstractSkdvinTest {
     }
 
     private void saveAndCheckTimeBasedAssignment(TandemmasterDetails tandemmasterDetails) {
-        SimpleAssignment assignmentDTO = new SimpleAssignment(true, false, LocalTime.of(13, 0), LocalTime.of(20, 0));
+        SimpleAssignment assignmentDTO = new SimpleAssignment(true, false, "", LocalTime.of(13, 0), LocalTime.of(20, 0));
         tandemmasterDetails.setAssignments(Map.of(LocalDate.now(), assignmentDTO));
 
         saveAssignment(tandemmasterDetails);
@@ -497,7 +497,7 @@ class TandemmasterServiceTest extends AbstractSkdvinTest {
         tandemmasterService.assignTandemmaster(tandemmasterDetails, false);
 
         tandemmasterDetails.setAssignments(Map.of(LocalDate.now(),
-                new SimpleAssignment(true, false, LocalTime.of(12, 0), LocalTime.of(20, 0))));
+                new SimpleAssignment(true, false, "Example note", LocalTime.of(12, 0), LocalTime.of(20, 0))));
 
         InvalidRequestException ex = assertThrows(InvalidRequestException.class, () ->
                 tandemmasterService.assignTandemmaster(tandemmasterDetails, true)
