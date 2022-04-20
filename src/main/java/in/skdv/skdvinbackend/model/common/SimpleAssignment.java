@@ -14,6 +14,7 @@ public class SimpleAssignment {
 
     private boolean assigned = false;
     private boolean allday = true;
+    private String note;
 
     @JsonFormat(pattern = "HH:mm")
     private LocalTime from;
