@@ -30,7 +30,7 @@
         <java.version>17</java.version>
         <auth0.version>1.41.0</auth0.version>
         <modelmapper.version>3.1.0</modelmapper.version>
-        <mongock.version>5.0.39</mongock.version>
+        <mongock.version>5.0.41</mongock.version>
         <okhttp3.version>4.9.1</okhttp3.version>
         <sentry.version>5.7.3</sentry.version>
         <springdoc.version>1.6.7</springdoc.version>
