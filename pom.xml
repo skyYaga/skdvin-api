@@ -28,7 +28,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <java.version>17</java.version>
-        <auth0.version>1.40.2</auth0.version>
+        <auth0.version>1.41.0</auth0.version>
         <modelmapper.version>3.1.0</modelmapper.version>
         <mongock.version>5.0.39</mongock.version>
         <okhttp3.version>4.9.1</okhttp3.version>
