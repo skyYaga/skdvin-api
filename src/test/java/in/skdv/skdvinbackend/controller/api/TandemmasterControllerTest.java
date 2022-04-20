@@ -246,7 +246,9 @@ class TandemmasterControllerTest extends AbstractSkdvinTest {
         Jumpday jumpday = ModelMockHelper.createJumpday();
         jumpdayService.saveJumpday(jumpday);
 
-        TandemmasterDetailsDTO tandemmasterDetailsDTO = converter.convertToDetailsDto(tandemmaster, Map.of(LocalDate.now(), new SimpleAssignment(true)));
+        SimpleAssignment simpleAssignment = new SimpleAssignment(true);
+        simpleAssignment.setNote("Example note");
+        TandemmasterDetailsDTO tandemmasterDetailsDTO = converter.convertToDetailsDto(tandemmaster, Map.of(LocalDate.now(), simpleAssignment));
 
         String tandemmasterJson = json(tandemmasterDetailsDTO);
 

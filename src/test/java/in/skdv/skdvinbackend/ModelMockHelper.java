@@ -155,6 +155,7 @@ public class ModelMockHelper {
         Assignment<T> assignment = new Assignment<>();
         assignment.setAssigned(true);
         assignment.setFlyer(flyer);
+        assignment.setNote("Example Note");
         return assignment;
     }
 
