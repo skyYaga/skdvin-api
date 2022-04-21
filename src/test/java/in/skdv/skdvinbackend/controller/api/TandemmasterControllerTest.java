@@ -90,7 +90,8 @@ class TandemmasterControllerTest extends AbstractSkdvinTest {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.success", is(true)))
                 .andExpect(jsonPath("$.payload.firstName", is("Max")))
-                .andExpect(jsonPath("$.payload.lastName", is("Mustermann")));
+                .andExpect(jsonPath("$.payload.lastName", is("Mustermann")))
+                .andExpect(jsonPath("$.payload.favorite", is(false)));
     }
 
     @Test

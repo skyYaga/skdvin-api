@@ -17,15 +17,17 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class VideoflyerConverterTest {
 
-    private VideoflyerConverter converter = new VideoflyerConverter();
+    private final VideoflyerConverter converter = new VideoflyerConverter();
 
     @Test
     void convertToDto() {
         Videoflyer videoflyer = ModelMockHelper.createVideoflyer();
+        videoflyer.setFavorite(true);
 
         VideoflyerDTO videoflyerDTO = converter.convertToDto(videoflyer);
 
         assertEquals(videoflyer.getFirstName(), videoflyerDTO.getFirstName());
+        assertEquals(videoflyer.isFavorite(), videoflyerDTO.isFavorite());
     }
 
     @Test
