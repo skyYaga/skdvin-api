@@ -17,15 +17,17 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class TandemmasterConverterTest {
 
-    private TandemmasterConverter converter = new TandemmasterConverter();
+    private final TandemmasterConverter converter = new TandemmasterConverter();
 
     @Test
     void convertToDto() {
         Tandemmaster tandemmaster = ModelMockHelper.createTandemmaster();
+        tandemmaster.setFavorite(true);
 
         TandemmasterDTO tandemmasterDTO = converter.convertToDto(tandemmaster);
 
         assertEquals(tandemmaster.getFirstName(), tandemmasterDTO.getFirstName());
+        assertEquals(tandemmaster.isFavorite(), tandemmasterDTO.isFavorite());
     }
 
     @Test
@@ -59,7 +61,7 @@ class TandemmasterConverterTest {
     @Test
     void convertToDtoList_Null() {
         List<Tandemmaster> tandemmasters = null;
-        assertEquals( 0, converter.convertToDto(tandemmasters).size());
+        assertEquals(0, converter.convertToDto(tandemmasters).size());
     }
 
     @Test

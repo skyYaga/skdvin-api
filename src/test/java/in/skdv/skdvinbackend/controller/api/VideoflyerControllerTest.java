@@ -6,6 +6,7 @@ import in.skdv.skdvinbackend.MockJwtDecoder;
 import in.skdv.skdvinbackend.ModelMockHelper;
 import in.skdv.skdvinbackend.model.common.SimpleAssignment;
 import in.skdv.skdvinbackend.model.converter.VideoflyerConverter;
+import in.skdv.skdvinbackend.model.dto.VideoflyerDTO;
 import in.skdv.skdvinbackend.model.dto.VideoflyerDetailsDTO;
 import in.skdv.skdvinbackend.model.entity.Jumpday;
 import in.skdv.skdvinbackend.model.entity.Videoflyer;
@@ -81,7 +82,9 @@ class VideoflyerControllerTest extends AbstractSkdvinTest {
 
     @Test
     void testCreateVideoflyer() throws Exception {
-        String videoflyerJson = json(ModelMockHelper.createVideoflyerDto());
+        VideoflyerDTO videoflyerDto = ModelMockHelper.createVideoflyerDto();
+        videoflyerDto.setFavorite(true);
+        String videoflyerJson = json(videoflyerDto);
 
         mockMvc.perform(post("/api/videoflyer/")
                 .header("Authorization", MockJwtDecoder.addHeader(CREATE_VIDEOFLYER))
@@ -90,7 +93,8 @@ class VideoflyerControllerTest extends AbstractSkdvinTest {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.success", is(true)))
                 .andExpect(jsonPath("$.payload.firstName", is("Max")))
-                .andExpect(jsonPath("$.payload.lastName", is("Mustermann")));
+                .andExpect(jsonPath("$.payload.lastName", is("Mustermann")))
+                .andExpect(jsonPath("$.payload.favorite", is(true)));
     }
 
     @Test

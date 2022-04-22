@@ -28,10 +28,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
@@ -58,6 +55,29 @@ class VideoflyerServiceTest extends AbstractSkdvinTest {
     void setup() {
         jumpdayRepository.deleteAll();
         videoflyerRepository.deleteAll();
+    }
+
+    @Test
+    void testFindAll_isSorted() {
+        Videoflyer videoflyer2 = ModelMockHelper.createVideoflyer("Fav", "Flyer");
+        videoflyer2.setFavorite(true);
+        Videoflyer videoflyer3 = ModelMockHelper.createVideoflyer("SecondFav", "Flyer");
+        videoflyer3.setFavorite(true);
+
+        videoflyerRepository.save(ModelMockHelper.createVideoflyer());
+        videoflyerRepository.save(videoflyer2);
+        videoflyerRepository.save(videoflyer3);
+
+        List<Videoflyer> videoflyers = videoflyerService.findAll();
+
+        assertNotNull(videoflyers);
+        assertEquals(3, videoflyers.size());
+        assertTrue(videoflyers.get(0).isFavorite());
+        assertEquals("Fav", videoflyers.get(0).getFirstName());
+        assertTrue(videoflyers.get(1).isFavorite());
+        assertEquals("SecondFav", videoflyers.get(1).getFirstName());
+        assertFalse(videoflyers.get(2).isFavorite());
+        assertEquals("Max", videoflyers.get(2).getFirstName());
     }
 
     @Test

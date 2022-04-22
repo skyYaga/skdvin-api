@@ -40,7 +40,7 @@ public class VideoflyerService implements IVideoflyerService {
 
     @Override
     public List<Videoflyer> findAll() {
-        return videoflyerRepository.findAll();
+        return videoflyerRepository.findAllSortByFavorite();
     }
 
     @Override

@@ -13,5 +13,6 @@ public abstract class AbstractFlyer {
     private String lastName;
     private String email;
     private String tel;
+    private boolean favorite;
 
 }
