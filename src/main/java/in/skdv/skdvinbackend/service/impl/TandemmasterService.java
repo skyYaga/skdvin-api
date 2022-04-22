@@ -40,7 +40,7 @@ public class TandemmasterService implements ITandemmasterService {
 
     @Override
     public List<Tandemmaster> findAll() {
-        return tandemmasterRepository.findAll();
+        return tandemmasterRepository.findAllSortByFavorite();
     }
 
     @Override

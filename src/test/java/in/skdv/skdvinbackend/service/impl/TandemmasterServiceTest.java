@@ -28,10 +28,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
@@ -60,6 +57,29 @@ class TandemmasterServiceTest extends AbstractSkdvinTest {
     void setup() {
         jumpdayRepository.deleteAll();
         tandemmasterRepository.deleteAll();
+    }
+
+    @Test
+    void testFindAll_isSorted() {
+        Tandemmaster tandemmaster2 = ModelMockHelper.createTandemmaster("Fav", "Flyer");
+        tandemmaster2.setFavorite(true);
+        Tandemmaster tandemmaster3 = ModelMockHelper.createTandemmaster("SecondFav", "Flyer");
+        tandemmaster3.setFavorite(true);
+
+        tandemmasterRepository.save(ModelMockHelper.createTandemmaster());
+        tandemmasterRepository.save(tandemmaster2);
+        tandemmasterRepository.save(tandemmaster3);
+
+        List<Tandemmaster> tandemmasters = tandemmasterService.findAll();
+
+        assertNotNull(tandemmasters);
+        assertEquals(3, tandemmasters.size());
+        assertTrue(tandemmasters.get(0).isFavorite());
+        assertEquals("Fav", tandemmasters.get(0).getFirstName());
+        assertTrue(tandemmasters.get(1).isFavorite());
+        assertEquals("SecondFav", tandemmasters.get(1).getFirstName());
+        assertFalse(tandemmasters.get(2).isFavorite());
+        assertEquals("Max", tandemmasters.get(2).getFirstName());
     }
 
     @Test
