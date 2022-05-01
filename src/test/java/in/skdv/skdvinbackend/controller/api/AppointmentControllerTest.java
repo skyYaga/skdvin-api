@@ -642,6 +642,27 @@ class AppointmentControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
+    void testUpdateAppointmentState_AdminBooking() throws Exception {
+        Appointment appointment = ModelMockHelper.createSingleAppointment();
+        appointment.getCustomer().setJumpers(Collections.emptyList());
+        Appointment savedAppointment = appointmentService.saveAdminAppointment(appointment);
+
+        AppointmentStateOnlyDTO appointmentStateOnly = new AppointmentStateOnlyDTO();
+        appointmentStateOnly.setState(AppointmentState.ACTIVE);
+        String appointmentStateOnlyJson = json(appointmentStateOnly);
+
+        mockMvc.perform(patch("/api/appointment/{appointmentId}",
+                savedAppointment.getAppointmentId())
+                .header("Authorization", MockJwtDecoder.addHeader(UPDATE_APPOINTMENTS))
+                .contentType(contentType)
+                .content(appointmentStateOnlyJson))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success", is(true)));
+
+        assertEquals(AppointmentState.ACTIVE, appointmentService.findAppointment(savedAppointment.getAppointmentId()).getState());
+    }
+
+    @Test
     void testUpdateAppointmentState_Unauthorized() throws Exception {
         Appointment appointment = ModelMockHelper.createSingleAppointment();
         Appointment savedAppointment = appointmentService.saveAppointment(appointment);
