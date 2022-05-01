@@ -129,7 +129,7 @@ public class AppointmentService implements IAppointmentService {
     @Transactional
     public void updateAppointmentState(Appointment appointment, AppointmentState appointmentState) {
         appointment.setState(appointmentState);
-        updateAppointmentWithoutMail(appointment);
+        updateAppointment(appointment, true);
     }
 
     @Override
@@ -325,7 +325,7 @@ public class AppointmentService implements IAppointmentService {
             throw new InvalidRequestException(ErrorMessage.APPOINTMENT_MISSING_JUMPER_INFO);
         }
 
-        if (isAdminBooking) {
+        if (isAdminBooking && appointment.getState() == AppointmentState.UNCONFIRMED) {
             appointment.setState(AppointmentState.CONFIRMED);
         }
 
