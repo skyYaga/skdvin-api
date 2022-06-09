@@ -3,7 +3,10 @@ package in.skdv.skdvinbackend.service.impl;
 import in.skdv.skdvinbackend.model.entity.Appointment;
 import in.skdv.skdvinbackend.model.entity.EmailType;
 import in.skdv.skdvinbackend.model.entity.OutgoingMail;
+import in.skdv.skdvinbackend.model.entity.settings.AdminSettings;
 import in.skdv.skdvinbackend.model.entity.settings.CommonSettings;
+import in.skdv.skdvinbackend.model.entity.settings.LanguageSettings;
+import in.skdv.skdvinbackend.model.entity.settings.Settings;
 import in.skdv.skdvinbackend.repository.EmailOutboxRepository;
 import in.skdv.skdvinbackend.service.IEmailService;
 import in.skdv.skdvinbackend.service.ISettingsService;
@@ -147,11 +150,15 @@ public class EmailService implements IEmailService {
 
     private void prepareAppointmentMessage(MimeMessage mimeMessage, Appointment appointment, String subject, String template, Map<String, Object> contextVariables) throws MessagingException {
         Locale locale = new Locale(appointment.getLang());
-        CommonSettings settings = settingsService.getCommonSettingsByLanguage(locale.getLanguage());
+        Settings settings = settingsService.getSettings();
+        LanguageSettings languageSettings = settings.getLanguageSettingsByLocaleOrDefault(locale.getLanguage());
+        AdminSettings adminSettings = settings.getAdminSettings();
+        CommonSettings commonSettings = settings.getCommonSettings();
 
         Context ctx = new Context(locale);
         ctx.setVariable("appointment", appointment);
-        ctx.setVariable("settings", settings);
+        ctx.setVariable("languageSettings", languageSettings);
+        ctx.setVariable("commonSettings", commonSettings);
         ctx.setVariable("baseurl", baseurl);
         ctx.setVariable("zonedAppointmentDate", appointment.getDate().atZone(zoneId));
 
@@ -168,11 +175,11 @@ public class EmailService implements IEmailService {
         message.setTo(toEmail);
         message.setText(htmlContent, true);
 
-        if (settings != null && settings.getDropzone() != null && !settings.getDropzone().getEmail().isBlank()) {
-            message.setReplyTo(settings.getDropzone().getEmail());
+        if (languageSettings != null && languageSettings.getDropzone() != null && !languageSettings.getDropzone().getEmail().isBlank()) {
+            message.setReplyTo(languageSettings.getDropzone().getEmail());
         }
-        if (settings != null && !settings.getBccMail().isBlank()) {
-            message.setBcc(settings.getBccMail());
+        if (adminSettings != null && !adminSettings.getBccMail().isBlank()) {
+            message.setBcc(adminSettings.getBccMail());
         }
     }
 

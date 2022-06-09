@@ -21,9 +21,9 @@
 <span th:text="#{picorvid(${appointment.picOrVid})}">
     1 x Foto oder Video
 </span><br/>
-<span th:text="#{picandvid(${appointment.picAndVid})}">
+<span th:if="${commonSettings.picAndVidEnabled}" th:text="#{picandvid(${appointment.picAndVid})}">
     1 x Foto und Video
-</span><br/>
+</span><br th:if="${commonSettings.picAndVidEnabled}" />
 <span th:text="#{handcam(${appointment.handcam})}">
     1 x Handcam
 </span>
@@ -51,14 +51,14 @@
         ${#temporals.format(jumper.dateOfBirth, 'dd.MM.yyyy')})}"></li>
 </ul>
 <p th:utext="#{appointment.confirmation.details(${#temporals.format(zonedAppointmentDate, 'HH:mm')},
-    ${settings.dropzone.email}, ${settings.dropzone.mobile}, ${settings.dropzone.phone})}">
+    ${languageSettings.dropzone.email}, ${languageSettings.dropzone.mobile}, ${languageSettings.dropzone.phone})}">
     Melden Sie sich zum gebuchten Zeitpunkt (HH:mm Uhr) einfach vor Ort bei uns am Manifest.
     Die angegebenen Zeiten sind lediglich Richtzeiten, es besteht keine Garantie zur gebuchten Uhrzeit in die Luft zu
     kommen. Bitte bringen Sie ein paar Stunden Zeit mit.
     Falls Sie noch Fragen haben oder Ihren Termin nicht wahrnehmen können, senden Sie eine Mail an dzmail@example.com
     oder melden Sie sich telefonisch mobile + phone.
 </p>
-<p th:text="#{goodbye(${settings.dropzone.name})}">
+<p th:text="#{goodbye(${languageSettings.dropzone.name})}">
     Ihr DZ-Name
 </p>
 </body>

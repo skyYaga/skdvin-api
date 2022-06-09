@@ -1,7 +1,8 @@
 package in.skdv.skdvinbackend.service;
 
+import in.skdv.skdvinbackend.model.domain.PublicSettings;
 import in.skdv.skdvinbackend.model.entity.settings.AdminSettings;
-import in.skdv.skdvinbackend.model.entity.settings.CommonSettings;
+import in.skdv.skdvinbackend.model.entity.settings.LanguageSettings;
 import in.skdv.skdvinbackend.model.entity.settings.Settings;
 
 import java.util.Map;
@@ -18,8 +19,7 @@ public interface ISettingsService {
 
     AdminSettings getAdminSettings();
 
-    Map<String, CommonSettings> getCommonSettings();
+    Map<String, LanguageSettings> getLanguageSettings();
 
-    CommonSettings getCommonSettingsByLanguage(String language);
-
+    PublicSettings getPublicSettingsByLanguage(String language);
 }

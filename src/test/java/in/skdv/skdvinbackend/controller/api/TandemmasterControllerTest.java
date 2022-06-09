@@ -10,8 +10,8 @@ import in.skdv.skdvinbackend.model.dto.TandemmasterDetailsDTO;
 import in.skdv.skdvinbackend.model.entity.Jumpday;
 import in.skdv.skdvinbackend.model.entity.Tandemmaster;
 import in.skdv.skdvinbackend.model.entity.TandemmasterDetails;
-import in.skdv.skdvinbackend.model.entity.settings.CommonSettings;
 import in.skdv.skdvinbackend.model.entity.settings.SelfAssignmentMode;
+import in.skdv.skdvinbackend.model.entity.settings.Settings;
 import in.skdv.skdvinbackend.repository.JumpdayRepository;
 import in.skdv.skdvinbackend.repository.TandemmasterRepository;
 import in.skdv.skdvinbackend.service.IJumpdayService;
@@ -29,7 +29,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
-import java.util.Locale;
 import java.util.Map;
 
 import static in.skdv.skdvinbackend.config.Authorities.*;
@@ -76,7 +75,8 @@ class TandemmasterControllerTest extends AbstractSkdvinTest {
         tandemmasterRepository.deleteAll();
         jumpdayRepository.deleteAll();
 
-        when(settingsService.getCommonSettingsByLanguage(Locale.GERMAN.getLanguage())).thenReturn(new CommonSettings());
+        Settings settings = ModelMockHelper.createSettings(SelfAssignmentMode.WRITE_DELETE);
+        when(settingsService.getSettings()).thenReturn(settings);
     }
 
     @Test
@@ -326,9 +326,8 @@ class TandemmasterControllerTest extends AbstractSkdvinTest {
 
     @Test
     void testSelfAssignTandemmaster_READONLY() throws Exception {
-        CommonSettings commonSettings = new CommonSettings();
-        commonSettings.setSelfAssignmentMode(SelfAssignmentMode.READONLY);
-        when(settingsService.getCommonSettingsByLanguage(Locale.GERMAN.getLanguage())).thenReturn(commonSettings);
+        Settings settings = ModelMockHelper.createSettings(SelfAssignmentMode.READONLY);
+        when(settingsService.getSettings()).thenReturn(settings);
 
         Tandemmaster tandemmaster = tandemmasterRepository.save(ModelMockHelper.createTandemmaster());
         tandemmaster.setEmail(MockJwtDecoder.EXAMPLE_EMAIL);

@@ -9,14 +9,14 @@
 <p th:text="#{greeting(${appointment.customer.firstName})}">
     Hello, User!
 </p>
-<p th:text="#{appointment.reminder.introduction(${settings.dropzone.name})}">
+<p th:text="#{appointment.reminder.introduction(${languageSettings.dropzone.name})}">
     Noch eine Woche, dann ist es soweit: Ihr Tandemsprung bei DZ
 </p>
-<p th:utext="${settings.additionalReminderHint}">
+<p th:utext="${languageSettings.additionalReminderHint}">
     additional text from settings
 </p>
 <p th:utext="#{appointment.confirmation.details(${#temporals.format(zonedAppointmentDate, 'HH:mm')},
-    ${settings.dropzone.email}, ${settings.dropzone.mobile}, ${settings.dropzone.phone})}">
+    ${languageSettings.dropzone.email}, ${languageSettings.dropzone.mobile}, ${languageSettings.dropzone.phone})}">
     Melden Sie sich zum gebuchten Zeitpunkt (HH:mm Uhr) einfach vor Ort bei uns am Manifest.
     Die angegebenen Zeiten sind lediglich Richtzeiten, es besteht keine Garantie zur gebuchten Uhrzeit in die Luft zu
     kommen. Bitte bringen Sie ein paar Stunden Zeit mit.
@@ -32,9 +32,9 @@
 <span th:text="#{picorvid(${appointment.picOrVid})}">
     1 x Foto oder Video
 </span><br/>
-<span th:text="#{picandvid(${appointment.picAndVid})}">
+<span th:if="${commonSettings.picAndVidEnabled}" th:text="#{picandvid(${appointment.picAndVid})}">
     1 x Foto und Video
-</span><br/>
+</span><br th:if="${commonSettings.picAndVidEnabled}" />
 <span th:text="#{handcam(${appointment.handcam})}">
     1 x Handcam
 </span>
@@ -61,7 +61,7 @@
         ${jumper.firstName}, ${jumper.lastName},
         ${#temporals.format(jumper.dateOfBirth, 'dd.MM.yyyy')})}"></li>
 </ul>
-<p th:text="#{goodbye(${settings.dropzone.name})}">
+<p th:text="#{goodbye(${languageSettings.dropzone.name})}">
     Ihr DZ-Name
 </p>
 </body>

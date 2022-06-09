@@ -20,7 +20,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -137,7 +140,7 @@ public class TandemmasterService implements ITandemmasterService {
     }
 
     private void checkSelfAssignPrerequisites(TandemmasterDetails newTandemmasterDetails) {
-        SelfAssignmentMode selfAssignmentMode = settingsService.getCommonSettingsByLanguage(Locale.GERMAN.getLanguage()).getSelfAssignmentMode();
+        SelfAssignmentMode selfAssignmentMode = settingsService.getSettings().getCommonSettings().getSelfAssignmentMode();
         if (SelfAssignmentMode.READONLY.equals(selfAssignmentMode)) {
             log.error("Selfassignment is in read-only mode.");
             throw new InvalidRequestException(ErrorMessage.SELFASSIGNMENT_READONLY);

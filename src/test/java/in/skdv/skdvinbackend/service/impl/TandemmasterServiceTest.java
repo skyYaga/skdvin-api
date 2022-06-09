@@ -12,8 +12,8 @@ import in.skdv.skdvinbackend.model.entity.Assignment;
 import in.skdv.skdvinbackend.model.entity.Jumpday;
 import in.skdv.skdvinbackend.model.entity.Tandemmaster;
 import in.skdv.skdvinbackend.model.entity.TandemmasterDetails;
-import in.skdv.skdvinbackend.model.entity.settings.CommonSettings;
 import in.skdv.skdvinbackend.model.entity.settings.SelfAssignmentMode;
+import in.skdv.skdvinbackend.model.entity.settings.Settings;
 import in.skdv.skdvinbackend.repository.JumpdayRepository;
 import in.skdv.skdvinbackend.repository.TandemmasterRepository;
 import in.skdv.skdvinbackend.service.IJumpdayService;
@@ -28,7 +28,10 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
@@ -472,9 +475,8 @@ class TandemmasterServiceTest extends AbstractSkdvinTest {
 
     @Test
     void testAssignTandemmaster_READONLY() {
-        CommonSettings commonSettings = new CommonSettings();
-        commonSettings.setSelfAssignmentMode(SelfAssignmentMode.READONLY);
-        when(settingsService.getCommonSettingsByLanguage(Locale.GERMAN.getLanguage())).thenReturn(commonSettings);
+        Settings settings = ModelMockHelper.createSettings(SelfAssignmentMode.READONLY);
+        when(settingsService.getSettings()).thenReturn(settings);
 
         TandemmasterDetails tandemmasterDetails = prepareJumpdaysAndTandemmaster();
         SimpleAssignment assignmentDTO = new SimpleAssignment(true);
@@ -489,9 +491,8 @@ class TandemmasterServiceTest extends AbstractSkdvinTest {
 
     @Test
     void testAssignTandemmaster_Removal_NODELETE() {
-        CommonSettings commonSettings = new CommonSettings();
-        commonSettings.setSelfAssignmentMode(SelfAssignmentMode.NODELETE);
-        when(settingsService.getCommonSettingsByLanguage(Locale.GERMAN.getLanguage())).thenReturn(commonSettings);
+        Settings settings = ModelMockHelper.createSettings(SelfAssignmentMode.NODELETE);
+        when(settingsService.getSettings()).thenReturn(settings);
 
         TandemmasterDetails tandemmasterDetails = prepareJumpdaysAndTandemmaster();
         ModelMockHelper.addTandemmasterAssignment(tandemmasterDetails, LocalDate.now());
@@ -508,9 +509,8 @@ class TandemmasterServiceTest extends AbstractSkdvinTest {
 
     @Test
     void testAssignTandemmaster_RemovalNotAllday_NODELETE() {
-        CommonSettings commonSettings = new CommonSettings();
-        commonSettings.setSelfAssignmentMode(SelfAssignmentMode.NODELETE);
-        when(settingsService.getCommonSettingsByLanguage(Locale.GERMAN.getLanguage())).thenReturn(commonSettings);
+        Settings settings = ModelMockHelper.createSettings(SelfAssignmentMode.NODELETE);
+        when(settingsService.getSettings()).thenReturn(settings);
 
         TandemmasterDetails tandemmasterDetails = prepareJumpdaysAndTandemmaster();
         ModelMockHelper.addTandemmasterAssignment(tandemmasterDetails, LocalDate.now());
@@ -528,9 +528,8 @@ class TandemmasterServiceTest extends AbstractSkdvinTest {
 
     @Test
     void testAssignTandemmaster_RemovalNotAssigned_NODELETE() {
-        CommonSettings commonSettings = new CommonSettings();
-        commonSettings.setSelfAssignmentMode(SelfAssignmentMode.NODELETE);
-        when(settingsService.getCommonSettingsByLanguage(Locale.GERMAN.getLanguage())).thenReturn(commonSettings);
+        Settings settings = ModelMockHelper.createSettings(SelfAssignmentMode.NODELETE);
+        when(settingsService.getSettings()).thenReturn(settings);
 
         TandemmasterDetails tandemmasterDetails = prepareJumpdaysAndTandemmaster();
         ModelMockHelper.addTandemmasterAssignment(tandemmasterDetails, LocalDate.now());

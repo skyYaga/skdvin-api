@@ -96,8 +96,8 @@ class AppointmentControllerTest extends AbstractSkdvinTest {
         ReflectionTestUtils.setField(emailService, "fromEmail", FROM_EMAIL);
         ReflectionTestUtils.setField(emailService, "baseurl", BASE_URL);
         doReturn(new JavaMailSenderImpl().createMimeMessage()).when(mailSender).createMimeMessage();
-        when(settingsService.getCommonSettingsByLanguage(Mockito.anyString())).
-                thenReturn(ModelMockHelper.createCommonSettings());
+        when(settingsService.getPublicSettingsByLanguage(Mockito.anyString())).
+                thenReturn(ModelMockHelper.createPublicSettings());
     }
 
     @Test

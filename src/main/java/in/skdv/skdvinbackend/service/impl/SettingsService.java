@@ -2,8 +2,9 @@ package in.skdv.skdvinbackend.service.impl;
 
 import in.skdv.skdvinbackend.exception.ErrorMessage;
 import in.skdv.skdvinbackend.exception.NotFoundException;
+import in.skdv.skdvinbackend.model.domain.PublicSettings;
 import in.skdv.skdvinbackend.model.entity.settings.AdminSettings;
-import in.skdv.skdvinbackend.model.entity.settings.CommonSettings;
+import in.skdv.skdvinbackend.model.entity.settings.LanguageSettings;
 import in.skdv.skdvinbackend.model.entity.settings.Settings;
 import in.skdv.skdvinbackend.repository.SettingsRepository;
 import in.skdv.skdvinbackend.service.ISettingsService;
@@ -12,7 +13,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashMap;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 
@@ -20,7 +20,6 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class SettingsService implements ISettingsService {
 
-    private static final Locale DEFAULT_LOCALE = Locale.GERMAN;
     private final SettingsRepository settingsRepository;
 
     @Override
@@ -72,29 +71,19 @@ public class SettingsService implements ISettingsService {
     }
 
     @Override
-    public Map<String, CommonSettings> getCommonSettings() {
+    public Map<String, LanguageSettings> getLanguageSettings() {
         Settings settings = getSettings();
         if (settings != null) {
-            return settings.getCommonSettings();
+            return settings.getLanguageSettings();
         }
         return new HashMap<>();
     }
 
     @Override
-    public CommonSettings getCommonSettingsByLanguage(String language) {
-        Map<String, CommonSettings> commonSettings = getSettings().getCommonSettings();
-        return getCommonSettingsByLocaleOrDefault(commonSettings, language);
-    }
-
-    private CommonSettings getCommonSettingsByLocaleOrDefault(Map<String, CommonSettings> commonSettings, String language) {
-        if (commonSettings != null) {
-            CommonSettings localeCommonSettings = commonSettings.get(language);
-            if (localeCommonSettings == null) {
-                localeCommonSettings = commonSettings.get(DEFAULT_LOCALE.getLanguage());
-            }
-            return localeCommonSettings;
-        }
-        return null;
+    public PublicSettings getPublicSettingsByLanguage(String language) {
+        Settings settings = getSettings();
+        LanguageSettings languageSettings = settings.getLanguageSettingsByLocaleOrDefault(language);
+        return new PublicSettings(settings.getCommonSettings(), languageSettings);
     }
 
 }

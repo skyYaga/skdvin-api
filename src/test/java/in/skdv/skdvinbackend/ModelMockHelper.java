@@ -2,10 +2,16 @@ package in.skdv.skdvinbackend;
 
 import in.skdv.skdvinbackend.model.common.AbstractFlyer;
 import in.skdv.skdvinbackend.model.common.SimpleAssignment;
-import in.skdv.skdvinbackend.model.converter.*;
+import in.skdv.skdvinbackend.model.converter.AppointmentConverter;
+import in.skdv.skdvinbackend.model.converter.JumpdayConverter;
+import in.skdv.skdvinbackend.model.converter.TandemmasterConverter;
+import in.skdv.skdvinbackend.model.converter.VideoflyerConverter;
+import in.skdv.skdvinbackend.model.domain.PublicSettings;
 import in.skdv.skdvinbackend.model.dto.*;
 import in.skdv.skdvinbackend.model.entity.*;
 import in.skdv.skdvinbackend.model.entity.settings.*;
+import in.skdv.skdvinbackend.model.mapper.SettingsMapper;
+import in.skdv.skdvinbackend.model.mapper.SettingsMapperImpl;
 import org.modelmapper.ModelMapper;
 
 import java.time.LocalDate;
@@ -21,7 +27,9 @@ public class ModelMockHelper {
     private static final VideoflyerConverter VIDEOFLYER_CONVERTER = new VideoflyerConverter();
     private static final AppointmentConverter APPOINTMENT_CONVERTER = new AppointmentConverter(new ModelMapper());
     private static final TandemmasterConverter TANDEMMASTER_CONVERTER = new TandemmasterConverter();
-    private static final SettingsConverter SETTINGS_CONVERTER = new SettingsConverter();
+    private static final SettingsMapper SETTINGS_MAPPER = new SettingsMapperImpl();
+
+    public static final String DZ_EMAIL = "dz@example.com";
 
     public static AppointmentDTO createAppointmentDto() {
         return APPOINTMENT_CONVERTER.convertToDto(createSingleAppointment());
@@ -160,14 +168,22 @@ public class ModelMockHelper {
     }
 
     public static SettingsDTO createSettingsDto() {
-        return SETTINGS_CONVERTER.convertToDto(createSettings(Locale.GERMAN));
+        return SETTINGS_MAPPER.toDto(createSettings(Locale.GERMAN));
     }
 
     public static Settings createSettings() {
-        return createSettings(Locale.GERMAN);
+        return createSettings(Locale.GERMAN, SelfAssignmentMode.READONLY);
     }
 
     public static Settings createSettings(Locale locale) {
+        return createSettings(locale, SelfAssignmentMode.READONLY);
+    }
+
+    public static Settings createSettings(SelfAssignmentMode mode) {
+        return createSettings(Locale.GERMAN, mode);
+    }
+
+    private static Settings createSettings(Locale locale, SelfAssignmentMode mode) {
         AdminSettings adminSettings = new AdminSettings();
         adminSettings.setTandemsFrom(LocalTime.of(10, 0));
         adminSettings.setTandemsTo(LocalTime.of(18, 0));
@@ -177,22 +193,39 @@ public class ModelMockHelper {
         adminSettings.setPicAndVidCount(0);
         adminSettings.setHandcamCount(0);
 
-        Map<String, CommonSettings> commonSettingsMap = new HashMap<>(Map.of(locale.getLanguage(), createCommonSettings()));
+        CommonSettings commonSettings = CommonSettings.builder()
+                .picAndVidEnabled(true)
+                .selfAssignmentMode(mode)
+                .build();
+
+        Map<String, LanguageSettings> languageSettingsMap = new HashMap<>(Map.of(locale.getLanguage(), createLanguageSettings()));
 
         Settings settings = new Settings();
         settings.setAdminSettings(adminSettings);
-        settings.setCommonSettings(commonSettingsMap);
+        settings.setLanguageSettings(languageSettingsMap);
+        settings.setCommonSettings(commonSettings);
 
         return settings;
     }
 
-    public static CommonSettings createCommonSettings() {
+    public static PublicSettings createPublicSettings() {
+        Settings settings = createSettings();
+        return new PublicSettings(settings.getCommonSettings(), createLanguageSettings());
+    }
+
+    public static PublicSettings createPublicSettings(SelfAssignmentMode selfAssignmentMode) {
+        Settings settings = createSettings();
+        settings.getCommonSettings().setSelfAssignmentMode(selfAssignmentMode);
+        return new PublicSettings(settings.getCommonSettings(), createLanguageSettings());
+    }
+
+    public static LanguageSettings createLanguageSettings() {
         Dropzone dropzone = new Dropzone();
         dropzone.setName("Example DZ");
         dropzone.setPriceListUrl("https://example.com");
         dropzone.setMobile("015112345678");
         dropzone.setPhone("0987654321");
-        dropzone.setEmail("dz@example.com");
+        dropzone.setEmail(DZ_EMAIL);
 
         Faq faq1 = new Faq();
         faq1.setId(1);
@@ -205,20 +238,21 @@ public class ModelMockHelper {
 
         List<Faq> faqList = Arrays.asList(faq1, faq2);
 
-        CommonSettings commonSettings = new CommonSettings();
-        commonSettings.setDropzone(dropzone);
-        commonSettings.setFaq(faqList);
-        commonSettings.setAdditionalReminderHint("<p>This is a additional hint</p><ul><li>Hint 1</li><li>Hint 2</li></ul>");
-
-        return commonSettings;
+        return LanguageSettings.builder()
+                .dropzone(dropzone)
+                .faq(faqList)
+                .additionalReminderHint("<p>This is a additional hint</p><ul><li>Hint 1</li><li>Hint 2</li></ul>")
+                .build();
     }
 
     public static TandemmasterDetails addTandemmasterAssignment(Tandemmaster tandemmaster, LocalDate date) {
         return TANDEMMASTER_CONVERTER.convertToDetails(tandemmaster, Map.of(date, new SimpleAssignment(true)));
     }
+
     public static TandemmasterDetails removeTandemmasterAssignment(Tandemmaster tandemmaster, LocalDate date) {
         return TANDEMMASTER_CONVERTER.convertToDetails(tandemmaster, Map.of(date, new SimpleAssignment(false)));
     }
+
     public static void addTandemmasterAssignment(TandemmasterDetails tandemmasterDetails, LocalDate date) {
         tandemmasterDetails.getAssignments().put(date, new SimpleAssignment(true));
     }
@@ -226,10 +260,13 @@ public class ModelMockHelper {
     public static VideoflyerDetails addVideoflyerAssignment(Videoflyer videoflyer, LocalDate date) {
         return VIDEOFLYER_CONVERTER.convertToDetails(videoflyer, Map.of(date, new SimpleAssignment(true)));
     }
+
     public static VideoflyerDetails removeVideoflyerAssignment(Videoflyer videoflyer, LocalDate date) {
         return VIDEOFLYER_CONVERTER.convertToDetails(videoflyer, Map.of(date, new SimpleAssignment(false)));
     }
+
     public static void addVideoflyerAssignment(VideoflyerDetails videoflyerDetails, LocalDate date) {
         videoflyerDetails.getAssignments().put(date, new SimpleAssignment(true));
     }
+
 }
