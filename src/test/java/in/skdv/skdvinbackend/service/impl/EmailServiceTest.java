@@ -6,8 +6,7 @@ import in.skdv.skdvinbackend.model.entity.Appointment;
 import in.skdv.skdvinbackend.model.entity.EmailType;
 import in.skdv.skdvinbackend.model.entity.OutgoingMail;
 import in.skdv.skdvinbackend.model.entity.Status;
-import in.skdv.skdvinbackend.model.entity.settings.CommonSettings;
-import in.skdv.skdvinbackend.model.entity.settings.Dropzone;
+import in.skdv.skdvinbackend.model.entity.settings.Settings;
 import in.skdv.skdvinbackend.repository.EmailOutboxRepository;
 import in.skdv.skdvinbackend.service.IEmailService;
 import in.skdv.skdvinbackend.service.ISettingsService;
@@ -41,8 +40,8 @@ import static org.mockito.Mockito.*;
 class EmailServiceTest extends AbstractSkdvinTest {
 
     private static final String FROM_EMAIL = "skdvin@example.com";
-    private static final String BCC_EMAIL = "dz@example.com";
-    private static final String REPLYTO_EMAIL = "reply@example.com";
+    private static final String BCC_EMAIL = "bcc@example.com";
+    private static final String REPLYTO_EMAIL = ModelMockHelper.DZ_EMAIL;
     private static final String BASE_URL = "https://example.com";
 
     private IEmailService emailService;
@@ -70,10 +69,8 @@ class EmailServiceTest extends AbstractSkdvinTest {
         ReflectionTestUtils.setField(emailService, "fromEmail", FROM_EMAIL);
         ReflectionTestUtils.setField(emailService, "baseurl", BASE_URL);
 
-        when(settingsService.getCommonSettingsByLanguage(Locale.GERMAN.getLanguage())).
-                thenReturn(ModelMockHelper.createCommonSettings());
-        when(settingsService.getCommonSettingsByLanguage(Locale.ENGLISH.getLanguage())).
-                thenReturn(ModelMockHelper.createCommonSettings());
+        Settings settings = ModelMockHelper.createSettings();
+        when(settingsService.getSettings()).thenReturn(settings);
     }
 
     @Test
@@ -204,15 +201,11 @@ class EmailServiceTest extends AbstractSkdvinTest {
 
     @Test
     void testBccAndReplyToMail() throws MessagingException {
-        CommonSettings commonSettings = new CommonSettings();
-        commonSettings.setBccMail(BCC_EMAIL);
-        Dropzone dropzone = new Dropzone();
-        dropzone.setEmail(REPLYTO_EMAIL);
-        commonSettings.setDropzone(dropzone);
-        LocaleContextHolder.setLocale(Locale.GERMAN);
         doNothing().when(mailSender).send(Mockito.any(MimeMessage.class));
-        when(settingsService.getCommonSettingsByLanguage(Locale.GERMAN.getLanguage())).
-                thenReturn(commonSettings);
+
+        Settings settings = ModelMockHelper.createSettings();
+        settings.getAdminSettings().setBccMail(BCC_EMAIL);
+        when(settingsService.getSettings()).thenReturn(settings);
 
         Appointment appointment = ModelMockHelper.createSingleAppointment();
         appointment.setVerificationToken(VerificationTokenUtil.generate());
@@ -228,12 +221,10 @@ class EmailServiceTest extends AbstractSkdvinTest {
     }
 
     @Test
-    void testNoBccAndReplyToMail() throws MessagingException {
-        CommonSettings settings = ModelMockHelper.createCommonSettings();
-        settings.getDropzone().setEmail("");
-        settings.setBccMail("");
-        when(settingsService.getCommonSettingsByLanguage(Locale.GERMAN.getLanguage())).
-                thenReturn(settings);
+    void testNoBccMail() throws MessagingException {
+        Settings settings = ModelMockHelper.createSettings();
+        settings.getAdminSettings().setBccMail("");
+        when(settingsService.getSettings()).thenReturn(settings);
 
         LocaleContextHolder.setLocale(Locale.GERMAN);
         doNothing().when(mailSender).send(Mockito.any(MimeMessage.class));
@@ -247,7 +238,7 @@ class EmailServiceTest extends AbstractSkdvinTest {
         verify(mailSender).send(argument.capture());
 
         MimeMessage mimeMessage = argument.getValue();
-        assertEquals(FROM_EMAIL, mimeMessage.getReplyTo()[0].toString());
+        assertEquals(REPLYTO_EMAIL, mimeMessage.getReplyTo()[0].toString());
         assertNull(mimeMessage.getHeader("Bcc"));
     }
 }

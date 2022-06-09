@@ -1,4 +1,4 @@
-package in.skdv.skdvinbackend.model.converter;
+package in.skdv.skdvinbackend.model.mapper;
 
 import in.skdv.skdvinbackend.ModelMockHelper;
 import in.skdv.skdvinbackend.model.dto.SettingsDTO;
@@ -8,37 +8,37 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
-class SettingsConverterTest {
+class SettingsMapperTest {
 
-    private SettingsConverter converter = new SettingsConverter();
+    private final SettingsMapper mapper = new SettingsMapperImpl();
 
     @Test
-    void convertToDto() {
+    void toDto() {
         Settings settings = ModelMockHelper.createSettings();
 
-        SettingsDTO settingsDTO = converter.convertToDto(settings);
+        SettingsDTO settingsDTO = mapper.toDto(settings);
 
         assertEquals(settings.getAdminSettings().getTandemCount(), settingsDTO.getAdminSettings().getTandemCount());
     }
 
     @Test
-    void convertToEntity() {
+    void toEntity() {
         Settings settings = ModelMockHelper.createSettings();
 
-        SettingsDTO settingsDTO = converter.convertToDto(settings);
-        settings = converter.convertToEntity(settingsDTO);
+        SettingsDTO settingsDTO = mapper.toDto(settings);
+        settings = mapper.toEntity(settingsDTO);
 
         assertEquals(settingsDTO.getAdminSettings().getTandemCount(), settings.getAdminSettings().getTandemCount());
     }
 
     @Test
-    void convertToDto_Null() {
+    void toDto_Null() {
         Settings settings = null;
-        assertNull(converter.convertToDto(settings));
+        assertNull(mapper.toDto(settings));
     }
 
     @Test
-    void convertToEntity_Null() {
-        assertNull(converter.convertToEntity(null));
+    void toEntity_Null() {
+        assertNull(mapper.toEntity(null));
     }
 }

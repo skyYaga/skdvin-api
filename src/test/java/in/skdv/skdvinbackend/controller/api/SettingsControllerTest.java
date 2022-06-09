@@ -4,10 +4,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import in.skdv.skdvinbackend.AbstractSkdvinTest;
 import in.skdv.skdvinbackend.MockJwtDecoder;
 import in.skdv.skdvinbackend.ModelMockHelper;
-import in.skdv.skdvinbackend.model.converter.SettingsConverter;
 import in.skdv.skdvinbackend.model.dto.SettingsDTO;
-import in.skdv.skdvinbackend.model.entity.settings.CommonSettings;
+import in.skdv.skdvinbackend.model.entity.settings.LanguageSettings;
 import in.skdv.skdvinbackend.model.entity.settings.Settings;
+import in.skdv.skdvinbackend.model.mapper.SettingsMapper;
 import in.skdv.skdvinbackend.repository.SettingsRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -41,7 +41,8 @@ class SettingsControllerTest extends AbstractSkdvinTest {
     @Autowired
     private MockMvc mockMvc;
 
-    private final SettingsConverter settingsConverter = new SettingsConverter();
+    @Autowired
+    private SettingsMapper mapper;
 
     @Autowired
     private SettingsRepository settingsRepository;
@@ -50,7 +51,6 @@ class SettingsControllerTest extends AbstractSkdvinTest {
     void setup() {
         settingsRepository.deleteAll();
     }
-
 
     @Test
     void testCreateSettings() throws Exception {
@@ -63,7 +63,8 @@ class SettingsControllerTest extends AbstractSkdvinTest {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.success", is(true)))
                 .andExpect(jsonPath("$.payload.adminSettings.tandemCount", is(5)))
-                .andExpect(jsonPath("$.payload.commonSettings.de.dropzone.name", is("Example DZ")));
+                .andExpect(jsonPath("$.payload.languageSettings.de.dropzone.name", is("Example DZ")))
+                .andExpect(jsonPath("$.payload.commonSettings.picAndVidEnabled", is(true)));
     }
 
     @Test
@@ -79,9 +80,9 @@ class SettingsControllerTest extends AbstractSkdvinTest {
     @Test
     void testUpdateSettings() throws Exception {
         Settings settings = settingsRepository.save(ModelMockHelper.createSettings());
-        SettingsDTO settingsDTO = settingsConverter.convertToDto(settings);
+        SettingsDTO settingsDTO = mapper.toDto(settings);
         settings.getAdminSettings().setTandemCount(2);
-        settings.getCommonSettings().get(Locale.GERMAN.getLanguage()).getDropzone().setName("Renamed DZ");
+        settings.getLanguageSettings().get(Locale.GERMAN.getLanguage()).getDropzone().setName("Renamed DZ");
         String settingsJson = json(settings);
 
         mockMvc.perform(put("/api/settings/{id}", settings.getId())
@@ -91,7 +92,7 @@ class SettingsControllerTest extends AbstractSkdvinTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success", is(true)))
                 .andExpect(jsonPath("$.payload.adminSettings.tandemCount", is(2)))
-                .andExpect(jsonPath("$.payload.commonSettings.de.dropzone.name", is("Renamed DZ")));
+                .andExpect(jsonPath("$.payload.languageSettings.de.dropzone.name", is("Renamed DZ")));
     }
 
     @Test
@@ -130,7 +131,7 @@ class SettingsControllerTest extends AbstractSkdvinTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success", is(true)))
                 .andExpect(jsonPath("$.payload.adminSettings.tandemCount", is(5)))
-                .andExpect(jsonPath("$.payload.commonSettings.de.dropzone.name", is("Example DZ")));
+                .andExpect(jsonPath("$.payload.languageSettings.de.dropzone.name", is("Example DZ")));
     }
 
     @Test
@@ -144,11 +145,11 @@ class SettingsControllerTest extends AbstractSkdvinTest {
     }
 
     @Test
-    void testGetCommonSettings_EN() throws Exception {
+    void testGetLanguageSettings_EN() throws Exception {
         Settings settings = ModelMockHelper.createSettings();
-        CommonSettings commonSettingsEN = ModelMockHelper.createCommonSettings();
-        commonSettingsEN.getDropzone().setName("Example DZ EN");
-        settings.getCommonSettings().put(Locale.ENGLISH.getLanguage(), commonSettingsEN);
+        LanguageSettings languageSettingsEN = ModelMockHelper.createLanguageSettings();
+        languageSettingsEN.getDropzone().setName("Example DZ EN");
+        settings.getLanguageSettings().put(Locale.ENGLISH.getLanguage(), languageSettingsEN);
         settingsRepository.save(settings);
 
         mockMvc.perform(get("/api/settings/common/")
@@ -156,11 +157,12 @@ class SettingsControllerTest extends AbstractSkdvinTest {
                 .contentType(contentType))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success", is(true)))
-                .andExpect(jsonPath("$.payload.dropzone.name", is("Example DZ EN")));
+                .andExpect(jsonPath("$.payload.dropzone.name", is("Example DZ EN")))
+                .andExpect(jsonPath("$.payload.picAndVidEnabled", is(true)));
     }
 
     @Test
-    void testGetCommonSettings_DE() throws Exception {
+    void testGetLanguageSettings_DE() throws Exception {
         Settings settings = ModelMockHelper.createSettings();
         settingsRepository.save(settings);
 
@@ -169,7 +171,8 @@ class SettingsControllerTest extends AbstractSkdvinTest {
                 .contentType(contentType))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success", is(true)))
-                .andExpect(jsonPath("$.payload.dropzone.name", is("Example DZ")));
+                .andExpect(jsonPath("$.payload.dropzone.name", is("Example DZ")))
+                .andExpect(jsonPath("$.payload.picAndVidEnabled", is(true)));
     }
 
     private String json(Object o) throws IOException {

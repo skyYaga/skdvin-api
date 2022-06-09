@@ -1,6 +1,8 @@
 package in.skdv.skdvinbackend.config;
 
 import com.auth0.client.mgmt.ManagementAPI;
+import in.skdv.skdvinbackend.model.mapper.SettingsMapper;
+import in.skdv.skdvinbackend.model.mapper.SettingsMapperImpl;
 import in.skdv.skdvinbackend.repository.*;
 import in.skdv.skdvinbackend.repository.impl.SequenceRepository;
 import in.skdv.skdvinbackend.service.*;
@@ -52,6 +54,11 @@ public class ApplicationConfig implements WebMvcConfigurer {
     @Bean
     public ModelMapper modelMapper() {
         return new ModelMapper();
+    }
+
+    @Bean
+    public SettingsMapper settingsMapper() {
+        return new SettingsMapperImpl();
     }
 
     @Bean

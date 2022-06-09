@@ -21,9 +21,9 @@
 <span th:text="#{picorvid(${appointment.picOrVid})}">
     1 x Foto oder Video
 </span><br/>
-<span th:text="#{picandvid(${appointment.picAndVid})}">
+<span th:if="${commonSettings.picAndVidEnabled}" th:text="#{picandvid(${appointment.picAndVid})}">
     1 x Foto und Video
-</span><br/>
+</span><br th:if="${commonSettings.picAndVidEnabled}" />
 <span th:text="#{handcam(${appointment.handcam})}">
     1 x Handcam
 </span>
@@ -50,7 +50,7 @@
         ${jumper.firstName}, ${jumper.lastName},
         ${#temporals.format(jumper.dateOfBirth, 'dd.MM.yyyy')})}"></li>
 </ul>
-<p th:text="#{goodbye(${settings.dropzone.name})}">
+<p th:text="#{goodbye(${languageSettings.dropzone.name})}">
     Ihr DZ-Name
 </p>
 </body>

@@ -11,8 +11,8 @@ import in.skdv.skdvinbackend.model.dto.VideoflyerDetailsDTO;
 import in.skdv.skdvinbackend.model.entity.Jumpday;
 import in.skdv.skdvinbackend.model.entity.Videoflyer;
 import in.skdv.skdvinbackend.model.entity.VideoflyerDetails;
-import in.skdv.skdvinbackend.model.entity.settings.CommonSettings;
 import in.skdv.skdvinbackend.model.entity.settings.SelfAssignmentMode;
+import in.skdv.skdvinbackend.model.entity.settings.Settings;
 import in.skdv.skdvinbackend.repository.JumpdayRepository;
 import in.skdv.skdvinbackend.repository.VideoflyerRepository;
 import in.skdv.skdvinbackend.service.IJumpdayService;
@@ -30,7 +30,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
-import java.util.Locale;
 import java.util.Map;
 
 import static in.skdv.skdvinbackend.config.Authorities.*;
@@ -77,7 +76,8 @@ class VideoflyerControllerTest extends AbstractSkdvinTest {
         videoflyerRepository.deleteAll();
         jumpdayRepository.deleteAll();
 
-        when(settingsService.getCommonSettingsByLanguage(Locale.GERMAN.getLanguage())).thenReturn(new CommonSettings());
+        Settings settings = ModelMockHelper.createSettings(SelfAssignmentMode.WRITE_DELETE);
+        when(settingsService.getSettings()).thenReturn(settings);
     }
 
     @Test
@@ -87,9 +87,9 @@ class VideoflyerControllerTest extends AbstractSkdvinTest {
         String videoflyerJson = json(videoflyerDto);
 
         mockMvc.perform(post("/api/videoflyer/")
-                .header("Authorization", MockJwtDecoder.addHeader(CREATE_VIDEOFLYER))
-                .contentType(contentType)
-                .content(videoflyerJson))
+                        .header("Authorization", MockJwtDecoder.addHeader(CREATE_VIDEOFLYER))
+                        .contentType(contentType)
+                        .content(videoflyerJson))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.success", is(true)))
                 .andExpect(jsonPath("$.payload.firstName", is("Max")))
@@ -102,8 +102,8 @@ class VideoflyerControllerTest extends AbstractSkdvinTest {
         String videoflyerJson = json(ModelMockHelper.createVideoflyer());
 
         mockMvc.perform(post("/api/videoflyer/")
-                .contentType(contentType)
-                .content(videoflyerJson))
+                        .contentType(contentType)
+                        .content(videoflyerJson))
                 .andExpect(status().isUnauthorized());
     }
 
@@ -113,8 +113,8 @@ class VideoflyerControllerTest extends AbstractSkdvinTest {
         videoflyerRepository.save(ModelMockHelper.createVideoflyer("john", "doe"));
 
         mockMvc.perform(get("/api/videoflyer")
-                .header("Authorization", MockJwtDecoder.addHeader(READ_VIDEOFLYER))
-                .contentType(contentType))
+                        .header("Authorization", MockJwtDecoder.addHeader(READ_VIDEOFLYER))
+                        .contentType(contentType))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success", is(true)))
                 .andExpect(jsonPath("$.payload", hasSize(2)));
@@ -126,7 +126,7 @@ class VideoflyerControllerTest extends AbstractSkdvinTest {
         videoflyerRepository.save(ModelMockHelper.createVideoflyer("john", "doe"));
 
         mockMvc.perform(get("/api/videoflyer")
-                .contentType(contentType))
+                        .contentType(contentType))
                 .andExpect(status().isUnauthorized());
     }
 
@@ -139,9 +139,9 @@ class VideoflyerControllerTest extends AbstractSkdvinTest {
         String videoflyerJson = json(converter.convertToDto(videoflyer));
 
         mockMvc.perform(put("/api/videoflyer/{id}", videoflyer.getId())
-                .header("Authorization", MockJwtDecoder.addHeader(UPDATE_VIDEOFLYER))
-                .contentType(contentType)
-                .content(videoflyerJson))
+                        .header("Authorization", MockJwtDecoder.addHeader(UPDATE_VIDEOFLYER))
+                        .contentType(contentType)
+                        .content(videoflyerJson))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success", is(true)))
                 .andExpect(jsonPath("$.payload.email", is("foo@example.com")))
@@ -157,8 +157,8 @@ class VideoflyerControllerTest extends AbstractSkdvinTest {
         String videoflyerJson = json(videoflyer);
 
         mockMvc.perform(put("/api/videoflyer/{id}", videoflyer.getId())
-                .contentType(contentType)
-                .content(videoflyerJson))
+                        .contentType(contentType)
+                        .content(videoflyerJson))
                 .andExpect(status().isUnauthorized());
     }
 
@@ -168,10 +168,10 @@ class VideoflyerControllerTest extends AbstractSkdvinTest {
         String videoflyerJson = json(videoflyer);
 
         mockMvc.perform(put("/api/videoflyer/{id}", 9999999)
-                .header("Authorization", MockJwtDecoder.addHeader(UPDATE_VIDEOFLYER))
-                .header("Accept-Language", "en-US")
-                .contentType(contentType)
-                .content(videoflyerJson))
+                        .header("Authorization", MockJwtDecoder.addHeader(UPDATE_VIDEOFLYER))
+                        .header("Accept-Language", "en-US")
+                        .contentType(contentType)
+                        .content(videoflyerJson))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.success", is(false)))
                 .andExpect(jsonPath("$.message", is("Videoflyer not found")));
@@ -183,8 +183,8 @@ class VideoflyerControllerTest extends AbstractSkdvinTest {
         Videoflyer videoflyer = videoflyerRepository.save(ModelMockHelper.createVideoflyer());
 
         mockMvc.perform(delete("/api/videoflyer/{id}", videoflyer.getId())
-                .header("Authorization", MockJwtDecoder.addHeader(DELETE_VIDEOFLYER))
-                .contentType(contentType))
+                        .header("Authorization", MockJwtDecoder.addHeader(DELETE_VIDEOFLYER))
+                        .contentType(contentType))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success", is(true)));
     }
@@ -194,7 +194,7 @@ class VideoflyerControllerTest extends AbstractSkdvinTest {
         Videoflyer videoflyer = videoflyerRepository.save(ModelMockHelper.createVideoflyer());
 
         mockMvc.perform(delete("/api/videoflyer/{id}", videoflyer.getId())
-                .contentType(contentType))
+                        .contentType(contentType))
                 .andExpect(status().isUnauthorized());
     }
 
@@ -202,9 +202,9 @@ class VideoflyerControllerTest extends AbstractSkdvinTest {
     void testDeleteVideoflyer_NotFound() throws Exception {
 
         mockMvc.perform(delete("/api/videoflyer/{id}", 9999999)
-                .header("Authorization", MockJwtDecoder.addHeader(DELETE_VIDEOFLYER))
-                .header("Accept-Language", "en-US")
-                .contentType(contentType))
+                        .header("Authorization", MockJwtDecoder.addHeader(DELETE_VIDEOFLYER))
+                        .header("Accept-Language", "en-US")
+                        .contentType(contentType))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.success", is(false)))
                 .andExpect(jsonPath("$.message", is("Videoflyer not found")));
@@ -220,8 +220,8 @@ class VideoflyerControllerTest extends AbstractSkdvinTest {
         videoflyerService.assignVideoflyer(videoflyerDetails, false);
 
         mockMvc.perform(get("/api/videoflyer/{id}", videoflyer.getId())
-                .header("Authorization", MockJwtDecoder.addHeader(READ_VIDEOFLYER))
-                .contentType(contentType))
+                        .header("Authorization", MockJwtDecoder.addHeader(READ_VIDEOFLYER))
+                        .contentType(contentType))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success", is(true)))
                 .andExpect(jsonPath("$.payload.assignments." + LocalDate.now() + ".assigned", is(true)));
@@ -230,9 +230,9 @@ class VideoflyerControllerTest extends AbstractSkdvinTest {
     @Test
     void testGetVideoflyer_NotFound() throws Exception {
         mockMvc.perform(get("/api/videoflyer/{id}", "999999999")
-                .header("Authorization", MockJwtDecoder.addHeader(READ_VIDEOFLYER))
-                .header("Accept-Language", "en-US")
-                .contentType(contentType))
+                        .header("Authorization", MockJwtDecoder.addHeader(READ_VIDEOFLYER))
+                        .header("Accept-Language", "en-US")
+                        .contentType(contentType))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.success", is(false)))
                 .andExpect(jsonPath("$.message", is("Videoflyer not found")));
@@ -241,7 +241,7 @@ class VideoflyerControllerTest extends AbstractSkdvinTest {
     @Test
     void testGetVideoflyer_Unauthorized() throws Exception {
         mockMvc.perform(get("/api/videoflyer/{id}", "999999999")
-                .contentType(contentType))
+                        .contentType(contentType))
                 .andExpect(status().isUnauthorized());
     }
 
@@ -255,9 +255,9 @@ class VideoflyerControllerTest extends AbstractSkdvinTest {
         String videoflyerJson = json(videoflyerDetailsDTO);
 
         mockMvc.perform(patch("/api/videoflyer/{id}/assign", videoflyerDetailsDTO.getId())
-                .header("Authorization", MockJwtDecoder.addHeader(UPDATE_VIDEOFLYER))
-                .contentType(contentType)
-                .content(videoflyerJson))
+                        .header("Authorization", MockJwtDecoder.addHeader(UPDATE_VIDEOFLYER))
+                        .contentType(contentType)
+                        .content(videoflyerJson))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success", is(true)));
     }
@@ -267,8 +267,8 @@ class VideoflyerControllerTest extends AbstractSkdvinTest {
         String videoflyerJson = json(ModelMockHelper.createVideoflyer());
 
         mockMvc.perform(patch("/api/videoflyer/{id}/assign", "99999999")
-                .contentType(contentType)
-                .content(videoflyerJson))
+                        .contentType(contentType)
+                        .content(videoflyerJson))
                 .andExpect(status().isUnauthorized());
     }
 
@@ -282,9 +282,9 @@ class VideoflyerControllerTest extends AbstractSkdvinTest {
         String videoflyerJson = json(videoflyerDetailsDTO);
 
         mockMvc.perform(patch("/api/videoflyer/{id}/assign", "99999999")
-                .header("Authorization", MockJwtDecoder.addHeader(UPDATE_VIDEOFLYER))
-                .contentType(contentType)
-                .content(videoflyerJson))
+                        .header("Authorization", MockJwtDecoder.addHeader(UPDATE_VIDEOFLYER))
+                        .contentType(contentType)
+                        .content(videoflyerJson))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.success", is(false)));
     }
@@ -297,10 +297,10 @@ class VideoflyerControllerTest extends AbstractSkdvinTest {
         String videoflyerJson = json(videoflyerDetailsDTO);
 
         mockMvc.perform(patch("/api/videoflyer/{id}/assign", videoflyerDetailsDTO.getId())
-                .header("Authorization", MockJwtDecoder.addHeader(UPDATE_VIDEOFLYER))
-                .header("Accept-Language", "en-US")
-                .contentType(contentType)
-                .content(videoflyerJson))
+                        .header("Authorization", MockJwtDecoder.addHeader(UPDATE_VIDEOFLYER))
+                        .header("Accept-Language", "en-US")
+                        .contentType(contentType)
+                        .content(videoflyerJson))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.success", is(false)))
                 .andExpect(jsonPath("$.message", is("Jumpday not found")));
@@ -318,18 +318,17 @@ class VideoflyerControllerTest extends AbstractSkdvinTest {
         String videoflyerJson = json(videoflyerDetailsDTO);
 
         mockMvc.perform(patch("/api/videoflyer/me/assign")
-                .header("Authorization", MockJwtDecoder.addHeader(VIDEOFLYER))
-                .contentType(contentType)
-                .content(videoflyerJson))
+                        .header("Authorization", MockJwtDecoder.addHeader(VIDEOFLYER))
+                        .contentType(contentType)
+                        .content(videoflyerJson))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success", is(true)));
     }
 
     @Test
     void testSelfAssignVideoflyer_READONLY() throws Exception {
-        CommonSettings commonSettings = new CommonSettings();
-        commonSettings.setSelfAssignmentMode(SelfAssignmentMode.READONLY);
-        when(settingsService.getCommonSettingsByLanguage(Locale.GERMAN.getLanguage())).thenReturn(commonSettings);
+        Settings settings = ModelMockHelper.createSettings(SelfAssignmentMode.READONLY);
+        when(settingsService.getSettings()).thenReturn(settings);
 
         Videoflyer videoflyer = videoflyerRepository.save(ModelMockHelper.createVideoflyer());
         videoflyer.setEmail(MockJwtDecoder.EXAMPLE_EMAIL);
@@ -341,10 +340,10 @@ class VideoflyerControllerTest extends AbstractSkdvinTest {
         String videoflyerJson = json(videoflyerDetailsDTO);
 
         mockMvc.perform(patch("/api/videoflyer/me/assign")
-                .header("Accept-Language", "en-EN")
-                .header("Authorization", MockJwtDecoder.addHeader(VIDEOFLYER))
-                .contentType(contentType)
-                .content(videoflyerJson))
+                        .header("Accept-Language", "en-EN")
+                        .header("Authorization", MockJwtDecoder.addHeader(VIDEOFLYER))
+                        .contentType(contentType)
+                        .content(videoflyerJson))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.success", is(false)))
                 .andExpect(jsonPath("$.message", is("Selfassignment is in read-only mode")));
@@ -355,8 +354,8 @@ class VideoflyerControllerTest extends AbstractSkdvinTest {
         String videoflyerJson = json(ModelMockHelper.createVideoflyer());
 
         mockMvc.perform(patch("/api/videoflyer/me/assign")
-                .contentType(contentType)
-                .content(videoflyerJson))
+                        .contentType(contentType)
+                        .content(videoflyerJson))
                 .andExpect(status().isUnauthorized());
     }
 
@@ -370,9 +369,9 @@ class VideoflyerControllerTest extends AbstractSkdvinTest {
         String videoflyerJson = json(videoflyerDetailsDTO);
 
         mockMvc.perform(patch("/api/videoflyer/me/assign")
-                .header("Authorization", MockJwtDecoder.addHeader(VIDEOFLYER))
-                .contentType(contentType)
-                .content(videoflyerJson))
+                        .header("Authorization", MockJwtDecoder.addHeader(VIDEOFLYER))
+                        .contentType(contentType)
+                        .content(videoflyerJson))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.success", is(false)));
     }
@@ -389,8 +388,8 @@ class VideoflyerControllerTest extends AbstractSkdvinTest {
         videoflyerService.assignVideoflyer(videoflyerDetails, false);
 
         mockMvc.perform(get("/api/videoflyer/me")
-                .header("Authorization", MockJwtDecoder.addHeader(VIDEOFLYER))
-                .contentType(contentType))
+                        .header("Authorization", MockJwtDecoder.addHeader(VIDEOFLYER))
+                        .contentType(contentType))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success", is(true)))
                 .andExpect(jsonPath("$.payload.assignments." + LocalDate.now() + ".assigned", is(true)));
@@ -399,9 +398,9 @@ class VideoflyerControllerTest extends AbstractSkdvinTest {
     @Test
     void testGetMeVideoflyer_NotFound() throws Exception {
         mockMvc.perform(get("/api/videoflyer/me")
-                .header("Authorization", MockJwtDecoder.addHeader(VIDEOFLYER))
-                .header("Accept-Language", "en-US")
-                .contentType(contentType))
+                        .header("Authorization", MockJwtDecoder.addHeader(VIDEOFLYER))
+                        .header("Accept-Language", "en-US")
+                        .contentType(contentType))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.success", is(false)))
                 .andExpect(jsonPath("$.message", is("Videoflyer not found")));
@@ -410,7 +409,7 @@ class VideoflyerControllerTest extends AbstractSkdvinTest {
     @Test
     void testGetMeVideoflyer_Unauthorized() throws Exception {
         mockMvc.perform(get("/api/videoflyer/me")
-                .contentType(contentType))
+                        .contentType(contentType))
                 .andExpect(status().isUnauthorized());
     }
 

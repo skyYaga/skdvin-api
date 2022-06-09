@@ -4,6 +4,7 @@ import in.skdv.skdvinbackend.AbstractSkdvinTest;
 import in.skdv.skdvinbackend.ModelMockHelper;
 import in.skdv.skdvinbackend.model.entity.Appointment;
 import in.skdv.skdvinbackend.model.entity.settings.CommonSettings;
+import in.skdv.skdvinbackend.model.entity.settings.LanguageSettings;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -25,7 +26,7 @@ class EmailTemplateTest extends AbstractSkdvinTest {
     @Autowired
     private TemplateEngine emailTemplateEngine;
     private final Appointment appointment = ModelMockHelper.createSingleAppointment();
-    private final CommonSettings settings = ModelMockHelper.createCommonSettings();
+    private final LanguageSettings languageSettings = ModelMockHelper.createLanguageSettings();
 
     @Test
     void testAppointmentVerificationMail_US() {
@@ -48,7 +49,7 @@ class EmailTemplateTest extends AbstractSkdvinTest {
                 "<span>Date: " + appointment.getDate().atZone(zoneId).format(dateFormatter) + " / 10:00</span><br/>\n" +
                 "<span>1 x Tandem</span><br/>\n" +
                 "<span>(1 x Picture or Video)</span><br/>\n" +
-                "<span>(0 x Picture and Video)</span><br/>\n" +
+                "<span>(0 x Picture and Video)</span><br />\n" +
                 "<span>(0 x Handcam)</span>\n" +
                 "<p>Your data:</p>\n" +
                 "<span>Max Mustermann</span><br/>\n" +
@@ -85,7 +86,44 @@ class EmailTemplateTest extends AbstractSkdvinTest {
                 "<span>Datum: " + appointment.getDate().atZone(zoneId).format(dateFormatter) + " / " + appointment.getDate().atZone(zoneId).format(timeFormatter) + "</span><br/>\n" +
                 "<span>1 x Tandem</span><br/>\n" +
                 "<span>(1 x Foto oder Video)</span><br/>\n" +
-                "<span>(0 x Foto und Video)</span><br/>\n" +
+                "<span>(0 x Foto und Video)</span><br />\n" +
+                "<span>(0 x Handcam)</span>\n" +
+                "<p>Deine Daten:</p>\n" +
+                "<span>Max Mustermann</span><br/>\n" +
+                "<span>E-Mail: max@example.com</span><br/>\n" +
+                "<span>Telefon: 0987654</span><br/>\n" +
+                "<span>PLZ / Wohnort: 12345 Foo City</span>\n" +
+                "<p>Springerdaten:</p>\n" +
+                "<ul>\n" +
+                "    <li>first0 last0 (01.01.1980)</li>\n" +
+                "</ul>\n" +
+                "<p>Dein Example DZ</p>\n" +
+                "</body>\n" +
+                "</html>", htmlMail);
+    }
+
+    @Test
+    void testAppointmentVerificationMail_DE_picAndVidDisabled() {
+        Context ctx = createContext(Locale.GERMANY, false);
+        ctx.setVariable("tokenurl", BASE_URL);
+        String htmlMail = emailTemplateEngine.process("html/appointment-verification", ctx);
+        assertEquals("<!DOCTYPE html>\n" +
+                "<html>\n" +
+                "<head>\n" +
+                "    \n" +
+                "    <meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\"/>\n" +
+                "</head>\n" +
+                "<body>\n" +
+                "<h1>Termin #0</h1>\n" +
+                "<p>Hallo Max!</p>\n" +
+                "<p>Bitte den Termin durch einen Klick auf folgenden Link bestätigen:</p>\n" +
+                "<a href=\"https://example.com\">https://example.com</a>\n" +
+                "<p>WICHTIG: Solltest Du deinen Termin nicht durch einen Klick auf den Link oben bestätigen, wird dieser nach 24 Stunden automatisch storniert!</p>\n" +
+                "<p>Zur Überprüfung hier deine Termindaten:</p>\n" +
+                "<span>Datum: " + appointment.getDate().atZone(zoneId).format(dateFormatter) + " / " + appointment.getDate().atZone(zoneId).format(timeFormatter) + "</span><br/>\n" +
+                "<span>1 x Tandem</span><br/>\n" +
+                "<span>(1 x Foto oder Video)</span><br/>\n" +
+                "\n" +
                 "<span>(0 x Handcam)</span>\n" +
                 "<p>Deine Daten:</p>\n" +
                 "<span>Max Mustermann</span><br/>\n" +
@@ -118,7 +156,7 @@ class EmailTemplateTest extends AbstractSkdvinTest {
                 "<span>Date: " + appointment.getDate().atZone(zoneId).format(dateFormatter) + " / 10:00</span><br/>\n" +
                 "<span>1 x Tandem</span><br/>\n" +
                 "<span>(1 x Picture or Video)</span><br/>\n" +
-                "<span>(0 x Picture and Video)</span><br/>\n" +
+                "<span>(0 x Picture and Video)</span><br />\n" +
                 "<span>(0 x Handcam)</span>\n" +
                 "<p>Your data:</p>\n" +
                 "<span>Max Mustermann</span><br/>\n" +
@@ -157,7 +195,47 @@ class EmailTemplateTest extends AbstractSkdvinTest {
                 "<span>Datum: " + appointment.getDate().atZone(zoneId).format(dateFormatter) + " / 10:00</span><br/>\n" +
                 "<span>1 x Tandem</span><br/>\n" +
                 "<span>(1 x Foto oder Video)</span><br/>\n" +
-                "<span>(0 x Foto und Video)</span><br/>\n" +
+                "<span>(0 x Foto und Video)</span><br />\n" +
+                "<span>(0 x Handcam)</span>\n" +
+                "<p>Deine Daten:</p>\n" +
+                "<span>Max Mustermann</span><br/>\n" +
+                "<span>E-Mail: max@example.com</span><br/>\n" +
+                "<span>Telefon: 0987654</span><br/>\n" +
+                "<span>PLZ / Wohnort: 12345 Foo City</span>\n" +
+                "<p>Springerdaten:</p>\n" +
+                "<ul>\n" +
+                "    <li>first0 last0 (01.01.1980)</li>\n" +
+                "</ul>\n" +
+                "<p>Melde dich zum gebuchten Zeitpunkt (10:00 Uhr) einfach vor Ort bei uns am Manifest.<br/>" +
+                "Die angegebenen Zeiten sind lediglich Richtzeiten, es besteht keine Garantie zur gebuchten Uhrzeit in die Luft zu kommen. " +
+                "Bitte nehme dir ein paar Stunden Zeit.<br/>" +
+                "Bringe bitte bequeme Sportkleidung mit und achte darauf, " +
+                "dass wir dich am Sprungtag unter deiner angegebenen Telefonnummer erreichen können.<br/>" +
+                "Falls Du noch Fragen hast oder deinen Termin nicht wahrnehmen kannst, sende bitte eine Mail an dz@example.com " +
+                "oder melde dich telefonisch unter 015112345678 oder bei Sprungbetrieb unter 0987654321.</p>\n" +
+                "<p>Dein Example DZ</p>\n" +
+                "</body>\n" +
+                "</html>", htmlMail);
+    }
+
+    @Test
+    void testAppointmentConfirmationMail_DE_picAndVidDisabled() {
+        Context ctx = createContext(Locale.GERMANY, false);
+        String htmlMail = emailTemplateEngine.process("html/appointment-confirmation", ctx);
+        assertEquals("<!DOCTYPE html>\n" +
+                "<html>\n" +
+                "<head>\n" +
+                "    \n" +
+                "    <meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\"/>\n" +
+                "</head>\n" +
+                "<body>\n" +
+                "<h1>Termin #0</h1>\n" +
+                "<p>Hallo Max!</p>\n" +
+                "<p>Vielen Dank für deine Reservierung. Nachfolgend alle Details:</p>\n" +
+                "<span>Datum: " + appointment.getDate().atZone(zoneId).format(dateFormatter) + " / 10:00</span><br/>\n" +
+                "<span>1 x Tandem</span><br/>\n" +
+                "<span>(1 x Foto oder Video)</span><br/>\n" +
+                "\n" +
                 "<span>(0 x Handcam)</span>\n" +
                 "<p>Deine Daten:</p>\n" +
                 "<span>Max Mustermann</span><br/>\n" +
@@ -199,7 +277,7 @@ class EmailTemplateTest extends AbstractSkdvinTest {
                 "<span>Date: " + appointment.getDate().atZone(zoneId).format(dateFormatter) + " / 10:00</span><br/>\n" +
                 "<span>1 x Tandem</span><br/>\n" +
                 "<span>(1 x Picture or Video)</span><br/>\n" +
-                "<span>(0 x Picture and Video)</span><br/>\n" +
+                "<span>(0 x Picture and Video)</span><br />\n" +
                 "<span>(0 x Handcam)</span>\n" +
                 "<p>Your data:</p>\n" +
                 "<span>Max Mustermann</span><br/>\n" +
@@ -234,7 +312,42 @@ class EmailTemplateTest extends AbstractSkdvinTest {
                 "<span>Datum: " + appointment.getDate().atZone(zoneId).format(dateFormatter) + " / " + appointment.getDate().atZone(zoneId).format(timeFormatter) + "</span><br/>\n" +
                 "<span>1 x Tandem</span><br/>\n" +
                 "<span>(1 x Foto oder Video)</span><br/>\n" +
-                "<span>(0 x Foto und Video)</span><br/>\n" +
+                "<span>(0 x Foto und Video)</span><br />\n" +
+                "<span>(0 x Handcam)</span>\n" +
+                "<p>Deine Daten:</p>\n" +
+                "<span>Max Mustermann</span><br/>\n" +
+                "<span>E-Mail: max@example.com</span><br/>\n" +
+                "<span>Telefon: 0987654</span><br/>\n" +
+                "<span>PLZ / Wohnort: 12345 Foo City</span>\n" +
+                "<p>Springerdaten:</p>\n" +
+                "<ul>\n" +
+                "    <li>first0 last0 (01.01.1980)</li>\n" +
+                "</ul>\n" +
+                "<p>Dein Example DZ</p>\n" +
+                "</body>\n" +
+                "</html>", htmlMail);
+    }
+
+    @Test
+    void testAppointmentUnconfirmedCancellationMail_DE_picAndVidDisabled() {
+        Context ctx = createContext(Locale.GERMANY, false);
+        String htmlMail = emailTemplateEngine.process("html/appointment-unconfirmed-cancellation", ctx);
+        assertEquals("<!DOCTYPE html>\n" +
+                "<html>\n" +
+                "<head>\n" +
+                "    \n" +
+                "    <meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\"/>\n" +
+                "</head>\n" +
+                "<body>\n" +
+                "<h1><span>STORNIERUNG</span> <span>Termin #0</span></h1>\n" +
+                "<p>Hallo Max!</p>\n" +
+                "<p>Da Du deinen Termin nicht bestätigt hast, wurde dieser soeben automatisch storniert.<br/>" +
+                "Wenn Du einfach vergessen hast diesen zu bestätigen, kannst Du auf " + BASE_URL + " einen neuen Termin buchen.<br/><br/>" +
+                "Folgender Termin wurde gelöscht:</p>\n" +
+                "<span>Datum: " + appointment.getDate().atZone(zoneId).format(dateFormatter) + " / " + appointment.getDate().atZone(zoneId).format(timeFormatter) + "</span><br/>\n" +
+                "<span>1 x Tandem</span><br/>\n" +
+                "<span>(1 x Foto oder Video)</span><br/>\n" +
+                "\n" +
                 "<span>(0 x Handcam)</span>\n" +
                 "<p>Deine Daten:</p>\n" +
                 "<span>Max Mustermann</span><br/>\n" +
@@ -267,7 +380,7 @@ class EmailTemplateTest extends AbstractSkdvinTest {
                 "<span>Date: " + appointment.getDate().atZone(zoneId).format(dateFormatter) + " / 10:00</span><br/>\n" +
                 "<span>1 x Tandem</span><br/>\n" +
                 "<span>(1 x Picture or Video)</span><br/>\n" +
-                "<span>(0 x Picture and Video)</span><br/>\n" +
+                "<span>(0 x Picture and Video)</span><br />\n" +
                 "<span>(0 x Handcam)</span>\n" +
                 "<p>Your data:</p>\n" +
                 "<span>Max Mustermann</span><br/>\n" +
@@ -306,7 +419,47 @@ class EmailTemplateTest extends AbstractSkdvinTest {
                 "<span>Datum: " + appointment.getDate().atZone(zoneId).format(dateFormatter) + " / 10:00</span><br/>\n" +
                 "<span>1 x Tandem</span><br/>\n" +
                 "<span>(1 x Foto oder Video)</span><br/>\n" +
-                "<span>(0 x Foto und Video)</span><br/>\n" +
+                "<span>(0 x Foto und Video)</span><br />\n" +
+                "<span>(0 x Handcam)</span>\n" +
+                "<p>Deine Daten:</p>\n" +
+                "<span>Max Mustermann</span><br/>\n" +
+                "<span>E-Mail: max@example.com</span><br/>\n" +
+                "<span>Telefon: 0987654</span><br/>\n" +
+                "<span>PLZ / Wohnort: 12345 Foo City</span>\n" +
+                "<p>Springerdaten:</p>\n" +
+                "<ul>\n" +
+                "    <li>first0 last0 (01.01.1980)</li>\n" +
+                "</ul>\n" +
+                "<p>Melde dich zum gebuchten Zeitpunkt (10:00 Uhr) einfach vor Ort bei uns am Manifest.<br/>" +
+                "Die angegebenen Zeiten sind lediglich Richtzeiten, es besteht keine Garantie zur gebuchten Uhrzeit in die Luft zu kommen. " +
+                "Bitte nehme dir ein paar Stunden Zeit.<br/>" +
+                "Bringe bitte bequeme Sportkleidung mit und achte darauf, " +
+                "dass wir dich am Sprungtag unter deiner angegebenen Telefonnummer erreichen können.<br/>" +
+                "Falls Du noch Fragen hast oder deinen Termin nicht wahrnehmen kannst, sende bitte eine Mail an dz@example.com " +
+                "oder melde dich telefonisch unter 015112345678 oder bei Sprungbetrieb unter 0987654321.</p>\n" +
+                "<p>Dein Example DZ</p>\n" +
+                "</body>\n" +
+                "</html>", htmlMail);
+    }
+
+    @Test
+    void testAppointmentUpdatedMail_DE_picAndVidDisabled() {
+        Context ctx = createContext(Locale.GERMANY, false);
+        String htmlMail = emailTemplateEngine.process("html/appointment-updated", ctx);
+        assertEquals("<!DOCTYPE html>\n" +
+                "<html>\n" +
+                "<head>\n" +
+                "    \n" +
+                "    <meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\"/>\n" +
+                "</head>\n" +
+                "<body>\n" +
+                "<h1>Termin #0</h1>\n" +
+                "<p>Hallo Max!</p>\n" +
+                "<p>Deine Buchung wurde aktualisiert. Nachfolgend alle Details:</p>\n" +
+                "<span>Datum: " + appointment.getDate().atZone(zoneId).format(dateFormatter) + " / 10:00</span><br/>\n" +
+                "<span>1 x Tandem</span><br/>\n" +
+                "<span>(1 x Foto oder Video)</span><br/>\n" +
+                "\n" +
                 "<span>(0 x Handcam)</span>\n" +
                 "<p>Deine Daten:</p>\n" +
                 "<span>Max Mustermann</span><br/>\n" +
@@ -346,7 +499,7 @@ class EmailTemplateTest extends AbstractSkdvinTest {
                 "<span>Date: " + appointment.getDate().atZone(zoneId).format(dateFormatter) + " / 10:00</span><br/>\n" +
                 "<span>1 x Tandem</span><br/>\n" +
                 "<span>(1 x Picture or Video)</span><br/>\n" +
-                "<span>(0 x Picture and Video)</span><br/>\n" +
+                "<span>(0 x Picture and Video)</span><br />\n" +
                 "<span>(0 x Handcam)</span>\n" +
                 "<p>Your data:</p>\n" +
                 "<span>Max Mustermann</span><br/>\n" +
@@ -379,7 +532,40 @@ class EmailTemplateTest extends AbstractSkdvinTest {
                 "<span>Datum: " + appointment.getDate().atZone(zoneId).format(dateFormatter) + " / 10:00</span><br/>\n" +
                 "<span>1 x Tandem</span><br/>\n" +
                 "<span>(1 x Foto oder Video)</span><br/>\n" +
-                "<span>(0 x Foto und Video)</span><br/>\n" +
+                "<span>(0 x Foto und Video)</span><br />\n" +
+                "<span>(0 x Handcam)</span>\n" +
+                "<p>Deine Daten:</p>\n" +
+                "<span>Max Mustermann</span><br/>\n" +
+                "<span>E-Mail: max@example.com</span><br/>\n" +
+                "<span>Telefon: 0987654</span><br/>\n" +
+                "<span>PLZ / Wohnort: 12345 Foo City</span>\n" +
+                "<p>Springerdaten:</p>\n" +
+                "<ul>\n" +
+                "    <li>first0 last0 (01.01.1980)</li>\n" +
+                "</ul>\n" +
+                "<p>Dein Example DZ</p>\n" +
+                "</body>\n" +
+                "</html>", htmlMail);
+    }
+
+    @Test
+    void testAppointmentDeletedMail_DE_picAndVidDisabled() {
+        Context ctx = createContext(Locale.GERMANY, false);
+        String htmlMail = emailTemplateEngine.process("html/appointment-deleted", ctx);
+        assertEquals("<!DOCTYPE html>\n" +
+                "<html>\n" +
+                "<head>\n" +
+                "    \n" +
+                "    <meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\"/>\n" +
+                "</head>\n" +
+                "<body>\n" +
+                "<h1>Termin #0</h1>\n" +
+                "<p>Hallo Max!</p>\n" +
+                "<p>Dein Termin wurde gelöscht. Nachfolgend die Details des gelöschten Termins:</p>\n" +
+                "<span>Datum: " + appointment.getDate().atZone(zoneId).format(dateFormatter) + " / 10:00</span><br/>\n" +
+                "<span>1 x Tandem</span><br/>\n" +
+                "<span>(1 x Foto oder Video)</span><br/>\n" +
+                "\n" +
                 "<span>(0 x Handcam)</span>\n" +
                 "<p>Deine Daten:</p>\n" +
                 "<span>Max Mustermann</span><br/>\n" +
@@ -419,7 +605,7 @@ class EmailTemplateTest extends AbstractSkdvinTest {
                 "<span>Date: " + appointment.getDate().atZone(zoneId).format(dateFormatter) + " / 10:00</span><br/>\n" +
                 "<span>1 x Tandem</span><br/>\n" +
                 "<span>(1 x Picture or Video)</span><br/>\n" +
-                "<span>(0 x Picture and Video)</span><br/>\n" +
+                "<span>(0 x Picture and Video)</span><br />\n" +
                 "<span>(0 x Handcam)</span>\n" +
                 "<p>Your data:</p>\n" +
                 "<span>Max Mustermann</span><br/>\n" +
@@ -460,7 +646,7 @@ class EmailTemplateTest extends AbstractSkdvinTest {
                 "<span>Datum: " + appointment.getDate().atZone(zoneId).format(dateFormatter) + " / 10:00</span><br/>\n" +
                 "<span>1 x Tandem</span><br/>\n" +
                 "<span>(1 x Foto oder Video)</span><br/>\n" +
-                "<span>(0 x Foto und Video)</span><br/>\n" +
+                "<span>(0 x Foto und Video)</span><br />\n" +
                 "<span>(0 x Handcam)</span>\n" +
                 "<p>Deine Daten:</p>\n" +
                 "<span>Max Mustermann</span><br/>\n" +
@@ -476,12 +662,61 @@ class EmailTemplateTest extends AbstractSkdvinTest {
                 "</html>", htmlMail);
     }
 
-    private Context createContext(Locale locale) {
+    @Test
+    void testAppointmentReminderMail_DE_picAndVidDisabled() {
+        Context ctx = createContext(Locale.GERMANY, false);
+        String htmlMail = emailTemplateEngine.process("html/appointment-reminder", ctx);
+        assertEquals("<!DOCTYPE html>\n" +
+                "<html>\n" +
+                "<head>\n" +
+                "    \n" +
+                "    <meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\"/>\n" +
+                "</head>\n" +
+                "<body>\n" +
+                "<h1>Termin #0</h1>\n" +
+                "<p>Hallo Max!</p>\n" +
+                "<p>Bald ist es soweit: Dein Tandemsprung bei Example DZ.</p>\n" +
+                "<p><p>This is a additional hint</p><ul><li>Hint 1</li><li>Hint 2</li></ul></p>\n" +
+                "<p>Melde dich zum gebuchten Zeitpunkt (10:00 Uhr) einfach vor Ort bei uns am Manifest.<br/>" +
+                "Die angegebenen Zeiten sind lediglich Richtzeiten, es besteht keine Garantie zur gebuchten Uhrzeit in die Luft zu kommen. " +
+                "Bitte nehme dir ein paar Stunden Zeit.<br/>" +
+                "Bringe bitte bequeme Sportkleidung mit und achte darauf, " +
+                "dass wir dich am Sprungtag unter deiner angegebenen Telefonnummer erreichen können.<br/>" +
+                "Falls Du noch Fragen hast oder deinen Termin nicht wahrnehmen kannst, sende bitte eine Mail an dz@example.com " +
+                "oder melde dich telefonisch unter 015112345678 oder bei Sprungbetrieb unter 0987654321.</p>\n" +
+                "<span>Datum: " + appointment.getDate().atZone(zoneId).format(dateFormatter) + " / 10:00</span><br/>\n" +
+                "<span>1 x Tandem</span><br/>\n" +
+                "<span>(1 x Foto oder Video)</span><br/>\n" +
+                "\n" +
+                "<span>(0 x Handcam)</span>\n" +
+                "<p>Deine Daten:</p>\n" +
+                "<span>Max Mustermann</span><br/>\n" +
+                "<span>E-Mail: max@example.com</span><br/>\n" +
+                "<span>Telefon: 0987654</span><br/>\n" +
+                "<span>PLZ / Wohnort: 12345 Foo City</span>\n" +
+                "<p>Springerdaten:</p>\n" +
+                "<ul>\n" +
+                "    <li>first0 last0 (01.01.1980)</li>\n" +
+                "</ul>\n" +
+                "<p>Dein Example DZ</p>\n" +
+                "</body>\n" +
+                "</html>", htmlMail);
+    }
+
+    private Context createContext(Locale locale, boolean picAndVidEnabled) {
+        CommonSettings commonSettings = ModelMockHelper.createSettings().getCommonSettings();
+        commonSettings.setPicAndVidEnabled(picAndVidEnabled);
+
         Context ctx = new Context(locale);
         ctx.setVariable("appointment", appointment);
-        ctx.setVariable("settings", settings);
+        ctx.setVariable("languageSettings", languageSettings);
+        ctx.setVariable("commonSettings", commonSettings);
         ctx.setVariable("baseurl", BASE_URL);
         ctx.setVariable("zonedAppointmentDate", appointment.getDate().atZone(zoneId));
         return ctx;
+    }
+
+    private Context createContext(Locale locale) {
+        return createContext(locale, true);
     }
 }

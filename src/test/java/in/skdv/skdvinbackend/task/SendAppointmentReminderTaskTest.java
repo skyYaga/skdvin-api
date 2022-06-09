@@ -4,6 +4,7 @@ import in.skdv.skdvinbackend.AbstractSkdvinTest;
 import in.skdv.skdvinbackend.ModelMockHelper;
 import in.skdv.skdvinbackend.model.entity.Appointment;
 import in.skdv.skdvinbackend.model.entity.AppointmentState;
+import in.skdv.skdvinbackend.model.entity.settings.Settings;
 import in.skdv.skdvinbackend.repository.JumpdayRepository;
 import in.skdv.skdvinbackend.service.IAppointmentService;
 import in.skdv.skdvinbackend.service.IEmailService;
@@ -11,7 +12,6 @@ import in.skdv.skdvinbackend.service.ISettingsService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -59,8 +59,8 @@ class SendAppointmentReminderTaskTest extends AbstractSkdvinTest {
         ReflectionTestUtils.setField(emailService, "baseurl", BASE_URL);
         doReturn(new JavaMailSenderImpl().createMimeMessage()).when(mailSender).createMimeMessage();
 
-        when(settingsService.getCommonSettingsByLanguage(Mockito.anyString())).
-                thenReturn(ModelMockHelper.createCommonSettings());
+        Settings settings = ModelMockHelper.createSettings();
+        when(settingsService.getSettings()).thenReturn(settings);
     }
 
     @Test

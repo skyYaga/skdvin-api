@@ -1,24 +1,13 @@
 package in.skdv.skdvinbackend.model.entity.settings;
 
+import lombok.Builder;
 import lombok.Data;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-
 @Data
+@Builder
 public class CommonSettings {
 
-    private Dropzone dropzone;
-    private List<Faq> faq = new ArrayList<>();
-    private String homepageHint = "";
-    private String homepageHintTitle = "";
-    private String bccMail = "";
-    private String additionalReminderHint = "";
-    private SelfAssignmentMode selfAssignmentMode = SelfAssignmentMode.WRITE_DELETE;
+    private SelfAssignmentMode selfAssignmentMode;
+    private boolean picAndVidEnabled;
 
-
-    public List<Faq> getFaq() {
-        return faq.stream().sorted(Comparator.comparing(Faq::getId)).toList();
-    }
 }

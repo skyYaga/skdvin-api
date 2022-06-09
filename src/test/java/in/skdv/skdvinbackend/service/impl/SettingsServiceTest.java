@@ -2,8 +2,9 @@ package in.skdv.skdvinbackend.service.impl;
 
 import in.skdv.skdvinbackend.AbstractSkdvinTest;
 import in.skdv.skdvinbackend.ModelMockHelper;
+import in.skdv.skdvinbackend.model.domain.PublicSettings;
 import in.skdv.skdvinbackend.model.entity.settings.AdminSettings;
-import in.skdv.skdvinbackend.model.entity.settings.CommonSettings;
+import in.skdv.skdvinbackend.model.entity.settings.LanguageSettings;
 import in.skdv.skdvinbackend.model.entity.settings.Settings;
 import in.skdv.skdvinbackend.repository.SettingsRepository;
 import in.skdv.skdvinbackend.service.ISettingsService;
@@ -40,7 +41,7 @@ class SettingsServiceTest extends AbstractSkdvinTest {
 
         assertNotNull(saved.getId());
         assertEquals(5, saved.getAdminSettings().getTandemCount());
-        assertEquals("Example DZ", saved.getCommonSettings().get(Locale.GERMAN.getLanguage()).getDropzone().getName());
+        assertEquals("Example DZ", saved.getLanguageSettings().get(Locale.GERMAN.getLanguage()).getDropzone().getName());
     }
 
     @Test
@@ -54,13 +55,13 @@ class SettingsServiceTest extends AbstractSkdvinTest {
     @Test
     void testAddSettings_secondLocale() {
         Settings settings = settingsService.saveSettings(ModelMockHelper.createSettings());
-        settings.getCommonSettings().put(Locale.ENGLISH.getLanguage(), ModelMockHelper.createCommonSettings());
+        settings.getLanguageSettings().put(Locale.ENGLISH.getLanguage(), ModelMockHelper.createLanguageSettings());
         settingsService.saveSettings(settings);
 
         List<Settings> savedSettings = settingsRepository.findAll();
 
         assertEquals(1, savedSettings.size());
-        assertEquals(2, savedSettings.get(0).getCommonSettings().size());
+        assertEquals(2, savedSettings.get(0).getLanguageSettings().size());
     }
 
     @Test
@@ -91,13 +92,13 @@ class SettingsServiceTest extends AbstractSkdvinTest {
     }
 
     @Test
-    void testGetCommonSettings() {
+    void testGetLanguageSettings() {
         Settings settings = saveExampleSettings();
 
-        Map<String, CommonSettings> commonSettings = settingsService.getCommonSettings();
+        Map<String, LanguageSettings> commonSettings = settingsService.getLanguageSettings();
 
         assertEquals(1, commonSettings.size());
-        assertEquals(settings.getCommonSettings().get(Locale.GERMAN.getLanguage()).getDropzone().getPriceListUrl(),
+        assertEquals(settings.getLanguageSettings().get(Locale.GERMAN.getLanguage()).getDropzone().getPriceListUrl(),
                 commonSettings.get(Locale.GERMAN.getLanguage()).getDropzone().getPriceListUrl());
     }
 
@@ -110,29 +111,31 @@ class SettingsServiceTest extends AbstractSkdvinTest {
     }
 
     @Test
-    void testGetCommonSettings_Empty() {
-        Map<String, CommonSettings> commonSettings = settingsService.getCommonSettings();
+    void testGetLanguageSettings_Empty() {
+        Map<String, LanguageSettings> commonSettings = settingsService.getLanguageSettings();
 
         assertEquals(0, commonSettings.size());
     }
 
     @Test
-    void testGetCommonSettingsByLocale() {
+    void testGetPublicSettingsByLanguage() {
         Settings settings = saveExampleSettings();
 
-        CommonSettings commonSettings = settingsService.getCommonSettingsByLanguage(Locale.GERMAN.getLanguage());
+        PublicSettings publicSettings = settingsService.getPublicSettingsByLanguage(Locale.GERMAN.getLanguage());
+        LanguageSettings languageSettings = publicSettings.getLanguageSettings();
 
-        assertEquals(settings.getCommonSettings().get(Locale.GERMAN.getLanguage()).getDropzone().getPriceListUrl(), commonSettings.getDropzone().getPriceListUrl());
+        assertEquals(settings.getLanguageSettings().get(Locale.GERMAN.getLanguage()).getDropzone().getPriceListUrl(), languageSettings.getDropzone().getPriceListUrl());
     }
 
     @Test
-    void testGetCommonSettingsByLocale_DefaultIfNotFound() {
+    void testGetPublicSettingsByLanguage_DefaultIfNotFound() {
         Settings settings = saveExampleSettings();
 
-        CommonSettings commonSettings = settingsService.getCommonSettingsByLanguage(Locale.ENGLISH.getLanguage());
+        PublicSettings publicSettings = settingsService.getPublicSettingsByLanguage(Locale.ENGLISH.getLanguage());
+        LanguageSettings languageSettings = publicSettings.getLanguageSettings();
 
-        assertNotNull(commonSettings);
-        assertEquals(settings.getCommonSettings().get(Locale.GERMAN.getLanguage()).getDropzone().getPriceListUrl(), commonSettings.getDropzone().getPriceListUrl());
+        assertNotNull(languageSettings);
+        assertEquals(settings.getLanguageSettings().get(Locale.GERMAN.getLanguage()).getDropzone().getPriceListUrl(), languageSettings.getDropzone().getPriceListUrl());
     }
 
     private Settings saveExampleSettings() {
