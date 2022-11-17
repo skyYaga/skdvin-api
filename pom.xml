@@ -34,7 +34,7 @@
         <modelmapper.version>3.1.0</modelmapper.version>
         <mongock.version>5.1.7</mongock.version>
         <okhttp3.version>4.9.1</okhttp3.version>
-        <sentry.version>6.7.0</sentry.version>
+        <sentry.version>6.7.1</sentry.version>
         <springdoc.version>1.6.12</springdoc.version>
         <testcontainers.version>1.17.5</testcontainers.version>
         <jacoco.version>0.8.8</jacoco.version>
