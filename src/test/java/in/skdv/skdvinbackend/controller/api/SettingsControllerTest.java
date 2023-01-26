@@ -56,7 +56,7 @@ class SettingsControllerTest extends AbstractSkdvinTest {
     void testCreateSettings() throws Exception {
         String settingsJson = json(ModelMockHelper.createSettingsDto());
 
-        mockMvc.perform(post("/api/settings/")
+        mockMvc.perform(post("/api/settings")
                 .header("Authorization", MockJwtDecoder.addHeader(CREATE_SETTINGS))
                 .contentType(contentType)
                 .content(settingsJson))
@@ -71,7 +71,7 @@ class SettingsControllerTest extends AbstractSkdvinTest {
     void testCreateSettings_Unauthorized() throws Exception {
         String settingsJson = json(ModelMockHelper.createSettings());
 
-        mockMvc.perform(post("/api/settings/")
+        mockMvc.perform(post("/api/settings")
                 .contentType(contentType)
                 .content(settingsJson))
                 .andExpect(status().isUnauthorized());
@@ -125,7 +125,7 @@ class SettingsControllerTest extends AbstractSkdvinTest {
     void testGetSettings() throws Exception {
         settingsRepository.save(ModelMockHelper.createSettings());
 
-        mockMvc.perform(get("/api/settings/")
+        mockMvc.perform(get("/api/settings")
                 .header("Authorization", MockJwtDecoder.addHeader(READ_SETTINGS))
                 .contentType(contentType))
                 .andExpect(status().isOk())
@@ -138,7 +138,7 @@ class SettingsControllerTest extends AbstractSkdvinTest {
     void testGetSettings_Unauthorized() throws Exception {
         String settingsJson = json(ModelMockHelper.createSettings());
 
-        mockMvc.perform(get("/api/settings/")
+        mockMvc.perform(get("/api/settings")
                 .contentType(contentType)
                 .content(settingsJson))
                 .andExpect(status().isUnauthorized());
@@ -152,7 +152,7 @@ class SettingsControllerTest extends AbstractSkdvinTest {
         settings.getLanguageSettings().put(Locale.ENGLISH.getLanguage(), languageSettingsEN);
         settingsRepository.save(settings);
 
-        mockMvc.perform(get("/api/settings/common/")
+        mockMvc.perform(get("/api/settings/common")
                 .header("Accept-Language", "en-US")
                 .contentType(contentType))
                 .andExpect(status().isOk())
@@ -166,7 +166,7 @@ class SettingsControllerTest extends AbstractSkdvinTest {
         Settings settings = ModelMockHelper.createSettings();
         settingsRepository.save(settings);
 
-        mockMvc.perform(get("/api/settings/common/")
+        mockMvc.perform(get("/api/settings/common")
                 .header("Accept-Language", "de")
                 .contentType(contentType))
                 .andExpect(status().isOk())

@@ -2,8 +2,8 @@ package in.skdv.skdvinbackend.service;
 
 import in.skdv.skdvinbackend.model.entity.Appointment;
 import in.skdv.skdvinbackend.model.entity.EmailType;
+import jakarta.mail.MessagingException;
 
-import javax.mail.MessagingException;
 
 public interface IEmailService {
 

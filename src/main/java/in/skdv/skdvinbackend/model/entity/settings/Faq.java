@@ -1,6 +1,6 @@
 package in.skdv.skdvinbackend.model.entity.settings;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 public class Faq {
 

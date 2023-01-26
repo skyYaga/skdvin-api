@@ -86,7 +86,7 @@ class VideoflyerControllerTest extends AbstractSkdvinTest {
         videoflyerDto.setFavorite(true);
         String videoflyerJson = json(videoflyerDto);
 
-        mockMvc.perform(post("/api/videoflyer/")
+        mockMvc.perform(post("/api/videoflyer")
                         .header("Authorization", MockJwtDecoder.addHeader(CREATE_VIDEOFLYER))
                         .contentType(contentType)
                         .content(videoflyerJson))

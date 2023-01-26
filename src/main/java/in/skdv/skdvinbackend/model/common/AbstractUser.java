@@ -2,10 +2,10 @@ package in.skdv.skdvinbackend.model.common;
 
 import in.skdv.skdvinbackend.model.entity.Role;
 import in.skdv.skdvinbackend.util.ValidEmail;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
 import java.util.List;
 
 @Data

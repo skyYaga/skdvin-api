@@ -42,7 +42,7 @@ class EmailTemplateTest extends AbstractSkdvinTest {
                 "<body>\n" +
                 "<h1>Appointment #0</h1>\n" +
                 "<p>Hello Max!</p>\n" +
-                "<p>Please click on the Link below to confirm your appointment.</p>\n" +
+                "<p>Please click on the Link below to confirm your appointment:</p>\n" +
                 "<a href=\"https://example.com\">https://example.com</a>\n" +
                 "<p>IMPORTANT: If you do not confirm your appointment by clicking on the link above, it will be cancelled automatically after 24 hours!</p>\n" +
                 "<p>Your Appointment data:</p>\n" +

@@ -81,7 +81,7 @@ class JumpdayControllerTest extends AbstractSkdvinTest {
     void testCreateJumpday() throws Exception {
         String jumpdayJson = json(ModelMockHelper.createJumpdayDto());
 
-        mockMvc.perform(post("/api/jumpday/")
+        mockMvc.perform(post("/api/jumpday")
                 .header("Authorization", MockJwtDecoder.addHeader(CREATE_JUMPDAYS))
                 .contentType(contentType)
                 .content(jumpdayJson))
@@ -156,7 +156,7 @@ class JumpdayControllerTest extends AbstractSkdvinTest {
         Jumpday result = jumpdayService.saveJumpday(ModelMockHelper.createJumpday());
         Jumpday result2 = jumpdayService.saveJumpday(ModelMockHelper.createJumpday(LocalDate.now().plusDays(1)));
 
-        mockMvc.perform(get("/api/jumpday/")
+        mockMvc.perform(get("/api/jumpday")
                 .header("Authorization", MockJwtDecoder.addHeader(READ_JUMPDAYS)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success", is(true)))
@@ -187,7 +187,7 @@ class JumpdayControllerTest extends AbstractSkdvinTest {
     void testGetAll_OneResult() throws Exception {
         Jumpday jumpday = jumpdayService.saveJumpday(ModelMockHelper.createJumpday());
 
-        mockMvc.perform(get("/api/jumpday/")
+        mockMvc.perform(get("/api/jumpday")
                 .header("Authorization", MockJwtDecoder.addHeader(READ_JUMPDAYS)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success", is(true)))
@@ -205,7 +205,7 @@ class JumpdayControllerTest extends AbstractSkdvinTest {
 
     @Test
     void testGetAll_NoResult() throws Exception {
-        mockMvc.perform(get("/api/jumpday/")
+        mockMvc.perform(get("/api/jumpday")
                 .header("Authorization", MockJwtDecoder.addHeader(READ_JUMPDAYS)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success", is(true)))
