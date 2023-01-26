@@ -1,12 +1,12 @@
 package in.skdv.skdvinbackend.model.common;
 
 import in.skdv.skdvinbackend.model.entity.Slot;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import org.springframework.data.mongodb.core.index.IndexDirection;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.List;

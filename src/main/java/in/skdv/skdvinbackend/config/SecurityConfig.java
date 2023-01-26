@@ -6,23 +6,23 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
-import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator;
 import org.springframework.security.oauth2.core.OAuth2TokenValidator;
 import org.springframework.security.oauth2.jwt.*;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
+import org.springframework.security.web.SecurityFilterChain;
 
 import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpMethod.POST;
 
 @Configuration
 @EnableWebSecurity
-@EnableGlobalMethodSecurity(prePostEnabled = true)
-public class SecurityConfig extends WebSecurityConfigurerAdapter {
+@EnableMethodSecurity
+public class SecurityConfig {
 
     @Value("${auth0.audience}")
     private String audience;
@@ -30,22 +30,23 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Value("${spring.security.oauth2.resourceserver.jwt.issuer-uri}")
     private String issuer;
 
-    @Override
-    public void configure(HttpSecurity http) throws Exception {
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.cors().and()
-            .authorizeRequests()
-                .mvcMatchers(POST, "/api/appointment").permitAll()
-                .mvcMatchers(GET, "/api/appointment/slots").permitAll()
-                .mvcMatchers(GET, "/api/appointment/{appointmentId}/confirm/{token}").permitAll()
-                .mvcMatchers(GET, "/api/settings/common").permitAll()
-                .mvcMatchers(GET, "/api/settings/waiver").permitAll()
-                .mvcMatchers(POST, "/api/waivers").permitAll()
-                .mvcMatchers("/docs/**").permitAll()
-            .anyRequest().authenticated().and()
-            .csrf().disable()
-            .oauth2ResourceServer()
+                .authorizeHttpRequests(authz -> authz
+                        .requestMatchers(POST, "/api/appointment").permitAll()
+                        .requestMatchers(GET, "/api/appointment/slots").permitAll()
+                        .requestMatchers(GET, "/api/appointment/{appointmentId}/confirm/{token}").permitAll()
+                        .requestMatchers(GET, "/api/settings/common").permitAll()
+                        .requestMatchers(GET, "/api/settings/waiver").permitAll()
+                        .requestMatchers(POST, "/api/waivers").permitAll()
+                        .requestMatchers("/docs/**").permitAll()
+                        .anyRequest().authenticated().and())
+                .csrf().disable()
+                .oauth2ResourceServer()
                 .jwt()
-                    .jwtAuthenticationConverter(getJwtAuthenticationConverter());
+                .jwtAuthenticationConverter(getJwtAuthenticationConverter());
+        return http.build();
     }
 
     private Converter<Jwt, ? extends AbstractAuthenticationToken> getJwtAuthenticationConverter() {

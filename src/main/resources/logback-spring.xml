@@ -6,14 +6,15 @@
 
     <!-- Sentry appender if not on localdev -->
     <springProfile name="!localdev">
-        <appender name="SENTRY" class="io.sentry.logback.SentryAppender" />
+        <appender name="SENTRY" class="io.sentry.logback.SentryAppender"/>
+        <root level="INFO">
+            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="SENTRY"/>
+        </root>
     </springProfile>
 
     <root level="INFO">
         <appender-ref ref="CONSOLE"/>
-        <springProfile name="!localdev">
-            <appender-ref ref="SENTRY"/>
-        </springProfile>
     </root>
 
 </configuration>

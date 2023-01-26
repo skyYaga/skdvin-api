@@ -2,10 +2,10 @@ package in.skdv.skdvinbackend.model.common;
 
 import in.skdv.skdvinbackend.model.entity.AppointmentState;
 import in.skdv.skdvinbackend.model.entity.Customer;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
 import java.time.Instant;
 import java.time.LocalDateTime;
 

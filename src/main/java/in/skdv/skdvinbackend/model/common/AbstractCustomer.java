@@ -1,8 +1,8 @@
 package in.skdv.skdvinbackend.model.common;
 
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
-import javax.validation.constraints.NotNull;
 
 @Data
 public class AbstractCustomer {

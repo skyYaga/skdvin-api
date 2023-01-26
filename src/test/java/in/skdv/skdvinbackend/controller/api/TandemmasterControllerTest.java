@@ -83,7 +83,7 @@ class TandemmasterControllerTest extends AbstractSkdvinTest {
     void testCreateTandemmaster() throws Exception {
         String tandemmasterJson = json(ModelMockHelper.createTandemmasterDto());
 
-        mockMvc.perform(post("/api/tandemmaster/")
+        mockMvc.perform(post("/api/tandemmaster")
                 .header("Authorization", MockJwtDecoder.addHeader(CREATE_TANDEMMASTER))
                 .contentType(contentType)
                 .content(tandemmasterJson))
@@ -98,7 +98,7 @@ class TandemmasterControllerTest extends AbstractSkdvinTest {
     void testCreateTandemmaster_Unauthorized() throws Exception {
         String tandemmasterJson = json(ModelMockHelper.createTandemmaster());
 
-        mockMvc.perform(post("/api/tandemmaster/")
+        mockMvc.perform(post("/api/tandemmaster")
                 .contentType(contentType)
                 .content(tandemmasterJson))
                 .andExpect(status().isUnauthorized());
