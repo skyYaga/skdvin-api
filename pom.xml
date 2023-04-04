@@ -37,7 +37,7 @@
         <sentry.version>6.17.0</sentry.version>
         <springdoc.version>1.6.14</springdoc.version>
         <testcontainers.version>1.17.6</testcontainers.version>
-        <jacoco.version>0.8.8</jacoco.version>
+        <jacoco.version>0.8.9</jacoco.version>
     </properties>
 
     <dependencyManagement>
