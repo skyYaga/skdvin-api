@@ -5,12 +5,12 @@ import in.skdv.skdvinbackend.AbstractSkdvinTest;
 import in.skdv.skdvinbackend.MockJwtDecoder;
 import in.skdv.skdvinbackend.ModelMockHelper;
 import in.skdv.skdvinbackend.model.common.SlotQuery;
-import in.skdv.skdvinbackend.model.converter.AppointmentConverter;
 import in.skdv.skdvinbackend.model.dto.AppointmentDTO;
 import in.skdv.skdvinbackend.model.dto.AppointmentStateOnlyDTO;
 import in.skdv.skdvinbackend.model.entity.Appointment;
 import in.skdv.skdvinbackend.model.entity.AppointmentState;
 import in.skdv.skdvinbackend.model.entity.Jumpday;
+import in.skdv.skdvinbackend.model.mapper.AppointmentMapper;
 import in.skdv.skdvinbackend.repository.JumpdayRepository;
 import in.skdv.skdvinbackend.service.IAppointmentService;
 import in.skdv.skdvinbackend.service.IEmailService;
@@ -79,7 +79,7 @@ class AppointmentControllerTest extends AbstractSkdvinTest {
     private IAppointmentService appointmentService;
 
     @Autowired
-    private AppointmentConverter appointmentConverter;
+    private AppointmentMapper appointmentMapper;
 
     @BeforeEach
     void setup() {
@@ -266,7 +266,7 @@ class AppointmentControllerTest extends AbstractSkdvinTest {
 
     @Test
     void testUpdateAppointment() throws Exception {
-        AppointmentDTO appointment = appointmentConverter.convertToDto(appointmentService.findAppointmentsByDay(LocalDate.now()).get(0));
+        AppointmentDTO appointment = appointmentMapper.toDto(appointmentService.findAppointmentsByDay(LocalDate.now()).get(0));
 
         int newCount = appointment.getTandem() + 1;
 
@@ -290,7 +290,7 @@ class AppointmentControllerTest extends AbstractSkdvinTest {
 
     @Test
     void testUpdateAdminAppointment() throws Exception {
-        AppointmentDTO appointment = appointmentConverter.convertToDto(appointmentService.findAppointmentsByDay(LocalDate.now()).get(0));
+        AppointmentDTO appointment = appointmentMapper.toDto(appointmentService.findAppointmentsByDay(LocalDate.now()).get(0));
 
         int newCount = appointment.getTandem() + 1;
 
@@ -345,7 +345,7 @@ class AppointmentControllerTest extends AbstractSkdvinTest {
 
     @Test
     void testUpdateAppointment_NoJumpDay() throws Exception {
-        AppointmentDTO appointment = appointmentConverter.convertToDto(appointmentService.findAppointmentsByDay(LocalDate.now()).get(0));
+        AppointmentDTO appointment = appointmentMapper.toDto(appointmentService.findAppointmentsByDay(LocalDate.now()).get(0));
 
         appointment.setDate(appointment.getDate().plus(10, ChronoUnit.DAYS));
 
@@ -364,7 +364,7 @@ class AppointmentControllerTest extends AbstractSkdvinTest {
     @Test
     void testUpdateAppointment_MorePicAndVidThanTandemSlots() throws Exception {
         Appointment result = appointmentService.saveAppointment(ModelMockHelper.createAppointment(1, 0, 1, 0));
-        AppointmentDTO appointment = appointmentConverter.convertToDto(appointmentService.findAppointment(result.getAppointmentId()));
+        AppointmentDTO appointment = appointmentMapper.toDto(appointmentService.findAppointment(result.getAppointmentId()));
 
         appointment.setPicOrVid(appointment.getPicAndVid() + 1);
 
@@ -383,7 +383,7 @@ class AppointmentControllerTest extends AbstractSkdvinTest {
     @Test
     void testUpdateAppointment_MorePicOrVidThanTandemSlots() throws Exception {
         Appointment result = appointmentService.saveAppointment(ModelMockHelper.createAppointment(1, 1, 0, 0));
-        AppointmentDTO appointment = appointmentConverter.convertToDto(appointmentService.findAppointment(result.getAppointmentId()));
+        AppointmentDTO appointment = appointmentMapper.toDto(appointmentService.findAppointment(result.getAppointmentId()));
 
         appointment.setPicOrVid(appointment.getPicOrVid() + 1);
 
@@ -402,7 +402,7 @@ class AppointmentControllerTest extends AbstractSkdvinTest {
     @Test
     void testUpdateAppointment_MoreHandcamThanTandemSlots() throws Exception {
         Appointment result = appointmentService.saveAppointment(ModelMockHelper.createAppointment(1, 0, 0, 1));
-        AppointmentDTO appointment = appointmentConverter.convertToDto(appointmentService.findAppointment(result.getAppointmentId()));
+        AppointmentDTO appointment = appointmentMapper.toDto(appointmentService.findAppointment(result.getAppointmentId()));
 
         appointment.setPicOrVid(appointment.getHandcam() + 1);
 
@@ -421,7 +421,7 @@ class AppointmentControllerTest extends AbstractSkdvinTest {
     @Test
     void testUpdateAppointment_MorePicVidHandcamThanTandemSlots() throws Exception {
         Appointment result = appointmentService.saveAppointment(ModelMockHelper.createAppointment(1, 0, 1, 0));
-        AppointmentDTO appointment = appointmentConverter.convertToDto(appointmentService.findAppointment(result.getAppointmentId()));
+        AppointmentDTO appointment = appointmentMapper.toDto(appointmentService.findAppointment(result.getAppointmentId()));
 
         appointment.setPicOrVid(appointment.getPicOrVid() + 1);
         appointment.setPicOrVid(appointment.getHandcam() + 1);
@@ -440,7 +440,7 @@ class AppointmentControllerTest extends AbstractSkdvinTest {
 
     @Test
     void testUpdateAppointment_NoSlotLeft() throws Exception {
-        AppointmentDTO appointment = appointmentConverter.convertToDto(appointmentService.findAppointmentsByDay(LocalDate.now()).get(0));
+        AppointmentDTO appointment = appointmentMapper.toDto(appointmentService.findAppointmentsByDay(LocalDate.now()).get(0));
 
         appointment.setTandem(10);
         appointment.getCustomer().setJumpers(ModelMockHelper.createJumpers(10));

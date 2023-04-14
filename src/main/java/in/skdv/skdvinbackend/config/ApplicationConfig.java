@@ -1,21 +1,10 @@
 package in.skdv.skdvinbackend.config;
 
-import com.auth0.client.mgmt.ManagementAPI;
-import in.skdv.skdvinbackend.model.mapper.SettingsMapper;
-import in.skdv.skdvinbackend.model.mapper.SettingsMapperImpl;
-import in.skdv.skdvinbackend.repository.*;
-import in.skdv.skdvinbackend.repository.impl.SequenceRepository;
-import in.skdv.skdvinbackend.service.*;
-import in.skdv.skdvinbackend.service.impl.*;
-import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support.ResourceBundleMessageSource;
-import org.springframework.data.mongodb.core.MongoOperations;
-import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.http.HttpMethod;
 import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
@@ -37,69 +26,9 @@ public class ApplicationConfig implements WebMvcConfigurer {
     @Value("${skdvin.timezone}")
     private String timezone;
 
-    @Autowired
-    private JumpdayRepository jumpdayRepository;
-
-    @Autowired
-    private MongoTemplate mongoTemplate;
-
-    @Autowired
-    private MongoOperations mongoOperations;
-
     @Bean
     public ZoneId zoneId() {
         return ZoneId.of(timezone);
-    }
-
-    @Bean
-    public ModelMapper modelMapper() {
-        return new ModelMapper();
-    }
-
-    @Bean
-    public SettingsMapper settingsMapper() {
-        return new SettingsMapperImpl();
-    }
-
-    @Bean
-    @Autowired
-    public ISequenceRepository getSequenceService(MongoOperations mongoOperations) {
-        return new SequenceRepository(mongoOperations);
-    }
-
-    @Bean
-    @Autowired
-    public IAppointmentService getAppointmentService(ISequenceRepository sequenceService, IEmailService emailService) {
-        return new AppointmentService(zoneId(), jumpdayRepository, sequenceService, emailService);
-    }
-
-    @Bean
-    @Autowired
-    public IVideoflyerService getVideoflyerService(VideoflyerRepository videoflyerRepository, ISettingsService settingsService) {
-        return new VideoflyerService(jumpdayRepository, videoflyerRepository, settingsService);
-    }
-
-    @Bean
-    public IJumpdayService getJumpdayService() {
-        return new JumpdayService(jumpdayRepository);
-    }
-
-    @Bean
-    @Autowired
-    public ITandemmasterService getTandemmasterService(TandemmasterRepository tandemmasterRepository, ISettingsService settingsService) {
-        return new TandemmasterService(jumpdayRepository, tandemmasterRepository, settingsService);
-    }
-
-    @Bean
-    @Autowired
-    public ISettingsService getSettingsService(SettingsRepository settingsRepository) {
-        return new SettingsService(settingsRepository);
-    }
-
-    @Bean
-    @Autowired
-    public IUserService getUserService(ManagementAPI managementAPI) {
-        return new Auth0UserService(managementAPI);
     }
 
     @Bean

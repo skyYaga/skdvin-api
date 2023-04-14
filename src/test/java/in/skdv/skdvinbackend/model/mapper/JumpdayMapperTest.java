@@ -1,4 +1,4 @@
-package in.skdv.skdvinbackend.model.converter;
+package in.skdv.skdvinbackend.model.mapper;
 
 import in.skdv.skdvinbackend.model.dto.AssignmentDTO;
 import in.skdv.skdvinbackend.model.dto.JumpdayDTO;
@@ -17,27 +17,28 @@ import java.util.List;
 import static in.skdv.skdvinbackend.ModelMockHelper.*;
 import static org.junit.jupiter.api.Assertions.*;
 
-class JumpdayConverterTest {
+class JumpdayMapperTest {
 
-    private final JumpdayConverter converter = new JumpdayConverter(ZoneId.of("Europe/Berlin"));
+    private final JumpdayMapper mapper = new JumpdayMapperImpl(new AssignmentMapperImpl(new VideoflyerMapperImpl(), new TandemmasterMapperImpl()));
+    private final ZoneId zoneId = ZoneId.of("Europe/Berlin");
 
     @Test
-    void convertToDto() {
+    void toDto() {
         Jumpday jumpday = createJumpday();
 
-        JumpdayDTO jumpdayDTO = converter.convertToDto(jumpday);
+        JumpdayDTO jumpdayDTO = mapper.toDto(jumpday);
 
         assertEquals(jumpday.getDate(), jumpdayDTO.getDate());
         assertEquals(jumpday.getSlots(), jumpdayDTO.getSlots());
     }
 
     @Test
-    void convertToDtoList() {
+    void toDtoList() {
         Jumpday jumpday1 = createJumpday(LocalDate.now());
         Jumpday jumpday2 = createJumpday(LocalDate.now().plusDays(1));
         List<Jumpday> jumpdays = Arrays.asList(jumpday1, jumpday2);
 
-        List<JumpdayDTO> jumpdayDTOList = converter.convertToDto(jumpdays);
+        List<JumpdayDTO> jumpdayDTOList = mapper.toDto(jumpdays);
 
         assertEquals(jumpdays.size(), jumpdayDTOList.size());
         assertEquals(jumpday1.getDate(), jumpdayDTOList.get(0).getDate());
@@ -45,40 +46,40 @@ class JumpdayConverterTest {
     }
 
     @Test
-    void convertToEntity() {
+    void toEntity() {
         Jumpday jumpday = createJumpday();
-        JumpdayDTO jumpdayDTO = converter.convertToDto(jumpday);
+        JumpdayDTO jumpdayDTO = mapper.toDto(jumpday);
 
-        jumpday = converter.convertToEntity(jumpdayDTO);
+        jumpday = mapper.toEntity(jumpdayDTO, zoneId);
 
         assertEquals(jumpdayDTO.getDate(), jumpday.getDate());
         assertEquals(jumpdayDTO.getSlots(), jumpday.getSlots());
     }
 
     @Test
-    void convertToDto_Null() {
+    void toDto_Null() {
         Jumpday jumpday = null;
-        assertNull(converter.convertToDto(jumpday));
+        assertNull(mapper.toDto(jumpday));
     }
 
     @Test
-    void convertToDtoList_Null() {
+    void toDtoList_Null() {
         List<Jumpday> jumpdays = null;
-        assertEquals(0, converter.convertToDto(jumpdays).size());
+        assertEquals(0, mapper.toDto(jumpdays).size());
     }
 
     @Test
-    void convertToEntity_Null() {
-        assertNull(converter.convertToEntity(null));
+    void toEntity_Null() {
+        assertNull(mapper.toEntity(null, null));
     }
 
     @Test
-    void testConvertToDto_withAssignments() {
+    void testtoDto_withAssignments() {
         Jumpday jumpday = createJumpday();
         jumpday.setTandemmaster(new ArrayList<>(Collections.singletonList(createAssignment(createTandemmaster()))));
         jumpday.setVideoflyer(new ArrayList<>(Collections.singletonList(createAssignment(createVideoflyer()))));
 
-        JumpdayDTO jumpdayDTO = converter.convertToDto(jumpday);
+        JumpdayDTO jumpdayDTO = mapper.toDto(jumpday);
 
         assertTrue(jumpdayDTO.getTandemmaster().get(0) instanceof AssignmentDTO);
         assertTrue(jumpdayDTO.getTandemmaster().get(0).getFlyer() instanceof TandemmasterDTO);

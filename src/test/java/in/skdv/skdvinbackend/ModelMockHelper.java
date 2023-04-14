@@ -2,17 +2,11 @@ package in.skdv.skdvinbackend;
 
 import in.skdv.skdvinbackend.model.common.AbstractFlyer;
 import in.skdv.skdvinbackend.model.common.SimpleAssignment;
-import in.skdv.skdvinbackend.model.converter.AppointmentConverter;
-import in.skdv.skdvinbackend.model.converter.JumpdayConverter;
-import in.skdv.skdvinbackend.model.converter.TandemmasterConverter;
-import in.skdv.skdvinbackend.model.converter.VideoflyerConverter;
 import in.skdv.skdvinbackend.model.domain.PublicSettings;
 import in.skdv.skdvinbackend.model.dto.*;
 import in.skdv.skdvinbackend.model.entity.*;
 import in.skdv.skdvinbackend.model.entity.settings.*;
-import in.skdv.skdvinbackend.model.mapper.SettingsMapper;
-import in.skdv.skdvinbackend.model.mapper.SettingsMapperImpl;
-import org.modelmapper.ModelMapper;
+import in.skdv.skdvinbackend.model.mapper.*;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -23,16 +17,16 @@ import java.util.*;
 public class ModelMockHelper {
 
     private static final ZoneId zoneId = ZoneId.of("Europe/Berlin");
-    private static final JumpdayConverter JUMPDAY_CONVERTER = new JumpdayConverter(zoneId);
-    private static final VideoflyerConverter VIDEOFLYER_CONVERTER = new VideoflyerConverter();
-    private static final AppointmentConverter APPOINTMENT_CONVERTER = new AppointmentConverter(new ModelMapper());
-    private static final TandemmasterConverter TANDEMMASTER_CONVERTER = new TandemmasterConverter();
+    private static final VideoflyerMapper VIDEOFLYER_MAPPER = new VideoflyerMapperImpl();
+    private static final TandemmasterMapper TANDEMMASTER_MAPPER = new TandemmasterMapperImpl();
+    private static final JumpdayMapper JUMPDAY_MAPPER = new JumpdayMapperImpl(new AssignmentMapperImpl(VIDEOFLYER_MAPPER, TANDEMMASTER_MAPPER));
     private static final SettingsMapper SETTINGS_MAPPER = new SettingsMapperImpl();
+    private static final AppointmentMapper APPOINTMENT_MAPPER = new AppointmentMapperImpl();
 
     public static final String DZ_EMAIL = "dz@example.com";
 
     public static AppointmentDTO createAppointmentDto() {
-        return APPOINTMENT_CONVERTER.convertToDto(createSingleAppointment());
+        return APPOINTMENT_MAPPER.toDto(createSingleAppointment());
     }
 
     public static Appointment createSingleAppointment() {
@@ -110,7 +104,7 @@ public class ModelMockHelper {
     }
 
     public static JumpdayDTO createJumpdayDto() {
-        return JUMPDAY_CONVERTER.convertToDto(createJumpday());
+        return JUMPDAY_MAPPER.toDto(createJumpday());
     }
 
     public static Jumpday createJumpday() {
@@ -118,7 +112,7 @@ public class ModelMockHelper {
     }
 
     public static TandemmasterDTO createTandemmasterDto() {
-        return TANDEMMASTER_CONVERTER.convertToDto(createTandemmaster());
+        return TANDEMMASTER_MAPPER.toDto(createTandemmaster());
     }
 
     public static Tandemmaster createTandemmaster() {
@@ -133,7 +127,7 @@ public class ModelMockHelper {
     }
 
     public static VideoflyerDTO createVideoflyerDto() {
-        return VIDEOFLYER_CONVERTER.convertToDto(createVideoflyer());
+        return VIDEOFLYER_MAPPER.toDto(createVideoflyer());
     }
 
     public static Videoflyer createVideoflyer() {
@@ -246,11 +240,11 @@ public class ModelMockHelper {
     }
 
     public static TandemmasterDetails addTandemmasterAssignment(Tandemmaster tandemmaster, LocalDate date) {
-        return TANDEMMASTER_CONVERTER.convertToDetails(tandemmaster, Map.of(date, new SimpleAssignment(true)));
+        return TANDEMMASTER_MAPPER.toDetails(tandemmaster, Map.of(date, new SimpleAssignment(true)));
     }
 
     public static TandemmasterDetails removeTandemmasterAssignment(Tandemmaster tandemmaster, LocalDate date) {
-        return TANDEMMASTER_CONVERTER.convertToDetails(tandemmaster, Map.of(date, new SimpleAssignment(false)));
+        return TANDEMMASTER_MAPPER.toDetails(tandemmaster, Map.of(date, new SimpleAssignment(false)));
     }
 
     public static void addTandemmasterAssignment(TandemmasterDetails tandemmasterDetails, LocalDate date) {
@@ -258,11 +252,11 @@ public class ModelMockHelper {
     }
 
     public static VideoflyerDetails addVideoflyerAssignment(Videoflyer videoflyer, LocalDate date) {
-        return VIDEOFLYER_CONVERTER.convertToDetails(videoflyer, Map.of(date, new SimpleAssignment(true)));
+        return VIDEOFLYER_MAPPER.toDetails(videoflyer, Map.of(date, new SimpleAssignment(true)));
     }
 
     public static VideoflyerDetails removeVideoflyerAssignment(Videoflyer videoflyer, LocalDate date) {
-        return VIDEOFLYER_CONVERTER.convertToDetails(videoflyer, Map.of(date, new SimpleAssignment(false)));
+        return VIDEOFLYER_MAPPER.toDetails(videoflyer, Map.of(date, new SimpleAssignment(false)));
     }
 
     public static void addVideoflyerAssignment(VideoflyerDetails videoflyerDetails, LocalDate date) {

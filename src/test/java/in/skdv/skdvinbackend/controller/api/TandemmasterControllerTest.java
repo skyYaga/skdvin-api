@@ -5,13 +5,13 @@ import in.skdv.skdvinbackend.AbstractSkdvinTest;
 import in.skdv.skdvinbackend.MockJwtDecoder;
 import in.skdv.skdvinbackend.ModelMockHelper;
 import in.skdv.skdvinbackend.model.common.SimpleAssignment;
-import in.skdv.skdvinbackend.model.converter.TandemmasterConverter;
 import in.skdv.skdvinbackend.model.dto.TandemmasterDetailsDTO;
 import in.skdv.skdvinbackend.model.entity.Jumpday;
 import in.skdv.skdvinbackend.model.entity.Tandemmaster;
 import in.skdv.skdvinbackend.model.entity.TandemmasterDetails;
 import in.skdv.skdvinbackend.model.entity.settings.SelfAssignmentMode;
 import in.skdv.skdvinbackend.model.entity.settings.Settings;
+import in.skdv.skdvinbackend.model.mapper.TandemmasterMapper;
 import in.skdv.skdvinbackend.repository.JumpdayRepository;
 import in.skdv.skdvinbackend.repository.TandemmasterRepository;
 import in.skdv.skdvinbackend.service.IJumpdayService;
@@ -53,10 +53,11 @@ class TandemmasterControllerTest extends AbstractSkdvinTest {
     @Autowired
     private MockMvc mockMvc;
 
-    private final TandemmasterConverter converter = new TandemmasterConverter();
-
     @MockBean
     ISettingsService settingsService;
+
+    @Autowired
+    private TandemmasterMapper mapper;
 
     @Autowired
     private TandemmasterRepository tandemmasterRepository;
@@ -133,7 +134,7 @@ class TandemmasterControllerTest extends AbstractSkdvinTest {
         tandemmaster.setEmail("foo@example.com");
         tandemmaster.setHandcam(true);
 
-        String tandemmasterJson = json(converter.convertToDto(tandemmaster));
+        String tandemmasterJson = json(mapper.toDto(tandemmaster));
 
         mockMvc.perform(put("/api/tandemmaster/{id}", tandemmaster.getId())
                 .header("Authorization", MockJwtDecoder.addHeader(UPDATE_TANDEMMASTER))
@@ -249,7 +250,7 @@ class TandemmasterControllerTest extends AbstractSkdvinTest {
 
         SimpleAssignment simpleAssignment = new SimpleAssignment(true);
         simpleAssignment.setNote("Example note");
-        TandemmasterDetailsDTO tandemmasterDetailsDTO = converter.convertToDetailsDto(tandemmaster, Map.of(LocalDate.now(), simpleAssignment));
+        TandemmasterDetailsDTO tandemmasterDetailsDTO = mapper.toDetailsDto(tandemmaster, Map.of(LocalDate.now(), simpleAssignment));
 
         String tandemmasterJson = json(tandemmasterDetailsDTO);
 
@@ -276,7 +277,7 @@ class TandemmasterControllerTest extends AbstractSkdvinTest {
         Tandemmaster tandemmaster = tandemmasterRepository.save(ModelMockHelper.createTandemmaster());
         Jumpday jumpday = ModelMockHelper.createJumpday();
         jumpdayService.saveJumpday(jumpday);
-        TandemmasterDetailsDTO tandemmasterDetailsDTO = converter.convertToDetailsDto(tandemmaster, Map.of(LocalDate.now(), new SimpleAssignment(true)));
+        TandemmasterDetailsDTO tandemmasterDetailsDTO = mapper.toDetailsDto(tandemmaster, Map.of(LocalDate.now(), new SimpleAssignment(true)));
 
         String tandemmasterJson = json(tandemmasterDetailsDTO);
 
@@ -291,7 +292,7 @@ class TandemmasterControllerTest extends AbstractSkdvinTest {
     @Test
     void testAssignTandemmaster_NotFound() throws Exception {
         Tandemmaster tandemmaster = tandemmasterRepository.save(ModelMockHelper.createTandemmaster());
-        TandemmasterDetailsDTO tandemmasterDetailsDTO = converter.convertToDetailsDto(tandemmaster, Map.of(LocalDate.now(), new SimpleAssignment(true)));
+        TandemmasterDetailsDTO tandemmasterDetailsDTO = mapper.toDetailsDto(tandemmaster, Map.of(LocalDate.now(), new SimpleAssignment(true)));
 
         String tandemmasterJson = json(tandemmasterDetailsDTO);
 
@@ -312,7 +313,7 @@ class TandemmasterControllerTest extends AbstractSkdvinTest {
         Jumpday jumpday = ModelMockHelper.createJumpday();
         jumpdayService.saveJumpday(jumpday);
 
-        TandemmasterDetailsDTO tandemmasterDetailsDTO = converter.convertToDetailsDto(tandemmaster, Map.of(LocalDate.now(), new SimpleAssignment(true)));
+        TandemmasterDetailsDTO tandemmasterDetailsDTO = mapper.toDetailsDto(tandemmaster, Map.of(LocalDate.now(), new SimpleAssignment(true)));
 
         String tandemmasterJson = json(tandemmasterDetailsDTO);
 
@@ -334,7 +335,7 @@ class TandemmasterControllerTest extends AbstractSkdvinTest {
         Jumpday jumpday = ModelMockHelper.createJumpday();
         jumpdayService.saveJumpday(jumpday);
 
-        TandemmasterDetailsDTO tandemmasterDetailsDTO = converter.convertToDetailsDto(tandemmaster, Map.of(LocalDate.now(), new SimpleAssignment(true)));
+        TandemmasterDetailsDTO tandemmasterDetailsDTO = mapper.toDetailsDto(tandemmaster, Map.of(LocalDate.now(), new SimpleAssignment(true)));
 
         String tandemmasterJson = json(tandemmasterDetailsDTO);
 
@@ -363,7 +364,7 @@ class TandemmasterControllerTest extends AbstractSkdvinTest {
         Tandemmaster tandemmaster = tandemmasterRepository.save(ModelMockHelper.createTandemmaster());
         Jumpday jumpday = ModelMockHelper.createJumpday();
         jumpdayService.saveJumpday(jumpday);
-        TandemmasterDetailsDTO tandemmasterDetailsDTO = converter.convertToDetailsDto(tandemmaster, Map.of(LocalDate.now(), new SimpleAssignment(true)));
+        TandemmasterDetailsDTO tandemmasterDetailsDTO = mapper.toDetailsDto(tandemmaster, Map.of(LocalDate.now(), new SimpleAssignment(true)));
 
         String tandemmasterJson = json(tandemmasterDetailsDTO);
 

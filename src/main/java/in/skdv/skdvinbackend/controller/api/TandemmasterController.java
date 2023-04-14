@@ -3,13 +3,13 @@ package in.skdv.skdvinbackend.controller.api;
 import in.skdv.skdvinbackend.config.Claims;
 import in.skdv.skdvinbackend.exception.ErrorMessage;
 import in.skdv.skdvinbackend.exception.InvalidRequestException;
-import in.skdv.skdvinbackend.model.converter.TandemmasterConverter;
 import in.skdv.skdvinbackend.model.dto.TandemmasterDTO;
 import in.skdv.skdvinbackend.model.dto.TandemmasterDetailsDTO;
 import in.skdv.skdvinbackend.model.dto.TandemmasterDetailsInputDTO;
 import in.skdv.skdvinbackend.model.dto.TandemmasterInputDTO;
 import in.skdv.skdvinbackend.model.entity.Tandemmaster;
 import in.skdv.skdvinbackend.model.entity.TandemmasterDetails;
+import in.skdv.skdvinbackend.model.mapper.TandemmasterMapper;
 import in.skdv.skdvinbackend.service.ITandemmasterService;
 import in.skdv.skdvinbackend.util.GenericResult;
 import jakarta.validation.Valid;
@@ -29,17 +29,17 @@ import java.util.List;
 public class TandemmasterController {
 
     private final ITandemmasterService tandemmasterService;
-    private final TandemmasterConverter tandemmasterConverter = new TandemmasterConverter();
+    private final TandemmasterMapper tandemmasterMapper;
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("hasAuthority('SCOPE_create:tandemmaster')")
     public GenericResult<TandemmasterDTO> addTandemmaster(@RequestBody @Valid TandemmasterDTO input) {
         log.info("Adding tandemmaster {}", input);
-        Tandemmaster convertedInput = tandemmasterConverter.convertToEntity(input);
+        Tandemmaster convertedInput = tandemmasterMapper.toEntity(input);
         Tandemmaster tandemmaster = tandemmasterService.save(convertedInput);
 
-        return new GenericResult<>(true, tandemmasterConverter.convertToDto(tandemmaster));
+        return new GenericResult<>(true, tandemmasterMapper.toDto(tandemmaster));
     }
 
     @GetMapping
@@ -47,7 +47,7 @@ public class TandemmasterController {
     public GenericResult<List<TandemmasterDTO>> getAllTandemmasters() {
         log.info("Getting all tandemmasters");
         List<Tandemmaster> tandemmasters = tandemmasterService.findAll();
-        return new GenericResult<>(true, tandemmasterConverter.convertToDto(tandemmasters));
+        return new GenericResult<>(true, tandemmasterMapper.toDto(tandemmasters));
     }
 
     @GetMapping(value = "/{id}")
@@ -55,7 +55,7 @@ public class TandemmasterController {
     public GenericResult<TandemmasterDetailsDTO> getTandemmaster(@PathVariable String id) {
         log.info("Getting tandemmaster by id {}", id);
         TandemmasterDetails tandemmaster = tandemmasterService.getById(id);
-        return new GenericResult<>(true, tandemmasterConverter.convertToDto(tandemmaster));
+        return new GenericResult<>(true, tandemmasterMapper.toDto(tandemmaster));
     }
 
     @GetMapping(value = "/me")
@@ -63,7 +63,7 @@ public class TandemmasterController {
     public GenericResult<TandemmasterDetailsDTO> getMeTandemmaster() {
         log.info("Getting me tandemmaster");
         TandemmasterDetails tandemmaster = tandemmasterService.getByEmail(Claims.getEmail());
-        return new GenericResult<>(true, tandemmasterConverter.convertToDto(tandemmaster));
+        return new GenericResult<>(true, tandemmasterMapper.toDto(tandemmaster));
     }
 
     @PatchMapping(value = "/me/assign")
@@ -75,7 +75,7 @@ public class TandemmasterController {
             throw new InvalidRequestException(ErrorMessage.SELFASSIGNMENT_NODELETE);
         }
 
-        tandemmasterService.assignTandemmaster(tandemmasterConverter.convertToEntity(input), true);
+        tandemmasterService.assignTandemmaster(tandemmasterMapper.toEntity(input), true);
         return new GenericResult<>(true);
     }
 
@@ -83,8 +83,8 @@ public class TandemmasterController {
     @PreAuthorize("hasAuthority('SCOPE_update:tandemmaster')")
     public GenericResult<TandemmasterDTO> updateTandemmaster(@PathVariable String id, @RequestBody @Valid TandemmasterInputDTO input) {
         log.info("Updating tandemmaster {}: {}", id, input);
-        Tandemmaster savedTandemmaster = tandemmasterService.updateTandemmaster(tandemmasterConverter.convertToEntity(id, input));
-        return new GenericResult<>(true, tandemmasterConverter.convertToDto(savedTandemmaster));
+        Tandemmaster savedTandemmaster = tandemmasterService.updateTandemmaster(tandemmasterMapper.toEntity(id, input));
+        return new GenericResult<>(true, tandemmasterMapper.toDto(savedTandemmaster));
     }
 
     @DeleteMapping(value = "/{id}")
@@ -102,7 +102,7 @@ public class TandemmasterController {
             @PathVariable @NotNull @Valid String id,
             @RequestBody @Valid TandemmasterDetailsInputDTO input) {
         log.info("Assigning tandemmaster {} to jumpdays {}", id, input);
-        tandemmasterService.assignTandemmaster(tandemmasterConverter.convertToEntity(id, input), false);
+        tandemmasterService.assignTandemmaster(tandemmasterMapper.toEntity(id, input), false);
         return new GenericResult<>(true);
     }
 

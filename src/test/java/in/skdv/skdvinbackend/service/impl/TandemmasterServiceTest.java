@@ -7,13 +7,13 @@ import in.skdv.skdvinbackend.exception.ErrorMessage;
 import in.skdv.skdvinbackend.exception.InvalidRequestException;
 import in.skdv.skdvinbackend.exception.NotFoundException;
 import in.skdv.skdvinbackend.model.common.SimpleAssignment;
-import in.skdv.skdvinbackend.model.converter.TandemmasterConverter;
 import in.skdv.skdvinbackend.model.entity.Assignment;
 import in.skdv.skdvinbackend.model.entity.Jumpday;
 import in.skdv.skdvinbackend.model.entity.Tandemmaster;
 import in.skdv.skdvinbackend.model.entity.TandemmasterDetails;
 import in.skdv.skdvinbackend.model.entity.settings.SelfAssignmentMode;
 import in.skdv.skdvinbackend.model.entity.settings.Settings;
+import in.skdv.skdvinbackend.model.mapper.TandemmasterMapper;
 import in.skdv.skdvinbackend.repository.JumpdayRepository;
 import in.skdv.skdvinbackend.repository.TandemmasterRepository;
 import in.skdv.skdvinbackend.service.IJumpdayService;
@@ -54,7 +54,8 @@ class TandemmasterServiceTest extends AbstractSkdvinTest {
     @Autowired
     IJumpdayService jumpdayService;
 
-    TandemmasterConverter converter = new TandemmasterConverter();
+    @Autowired
+    TandemmasterMapper mapper;
 
     @BeforeEach
     void setup() {
@@ -394,7 +395,7 @@ class TandemmasterServiceTest extends AbstractSkdvinTest {
         jumpdayRepository.save(jumpday1);
         jumpdayRepository.save(jumpday2);
         Tandemmaster tandemmaster = tandemmasterRepository.save(ModelMockHelper.createTandemmaster());
-        return converter.convertToDetails(tandemmaster, new HashMap<>());
+        return mapper.toDetails(tandemmaster, new HashMap<>());
     }
 
     @Test
@@ -425,8 +426,7 @@ class TandemmasterServiceTest extends AbstractSkdvinTest {
     @Test
     void testAssignTandemmaster_Error() {
         Tandemmaster tandemmaster = tandemmasterRepository.save(ModelMockHelper.createTandemmaster());
-        TandemmasterConverter converter = new TandemmasterConverter();
-        TandemmasterDetails tandemmasterDetails = converter.convertToDetails(tandemmaster, Map.of());
+        TandemmasterDetails tandemmasterDetails = mapper.toDetails(tandemmaster, Map.of());
         tandemmasterDetails.setAssignments(Map.of(LocalDate.now(), new SimpleAssignment(false), LocalDate.now().plus(1, ChronoUnit.DAYS), new SimpleAssignment(false)));
 
         NotFoundException notFoundException = assertThrows(NotFoundException.class, () ->

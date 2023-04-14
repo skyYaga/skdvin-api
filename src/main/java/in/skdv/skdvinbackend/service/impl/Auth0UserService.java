@@ -14,21 +14,19 @@ import in.skdv.skdvinbackend.model.common.user.UserListResult;
 import in.skdv.skdvinbackend.model.dto.RoleDTO;
 import in.skdv.skdvinbackend.model.dto.UserDTO;
 import in.skdv.skdvinbackend.service.IUserService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
+@Service
+@RequiredArgsConstructor
 public class Auth0UserService implements IUserService {
 
     private final ManagementAPI managementAPI;
-
-    @Autowired
-    public Auth0UserService(ManagementAPI managementAPI) {
-        this.managementAPI = managementAPI;
-    }
 
     @Override
     public UserListResult getUsers(int pageNumber, int amountPerPage) {
