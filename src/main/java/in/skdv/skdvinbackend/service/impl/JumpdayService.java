@@ -10,6 +10,7 @@ import in.skdv.skdvinbackend.repository.JumpdayRepository;
 import in.skdv.skdvinbackend.service.IJumpdayService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
@@ -20,6 +21,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @Slf4j
+@Service
 @RequiredArgsConstructor
 public class JumpdayService implements IJumpdayService {
 

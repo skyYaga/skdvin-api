@@ -1,9 +1,10 @@
 package in.skdv.skdvinbackend.controller.api;
 
-import in.skdv.skdvinbackend.model.converter.JumpdayConverter;
 import in.skdv.skdvinbackend.model.dto.JumpdayDTO;
 import in.skdv.skdvinbackend.model.entity.Jumpday;
+import in.skdv.skdvinbackend.model.mapper.JumpdayMapper;
 import in.skdv.skdvinbackend.service.IJumpdayService;
+import in.skdv.skdvinbackend.service.ITimezoneService;
 import in.skdv.skdvinbackend.util.GenericResult;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Pattern;
@@ -30,7 +31,8 @@ public class JumpdayController {
     private static final String DATE_PATTERN = "^[0-9]{4}-[0-9]{2}-[0-9]{2}$";
 
     private final IJumpdayService jumpdayService;
-    private final JumpdayConverter jumpdayConverter;
+    private final JumpdayMapper jumpdayMapper;
+    private final ITimezoneService timezoneService;
 
     @GetMapping
     @PreAuthorize("hasAuthority('SCOPE_read:jumpdays')")
@@ -39,9 +41,9 @@ public class JumpdayController {
         log.info("Reading jumpdays");
         if (month != null) {
             List<Jumpday> jumpdaysByMonth = jumpdayService.findJumpdaysByMonth(YearMonth.parse(month));
-            return new GenericResult<>(true, jumpdayConverter.convertToDto(jumpdaysByMonth));
+            return new GenericResult<>(true, jumpdayMapper.toDto(jumpdaysByMonth));
         }
-        return new GenericResult<>(true, jumpdayConverter.convertToDto(jumpdayService.findJumpdays()));
+        return new GenericResult<>(true, jumpdayMapper.toDto(jumpdayService.findJumpdays()));
     }
 
     @GetMapping(value = "/{jumpdayDate}")
@@ -49,7 +51,7 @@ public class JumpdayController {
     public GenericResult<JumpdayDTO> readJumpday(@PathVariable @Pattern(regexp = DATE_PATTERN) String jumpdayDate) {
         log.info("Reading jumpday {}", jumpdayDate);
         Jumpday jumpday = jumpdayService.findJumpday(LocalDate.parse(jumpdayDate));
-        return new GenericResult<>(true, jumpdayConverter.convertToDto(jumpday));
+        return new GenericResult<>(true, jumpdayMapper.toDto(jumpday));
     }
 
     @PostMapping
@@ -57,16 +59,16 @@ public class JumpdayController {
     @PreAuthorize("hasAuthority('SCOPE_create:jumpdays')")
     public GenericResult<JumpdayDTO> addJumpday(@RequestBody @Valid JumpdayDTO input) {
         log.info("Adding jumpday {}", input);
-        Jumpday result = jumpdayService.saveJumpday(jumpdayConverter.convertToEntity(input));
-        return new GenericResult<>(true, jumpdayConverter.convertToDto(result));
+        Jumpday result = jumpdayService.saveJumpday(jumpdayMapper.toEntity(input, timezoneService.getZoneId()));
+        return new GenericResult<>(true, jumpdayMapper.toDto(result));
     }
 
     @PutMapping(value = "/{jumpdayDate}")
     @PreAuthorize("hasAuthority('SCOPE_update:jumpdays')")
     public GenericResult<JumpdayDTO> updateJumpday(@PathVariable @Pattern(regexp = DATE_PATTERN) String jumpdayDate, @RequestBody @Valid JumpdayDTO input) {
         log.info("Updating jumpday {}, {}", jumpdayDate, input);
-        Jumpday updatedJumpday = jumpdayService.updateJumpday(LocalDate.parse(jumpdayDate), jumpdayConverter.convertToEntity(input));
-        return new GenericResult<>(true, jumpdayConverter.convertToDto(updatedJumpday));
+        Jumpday updatedJumpday = jumpdayService.updateJumpday(LocalDate.parse(jumpdayDate), jumpdayMapper.toEntity(input, timezoneService.getZoneId()));
+        return new GenericResult<>(true, jumpdayMapper.toDto(updatedJumpday));
     }
 
     @DeleteMapping(value = "/{jumpdayDate}")

@@ -1,10 +1,9 @@
-package in.skdv.skdvinbackend.model.converter;
+package in.skdv.skdvinbackend.model.mapper;
 
 import in.skdv.skdvinbackend.ModelMockHelper;
 import in.skdv.skdvinbackend.model.dto.AppointmentDTO;
 import in.skdv.skdvinbackend.model.entity.Appointment;
 import org.junit.jupiter.api.Test;
-import org.modelmapper.ModelMapper;
 
 import java.util.Arrays;
 import java.util.List;
@@ -12,15 +11,15 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
-class AppointmentConverterTest {
+class AppointmentMapperTest {
 
-    private final AppointmentConverter converter = new AppointmentConverter(new ModelMapper());
+    private final AppointmentMapper mapper = new AppointmentMapperImpl();
 
     @Test
     void convertToDto() {
         Appointment appointment = ModelMockHelper.createSingleAppointment();
 
-        AppointmentDTO appointmentDTO = converter.convertToDto(appointment);
+        AppointmentDTO appointmentDTO = mapper.toDto(appointment);
 
         assertEquals(appointment.getDate(), appointmentDTO.getDate());
         assertEquals(appointment.getCustomer(), appointmentDTO.getCustomer());
@@ -34,7 +33,7 @@ class AppointmentConverterTest {
         Appointment appointment2 = ModelMockHelper.createSecondAppointment();
         List<Appointment> appointments = Arrays.asList(appointment1, appointment2);
 
-        List<AppointmentDTO> appointmentDTOList = converter.convertToDto(appointments);
+        List<AppointmentDTO> appointmentDTOList = mapper.toDto(appointments);
 
         assertEquals(appointments.size(), appointmentDTOList.size());
         assertEquals(appointment1.getCustomer(), appointmentDTOList.get(0).getCustomer());
@@ -44,9 +43,9 @@ class AppointmentConverterTest {
     @Test
     void convertToEntity() {
         Appointment appointment = ModelMockHelper.createSingleAppointment();
-        AppointmentDTO appointmentDTO = converter.convertToDto(appointment);
+        AppointmentDTO appointmentDTO = mapper.toDto(appointment);
 
-        appointment = converter.convertToEntity(appointmentDTO);
+        appointment = mapper.toEntity(appointmentDTO);
 
         assertEquals(appointmentDTO.getDate(), appointment.getDate());
         assertEquals(appointmentDTO.getCustomer(), appointment.getCustomer());
@@ -58,17 +57,17 @@ class AppointmentConverterTest {
     @Test
     void convertToDto_Null() {
         Appointment appointment = null;
-        assertNull(converter.convertToDto(appointment));
+        assertNull(mapper.toDto(appointment));
     }
 
     @Test
     void convertToDtoList_Null() {
         List<Appointment> appointments = null;
-        assertEquals( 0, converter.convertToDto(appointments).size());
+        assertEquals( 0, mapper.toDto(appointments).size());
     }
 
     @Test
     void convertToEntity_Null() {
-        assertNull(converter.convertToEntity(null));
+        assertNull(mapper.toEntity(null));
     }
 }

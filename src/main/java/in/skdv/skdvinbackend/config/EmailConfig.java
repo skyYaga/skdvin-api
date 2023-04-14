@@ -1,16 +1,9 @@
 package in.skdv.skdvinbackend.config;
 
-import in.skdv.skdvinbackend.repository.EmailOutboxRepository;
-import in.skdv.skdvinbackend.service.IEmailService;
-import in.skdv.skdvinbackend.service.ISettingsService;
-import in.skdv.skdvinbackend.service.impl.EmailService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support.ResourceBundleMessageSource;
-import org.springframework.mail.javamail.JavaMailSender;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.spring6.SpringTemplateEngine;
 import org.thymeleaf.templatemode.TemplateMode;
@@ -18,7 +11,6 @@ import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver;
 import org.thymeleaf.templateresolver.ITemplateResolver;
 import org.thymeleaf.templateresolver.StringTemplateResolver;
 
-import java.time.ZoneId;
 import java.util.Collections;
 
 /**
@@ -28,18 +20,6 @@ import java.util.Collections;
 public class EmailConfig {
 
     private static final String EMAIL_TEMPLATE_ENCODING = "UTF-8";
-
-    @Bean
-    @Autowired
-    public IEmailService emailService(
-            ISettingsService settingsService,
-            EmailOutboxRepository emailOutboxRepository,
-            JavaMailSender mailSender,
-            TemplateEngine emailTemplateEngine,
-            @Qualifier("emailMessageSource") MessageSource emailMessageSource,
-            ZoneId zoneId) {
-        return new EmailService(settingsService, emailOutboxRepository, mailSender, emailTemplateEngine, emailMessageSource, zoneId);
-    }
 
     @Bean(name = "emailMessageSource")
     ResourceBundleMessageSource emailMessageSource() {

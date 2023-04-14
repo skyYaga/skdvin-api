@@ -4,19 +4,20 @@ import in.skdv.skdvinbackend.exception.ErrorMessage;
 import in.skdv.skdvinbackend.exception.InvalidRequestException;
 import in.skdv.skdvinbackend.exception.NotFoundException;
 import in.skdv.skdvinbackend.model.common.SimpleAssignment;
-import in.skdv.skdvinbackend.model.converter.AssignmentConverter;
-import in.skdv.skdvinbackend.model.converter.TandemmasterConverter;
 import in.skdv.skdvinbackend.model.entity.Assignment;
 import in.skdv.skdvinbackend.model.entity.Jumpday;
 import in.skdv.skdvinbackend.model.entity.Tandemmaster;
 import in.skdv.skdvinbackend.model.entity.TandemmasterDetails;
 import in.skdv.skdvinbackend.model.entity.settings.SelfAssignmentMode;
+import in.skdv.skdvinbackend.model.mapper.AssignmentMapper;
+import in.skdv.skdvinbackend.model.mapper.TandemmasterMapper;
 import in.skdv.skdvinbackend.repository.JumpdayRepository;
 import in.skdv.skdvinbackend.repository.TandemmasterRepository;
 import in.skdv.skdvinbackend.service.ISettingsService;
 import in.skdv.skdvinbackend.service.ITandemmasterService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
@@ -26,14 +27,15 @@ import java.util.Map;
 import java.util.Optional;
 
 @Slf4j
+@Service
 @RequiredArgsConstructor
 public class TandemmasterService implements ITandemmasterService {
 
     private final JumpdayRepository jumpdayRepository;
     private final TandemmasterRepository tandemmasterRepository;
     private final ISettingsService settingsService;
-    private final TandemmasterConverter tandemmasterConverter = new TandemmasterConverter();
-    private final AssignmentConverter assignmentConverter = new AssignmentConverter();
+    private final TandemmasterMapper tandemmasterMapper;
+    private final AssignmentMapper assignmentMapper;
 
     @Override
     @Transactional
@@ -123,11 +125,11 @@ public class TandemmasterService implements ITandemmasterService {
             Optional<Assignment<Tandemmaster>> localAssignment = j.getTandemmaster().stream()
                     .filter(t -> t != null && t.getFlyer() != null && t.getFlyer().getId().equals(tandemmaster.getId())).findFirst();
             localAssignment
-                    .ifPresentOrElse(assignment -> assignments.put(j.getDate(), assignmentConverter.convertToSimpleAssignment(assignment)),
+                    .ifPresentOrElse(assignment -> assignments.put(j.getDate(), assignmentMapper.tandemmasterToSimpleAssignment(assignment)),
                             () -> assignments.put(j.getDate(), new SimpleAssignment(false)));
         });
 
-        return tandemmasterConverter.convertToDetails(tandemmaster, assignments);
+        return tandemmasterMapper.toDetails(tandemmaster, assignments);
     }
 
     protected void assignTandemmasterToJumpday(LocalDate date, Tandemmaster tandemmaster, SimpleAssignment assignment) {
@@ -163,7 +165,7 @@ public class TandemmasterService implements ITandemmasterService {
                 .filter(t -> t != null && t.getFlyer() != null && t.getFlyer().getId().equals(tandemmaster.getId()))
                 .findFirst();
 
-        Assignment<Tandemmaster> assignment = assignmentConverter.convertToAssignment(simpleAssignment, tandemmaster);
+        Assignment<Tandemmaster> assignment = assignmentMapper.toAssignment(simpleAssignment, tandemmaster);
 
         if (foundAssignment.isEmpty() && assignment.isAssigned()) {
             jumpday.getTandemmaster().add(assignment);

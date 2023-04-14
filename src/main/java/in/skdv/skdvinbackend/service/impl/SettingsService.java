@@ -10,6 +10,7 @@ import in.skdv.skdvinbackend.repository.SettingsRepository;
 import in.skdv.skdvinbackend.service.ISettingsService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashMap;
@@ -17,6 +18,7 @@ import java.util.Map;
 import java.util.Optional;
 
 @Slf4j
+@Service
 @RequiredArgsConstructor
 public class SettingsService implements ISettingsService {
 

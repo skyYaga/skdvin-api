@@ -9,9 +9,9 @@ import in.skdv.skdvinbackend.exception.NotFoundException;
 import in.skdv.skdvinbackend.model.common.FreeSlot;
 import in.skdv.skdvinbackend.model.common.GroupSlot;
 import in.skdv.skdvinbackend.model.common.SlotQuery;
-import in.skdv.skdvinbackend.model.converter.AppointmentConverter;
 import in.skdv.skdvinbackend.model.dto.AppointmentDTO;
 import in.skdv.skdvinbackend.model.entity.*;
+import in.skdv.skdvinbackend.model.mapper.AppointmentMapper;
 import in.skdv.skdvinbackend.repository.EmailOutboxRepository;
 import in.skdv.skdvinbackend.repository.JumpdayRepository;
 import in.skdv.skdvinbackend.service.IAppointmentService;
@@ -43,7 +43,7 @@ class AppointmentServiceTest extends AbstractSkdvinTest {
     @Autowired
     private EmailOutboxRepository emailOutboxRepository;
     @Autowired
-    private AppointmentConverter appointmentConverter;
+    private AppointmentMapper appointmentMapper;
 
     @BeforeEach
     void setup() {
@@ -303,9 +303,9 @@ class AppointmentServiceTest extends AbstractSkdvinTest {
         appointment.setLang(Locale.ENGLISH.getLanguage());
         Appointment oldAppointment = appointmentService.saveAppointment(appointment);
 
-        AppointmentDTO appointmentDTO = appointmentConverter.convertToDto(oldAppointment);
+        AppointmentDTO appointmentDTO = appointmentMapper.toDto(oldAppointment);
         LocaleContextHolder.setLocale(Locale.GERMAN);
-        Appointment appointmentToUpdate = appointmentConverter.convertToEntity(appointmentDTO);
+        Appointment appointmentToUpdate = appointmentMapper.toEntity(appointmentDTO);
 
         Appointment updatedAppointment = appointmentService.updateAppointment(appointmentToUpdate);
         assertEquals(Locale.ENGLISH.getLanguage(), updatedAppointment.getLang());

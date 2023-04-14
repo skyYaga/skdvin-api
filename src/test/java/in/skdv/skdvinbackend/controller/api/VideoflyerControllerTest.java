@@ -5,7 +5,6 @@ import in.skdv.skdvinbackend.AbstractSkdvinTest;
 import in.skdv.skdvinbackend.MockJwtDecoder;
 import in.skdv.skdvinbackend.ModelMockHelper;
 import in.skdv.skdvinbackend.model.common.SimpleAssignment;
-import in.skdv.skdvinbackend.model.converter.VideoflyerConverter;
 import in.skdv.skdvinbackend.model.dto.VideoflyerDTO;
 import in.skdv.skdvinbackend.model.dto.VideoflyerDetailsDTO;
 import in.skdv.skdvinbackend.model.entity.Jumpday;
@@ -13,6 +12,7 @@ import in.skdv.skdvinbackend.model.entity.Videoflyer;
 import in.skdv.skdvinbackend.model.entity.VideoflyerDetails;
 import in.skdv.skdvinbackend.model.entity.settings.SelfAssignmentMode;
 import in.skdv.skdvinbackend.model.entity.settings.Settings;
+import in.skdv.skdvinbackend.model.mapper.VideoflyerMapper;
 import in.skdv.skdvinbackend.repository.JumpdayRepository;
 import in.skdv.skdvinbackend.repository.VideoflyerRepository;
 import in.skdv.skdvinbackend.service.IJumpdayService;
@@ -53,11 +53,12 @@ class VideoflyerControllerTest extends AbstractSkdvinTest {
 
     @Autowired
     private MockMvc mockMvc;
-
-    private final VideoflyerConverter converter = new VideoflyerConverter();
-
+    
     @MockBean
     ISettingsService settingsService;
+
+    @Autowired
+    private VideoflyerMapper mapper;
 
     @Autowired
     private VideoflyerRepository videoflyerRepository;
@@ -136,7 +137,7 @@ class VideoflyerControllerTest extends AbstractSkdvinTest {
         videoflyer.setEmail("foo@example.com");
         videoflyer.setPicAndVid(true);
 
-        String videoflyerJson = json(converter.convertToDto(videoflyer));
+        String videoflyerJson = json(mapper.toDto(videoflyer));
 
         mockMvc.perform(put("/api/videoflyer/{id}", videoflyer.getId())
                         .header("Authorization", MockJwtDecoder.addHeader(UPDATE_VIDEOFLYER))
@@ -250,7 +251,7 @@ class VideoflyerControllerTest extends AbstractSkdvinTest {
         Videoflyer videoflyer = videoflyerRepository.save(ModelMockHelper.createVideoflyer());
         Jumpday jumpday = ModelMockHelper.createJumpday();
         jumpdayService.saveJumpday(jumpday);
-        VideoflyerDetailsDTO videoflyerDetailsDTO = converter.convertToDetailsDto(videoflyer, Map.of(LocalDate.now(), new SimpleAssignment(true)));
+        VideoflyerDetailsDTO videoflyerDetailsDTO = mapper.toDetailsDto(videoflyer, Map.of(LocalDate.now(), new SimpleAssignment(true)));
 
         String videoflyerJson = json(videoflyerDetailsDTO);
 
@@ -277,7 +278,7 @@ class VideoflyerControllerTest extends AbstractSkdvinTest {
         Videoflyer videoflyer = videoflyerRepository.save(ModelMockHelper.createVideoflyer());
         Jumpday jumpday = ModelMockHelper.createJumpday();
         jumpdayService.saveJumpday(jumpday);
-        VideoflyerDetailsDTO videoflyerDetailsDTO = converter.convertToDetailsDto(videoflyer, Map.of(LocalDate.now(), new SimpleAssignment(true)));
+        VideoflyerDetailsDTO videoflyerDetailsDTO = mapper.toDetailsDto(videoflyer, Map.of(LocalDate.now(), new SimpleAssignment(true)));
 
         String videoflyerJson = json(videoflyerDetailsDTO);
 
@@ -292,7 +293,7 @@ class VideoflyerControllerTest extends AbstractSkdvinTest {
     @Test
     void testAssignVideoflyer_NotFound() throws Exception {
         Videoflyer videoflyer = videoflyerRepository.save(ModelMockHelper.createVideoflyer());
-        VideoflyerDetailsDTO videoflyerDetailsDTO = converter.convertToDetailsDto(videoflyer, Map.of(LocalDate.now(), new SimpleAssignment(true)));
+        VideoflyerDetailsDTO videoflyerDetailsDTO = mapper.toDetailsDto(videoflyer, Map.of(LocalDate.now(), new SimpleAssignment(true)));
 
         String videoflyerJson = json(videoflyerDetailsDTO);
 
@@ -313,7 +314,7 @@ class VideoflyerControllerTest extends AbstractSkdvinTest {
         Jumpday jumpday = ModelMockHelper.createJumpday();
         jumpdayService.saveJumpday(jumpday);
 
-        VideoflyerDetailsDTO videoflyerDetailsDTO = converter.convertToDetailsDto(videoflyer, Map.of(LocalDate.now(), new SimpleAssignment(true)));
+        VideoflyerDetailsDTO videoflyerDetailsDTO = mapper.toDetailsDto(videoflyer, Map.of(LocalDate.now(), new SimpleAssignment(true)));
 
         String videoflyerJson = json(videoflyerDetailsDTO);
 
@@ -335,7 +336,7 @@ class VideoflyerControllerTest extends AbstractSkdvinTest {
         Jumpday jumpday = ModelMockHelper.createJumpday();
         jumpdayService.saveJumpday(jumpday);
 
-        VideoflyerDetailsDTO videoflyerDetailsDTO = converter.convertToDetailsDto(videoflyer, Map.of(LocalDate.now(), new SimpleAssignment(true)));
+        VideoflyerDetailsDTO videoflyerDetailsDTO = mapper.toDetailsDto(videoflyer, Map.of(LocalDate.now(), new SimpleAssignment(true)));
 
         String videoflyerJson = json(videoflyerDetailsDTO);
 
@@ -364,7 +365,7 @@ class VideoflyerControllerTest extends AbstractSkdvinTest {
         Videoflyer videoflyer = videoflyerRepository.save(ModelMockHelper.createVideoflyer());
         Jumpday jumpday = ModelMockHelper.createJumpday();
         jumpdayService.saveJumpday(jumpday);
-        VideoflyerDetailsDTO videoflyerDetailsDTO = converter.convertToDetailsDto(videoflyer, Map.of(LocalDate.now(), new SimpleAssignment(true)));
+        VideoflyerDetailsDTO videoflyerDetailsDTO = mapper.toDetailsDto(videoflyer, Map.of(LocalDate.now(), new SimpleAssignment(true)));
 
         String videoflyerJson = json(videoflyerDetailsDTO);
 

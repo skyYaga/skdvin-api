@@ -4,19 +4,20 @@ import in.skdv.skdvinbackend.exception.ErrorMessage;
 import in.skdv.skdvinbackend.exception.InvalidRequestException;
 import in.skdv.skdvinbackend.exception.NotFoundException;
 import in.skdv.skdvinbackend.model.common.SimpleAssignment;
-import in.skdv.skdvinbackend.model.converter.AssignmentConverter;
-import in.skdv.skdvinbackend.model.converter.VideoflyerConverter;
 import in.skdv.skdvinbackend.model.entity.Assignment;
 import in.skdv.skdvinbackend.model.entity.Jumpday;
 import in.skdv.skdvinbackend.model.entity.Videoflyer;
 import in.skdv.skdvinbackend.model.entity.VideoflyerDetails;
 import in.skdv.skdvinbackend.model.entity.settings.SelfAssignmentMode;
+import in.skdv.skdvinbackend.model.mapper.AssignmentMapper;
+import in.skdv.skdvinbackend.model.mapper.VideoflyerMapper;
 import in.skdv.skdvinbackend.repository.JumpdayRepository;
 import in.skdv.skdvinbackend.repository.VideoflyerRepository;
 import in.skdv.skdvinbackend.service.ISettingsService;
 import in.skdv.skdvinbackend.service.IVideoflyerService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
@@ -26,14 +27,15 @@ import java.util.Map;
 import java.util.Optional;
 
 @Slf4j
+@Service
 @RequiredArgsConstructor
 public class VideoflyerService implements IVideoflyerService {
 
     private final JumpdayRepository jumpdayRepository;
     private final VideoflyerRepository videoflyerRepository;
     private final ISettingsService settingsService;
-    private final VideoflyerConverter videoflyerConverter = new VideoflyerConverter();
-    private final AssignmentConverter assignmentConverter = new AssignmentConverter();
+    private final VideoflyerMapper videoflyerMapper;
+    private final AssignmentMapper assignmentMapper;
 
     @Override
     @Transactional
@@ -123,11 +125,11 @@ public class VideoflyerService implements IVideoflyerService {
             Optional<Assignment<Videoflyer>> localAssignment = j.getVideoflyer().stream()
                     .filter(t -> t != null && t.getFlyer() != null && t.getFlyer().getId().equals(videoflyer.getId())).findFirst();
             localAssignment
-                    .ifPresentOrElse(assignment -> assignments.put(j.getDate(), assignmentConverter.convertToSimpleAssignment(assignment)),
+                    .ifPresentOrElse(assignment -> assignments.put(j.getDate(), assignmentMapper.videoflyerToSimpleAssignment(assignment)),
                             () -> assignments.put(j.getDate(), new SimpleAssignment(false)));
         });
 
-        return videoflyerConverter.convertToDetails(videoflyer, assignments);
+        return videoflyerMapper.toDetails(videoflyer, assignments);
     }
 
     public void assignVideoflyerToJumpday(LocalDate date, Videoflyer videoflyer, SimpleAssignment simpleAssignment) {
@@ -163,7 +165,7 @@ public class VideoflyerService implements IVideoflyerService {
                 .filter(t -> t != null && t.getFlyer() != null && t.getFlyer().getId().equals(videoflyer.getId()))
                 .findFirst();
 
-        Assignment<Videoflyer> assignment = assignmentConverter.convertToAssignment(simpleAssignment, videoflyer);
+        Assignment<Videoflyer> assignment = assignmentMapper.toAssignment(simpleAssignment, videoflyer);
 
         if (foundAssignment.isEmpty() && assignment.isAssigned()) {
             jumpday.getVideoflyer().add(assignment);

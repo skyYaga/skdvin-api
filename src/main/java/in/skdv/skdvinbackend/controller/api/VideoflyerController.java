@@ -3,13 +3,13 @@ package in.skdv.skdvinbackend.controller.api;
 import in.skdv.skdvinbackend.config.Claims;
 import in.skdv.skdvinbackend.exception.ErrorMessage;
 import in.skdv.skdvinbackend.exception.InvalidRequestException;
-import in.skdv.skdvinbackend.model.converter.VideoflyerConverter;
 import in.skdv.skdvinbackend.model.dto.VideoflyerDTO;
 import in.skdv.skdvinbackend.model.dto.VideoflyerDetailsDTO;
 import in.skdv.skdvinbackend.model.dto.VideoflyerDetailsInputDTO;
 import in.skdv.skdvinbackend.model.dto.VideoflyerInputDTO;
 import in.skdv.skdvinbackend.model.entity.Videoflyer;
 import in.skdv.skdvinbackend.model.entity.VideoflyerDetails;
+import in.skdv.skdvinbackend.model.mapper.VideoflyerMapper;
 import in.skdv.skdvinbackend.service.IVideoflyerService;
 import in.skdv.skdvinbackend.util.GenericResult;
 import jakarta.validation.Valid;
@@ -28,7 +28,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class VideoflyerController {
 
-    private final VideoflyerConverter videoflyerConverter = new VideoflyerConverter();
+    private final VideoflyerMapper videoflyerMapper;
     private final IVideoflyerService videoflyerService;
 
     @PostMapping
@@ -36,9 +36,9 @@ public class VideoflyerController {
     @PreAuthorize("hasAuthority('SCOPE_create:videoflyer')")
     public GenericResult<VideoflyerDTO> addVideoflyer(@RequestBody @Valid VideoflyerDTO input) {
         log.info("Adding videoflyer {}", input);
-        Videoflyer convertedInput = videoflyerConverter.convertToEntity(input);
+        Videoflyer convertedInput = videoflyerMapper.toEntity(input);
         Videoflyer videoflyer = videoflyerService.save(convertedInput);
-        return new GenericResult<>(true, videoflyerConverter.convertToDto(videoflyer));
+        return new GenericResult<>(true, videoflyerMapper.toDto(videoflyer));
     }
 
     @GetMapping
@@ -46,7 +46,7 @@ public class VideoflyerController {
     public GenericResult<List<VideoflyerDTO>> getAllVideoflyers() {
         log.info("Getting all videoflyers");
         List<Videoflyer> videoflyers = videoflyerService.findAll();
-        return new GenericResult<>(true, videoflyerConverter.convertToDto(videoflyers));
+        return new GenericResult<>(true, videoflyerMapper.toDto(videoflyers));
     }
 
     @GetMapping(value = "/{id}")
@@ -54,7 +54,7 @@ public class VideoflyerController {
     public GenericResult<VideoflyerDetailsDTO> getVideoflyer(@PathVariable String id) {
         log.info("Getting videoflyer by id {}", id);
         VideoflyerDetails videoflyer = videoflyerService.getById(id);
-        return new GenericResult<>(true, videoflyerConverter.convertToDto(videoflyer));
+        return new GenericResult<>(true, videoflyerMapper.toDto(videoflyer));
     }
 
     @GetMapping(value = "/me")
@@ -62,7 +62,7 @@ public class VideoflyerController {
     public GenericResult<VideoflyerDetailsDTO> getMeVideoflyer() {
         log.info("Getting me videoflyer");
         VideoflyerDetails videoflyer = videoflyerService.getByEmail(Claims.getEmail());
-        return new GenericResult<>(true, videoflyerConverter.convertToDto(videoflyer));
+        return new GenericResult<>(true, videoflyerMapper.toDto(videoflyer));
     }
 
     @PatchMapping(value = "/me/assign")
@@ -74,7 +74,7 @@ public class VideoflyerController {
             throw new InvalidRequestException(ErrorMessage.SELFASSIGNMENT_NODELETE);
         }
 
-        videoflyerService.assignVideoflyer(videoflyerConverter.convertToEntity(input), true);
+        videoflyerService.assignVideoflyer(videoflyerMapper.toEntity(input), true);
         return new GenericResult<>(true);
     }
 
@@ -82,8 +82,8 @@ public class VideoflyerController {
     @PreAuthorize("hasAuthority('SCOPE_update:videoflyer')")
     public GenericResult<VideoflyerDTO> updateVideoflyer(@PathVariable String id, @RequestBody @Valid VideoflyerInputDTO input) {
         log.info("Updating videoflyer {}: {}", id, input);
-        Videoflyer savedVideoflyer = videoflyerService.updateVideoflyer(videoflyerConverter.convertToEntity(id, input));
-        return new GenericResult<>(true, videoflyerConverter.convertToDto(savedVideoflyer));
+        Videoflyer savedVideoflyer = videoflyerService.updateVideoflyer(videoflyerMapper.toEntity(id, input));
+        return new GenericResult<>(true, videoflyerMapper.toDto(savedVideoflyer));
     }
 
     @DeleteMapping(value = "/{id}")
@@ -101,7 +101,7 @@ public class VideoflyerController {
             @PathVariable @NotNull @Valid String id,
             @RequestBody @Valid VideoflyerDetailsInputDTO input) {
         log.info("Assigning videoflyer {} to jumpdays {}", id, input);
-        videoflyerService.assignVideoflyer(videoflyerConverter.convertToEntity(id, input), false);
+        videoflyerService.assignVideoflyer(videoflyerMapper.toEntity(id, input), false);
         return new GenericResult<>(true);
     }
 

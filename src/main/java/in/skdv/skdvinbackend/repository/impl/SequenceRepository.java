@@ -8,12 +8,14 @@ import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
+import org.springframework.stereotype.Repository;
 
 /**
  * Service that generated sequence-style auto incremented ids
  * @see <a href="https://www.mkyong.com/mongodb/spring-data-mongodb-auto-sequence-id-example/">
  *     https://www.mkyong.com/mongodb/spring-data-mongodb-auto-sequence-id-example/</a>
  */
+@Repository
 @RequiredArgsConstructor
 public class SequenceRepository implements ISequenceRepository {
 

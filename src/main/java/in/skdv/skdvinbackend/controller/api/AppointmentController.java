@@ -5,12 +5,11 @@ import in.skdv.skdvinbackend.exception.NotFoundException;
 import in.skdv.skdvinbackend.model.common.FreeSlot;
 import in.skdv.skdvinbackend.model.common.GroupSlot;
 import in.skdv.skdvinbackend.model.common.SlotQuery;
-import in.skdv.skdvinbackend.model.converter.AppointmentConverter;
 import in.skdv.skdvinbackend.model.dto.AppointmentDTO;
 import in.skdv.skdvinbackend.model.dto.AppointmentStateOnlyDTO;
 import in.skdv.skdvinbackend.model.entity.Appointment;
+import in.skdv.skdvinbackend.model.mapper.AppointmentMapper;
 import in.skdv.skdvinbackend.service.IAppointmentService;
-import in.skdv.skdvinbackend.service.IEmailService;
 import in.skdv.skdvinbackend.util.GenericResult;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -31,16 +30,15 @@ import java.util.List;
 public class AppointmentController {
 
     private final IAppointmentService appointmentService;
-    private final IEmailService emailService;
     private final MessageSource messageSource;
-    private final AppointmentConverter appointmentConverter;
+    private final AppointmentMapper appointmentMapper;
 
     @GetMapping(value = "/{appointmentId}")
     @PreAuthorize("hasAuthority('SCOPE_read:appointments')")
     public GenericResult<AppointmentDTO> readAppointment(@PathVariable int appointmentId) {
         log.info("Reading appointment {}", appointmentId);
         Appointment appointment = appointmentService.findAppointment(appointmentId);
-        return new GenericResult<>(true, appointmentConverter.convertToDto(appointment));
+        return new GenericResult<>(true, appointmentMapper.toDto(appointment));
     }
 
     @PostMapping
@@ -48,11 +46,11 @@ public class AppointmentController {
     @PreAuthorize("permitAll")
     public GenericResult<AppointmentDTO> addAppointment(@RequestBody @Valid AppointmentDTO input) {
         log.info("Adding appointment {}", input);
-        Appointment appointment = appointmentConverter.convertToEntity(input);
+        Appointment appointment = appointmentMapper.toEntity(input);
 
         Appointment result = appointmentService.saveAppointment(appointment);
 
-        return new GenericResult<>(true, appointmentConverter.convertToDto(result));
+        return new GenericResult<>(true, appointmentMapper.toDto(result));
     }
 
     @PostMapping("/admin")
@@ -61,26 +59,26 @@ public class AppointmentController {
     public GenericResult<AppointmentDTO> addAdminAppointment(@RequestBody @Valid AppointmentDTO input) {
         log.info("Adding admin appointment {}", input);
 
-        Appointment appointment = appointmentConverter.convertToEntity(input);
+        Appointment appointment = appointmentMapper.toEntity(input);
         Appointment result = appointmentService.saveAdminAppointment(appointment);
 
-        return new GenericResult<>(true, appointmentConverter.convertToDto(result));
+        return new GenericResult<>(true, appointmentMapper.toDto(result));
     }
 
     @PutMapping
     @PreAuthorize("hasAuthority('SCOPE_update:appointments')")
     public GenericResult<AppointmentDTO> updateAppointment(@RequestBody @Valid AppointmentDTO input) {
         log.info("Updating appointment {}", input);
-        Appointment result = appointmentService.updateAppointment(appointmentConverter.convertToEntity(input));
-        return new GenericResult<>(true, appointmentConverter.convertToDto(result));
+        Appointment result = appointmentService.updateAppointment(appointmentMapper.toEntity(input));
+        return new GenericResult<>(true, appointmentMapper.toDto(result));
     }
 
     @PutMapping("/admin")
     @PreAuthorize("hasAuthority('SCOPE_update:appointments')")
     public GenericResult<AppointmentDTO> updateAdminAppointment(@RequestBody @Valid AppointmentDTO input) {
         log.info("Updating admin appointment {}", input);
-        Appointment result = appointmentService.updateAdminAppointment(appointmentConverter.convertToEntity(input));
-        return new GenericResult<>(true, appointmentConverter.convertToDto(result));
+        Appointment result = appointmentService.updateAdminAppointment(appointmentMapper.toEntity(input));
+        return new GenericResult<>(true, appointmentMapper.toDto(result));
     }
 
     @DeleteMapping(value = "/{appointmentId}")
@@ -123,7 +121,7 @@ public class AppointmentController {
     public GenericResult<List<AppointmentDTO>> getAppointmentsByDate(@PathVariable String date) {
         log.info("Getting appointments by date {}", date);
         List<Appointment> appointments = appointmentService.findAppointmentsByDay(LocalDate.parse(date));
-        return new GenericResult<>(true, appointmentConverter.convertToDto(appointments));
+        return new GenericResult<>(true, appointmentMapper.toDto(appointments));
     }
 
 

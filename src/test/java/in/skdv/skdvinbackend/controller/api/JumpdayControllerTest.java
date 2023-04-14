@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import in.skdv.skdvinbackend.AbstractSkdvinTest;
 import in.skdv.skdvinbackend.MockJwtDecoder;
 import in.skdv.skdvinbackend.ModelMockHelper;
-import in.skdv.skdvinbackend.model.converter.JumpdayConverter;
 import in.skdv.skdvinbackend.model.dto.JumpdayDTO;
 import in.skdv.skdvinbackend.model.dto.TandemmasterDTO;
 import in.skdv.skdvinbackend.model.dto.VideoflyerDTO;
@@ -12,6 +11,7 @@ import in.skdv.skdvinbackend.model.entity.Appointment;
 import in.skdv.skdvinbackend.model.entity.Jumpday;
 import in.skdv.skdvinbackend.model.entity.Tandemmaster;
 import in.skdv.skdvinbackend.model.entity.Videoflyer;
+import in.skdv.skdvinbackend.model.mapper.JumpdayMapper;
 import in.skdv.skdvinbackend.repository.JumpdayRepository;
 import in.skdv.skdvinbackend.repository.TandemmasterRepository;
 import in.skdv.skdvinbackend.repository.VideoflyerRepository;
@@ -55,7 +55,7 @@ class JumpdayControllerTest extends AbstractSkdvinTest {
     private MockMvc mockMvc;
 
     @Autowired
-    private JumpdayConverter jumpdayConverter;
+    private JumpdayMapper jumpdayMapper;
 
     @Autowired
     private IJumpdayService jumpdayService;
@@ -351,7 +351,7 @@ class JumpdayControllerTest extends AbstractSkdvinTest {
 
         savedJumpday.getSlots().get(0).setTandemTotal(newCount);
 
-        String jumpdayJson = json(jumpdayConverter.convertToDto(savedJumpday));
+        String jumpdayJson = json(jumpdayMapper.toDto(savedJumpday));
 
         mockMvc.perform(put("/api/jumpday/{date}", LocalDate.now().toString())
                 .header("Authorization", MockJwtDecoder.addHeader(UPDATE_JUMPDAYS))
@@ -369,7 +369,7 @@ class JumpdayControllerTest extends AbstractSkdvinTest {
         unsavedJumpday.setTandemmaster(Collections.singletonList(ModelMockHelper.createAssignment(tandemmaster)));
         Jumpday jumpday = jumpdayService.saveJumpday(unsavedJumpday);
 
-        JumpdayDTO jumpdayDTO = jumpdayConverter.convertToDto(jumpday);
+        JumpdayDTO jumpdayDTO = jumpdayMapper.toDto(jumpday);
 
         // don't set fields
         TandemmasterDTO tandemmasterDTO = jumpdayDTO.getTandemmaster().get(0).getFlyer();
@@ -398,7 +398,7 @@ class JumpdayControllerTest extends AbstractSkdvinTest {
         unsavedJumpday.setVideoflyer(Collections.singletonList(ModelMockHelper.createAssignment(videoflyer)));
         Jumpday jumpday = jumpdayService.saveJumpday(unsavedJumpday);
 
-        JumpdayDTO jumpdayDTO = jumpdayConverter.convertToDto(jumpday);
+        JumpdayDTO jumpdayDTO = jumpdayMapper.toDto(jumpday);
 
         // don't set fields
         VideoflyerDTO videoflyerDTO = jumpdayDTO.getVideoflyer().get(0).getFlyer();

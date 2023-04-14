@@ -7,13 +7,13 @@ import in.skdv.skdvinbackend.exception.ErrorMessage;
 import in.skdv.skdvinbackend.exception.InvalidRequestException;
 import in.skdv.skdvinbackend.exception.NotFoundException;
 import in.skdv.skdvinbackend.model.common.SimpleAssignment;
-import in.skdv.skdvinbackend.model.converter.VideoflyerConverter;
 import in.skdv.skdvinbackend.model.entity.Assignment;
 import in.skdv.skdvinbackend.model.entity.Jumpday;
 import in.skdv.skdvinbackend.model.entity.Videoflyer;
 import in.skdv.skdvinbackend.model.entity.VideoflyerDetails;
 import in.skdv.skdvinbackend.model.entity.settings.SelfAssignmentMode;
 import in.skdv.skdvinbackend.model.entity.settings.Settings;
+import in.skdv.skdvinbackend.model.mapper.VideoflyerMapper;
 import in.skdv.skdvinbackend.repository.JumpdayRepository;
 import in.skdv.skdvinbackend.repository.VideoflyerRepository;
 import in.skdv.skdvinbackend.service.IJumpdayService;
@@ -53,6 +53,9 @@ class VideoflyerServiceTest extends AbstractSkdvinTest {
 
     @Autowired
     IJumpdayService jumpdayService;
+
+    @Autowired
+    VideoflyerMapper mapper;
 
     @BeforeEach
     void setup() {
@@ -396,8 +399,7 @@ class VideoflyerServiceTest extends AbstractSkdvinTest {
         jumpdayRepository.save(jumpday1);
         jumpdayRepository.save(jumpday2);
         Videoflyer videoflyer = videoflyerRepository.save(ModelMockHelper.createVideoflyer());
-        VideoflyerConverter converter = new VideoflyerConverter();
-        return converter.convertToDetails(videoflyer, new HashMap<>());
+        return mapper.toDetails(videoflyer, new HashMap<>());
     }
 
     @Test
@@ -428,8 +430,7 @@ class VideoflyerServiceTest extends AbstractSkdvinTest {
     @Test
     void testAssignVideoflyer_Error() {
         Videoflyer videoflyer = videoflyerRepository.save(ModelMockHelper.createVideoflyer());
-        VideoflyerConverter converter = new VideoflyerConverter();
-        VideoflyerDetails videoflyerDetails = converter.convertToDetails(videoflyer, Map.of());
+        VideoflyerDetails videoflyerDetails = mapper.toDetails(videoflyer, Map.of());
         videoflyerDetails.setAssignments(Map.of(LocalDate.now(), new SimpleAssignment(false), LocalDate.now().plus(1, ChronoUnit.DAYS), new SimpleAssignment(false)));
 
         NotFoundException notFoundException = assertThrows(NotFoundException.class, () ->
