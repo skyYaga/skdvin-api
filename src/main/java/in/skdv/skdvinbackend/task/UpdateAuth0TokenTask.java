@@ -4,7 +4,7 @@ import com.auth0.client.auth.AuthAPI;
 import com.auth0.client.mgmt.ManagementAPI;
 import com.auth0.exception.Auth0Exception;
 import com.auth0.json.auth.TokenHolder;
-import com.auth0.net.AuthRequest;
+import com.auth0.net.TokenRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -24,9 +24,9 @@ public class UpdateAuth0TokenTask {
 
     @Scheduled(fixedDelay = 1000 * 60 * 60 * 8, initialDelay = 1000 * 60) // every 8 hours
     public void updateToken() {
-        AuthRequest authRequest = authAPI.requestToken("https://" + domain + "/api/v2/");
+        TokenRequest tokenRequest = authAPI.requestToken("https://" + domain + "/api/v2/");
         try {
-            TokenHolder holder = authRequest.execute();
+            TokenHolder holder = tokenRequest.execute().getBody();
             managementAPI.setApiToken(holder.getAccessToken());
         } catch (Auth0Exception e) {
             log.error("Error updating Auth0 token", e);

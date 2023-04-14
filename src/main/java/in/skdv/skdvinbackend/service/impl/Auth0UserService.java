@@ -5,8 +5,8 @@ import com.auth0.client.mgmt.filter.PageFilter;
 import com.auth0.client.mgmt.filter.RolesFilter;
 import com.auth0.client.mgmt.filter.UserFilter;
 import com.auth0.exception.Auth0Exception;
-import com.auth0.json.mgmt.Role;
-import com.auth0.json.mgmt.RolesPage;
+import com.auth0.json.mgmt.roles.Role;
+import com.auth0.json.mgmt.roles.RolesPage;
 import com.auth0.json.mgmt.users.User;
 import com.auth0.json.mgmt.users.UsersPage;
 import in.skdv.skdvinbackend.exception.AuthConnectionException;
@@ -65,7 +65,7 @@ public class Auth0UserService implements IUserService {
     @Override
     public List<RoleDTO> getRoles() {
         try {
-            RolesPage list = managementAPI.roles().list(new RolesFilter()).execute();
+            RolesPage list = managementAPI.roles().list(new RolesFilter()).execute().getBody();
             List<Role> roleList = list.getItems();
 
             List<RoleDTO> returnList = new ArrayList<>();
@@ -95,7 +95,7 @@ public class Auth0UserService implements IUserService {
 
     private void retrieveUsers(UserListResult returnList, int pageNumber, int amountPerPage) throws Auth0Exception {
         UserFilter userFilter = new UserFilter().withPage(pageNumber, amountPerPage).withTotals(true);
-        UsersPage list = managementAPI.users().list(userFilter).execute();
+        UsersPage list = managementAPI.users().list(userFilter).execute().getBody();
         List<User> userList = list.getItems();
 
         returnList.setStart(list.getStart());
@@ -110,7 +110,7 @@ public class Auth0UserService implements IUserService {
 
     private List<RoleDTO> retrieveRoles(String userId) {
         try {
-            RolesPage rolesPage = managementAPI.users().listRoles(userId, new PageFilter()).execute();
+            RolesPage rolesPage = managementAPI.users().listRoles(userId, new PageFilter()).execute().getBody();
             return rolesPage.getItems().stream().map(role -> new RoleDTO(role.getId(), role.getName())).toList();
         } catch (Auth0Exception e) {
             log.error("Error retrieving roles from auth0", e); //NOSONAR would be confusing to have it as constant
