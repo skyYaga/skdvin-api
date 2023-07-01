@@ -16,15 +16,15 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class UpdateAuth0TokenTask {
 
-    @Value("${auth0.management.domain}")
-    private String domain;
+    @Value("${auth0.management.audience}")
+    private String audience;
 
     private final ManagementAPI managementAPI;
     private final AuthAPI authAPI;
 
     @Scheduled(fixedDelay = 1000 * 60 * 60 * 8, initialDelay = 1000 * 60) // every 8 hours
     public void updateToken() {
-        TokenRequest tokenRequest = authAPI.requestToken("https://" + domain + "/api/v2/");
+        TokenRequest tokenRequest = authAPI.requestToken(audience);
         try {
             TokenHolder holder = tokenRequest.execute().getBody();
             managementAPI.setApiToken(holder.getAccessToken());
@@ -32,4 +32,9 @@ public class UpdateAuth0TokenTask {
             log.error("Error updating Auth0 token", e);
         }
     }
+
+    /*@EventListener
+    public void onApplicationEvent(ContextRefreshedEvent event) {
+        updateToken();
+    }*/
 }

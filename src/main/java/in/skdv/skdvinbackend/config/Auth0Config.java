@@ -2,9 +2,6 @@ package in.skdv.skdvinbackend.config;
 
 import com.auth0.client.auth.AuthAPI;
 import com.auth0.client.mgmt.ManagementAPI;
-import com.auth0.exception.Auth0Exception;
-import com.auth0.json.auth.TokenHolder;
-import com.auth0.net.TokenRequest;
 import com.auth0.net.client.Auth0HttpClient;
 import com.auth0.net.client.DefaultHttpClient;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +21,9 @@ public class Auth0Config {
     @Value("${auth0.management.client-secret}")
     private String clientSecret;
 
+    @Value("${auth0.management.audience}")
+    private String audience;
+
     @Bean
     public Auth0HttpClient auth0HttpClient() {
         return DefaultHttpClient.newBuilder()
@@ -40,11 +40,8 @@ public class Auth0Config {
 
     @Bean
     @Autowired
-    public ManagementAPI managementAPI(AuthAPI authAPI) throws Auth0Exception {
-        TokenRequest tokenRequest = authAPI.requestToken("https://" + domain + "/api/v2/");
-        TokenHolder response = tokenRequest.execute().getBody();
-        String accessToken = response.getAccessToken();
-        return ManagementAPI.newBuilder(domain, accessToken)
+    public ManagementAPI managementAPI()  {
+        return ManagementAPI.newBuilder(domain, "dummy")
                 .withHttpClient(auth0HttpClient())
                 .build();
     }
