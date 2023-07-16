@@ -6,6 +6,7 @@ import in.skdv.skdvinbackend.model.domain.PublicSettings;
 import in.skdv.skdvinbackend.model.dto.*;
 import in.skdv.skdvinbackend.model.entity.*;
 import in.skdv.skdvinbackend.model.entity.settings.*;
+import in.skdv.skdvinbackend.model.entity.voucher.legacy.LegacyVoucherDocument;
 import in.skdv.skdvinbackend.model.mapper.*;
 
 import java.time.LocalDate;
@@ -263,4 +264,11 @@ public class ModelMockHelper {
         videoflyerDetails.getAssignments().put(date, new SimpleAssignment(true));
     }
 
+    public static LegacyVoucherDocument createVoucherDocument() {
+        LegacyVoucherDocument legacyVoucherDocument = new LegacyVoucherDocument();
+        legacyVoucherDocument.setId("10000");
+        legacyVoucherDocument.setFirstName("John");
+        legacyVoucherDocument.setLastName("Doe");
+        return legacyVoucherDocument;
+    }
 }
