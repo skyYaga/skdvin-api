@@ -34,8 +34,8 @@ public enum ErrorMessage {
     SELFASSIGNMENT_NODELETE("selfassignment.nodelete"),
     SELFASSIGNMENT_READONLY("selfassignment.readonly"),
 
-    WAIVER_MINOR_MISSING_SIGNATURES("waiver.minor.missing.signatures"),
-    WAIVER_NOT_EXISTING("waiver.not.existing");
+    VOUCHER_ALREADY_REDEEMED("voucher.already.redeemed"),
+    VOUCHER_NOT_FOUND("voucher.not.found");
 
     private final String message;
 

@@ -38,8 +38,6 @@ public class SecurityConfig {
                         .requestMatchers(GET, "/api/appointment/slots").permitAll()
                         .requestMatchers(GET, "/api/appointment/{appointmentId}/confirm/{token}").permitAll()
                         .requestMatchers(GET, "/api/settings/common").permitAll()
-                        .requestMatchers(GET, "/api/settings/waiver").permitAll()
-                        .requestMatchers(POST, "/api/waivers").permitAll()
                         .requestMatchers("/docs/**").permitAll()
                         .anyRequest().authenticated().and())
                 .csrf().disable()
