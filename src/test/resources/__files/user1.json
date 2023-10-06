@@ -1,0 +1,12 @@
+[
+  {
+    "id": "3",
+    "name": "ROLE_TANDEMMASTER",
+    "description": "Role for Tandemmasters"
+  },
+  {
+    "id": "4",
+    "name": "ROLE_VIDEOFLYER",
+    "description": "Role for Videoflyers"
+  }
+]

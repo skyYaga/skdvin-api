@@ -36,6 +36,7 @@ auth0:
     domain: ${AUTH0_MANAGEMENT_DOMAIN:}
     client-id: ${AUTH0_MANAGEMENT_CLIENT_ID:}
     client-secret: ${AUTH0_MANAGEMENT_CLIENT_SECRET:}
+    audience: https://${auth0.management.domain}/api/v2/
 skdvin:
   timezone: Europe/Berlin
   baseurl: ${SKDVIN_BASEURL:}

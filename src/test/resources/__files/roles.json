@@ -1,0 +1,22 @@
+[
+  {
+    "id": "1",
+    "name": "ROLE_ADMIN",
+    "description": "Admin Rolle skdv.in"
+  },
+  {
+    "id": "2",
+    "name": "ROLE_MODERATOR",
+    "description": "Role for Moderators (normal Manifest Users)"
+  },
+  {
+    "id": "3",
+    "name": "ROLE_TANDEMMASTER",
+    "description": "Role for Tandemmasters"
+  },
+  {
+    "id": "4",
+    "name": "ROLE_VIDEOFLYER",
+    "description": "Role for Videoflyers"
+  }
+]
