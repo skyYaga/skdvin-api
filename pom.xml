@@ -36,7 +36,7 @@
         <sentry.version>6.30.0</sentry.version>
         <spring-cloud.version>2022.0.2</spring-cloud.version>
         <springdoc.version>2.2.0</springdoc.version>
-        <testcontainers.version>1.19.0</testcontainers.version>
+        <testcontainers.version>1.19.1</testcontainers.version>
         <jacoco.version>0.8.10</jacoco.version>
     </properties>
 
