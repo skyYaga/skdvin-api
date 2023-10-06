@@ -33,8 +33,4 @@ public class UpdateAuth0TokenTask {
         }
     }
 
-    /*@EventListener
-    public void onApplicationEvent(ContextRefreshedEvent event) {
-        updateToken();
-    }*/
 }
