@@ -32,17 +32,18 @@ public class Auth0Config {
                 .build();
     }
     @Bean
-    public AuthAPI authAPI() {
+    @Autowired
+    public AuthAPI authAPI(Auth0HttpClient auth0HttpClient) {
         return AuthAPI.newBuilder(domain, clientId, clientSecret)
-                .withHttpClient(auth0HttpClient())
+                .withHttpClient(auth0HttpClient)
                 .build();
     }
 
     @Bean
     @Autowired
-    public ManagementAPI managementAPI()  {
+    public ManagementAPI managementAPI(Auth0HttpClient auth0HttpClient)  {
         return ManagementAPI.newBuilder(domain, "dummy")
-                .withHttpClient(auth0HttpClient())
+                .withHttpClient(auth0HttpClient)
                 .build();
     }
 }

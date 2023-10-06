@@ -1,62 +1,66 @@
 package in.skdv.skdvinbackend.service.impl;
 
-import com.auth0.client.mgmt.ManagementAPI;
-import com.auth0.exception.Auth0Exception;
-import com.auth0.json.mgmt.roles.Role;
-import com.auth0.json.mgmt.users.User;
+import com.auth0.net.client.Auth0HttpClient;
+import com.auth0.net.client.DefaultHttpClient;
+import com.github.tomakehurst.wiremock.client.WireMock;
 import in.skdv.skdvinbackend.AbstractSkdvinTest;
 import in.skdv.skdvinbackend.model.common.user.UserListResult;
+import in.skdv.skdvinbackend.model.dto.RoleDTO;
+import in.skdv.skdvinbackend.model.dto.UserDTO;
+import okhttp3.OkHttpClient;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.Primary;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static com.github.tomakehurst.wiremock.client.WireMock.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(
+        webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+        properties = {"spring.main.allow-bean-definition-overriding=true"}
+)
+@Import(Auth0UserServiceTest.Auth0TestConfiguration.class)
 class Auth0UserServiceTest extends AbstractSkdvinTest {
 
     @Autowired
-    private ManagementAPI managementAPI;
-    @Autowired
     private Auth0UserService auth0UserService;
 
+    @BeforeEach
+    void setupStubs() {
+        WireMock.reset();
+        stubFor(any(urlEqualTo("/oauth/token"))
+                .willReturn(aResponse()
+                        .withHeader("Content-Type", "application/json")
+                        .withBodyFile("token.json")));
+    }
+
     @Test
-    void testGetUsers() throws Auth0Exception {
-
-        // url: https://skdvin-dev.eu.auth0.com/oauth/token
-        // response: {"access_token": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6Ik9UaEJNVEF4UlRjd1FrUkROak01TXpBelFqTTRNRE0wTmtKRFJEYzJRelUxUVRreU5qWXlNZyJ9.eyJpc3MiOiJodHRwczovL3NrZHZpbi1kZXYuZXUuYXV0aDAuY29tLyIsInN1YiI6Ik52UEV6cmxzZjJ1M0xGZ2J5UXpkQkxiNlVDM2ZKanNjQGNsaWVudHMiLCJhdWQiOiJodHRwczovL3NrZHZpbi1kZXYuZXUuYXV0aDAuY29tL2FwaS92Mi8iLCJpYXQiOjE2ODIwODY5OTYsImV4cCI6MTY4MjE3MzM5NiwiYXpwIjoiTnZQRXpybHNmMnUzTEZnYnlRemRCTGI2VUMzZkpqc2MiLCJzY29wZSI6InJlYWQ6dXNlcnMgdXBkYXRlOnVzZXJzIHJlYWQ6cm9sZXMiLCJndHkiOiJjbGllbnQtY3JlZGVudGlhbHMifQ.ntng1yfotdNaPvZ_7-qhtWBo7R4iTxZ12f5DrWXMgr6YJYMPnQJSgMXlK5cokdnQO-t8XyubSzR2FFHT5tHqg5XAZWdmiAwl97DtS5rdtlyrNkdbHDW2eMoL4u7nd5NlD858fCfDfhlmHFh-8SgvLcqzsQqJo17U6AV63OGCr-RWTPxnkNqi0U4VhR51rfILCElQyn0a-YS49K8l57AShR1mfJI30hsUOe1BRXdcMjbzV3vS7eu-1FEytyt5HnYnFqvm7LLO7q5uahP8J_MULdS3CqB7F7eXb1JqluU5VlSygW4Arm7BMh9WIwXVSSWAwPLYMbTPhgXGW4Y__Rn-Pg",
-        // "scope":"read:users update:users read:roles","expires_in":86400,"token_type":"Bearer"}
+    void testGetUsers() {
         // Arrange
-        List<User> userList = createMockUserList();
-
-        /*Request<UsersPage> usersRequest = (Request<UsersPage>) Mockito.mock(Request.class);
-        Request<RolesPage> rolesRequest1 = (Request<RolesPage>) Mockito.mock(Request.class);
-        Request<RolesPage> rolesRequest2 = (Request<RolesPage>) Mockito.mock(Request.class);
-        UsersEntity usersEntity = Mockito.mock(UsersEntity.class);
-        UsersPage usersPage = Mockito.mock(UsersPage.class);
-        RolesPage rolesPage1 = Mockito.mock(RolesPage.class);
-        RolesPage rolesPage2 = Mockito.mock(RolesPage.class);
-
-        when(managementAPI.users()).thenReturn(usersEntity);
-        when(usersEntity.list(any())).thenReturn(usersRequest);
-        when(usersEntity.listRoles(anyString(), any())).thenReturn(rolesRequest1).thenReturn(rolesRequest2);
-        when(usersRequest.execute()).thenReturn(usersPage);
-        when(rolesRequest1.execute()).thenReturn(rolesPage1);
-        when(rolesRequest2.execute()).thenReturn(rolesPage2);
-        when(usersPage.getItems()).thenReturn(userList);
-        when(rolesPage1.getItems()).thenReturn(createRolesForUser(1));
-        when(rolesPage2.getItems()).thenReturn(createRolesForUser(2));*/
+        initUsersStub();
+        initUser1Stub();
+        initUser2Stub();
 
         // Act
-        UserListResult userListResult = auth0UserService.getUsers(0, 10);
+        UserListResult userListResult = auth0UserService.getUsers(0, 5);
         var users = userListResult.getUsers();
 
         // Assert
@@ -69,114 +73,47 @@ class Auth0UserServiceTest extends AbstractSkdvinTest {
         assertEquals("baz@bar.com", users.get(1).getEmail());
         assertEquals(1, users.get(1).getRoles().size());
     }
-/*
+
+
     @Test
-    void testGetUsers_ExceptionRetrievingRoles() throws Auth0Exception {
+    void testGetUsers_ExceptionRetrievingRoles() {
         // Arrange
-        List<User> userList = createMockUserList();
-
-        Request<UsersPage> usersRequest = (Request<UsersPage>) Mockito.mock(Request.class);
-        Request<RolesPage> rolesRequest1 = (Request<RolesPage>) Mockito.mock(Request.class);
-        Request<RolesPage> rolesRequest2 = (Request<RolesPage>) Mockito.mock(Request.class);
-        UsersEntity usersEntity = Mockito.mock(UsersEntity.class);
-        UsersPage usersPage = Mockito.mock(UsersPage.class);
-
-        when(managementAPI.users()).thenReturn(usersEntity);
-        when(usersEntity.list(any())).thenReturn(usersRequest);
-        when(usersEntity.listRoles(anyString(), any())).thenReturn(rolesRequest1).thenReturn(rolesRequest2);
-        when(usersRequest.execute()).thenReturn(usersPage);
-        when(rolesRequest1.execute()).thenThrow(new Auth0Exception("Auth0 not available"));
-        when(usersPage.getItems()).thenReturn(userList);
+        initUsersStub();
+        stubFor(any(urlPathEqualTo("/api/v2/roles"))
+                .willReturn(aResponse()
+                        .withHeader("Content-Type", "application/json")
+                        .withBodyFile("roles.json")
+                        .withFixedDelay(1000)
+                ));
 
         // Act
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> auth0UserService.getUsers(0, 10));
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> auth0UserService.getUsers(0, 5));
 
         // Assert
         assertEquals("Error retrieving roles from auth0", exception.getMessage());
     }
 
     @Test
-    void testGetUsers_ExceptionRetrievingUsers() throws Auth0Exception {
+    void testGetUsers_ExceptionRetrievingUsers() {
         // Arrange
-        List<User> userList = createMockUserList();
-
-        Request<UsersPage> usersRequest = (Request<UsersPage>) Mockito.mock(Request.class);
-        UsersEntity usersEntity = Mockito.mock(UsersEntity.class);
-
-        when(managementAPI.users()).thenReturn(usersEntity);
-        when(usersEntity.list(any())).thenReturn(usersRequest);
-        when(usersRequest.execute()).thenThrow(new Auth0Exception("Auth0 not available"));
+        stubFor(any(urlPathEqualTo("/api/v2/users"))
+                .willReturn(aResponse()
+                        .withHeader("Content-Type", "application/json")
+                        .withBodyFile("users.json")
+                        .withFixedDelay(1000)
+                ));
 
         // Act
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> auth0UserService.getUsers(0, 10));
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> auth0UserService.getUsers(0, 5));
 
         // Assert
         assertEquals("Error retrieving users from auth0", exception.getMessage());
     }
 
     @Test
-    void testUpdateUser() throws Auth0Exception {
+    void testUpdateUser() {
         // Arrange
-        UserDTO newDTO = new UserDTO("1", "foo@example.com",
-                new ArrayList<>(Arrays.asList(
-                        new RoleDTO("2", "VIDEOFLYER"),
-                        new RoleDTO("3", "MANIFEST"))
-                )
-        );
-        Request<RolesPage> rolesRequest = (Request<RolesPage>) Mockito.mock(Request.class);
-        UsersEntity usersEntity = Mockito.mock(UsersEntity.class);
-        RolesPage rolesPage = Mockito.mock(RolesPage.class);
-        Request addRolesRequest = Mockito.mock(Request.class);
-        Request removeRolesRequest = Mockito.mock(Request.class);
-
-        when(managementAPI.users()).thenReturn(usersEntity);
-        when(usersEntity.listRoles(anyString(), any())).thenReturn(rolesRequest);
-        when(usersEntity.addRoles(anyString(), any())).thenReturn(addRolesRequest);
-        when(usersEntity.removeRoles(anyString(), any())).thenReturn(removeRolesRequest);
-        when(rolesRequest.execute()).thenReturn(rolesPage);
-        when(rolesPage.getItems()).thenReturn(createRolesForUser(1));
-        when(addRolesRequest.execute()).thenReturn(null);
-        when(removeRolesRequest.execute()).thenReturn(null);
-
-        // Act
-        auth0UserService.updateUser(newDTO);
-
-        // Assert
-        verify(usersEntity).addRoles("1", Collections.singletonList("3"));
-        verify(usersEntity).removeRoles("1", Collections.singletonList("1"));
-        verify(addRolesRequest).execute();
-        verify(removeRolesRequest).execute();
-    }
-
-    @Test
-    void testUpdateUser_NoChanges() throws Auth0Exception {
-        // Arrange
-        UserDTO newDTO = new UserDTO("1", "foo@example.com",
-                new ArrayList<>(Arrays.asList(
-                        new RoleDTO("1", "TANDEMMASTER"),
-                        new RoleDTO("2", "VIDEOFLYER"))
-                )
-        );
-        Request<RolesPage> rolesRequest = (Request<RolesPage>) Mockito.mock(Request.class);
-        UsersEntity usersEntity = Mockito.mock(UsersEntity.class);
-        RolesPage rolesPage = Mockito.mock(RolesPage.class);
-
-        when(managementAPI.users()).thenReturn(usersEntity);
-        when(usersEntity.listRoles(anyString(), any())).thenReturn(rolesRequest);
-        when(rolesRequest.execute()).thenReturn(rolesPage);
-        when(rolesPage.getItems()).thenReturn(createRolesForUser(1));
-
-        // Act
-        auth0UserService.updateUser(newDTO);
-
-        // Assert
-        verify(usersEntity, never()).addRoles(any(), any());
-        verify(usersEntity, never()).removeRoles(any(), any());
-    }
-
-    @Test
-    void testUpdateUser_ExceptionUpdatingRoles() throws Auth0Exception {
-        // Arrange
+        initUser1Stub();
         UserDTO newDTO = new UserDTO("1", "foo@example.com",
                 new ArrayList<>(Arrays.asList(
                         new RoleDTO("2", "VIDEOFLYER"),
@@ -184,18 +121,48 @@ class Auth0UserServiceTest extends AbstractSkdvinTest {
                 )
         );
 
-        Request<RolesPage> rolesRequest = (Request<RolesPage>) Mockito.mock(Request.class);
-        UsersEntity usersEntity = Mockito.mock(UsersEntity.class);
-        RolesPage rolesPage = Mockito.mock(RolesPage.class);
-        Request addRolesRequest = Mockito.mock(Request.class);
+        // Act
+        auth0UserService.updateUser(newDTO);
 
-        when(managementAPI.users()).thenReturn(usersEntity);
-        when(usersEntity.listRoles(anyString(), any())).thenReturn(rolesRequest);
-        when(usersEntity.addRoles(anyString(), any())).thenReturn(addRolesRequest);
-        when(rolesRequest.execute()).thenReturn(rolesPage);
-        when(rolesPage.getItems()).thenReturn(createRolesForUser(1));
-        when(addRolesRequest.execute()).thenReturn(null);
-        when(addRolesRequest.execute()).thenThrow(new Auth0Exception("Auth0 not available"));
+        // Assert
+        verify(postRequestedFor(urlEqualTo("/api/v2/users/1/roles")));
+    }
+
+    @Test
+    void testUpdateUser_NoChanges() {
+        // Arrange
+        initUser1Stub();
+        UserDTO newDTO = new UserDTO("1", "foo@example.com",
+                new ArrayList<>(Arrays.asList(
+                        new RoleDTO("3", "ROLE_TANDEMMASTER"),
+                        new RoleDTO("4", "ROLE_VIDEOFLYER"))
+                )
+        );
+
+        // Act
+        auth0UserService.updateUser(newDTO);
+
+        // Assert
+        verify(0, postRequestedFor(urlEqualTo("/api/v2/users/1/roles")));
+    }
+
+
+    @Test
+    void testUpdateUser_ExceptionUpdatingRoles() {
+        // Arrange
+        initUser1Stub();
+        stubFor(post(urlPathEqualTo("/api/v2/users/1/roles"))
+                .willReturn(aResponse()
+                        .withHeader("Content-Type", "application/json")
+                        .withBodyFile("user1.json")
+                        .withFixedDelay(1000)
+                ));
+        UserDTO newDTO = new UserDTO("1", "foo@example.com",
+                new ArrayList<>(Arrays.asList(
+                        new RoleDTO("2", "VIDEOFLYER"),
+                        new RoleDTO("3", "MANIFEST"))
+                )
+        );
 
         // Act
         RuntimeException exception = assertThrows(RuntimeException.class, () -> auth0UserService.updateUser(newDTO));
@@ -239,40 +206,33 @@ class Auth0UserServiceTest extends AbstractSkdvinTest {
     }
 
     @Test
-    void testGetRoles() throws Auth0Exception {
+    void testGetRoles() {
         // Arrange
-        Request<RolesPage> rolesRequest = (Request<RolesPage>) Mockito.mock(Request.class);
-        RolesEntity rolesEntity = Mockito.mock(RolesEntity.class);
-        RolesPage rolesPage = Mockito.mock(RolesPage.class);
-
-        when(managementAPI.roles()).thenReturn(rolesEntity);
-        when(rolesEntity.list(any())).thenReturn(rolesRequest);
-        when(rolesRequest.execute()).thenReturn(rolesPage);
-        when(rolesPage.getItems()).thenReturn(createRolesForUser(1));
+        initRolesStub();
 
         // Act
         List<RoleDTO> roles = auth0UserService.getRoles();
 
         // Assert
         assertNotNull(roles);
-        assertEquals(2, roles.size());
+        assertEquals(4, roles.size());
         assertEquals("1", roles.get(0).getId());
-        assertEquals("TANDEMMASTER",roles.get(0).getName());
+        assertEquals("ROLE_ADMIN", roles.get(0).getName());
         assertEquals("2", roles.get(1).getId());
-        assertEquals("VIDEOFLYER", roles.get(1).getName());
+        assertEquals("ROLE_MODERATOR", roles.get(1).getName());
     }
 
-    @Test
-    void testGetRoles_ExceptionRetrievingRoles() throws Auth0Exception {
-        // Arrange
-        Request<RolesPage> rolesRequest = (Request<RolesPage>) Mockito.mock(Request.class);
-        RolesEntity rolesEntity = Mockito.mock(RolesEntity.class);
-        RolesPage rolesPage = Mockito.mock(RolesPage.class);
 
-        when(managementAPI.roles()).thenReturn(rolesEntity);
-        when(rolesEntity.list(any())).thenReturn(rolesRequest);
-        when(rolesRequest.execute()).thenThrow(new Auth0Exception("Auth0 not available"));
-        when(rolesPage.getItems()).thenReturn(createRolesForUser(1));
+    @Test
+    void testGetRoles_ExceptionRetrievingRoles() {
+        // Arrange
+        // Arrange
+        stubFor(get(urlPathEqualTo("/api/v2/roles"))
+                .willReturn(aResponse()
+                        .withHeader("Content-Type", "application/json")
+                        .withBodyFile("roles.json")
+                        .withFixedDelay(1000)
+                ));
 
         // Act
         RuntimeException exception = assertThrows(RuntimeException.class, () -> auth0UserService.getRoles());
@@ -280,32 +240,71 @@ class Auth0UserServiceTest extends AbstractSkdvinTest {
         // Assert
         assertEquals("Error retrieving roles from auth0", exception.getMessage());
     }
-*/
-    private List<User> createMockUserList() {
-        User user1 = new User();
-        user1.setId("1");
-        user1.setEmail("foo@bar.com");
-        User user2 = new User();
-        user2.setId("2");user2.setEmail("baz@bar.com");
-        return new ArrayList<>(Arrays.asList(user1, user2));
+
+    private static void initUser2Stub() {
+        stubFor(any(urlPathEqualTo("/api/v2/users/2/roles"))
+                .willReturn(aResponse()
+                        .withHeader("Content-Type", "application/json")
+                        .withBodyFile("user2.json")));
     }
 
-    private List<Role> createRolesForUser(int i) {
-        if (i == 1) {
-            Role role1 = new Role();
-            ReflectionTestUtils.setField(role1, "id", "1");
-            role1.setName("TANDEMMASTER");
-            Role role2 = new Role();
-            ReflectionTestUtils.setField(role2, "id", "2");
-            role2.setName("VIDEOFLYER");
-            return Arrays.asList(role1, role2);
+    private static void initUser1Stub() {
+        stubFor(any(urlPathEqualTo("/api/v2/users/1/roles"))
+                .willReturn(aResponse()
+                        .withHeader("Content-Type", "application/json")
+                        .withBodyFile("user1.json")));
+    }
+
+    private static void initRolesStub() {
+        stubFor(any(urlPathEqualTo("/api/v2/roles"))
+                .willReturn(aResponse()
+                        .withHeader("Content-Type", "application/json")
+                        .withBodyFile("roles.json")));
+    }
+
+    private static void initUsersStub() {
+        stubFor(any(urlPathEqualTo("/api/v2/users"))
+                .willReturn(aResponse()
+                        .withHeader("Content-Type", "application/json")
+                        .withBodyFile("users.json")));
+    }
+
+    @TestConfiguration
+    static class Auth0TestConfiguration {
+
+        @Bean
+        @Primary
+        public Auth0HttpClient auth0HttpClient() throws NoSuchAlgorithmException, KeyManagementException {
+            DefaultHttpClient auth0HttpClient = DefaultHttpClient.newBuilder().build();
+
+            // Disable SSL validation (not recommended for production)
+            TrustManager[] trustAllCerts = new TrustManager[]{
+                    new X509TrustManager() {
+                        @Override
+                        public void checkClientTrusted(java.security.cert.X509Certificate[] chain, String authType) {
+                        }
+
+                        @Override
+                        public void checkServerTrusted(java.security.cert.X509Certificate[] chain, String authType) {
+                        }
+
+                        @Override
+                        public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+                            return new java.security.cert.X509Certificate[]{};
+                        }
+                    }
+            };
+            SSLContext sslContext = SSLContext.getInstance("SSL");
+            sslContext.init(null, trustAllCerts, new java.security.SecureRandom());
+
+            OkHttpClient okHttpClient = new OkHttpClient.Builder()
+                    .sslSocketFactory(sslContext.getSocketFactory(), (X509TrustManager) trustAllCerts[0])
+                    .hostnameVerifier((hostname, session) -> true)
+                    .connectTimeout(Duration.ofMillis(500))
+                    .readTimeout(Duration.ofMillis(500))
+                    .build();
+            ReflectionTestUtils.setField(auth0HttpClient, "client", okHttpClient);
+            return auth0HttpClient;
         }
-        if (i == 2) {
-            Role role1 = new Role();
-            ReflectionTestUtils.setField(role1, "id", "3");
-            role1.setName("MANIFEST");
-            return Collections.singletonList(role1);
-        }
-        return Collections.emptyList();
     }
 }

@@ -1,0 +1,18 @@
+{
+  "start": 0,
+  "limit": 5,
+  "length": 2,
+  "total": 2,
+  "users": [
+    {
+      "email": "foo@bar.com",
+      "user_id": "1",
+      "name": "Foo Bar"
+    },
+    {
+      "email": "baz@bar.com",
+      "user_id": "2",
+      "name": "Baz Bar"
+    }
+  ]
+}
