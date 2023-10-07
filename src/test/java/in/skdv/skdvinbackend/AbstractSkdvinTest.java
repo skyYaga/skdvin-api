@@ -4,12 +4,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.mockito.Mockito;
 import org.mockito.stubbing.Answer;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.cloud.contract.wiremock.AutoConfigureWireMock;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.TestPropertySource;
 import org.testcontainers.containers.MongoDBContainer;
 import org.testcontainers.junit.jupiter.Container;
@@ -31,8 +29,6 @@ import java.time.ZoneId;
         "spring.security.oauth2.resourceserver.jwt.issuer-uri=https://example.com"
 })
 @AutoConfigureWireMock(httpsPort = 6443)
-// Needed to use MongoDB Testcontainer with DynamicPropertySource
-@DirtiesContext
 public abstract class AbstractSkdvinTest {
 
     protected final ZoneId zoneId = ZoneId.of("Europe/Berlin");
@@ -41,12 +37,8 @@ public abstract class AbstractSkdvinTest {
     protected JwtDecoder jwtDecoder;
 
     @Container
-    public static final MongoDBContainer MONGO_DB_CONTAINER = new MongoDBContainer(DockerImageName.parse("mongo:5.0"));
-
-    @DynamicPropertySource
-    static void mongoDbProperties(DynamicPropertyRegistry registry) {
-        registry.add("spring.data.mongodb.uri", MONGO_DB_CONTAINER::getReplicaSetUrl);
-    }
+    @ServiceConnection
+    static MongoDBContainer mongoDb = new MongoDBContainer(DockerImageName.parse("mongo:6.0"));
 
     @BeforeEach
     void setupMocks() {
