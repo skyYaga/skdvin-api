@@ -33,7 +33,7 @@
         <mapstruct.version>1.5.5.Final</mapstruct.version>
         <mongock.version>5.4.4</mongock.version>
         <okhttp3.version>4.9.1</okhttp3.version>
-        <sentry.version>7.3.0</sentry.version>
+        <sentry.version>7.11.0</sentry.version>
         <spring-cloud.version>2023.0.3</spring-cloud.version>
         <springdoc.version>2.3.0</springdoc.version>
         <jacoco.version>0.8.12</jacoco.version>
