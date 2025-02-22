@@ -24,7 +24,7 @@ public class GlobalExceptionAdvice {
     @ExceptionHandler({InvalidRequestException.class, InvalidDeletionException.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     GenericResult<Void> invalidRequestHandler(InvalidRequestException ex) {
-        log.error("Exception: Invalid request.", ex);
+        log.warn("Exception: Bad request.", ex);
         return new GenericResult<>(false, messageSource.getMessage(ex.getErrorMessage().toString(), null, LocaleContextHolder.getLocale()));
     }
 
@@ -32,7 +32,7 @@ public class GlobalExceptionAdvice {
     @ExceptionHandler(NotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     GenericResult<Void> notFoundHandler(NotFoundException ex) {
-        log.error("Exception: Not found.", ex);
+        log.warn("Exception: Not found.", ex);
         return new GenericResult<>(false, messageSource.getMessage(ex.getErrorMessage().toString(), null, LocaleContextHolder.getLocale()));
     }
 
@@ -48,7 +48,7 @@ public class GlobalExceptionAdvice {
     @ExceptionHandler(BindException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     GenericResult<Void> validationErrorHandler(BindException ex) {
-        log.error("Exception: Bad Request.", ex);
+        log.warn("Exception: Bad Request.", ex);
         return new GenericResult<>(false, ex.getAllErrors().toString());
     }
 

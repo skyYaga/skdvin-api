@@ -38,7 +38,7 @@ public class LegacyVoucherService implements ILegacyVoucherService {
     public LegacyVoucher redeemVoucher(String id) {
         LegacyVoucher voucher = findVoucher(id);
         if (voucher.isRedeemed()) {
-            log.error("Voucher with id {} was already redeemed on {}.", id, voucher.getRedeemDate());
+            log.warn("Voucher with id {} was already redeemed on {}.", id, voucher.getRedeemDate());
             throw new VoucherAlreadyRedeemedException(ErrorMessage.VOUCHER_ALREADY_REDEEMED);
         }
 
