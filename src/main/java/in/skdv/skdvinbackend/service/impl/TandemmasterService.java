@@ -15,9 +15,9 @@ import in.skdv.skdvinbackend.repository.JumpdayRepository;
 import in.skdv.skdvinbackend.repository.TandemmasterRepository;
 import in.skdv.skdvinbackend.service.ISettingsService;
 import in.skdv.skdvinbackend.service.ITandemmasterService;
-import jakarta.annotation.Resource;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,9 +37,8 @@ public class TandemmasterService implements ITandemmasterService {
     private final ISettingsService settingsService;
     private final TandemmasterMapper tandemmasterMapper;
     private final AssignmentMapper assignmentMapper;
-
-    @Resource
-    TandemmasterService tandemmasterServiceProxy;
+    @Lazy
+    private final TandemmasterService self;
 
     @Override
     @Transactional
@@ -104,7 +103,7 @@ public class TandemmasterService implements ITandemmasterService {
         // Unassign Tandemmaster
         TandemmasterDetails details = getById(id);
         details.getAssignments().forEach((key, value) -> value.setAssigned(false));
-        tandemmasterServiceProxy.assignTandemmaster(details, false);
+        self.assignTandemmaster(details, false);
 
         // Delete Tandemmaster
         tandemmasterRepository.deleteById(id);

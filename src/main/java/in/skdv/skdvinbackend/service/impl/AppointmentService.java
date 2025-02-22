@@ -11,9 +11,9 @@ import in.skdv.skdvinbackend.repository.JumpdayRepository;
 import in.skdv.skdvinbackend.service.IAppointmentService;
 import in.skdv.skdvinbackend.service.IEmailService;
 import in.skdv.skdvinbackend.util.VerificationTokenUtil;
-import jakarta.annotation.Resource;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,9 +33,9 @@ public class AppointmentService implements IAppointmentService {
     private final ISequenceRepository sequenceService;
     private final IEmailService emailService;
     private final Clock clock = Clock.systemDefaultZone();
+    @Lazy
+    private final AppointmentService self;
 
-    @Resource
-    AppointmentService appointmentServiceProxy;
 
     @Override
     @Transactional
@@ -225,7 +225,7 @@ public class AppointmentService implements IAppointmentService {
             throw new InvalidRequestException(ErrorMessage.APPOINTMENT_CONFIRMATION_TOKEN_INVALID);
         }
 
-        appointmentServiceProxy.updateAppointmentState(appointment, AppointmentState.CONFIRMED);
+        self.updateAppointmentState(appointment, AppointmentState.CONFIRMED);
         emailService.saveMailInOutbox(appointment.getAppointmentId(), EmailType.APPOINTMENT_CONFIRMATION);
     }
 
@@ -248,7 +248,7 @@ public class AppointmentService implements IAppointmentService {
         // Create new Appointment and save it and then delete old one and save
         Appointment appointmentResult;
         if (isAdminBooking) {
-            appointmentResult = appointmentServiceProxy.saveAdminAppointment(newAppointment);
+            appointmentResult = self.saveAdminAppointment(newAppointment);
         } else {
             appointmentResult = saveAppointmentWithoutMail(newAppointment);
         }

@@ -15,9 +15,9 @@ import in.skdv.skdvinbackend.repository.JumpdayRepository;
 import in.skdv.skdvinbackend.repository.VideoflyerRepository;
 import in.skdv.skdvinbackend.service.ISettingsService;
 import in.skdv.skdvinbackend.service.IVideoflyerService;
-import jakarta.annotation.Resource;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,9 +37,8 @@ public class VideoflyerService implements IVideoflyerService {
     private final ISettingsService settingsService;
     private final VideoflyerMapper videoflyerMapper;
     private final AssignmentMapper assignmentMapper;
-
-    @Resource
-    VideoflyerService videoflyerServiceProxy;
+    @Lazy
+    private final VideoflyerService self;
 
     @Override
     @Transactional
@@ -104,7 +103,7 @@ public class VideoflyerService implements IVideoflyerService {
         // Unassign Videoflyer
         VideoflyerDetails details = getById(id);
         details.getAssignments().forEach((key, value) -> value.setAssigned(false));
-        videoflyerServiceProxy.assignVideoflyer(details, false);
+        self.assignVideoflyer(details, false);
 
         // Delete Videoflyer
         videoflyerRepository.deleteById(id);

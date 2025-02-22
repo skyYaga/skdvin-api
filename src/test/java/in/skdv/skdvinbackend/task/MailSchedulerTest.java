@@ -17,7 +17,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.util.List;
 
@@ -36,7 +36,7 @@ class MailSchedulerTest extends AbstractSkdvinTest {
     private JumpdayRepository jumpdayRepository;
     @Autowired
     private AppointmentService appointmentService;
-    @MockBean
+    @MockitoBean
     private IEmailService emailService;
 
     private Appointment appointment;
@@ -45,8 +45,7 @@ class MailSchedulerTest extends AbstractSkdvinTest {
     void setup() {
         jumpdayRepository.deleteAll();
         jumpdayRepository.save(ModelMockHelper.createJumpday());
-        Appointment appointment = ModelMockHelper.createSingleAppointment();
-        this.appointment = appointmentService.saveAppointment(appointment);
+        this.appointment = appointmentService.saveAppointment(ModelMockHelper.createSingleAppointment());
     }
 
     @ParameterizedTest
