@@ -23,7 +23,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -39,7 +39,7 @@ import static org.mockito.Mockito.when;
 @SpringBootTest
 class TandemmasterServiceTest extends AbstractSkdvinTest {
 
-    @MockBean
+    @MockitoBean
     ISettingsService settingsService;
 
     @Autowired

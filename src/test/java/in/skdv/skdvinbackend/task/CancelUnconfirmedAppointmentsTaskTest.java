@@ -18,9 +18,9 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDate;
@@ -37,7 +37,7 @@ class CancelUnconfirmedAppointmentsTaskTest extends AbstractSkdvinTest {
     private static final String FROM_EMAIL = "skdvin@example.com";
     private static final String BASE_URL = "https://example.com";
 
-    @MockBean
+    @MockitoBean
     private ISettingsService settingsService;
 
     @Autowired
@@ -49,7 +49,7 @@ class CancelUnconfirmedAppointmentsTaskTest extends AbstractSkdvinTest {
     @Autowired
     private IAppointmentService appointmentService;
 
-    @MockBean
+    @MockitoBean
     private JavaMailSender mailSender;
 
     @Autowired

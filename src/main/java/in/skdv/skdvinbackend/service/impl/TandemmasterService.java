@@ -17,6 +17,7 @@ import in.skdv.skdvinbackend.service.ISettingsService;
 import in.skdv.skdvinbackend.service.ITandemmasterService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,6 +37,8 @@ public class TandemmasterService implements ITandemmasterService {
     private final ISettingsService settingsService;
     private final TandemmasterMapper tandemmasterMapper;
     private final AssignmentMapper assignmentMapper;
+    @Lazy
+    private final TandemmasterService self;
 
     @Override
     @Transactional
@@ -52,7 +55,7 @@ public class TandemmasterService implements ITandemmasterService {
     public TandemmasterDetails getById(String id) {
         Optional<Tandemmaster> tandemmaster = tandemmasterRepository.findById(id);
         if (tandemmaster.isEmpty()) {
-            log.error("Tandemmaster {} not found", id);
+            log.warn("Tandemmaster {} not found", id);
             throw new NotFoundException(ErrorMessage.TANDEMMASTER_NOT_FOUND);
         }
 
@@ -63,7 +66,7 @@ public class TandemmasterService implements ITandemmasterService {
     public TandemmasterDetails getByEmail(String email) {
         Optional<Tandemmaster> tandemmaster = tandemmasterRepository.findByEmail(email);
         if (tandemmaster.isEmpty()) {
-            log.error("Tandemmaster with email {} not found", email);
+            log.warn("Tandemmaster with email {} not found", email);
             throw new NotFoundException(ErrorMessage.TANDEMMASTER_NOT_FOUND);
         }
 
@@ -79,7 +82,7 @@ public class TandemmasterService implements ITandemmasterService {
 
         Optional<Tandemmaster> tandemmaster = tandemmasterRepository.findById(tandemmasterDetails.getId());
         if (tandemmaster.isEmpty()) {
-            log.error("Tandemmaster {} not found", tandemmasterDetails.getId());
+            log.warn("Tandemmaster {} not found", tandemmasterDetails.getId());
             throw new NotFoundException(ErrorMessage.TANDEMMASTER_NOT_FOUND);
         }
 
@@ -93,14 +96,14 @@ public class TandemmasterService implements ITandemmasterService {
         Optional<Tandemmaster> tandemmaster = tandemmasterRepository.findById(id);
 
         if (tandemmaster.isEmpty()) {
-            log.error("Tandemmaster {} not found.", id);
+            log.warn("Tandemmaster {} not found.", id);
             throw new NotFoundException(ErrorMessage.TANDEMMASTER_NOT_FOUND);
         }
 
         // Unassign Tandemmaster
         TandemmasterDetails details = getById(id);
         details.getAssignments().forEach((key, value) -> value.setAssigned(false));
-        assignTandemmaster(details, false);
+        self.assignTandemmaster(details, false);
 
         // Delete Tandemmaster
         tandemmasterRepository.deleteById(id);
@@ -112,7 +115,7 @@ public class TandemmasterService implements ITandemmasterService {
         Optional<Tandemmaster> tandemmaster = tandemmasterRepository.findById(input.getId());
 
         if (tandemmaster.isEmpty()) {
-            log.error("Tandemmaster {} not found.", input.getId());
+            log.warn("Tandemmaster {} not found.", input.getId());
             throw new NotFoundException(ErrorMessage.TANDEMMASTER_NOT_FOUND);
         }
         return tandemmasterRepository.save(input);

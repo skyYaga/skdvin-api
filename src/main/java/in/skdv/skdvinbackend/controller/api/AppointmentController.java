@@ -88,7 +88,7 @@ public class AppointmentController {
         Appointment appointment = appointmentService.findAppointment(appointmentId);
 
         if (appointment == null) {
-            log.error("Appointment {} not found", appointmentId);
+            log.warn("Appointment {} not found", appointmentId);
             throw new NotFoundException(ErrorMessage.APPOINTMENT_NOT_FOUND);
         }
 

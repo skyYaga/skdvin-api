@@ -1,6 +1,5 @@
 package in.skdv.skdvinbackend.config;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support.ResourceBundleMessageSource;
@@ -29,7 +28,6 @@ public class EmailConfig {
     }
 
     @Bean
-    @Autowired
     public TemplateEngine emailTemplateEngine(ResourceBundleMessageSource emailMessageSource) {
         SpringTemplateEngine templateEngine = new SpringTemplateEngine();
         // Resolver for TEXT emails

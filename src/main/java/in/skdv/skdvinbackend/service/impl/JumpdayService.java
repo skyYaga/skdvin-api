@@ -43,7 +43,7 @@ public class JumpdayService implements IJumpdayService {
     public Jumpday findJumpday(LocalDate date) {
         Jumpday jumpday = jumpdayRepository.findByDate(date);
         if (jumpday == null) {
-            log.error("Jumpday {} does not exist", date); //NOSONAR would be confusing to have it as constant
+            log.warn("Jumpday {} does not exist", date); //NOSONAR would be confusing to have it as constant
             throw new NotFoundException(ErrorMessage.JUMPDAY_NOT_FOUND_MSG);
         }
         return jumpday;
@@ -56,7 +56,7 @@ public class JumpdayService implements IJumpdayService {
 
         Jumpday existingJumpday = jumpdayRepository.findByDate(jumpday.getDate());
         if (existingJumpday != null) {
-            log.error("Jumpday {} does not exist", jumpday.getDate()); //NOSONAR would be confusing to have it as constant
+            log.warn("Jumpday {} does not exist", jumpday.getDate()); //NOSONAR would be confusing to have it as constant
             throw new InvalidRequestException(ErrorMessage.JUMPDAY_ALREADY_EXISTS_MSG);
         }
 
@@ -70,7 +70,7 @@ public class JumpdayService implements IJumpdayService {
 
         Jumpday jumpday = jumpdayRepository.findByDate(date);
         if (jumpday == null) {
-            log.error("Jumpday {} does not exist", date); //NOSONAR would be confusing to have it as constant
+            log.warn("Jumpday {} does not exist", date); //NOSONAR would be confusing to have it as constant
             throw new NotFoundException(ErrorMessage.JUMPDAY_NOT_FOUND_MSG);
         }
 
@@ -83,7 +83,7 @@ public class JumpdayService implements IJumpdayService {
     public void deleteJumpday(LocalDate date) {
         Jumpday jumpday = jumpdayRepository.findByDate(date);
         if (jumpday == null) {
-            log.error("Jumpday {} does not exist", date); //NOSONAR would be confusing to have it as constant
+            log.warn("Jumpday {} does not exist", date); //NOSONAR would be confusing to have it as constant
             throw new NotFoundException(ErrorMessage.JUMPDAY_NOT_FOUND_MSG);
         }
         checkJumpdayHasNoAppointments(jumpday);
@@ -94,7 +94,7 @@ public class JumpdayService implements IJumpdayService {
     private void checkJumpdayHasNoAppointments(Jumpday jumpday) {
         for (Slot slot : jumpday.getSlots()) {
             if (!slot.getAppointments().isEmpty()) {
-                log.error("Jumpday {} still has appointments", jumpday);
+                log.warn("Jumpday {} still has appointments", jumpday);
                 throw new InvalidDeletionException(ErrorMessage.JUMPDAY_HAS_APPOINTMENTS);
             }
         }
@@ -116,7 +116,7 @@ public class JumpdayService implements IJumpdayService {
                         existingSlot.setPicAndVidTotal(slot.getPicAndVidTotal());
                         existingSlot.setHandcamTotal(slot.getHandcamTotal());
                     } else {
-                        log.error("The slot sizes can't be reduced due to existing appointments");
+                        log.warn("The slot sizes can't be reduced due to existing appointments");
                         throw new InvalidDeletionException(ErrorMessage.JUMPDAY_SLOT_HAS_APPOINTMENTS);
                     }
                 }
@@ -160,7 +160,7 @@ public class JumpdayService implements IJumpdayService {
 
             if (!foundSlot.get()) {
                 if (!slot.getAppointments().isEmpty()) {
-                    log.error("The slot to remove still has appointments");
+                    log.warn("The slot to remove still has appointments");
                     throw new InvalidDeletionException(ErrorMessage.JUMPDAY_SLOT_HAS_APPOINTMENTS);
                 }
                 iterator.remove();
@@ -173,11 +173,11 @@ public class JumpdayService implements IJumpdayService {
             if (slot.getTandemTotal() < slot.getPicOrVidTotal() ||
                     slot.getTandemTotal() < slot.getPicAndVidTotal() ||
                     slot.getTandemTotal() < slot.getHandcamTotal()) {
-                log.error("Jumpday has more video than tandem slots: {}", jumpday);
+                log.warn("Jumpday has more video than tandem slots: {}", jumpday);
                 throw new InvalidRequestException(ErrorMessage.JUMPDAY_INVALID_MORE_VIDEO_THAN_TANDEM);
             }
             if (slot.getPicOrVidTotal() < slot.getPicAndVidTotal()) {
-                log.error("Jumpday has more pic and vid than pic or vid slots: {}", jumpday);
+                log.warn("Jumpday has more pic and vid than pic or vid slots: {}", jumpday);
                 throw new InvalidRequestException(ErrorMessage.JUMPDAY_INVALID_MORE_PICANDVID_THAN_PICORVID);
             }
         }

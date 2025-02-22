@@ -17,6 +17,7 @@ import in.skdv.skdvinbackend.service.ISettingsService;
 import in.skdv.skdvinbackend.service.IVideoflyerService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,6 +37,8 @@ public class VideoflyerService implements IVideoflyerService {
     private final ISettingsService settingsService;
     private final VideoflyerMapper videoflyerMapper;
     private final AssignmentMapper assignmentMapper;
+    @Lazy
+    private final VideoflyerService self;
 
     @Override
     @Transactional
@@ -52,7 +55,7 @@ public class VideoflyerService implements IVideoflyerService {
     public VideoflyerDetails getById(String id) {
         Optional<Videoflyer> videoflyer = videoflyerRepository.findById(id);
         if (videoflyer.isEmpty()) {
-            log.error("Videoflyer {} not found", id); //NOSONAR would be confusing to have it as constant
+            log.warn("Videoflyer {} not found", id); //NOSONAR would be confusing to have it as constant
             throw new NotFoundException(ErrorMessage.VIDEOFLYER_NOT_FOUND);
         }
 
@@ -63,7 +66,7 @@ public class VideoflyerService implements IVideoflyerService {
     public VideoflyerDetails getByEmail(String email) {
         Optional<Videoflyer> videoflyer = videoflyerRepository.findByEmail(email);
         if (videoflyer.isEmpty()) {
-            log.error("Videoflyer with email {} not found", email);
+            log.warn("Videoflyer with email {} not found", email);
             throw new NotFoundException(ErrorMessage.VIDEOFLYER_NOT_FOUND);
         }
 
@@ -79,7 +82,7 @@ public class VideoflyerService implements IVideoflyerService {
 
         Optional<Videoflyer> videoflyer = videoflyerRepository.findById(videoflyerDetails.getId());
         if (videoflyer.isEmpty()) {
-            log.error("Videoflyer {} not found", videoflyerDetails.getId()); //NOSONAR would be confusing to have it as constant
+            log.warn("Videoflyer {} not found", videoflyerDetails.getId()); //NOSONAR would be confusing to have it as constant
             throw new NotFoundException(ErrorMessage.VIDEOFLYER_NOT_FOUND);
         }
 
@@ -93,14 +96,14 @@ public class VideoflyerService implements IVideoflyerService {
         Optional<Videoflyer> videoflyer = videoflyerRepository.findById(id);
 
         if (videoflyer.isEmpty()) {
-            log.error("Videoflyer {} not found", id); //NOSONAR would be confusing to have it as constant
+            log.warn("Videoflyer {} not found", id); //NOSONAR would be confusing to have it as constant
             throw new NotFoundException(ErrorMessage.VIDEOFLYER_NOT_FOUND);
         }
 
         // Unassign Videoflyer
         VideoflyerDetails details = getById(id);
         details.getAssignments().forEach((key, value) -> value.setAssigned(false));
-        assignVideoflyer(details, false);
+        self.assignVideoflyer(details, false);
 
         // Delete Videoflyer
         videoflyerRepository.deleteById(id);
@@ -112,7 +115,7 @@ public class VideoflyerService implements IVideoflyerService {
         Optional<Videoflyer> videoflyer = videoflyerRepository.findById(input.getId());
 
         if (videoflyer.isEmpty()) {
-            log.error("Videoflyer {} not found.", input.getId()); //NOSONAR would be confusing to have it as constant
+            log.warn("Videoflyer {} not found.", input.getId()); //NOSONAR would be confusing to have it as constant
             throw new NotFoundException(ErrorMessage.VIDEOFLYER_NOT_FOUND);
         }
         return videoflyerRepository.save(input);

@@ -13,6 +13,7 @@ import in.skdv.skdvinbackend.service.IEmailService;
 import in.skdv.skdvinbackend.util.VerificationTokenUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,6 +33,9 @@ public class AppointmentService implements IAppointmentService {
     private final ISequenceRepository sequenceService;
     private final IEmailService emailService;
     private final Clock clock = Clock.systemDefaultZone();
+    @Lazy
+    private final AppointmentService self;
+
 
     @Override
     @Transactional
@@ -83,7 +87,7 @@ public class AppointmentService implements IAppointmentService {
                 .filter(a -> a != null && a.getAppointmentId() == id).findFirst();
 
         if (appointment.isEmpty()) {
-            log.error("Appointment {} not found", id); //NOSONAR would be confusing to have it as constant
+            log.warn("Appointment {} not found", id); //NOSONAR would be confusing to have it as constant
             throw new NotFoundException(ErrorMessage.APPOINTMENT_NOT_FOUND);
         }
 
@@ -103,7 +107,7 @@ public class AppointmentService implements IAppointmentService {
     @Override
     public List<FreeSlot> findFreeSlots(SlotQuery slotQuery) {
         if (!slotQuery.isValid()) {
-            log.error("Slot Query appointment has more video than tandem slots");
+            log.warn("Slot Query appointment has more video than tandem slots");
             throw new InvalidRequestException(ErrorMessage.APPOINTMENT_MORE_VIDEO_THAN_TAMDEM_SLOTS);
         }
 
@@ -207,7 +211,7 @@ public class AppointmentService implements IAppointmentService {
         Appointment appointment = findAppointment(appointmentId);
 
         if (appointment == null) {
-            log.error("Appointment {} not found", appointmentId); //NOSONAR would be confusing to have it as constant
+            log.warn("Appointment {} not found", appointmentId); //NOSONAR would be confusing to have it as constant
             throw new NotFoundException(ErrorMessage.APPOINTMENT_NOT_FOUND);
         }
 
@@ -217,11 +221,11 @@ public class AppointmentService implements IAppointmentService {
         }
 
         if (!VerificationTokenUtil.isValid(token, appointment.getVerificationToken())) {
-            log.error("Appointment {} token invalid: {}", appointmentId, token);
+            log.warn("Appointment {} token invalid: {}", appointmentId, token);
             throw new InvalidRequestException(ErrorMessage.APPOINTMENT_CONFIRMATION_TOKEN_INVALID);
         }
 
-        updateAppointmentState(appointment, AppointmentState.CONFIRMED);
+        self.updateAppointmentState(appointment, AppointmentState.CONFIRMED);
         emailService.saveMailInOutbox(appointment.getAppointmentId(), EmailType.APPOINTMENT_CONFIRMATION);
     }
 
@@ -230,7 +234,7 @@ public class AppointmentService implements IAppointmentService {
         Appointment oldAppointment = findAppointment(newAppointment.getAppointmentId());
 
         if (oldAppointment == null) {
-            log.error("Appointment {} not found", newAppointment.getAppointmentId()); //NOSONAR would be confusing to have it as constant
+            log.warn("Appointment {} not found", newAppointment.getAppointmentId()); //NOSONAR would be confusing to have it as constant
             throw new NotFoundException(ErrorMessage.APPOINTMENT_NOT_FOUND);
         }
 
@@ -244,7 +248,7 @@ public class AppointmentService implements IAppointmentService {
         // Create new Appointment and save it and then delete old one and save
         Appointment appointmentResult;
         if (isAdminBooking) {
-            appointmentResult = saveAdminAppointment(newAppointment);
+            appointmentResult = self.saveAdminAppointment(newAppointment);
         } else {
             appointmentResult = saveAppointmentWithoutMail(newAppointment);
         }
@@ -312,18 +316,18 @@ public class AppointmentService implements IAppointmentService {
 
     private Appointment saveAppointmentInternal(Jumpday jumpday, Appointment appointment, boolean isAdminBooking) {
         if (jumpday == null) {
-            log.error("Jumpday not found");
+            log.warn("Jumpday not found");
             throw new NotFoundException(ErrorMessage.JUMPDAY_NOT_FOUND_MSG);
         }
 
         if ((appointment.getPicOrVid() + appointment.getPicAndVid() + appointment.getHandcam())
                 > appointment.getTandem()) {
-            log.error("More video than tandem slots: {}", appointment);
+            log.warn("More video than tandem slots: {}", appointment);
             throw new InvalidRequestException(ErrorMessage.APPOINTMENT_MORE_VIDEO_THAN_TAMDEM_SLOTS);
         }
 
         if (!isAdminBooking && appointment.getTandem() != appointment.getCustomer().getJumpers().size()) {
-            log.error("Appointment missing jumper info: {}", appointment);
+            log.warn("Appointment missing jumper info: {}", appointment);
             throw new InvalidRequestException(ErrorMessage.APPOINTMENT_MISSING_JUMPER_INFO);
         }
 
@@ -332,7 +336,7 @@ public class AppointmentService implements IAppointmentService {
         }
 
         if (!hasSlotsAvailable(jumpday, appointment)) {
-            log.error("Jumpday has no free slots for appointment. Jumpday: {}, Appointment: {}", jumpday, appointment);
+            log.warn("Jumpday has no free slots for appointment. Jumpday: {}, Appointment: {}", jumpday, appointment);
             throw new NoSlotsLeftException(ErrorMessage.JUMPDAY_NO_FREE_SLOTS);
         }
 

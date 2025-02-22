@@ -4,7 +4,6 @@ import com.auth0.client.auth.AuthAPI;
 import com.auth0.client.mgmt.ManagementAPI;
 import com.auth0.net.client.Auth0HttpClient;
 import com.auth0.net.client.DefaultHttpClient;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -31,8 +30,8 @@ public class Auth0Config {
                 .withReadTimeout(10)
                 .build();
     }
+
     @Bean
-    @Autowired
     public AuthAPI authAPI(Auth0HttpClient auth0HttpClient) {
         return AuthAPI.newBuilder(domain, clientId, clientSecret)
                 .withHttpClient(auth0HttpClient)
@@ -40,7 +39,6 @@ public class Auth0Config {
     }
 
     @Bean
-    @Autowired
     public ManagementAPI managementAPI(Auth0HttpClient auth0HttpClient)  {
         return ManagementAPI.newBuilder(domain, "dummy")
                 .withHttpClient(auth0HttpClient)
